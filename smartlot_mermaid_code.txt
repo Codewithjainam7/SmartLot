@@ -1,0 +1,145 @@
+erDiagram
+    STRATA_SCHEMES ||--|{ LOTS : contains
+    STRATA_SCHEMES ||--|{ USERS : governs
+    LOTS ||--|{ LOT_OCCUPANTS : maps
+    USERS ||--o{ LOT_OCCUPANTS : primary_user
+    USERS ||--o{ REQUESTS : submits
+    USERS ||--o{ REQUEST_COMMENTS : authors
+    USERS ||--o{ VOTES : casts
+
+    STRATA_SCHEMES ||--|{ REQUESTS : logs
+    REQUESTS ||--o{ REQUEST_ATTACHMENTS : includes
+    REQUESTS ||--o{ REQUEST_COMMENTS : has_discussion
+    REQUESTS ||--o| VOTING_SESSIONS : triggers
+    REQUESTS ||--o{ VENDOR_QUOTES : solicits
+
+    VOTING_SESSIONS ||--|{ VOTES : collects
+    VENDORS ||--o{ VENDOR_QUOTES : submits
+    VENDORS ||--o{ REQUESTS : assigned_work_order
+
+    USERS ||--o{ AUDIT_LOGS : performs
+    STRATA_SCHEMES ||--o{ AUDIT_LOGS : tracks
+
+    STRATA_SCHEMES {
+        uuid id PK
+        string scheme_number UK
+        string scheme_name
+        string address
+        string state
+        string postcode
+        int total_lots
+        timestamp created_at
+    }
+
+    LOTS {
+        uuid id PK
+        uuid scheme_id FK
+        int lot_number
+        string unit_number
+        decimal entitlement_percentage
+    }
+
+    USERS {
+        uuid id PK
+        uuid scheme_id FK
+        string full_name
+        string email UK
+        string phone
+        string user_role
+        string account_status
+        timestamp last_login
+    }
+
+    LOT_OCCUPANTS {
+        uuid id PK
+        uuid lot_id FK
+        uuid primary_user_id FK
+        string occupant_name
+        string occupant_email
+        string occupant_role
+        boolean is_primary_contact
+    }
+
+    REQUESTS {
+        uuid id PK
+        uuid scheme_id FK
+        uuid lot_id FK
+        uuid requestor_id FK
+        string request_code UK
+        string request_category
+        string title
+        text description
+        string priority
+        string status
+        date target_due_date
+        text close_reason
+        uuid assigned_vendor_id FK
+    }
+
+    REQUEST_ATTACHMENTS {
+        uuid id PK
+        uuid request_id FK
+        string file_name
+        string file_url
+        string file_type
+    }
+
+    REQUEST_COMMENTS {
+        uuid id PK
+        uuid request_id FK
+        uuid author_id FK
+        text comment_text
+        boolean is_internal_note
+    }
+
+    VOTING_SESSIONS {
+        uuid id PK
+        uuid request_id FK
+        uuid scheme_id FK
+        uuid initiator_id FK
+        string motion_title
+        text motion_description
+        decimal required_quorum_percent
+        timestamp opens_at
+        timestamp closes_at
+        string session_status
+    }
+
+    VOTES {
+        uuid id PK
+        uuid voting_session_id FK
+        uuid voter_id FK
+        uuid lot_id FK
+        string decision
+    }
+
+    VENDORS {
+        uuid id PK
+        string company_name
+        string contact_person
+        string email
+        string phone
+        string trade_category
+        string abn
+        boolean is_insurance_verified
+    }
+
+    VENDOR_QUOTES {
+        uuid id PK
+        uuid request_id FK
+        uuid vendor_id FK
+        decimal quote_amount_aud
+        text scope_of_work
+        string quote_status
+    }
+
+    AUDIT_LOGS {
+        uuid id PK
+        uuid scheme_id FK
+        uuid actor_id FK
+        string action_type
+        string entity_affected
+        uuid entity_id
+        text metadata_json
+        timestamp timestamp
+    }

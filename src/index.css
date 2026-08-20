@@ -7,3 +7,48 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* Global Custom Scrollbar System */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark Container & Popover Scrollbars */
+.bg-\[\#121316\]::-webkit-scrollbar-thumb,
+.bg-\[\#121316\] ::-webkit-scrollbar-thumb,
+.bg-\[\#050505\]::-webkit-scrollbar-thumb,
+.bg-\[\#050505\] ::-webkit-scrollbar-thumb,
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(216, 242, 53, 0.35);
+  border-radius: 9999px;
+}
+
+.bg-\[\#121316\]::-webkit-scrollbar-thumb:hover,
+.bg-\[\#121316\] ::-webkit-scrollbar-thumb:hover,
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(216, 242, 53, 0.7);
+}
+
+/* Firefox thin scrollbar support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.bg-\[\#121316\] *, .dark-scrollbar {
+  scrollbar-color: rgba(216, 242, 53, 0.4) transparent;
+}
