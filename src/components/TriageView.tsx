@@ -12,6 +12,12 @@ import {
   Clock,
   Vote
 } from 'lucide-react';
+import { 
+  MorphingPopover, 
+  MorphingPopoverTrigger, 
+  MorphingPopoverContent 
+} from './core/morphing-popover';
+import { CreateRequestFormContent } from './CreateRequestModal';
 
 interface TriageViewProps {
   cases: MaintenanceCase[];
@@ -22,32 +28,10 @@ interface TriageViewProps {
 
 export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProps) {
   const [filterStream, setFilterStream] = useState<string>('all');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedCaseForRejection, setSelectedCaseForRejection] = useState<MaintenanceCase | null>(null);
   const [rejectionReasonText, setRejectionReasonText] = useState('');
 
-  // Form State
-  const [formStream, setFormStream] = useState<RequestStream>('common_area_repair');
-  const [formTitle, setFormTitle] = useState('');
-  const [formDesc, setFormDesc] = useState('');
-
   const filteredCases = cases.filter(c => filterStream === 'all' || c.stream === filterStream);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formTitle || !formDesc) return;
-    onSubmitCase({
-      title: formTitle,
-      description: formDesc,
-      stream: formStream,
-      urgency: 'high',
-      unit: 'Unit 10',
-      reportedBy: 'Lisa Ray (Resident)',
-    });
-    setFormTitle('');
-    setFormDesc('');
-    setIsDrawerOpen(false);
-  };
 
   const handleConfirmReject = () => {
     if (!selectedCaseForRejection) return;
@@ -71,13 +55,21 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
         </div>
 
         {/* Clean CTA Button */}
-        <button
-          onClick={() => setIsDrawerOpen(true)}
-          className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-md cursor-pointer"
-        >
-          <Plus size={18} className="text-[#D8F235]" /> 
-          <span>Log Issue (4-Stream)</span>
-        </button>
+        <MorphingPopover>
+          <MorphingPopoverTrigger>
+            <div className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+              <Plus size={18} className="text-[#D8F235]" /> 
+              <span>Log Issue (4-Stream)</span>
+            </div>
+          </MorphingPopoverTrigger>
+
+          <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CreateRequestFormContent 
+              onSubmit={onSubmitCase as any}
+              requestorName="System Admin"
+            />
+          </MorphingPopoverContent>
+        </MorphingPopover>
       </div>
 
       {/* Stream Selector Filter Pills */}
@@ -153,60 +145,6 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
           </div>
         ))}
       </div>
-
-      {/* Log Issue Drawer / Modal */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#121316]/50 backdrop-blur-sm" onClick={() => setIsDrawerOpen(false)} />
-          <div className="relative bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Submit Maintenance Request</h2>
-            <p className="text-xs text-gray-500 mb-6">Select the matching Australian Strata category stream below.</p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">Request Stream</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <StreamOption title="1. General Inquiry" selected={formStream === 'general_inquiry'} onClick={() => setFormStream('general_inquiry')} />
-                  <StreamOption title="2. Emergency Repair" selected={formStream === 'emergency_repair'} onClick={() => setFormStream('emergency_repair')} />
-                  <StreamOption title="3. Private Lot Repair" selected={formStream === 'private_lot_repair'} onClick={() => setFormStream('private_lot_repair')} />
-                  <StreamOption title="4. Common Area Repair" selected={formStream === 'common_area_repair'} onClick={() => setFormStream('common_area_repair')} />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Issue Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Shared Main Gate Motor Leak"
-                  value={formTitle}
-                  onChange={e => setFormTitle(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Detailed Description</label>
-                <textarea
-                  required
-                  rows={3}
-                  placeholder="Describe the issue, location, and symptoms..."
-                  value={formDesc}
-                  onChange={e => setFormDesc(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 cursor-pointer">Cancel</button>
-                <button type="submit" className="px-6 py-2.5 rounded-xl bg-[#121316] hover:bg-black text-white text-sm font-bold flex items-center gap-2 cursor-pointer">
-                  <span>Submit Request</span> <Send size={14} />
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Mandatory Rejection Reason Modal */}
       {selectedCaseForRejection && (
@@ -288,16 +226,4 @@ function StreamIcon({ stream }: { stream: RequestStream }) {
   }
 }
 
-function StreamOption({ title, selected, onClick }: any) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-        selected ? 'border-[#8B8CF8] bg-[#8B8CF8]/10 font-bold text-gray-900' : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
-      }`}
-    >
-      <div className="text-xs">{title}</div>
-    </button>
-  );
-}
+

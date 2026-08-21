@@ -61,13 +61,17 @@ export default function App() {
           
           {/* Dashboard View */}
           {store.activeView === 'dashboard' && (
-            <ResidentDashboardView 
-              requests={store.residentRequests}
-              onNavigateToRequests={() => store.setActiveView('requests')}
-              onSubmitRequest={store.submitResidentRequest}
-              activePersonaName={store.activePersona.name}
-              activePersonaRole={store.activePersona.role}
-            />
+            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager')) ? (
+              <Dashboard />
+            ) : (
+              <ResidentDashboardView 
+                requests={store.residentRequests}
+                onNavigateToRequests={() => store.setActiveView('requests')}
+                onSubmitRequest={store.submitResidentRequest}
+                activePersonaName={store.activePersona.name}
+                activePersonaRole={store.activePersona.role}
+              />
+            )
           )}
 
           {/* User Management Module */}
@@ -96,7 +100,7 @@ export default function App() {
           {store.activeView === 'triage' && (
             <TriageView 
               cases={store.residentRequests as any}
-              onSubmitCase={() => setShowCreateRequestModal(true)}
+              onSubmitCase={store.submitResidentRequest as any}
               onTriageCase={store.triageRequest}
               activePersonaRole={store.activePersona.role}
             />
