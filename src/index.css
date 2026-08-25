@@ -57,6 +57,29 @@
 
 body {
   font-family: "Acorn", ui-sans-serif, system-ui, sans-serif;
+  /* Acorn typography tuning */
+  letter-spacing: -0.01em;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Headings — tighter tracking for geometric display feel */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+/* Small labels, badges, caps — keep tracking neutral */
+.text-xs, .text-\[10px\], .text-\[11px\] {
+  letter-spacing: 0em;
+}
+
+/* Inputs & Textareas */
+input, textarea, select, button {
+  font-family: "Acorn", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
 }
 
 /* Global Custom Scrollbar System */
