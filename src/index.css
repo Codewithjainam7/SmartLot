@@ -1,11 +1,62 @@
 @import "tailwindcss";
 
+/* ── Acorn Font Family ───────────────────────────── */
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-Thin.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-ExtraLight.otf") format("opentype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Acorn", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: "Acorn", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Global Custom Scrollbar System */
