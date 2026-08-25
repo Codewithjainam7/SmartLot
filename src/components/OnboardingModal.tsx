@@ -12,9 +12,31 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   const store = useSmartLotStore();
 
   // Dynamic Site Creation fields
+  const [siteType, setSiteType] = useState<string>('duplex');
   const [schemeName, setSchemeName] = useState('Sunset Duplex');
   const [schemeId, setSchemeId] = useState('SP101');
   const [lotsCount, setLotsCount] = useState(2);
+
+  const handleTypeChange = (type: string) => {
+    setSiteType(type);
+    if (type === 'duplex') {
+      setSchemeName('Sunset Duplex');
+      setSchemeId('SP101');
+      setLotsCount(2);
+    } else if (type === 'coronation') {
+      setSchemeName('Coronation Townhouses');
+      setSchemeId('SP102');
+      setLotsCount(4);
+    } else if (type === 'cavaller') {
+      setSchemeName('Cavaller Apartments');
+      setSchemeId('SP103');
+      setLotsCount(32);
+    } else {
+      setSchemeName('');
+      setSchemeId('');
+      setLotsCount(1);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +89,20 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
             {/* Scheme Details Customization Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Site Type</label>
+                  <select
+                    value={siteType}
+                    onChange={e => handleTypeChange(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold outline-none text-gray-900 focus:bg-white focus:border-black transition-all cursor-pointer"
+                  >
+                    <option value="duplex">Duplex (Sunset Duplex - 2 Lots)</option>
+                    <option value="coronation">Coronation (Coronation Townhouses - 4 Lots)</option>
+                    <option value="cavaller">Cavaller (Cavaller Apartments - 32 Lots)</option>
+                    <option value="custom">Custom Site Setup...</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-gray-600 mb-1">Scheme / Site Name</label>
                   <input
