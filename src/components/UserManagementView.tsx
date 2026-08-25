@@ -45,6 +45,9 @@ interface UserManagementViewProps {
   }) => void;
   onUpdateStatus: (memberId: string, status: 'Active' | 'Invited' | 'Restricted') => void;
   onDeleteMember: (memberId: string) => void;
+  activeSchemeId: string;
+  rolePermissions: Record<string, { label: string; active: boolean; locked?: boolean }[]>;
+  onTogglePermission: (role: string, permissionLabel: string) => void;
 }
 
 const ROLE_OPTIONS: SelectOption[] = [
@@ -68,7 +71,11 @@ export function UserManagementView({
   onAddMember,
   onUpdateStatus,
   onDeleteMember,
+  activeSchemeId,
+  rolePermissions,
+  onTogglePermission,
 }: UserManagementViewProps) {
+  const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -104,12 +111,33 @@ export function UserManagementView({
             <p className="text-sm text-gray-500">Manage Lot Owners, On-Site Residents, Tenants, and multiple occupants per physical lot.</p>
           </div>
 
-          <MorphingPopoverTrigger>
-            <div className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
-              <UserPlus size={18} className="text-[#D8F235]" /> 
-              <span>Add New Member</span>
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-150 p-1 rounded-2xl text-xs font-bold border border-gray-200">
+              <button
+                type="button"
+                onClick={() => setActiveTab('roster')}
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'roster' ? 'bg-[#121316] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Member Roster
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('permissions')}
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'permissions' ? 'bg-[#121316] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Role Permissions
+              </button>
             </div>
-          </MorphingPopoverTrigger>
+
+            {activeTab === 'roster' && (
+              <MorphingPopoverTrigger>
+                <div className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+                  <UserPlus size={18} className="text-[#D8F235]" /> 
+                  <span>Add New Member</span>
+                </div>
+              </MorphingPopoverTrigger>
+            )}
+          </div>
         </div>
 
         {/* Morphing Popover Content (Form Modal) */}
@@ -119,135 +147,176 @@ export function UserManagementView({
 
       </MorphingPopover>
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-        
-        {/* Search Input */}
-        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-2xl text-xs flex-1 max-w-md">
-          <Search size={16} className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name, email, or unit number..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent outline-none text-gray-800 font-semibold"
-          />
-        </div>
+      {activeTab === 'roster' ? (
+        <>
+          {/* Filter & Search Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            
+            {/* Search Input */}
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-2xl text-xs flex-1 max-w-md">
+              <Search size={16} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name, email, or unit number..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent outline-none text-gray-800 font-semibold"
+              />
+            </div>
 
-        {/* Animated Role Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterPill label="All Roles" active={filterRole === 'all'} onClick={() => setFilterRole('all')} count={members.length} />
-          <FilterPill label="Lot Owners" active={filterRole === 'Lot Owner'} onClick={() => setFilterRole('Lot Owner')} />
-          <FilterPill label="Residents" active={filterRole === 'Resident'} onClick={() => setFilterRole('Resident')} />
-          <FilterPill label="Tenants" active={filterRole === 'Tenant'} onClick={() => setFilterRole('Tenant')} />
-          <FilterPill label="Committee" active={filterRole === 'Committee Member'} onClick={() => setFilterRole('Committee Member')} />
-          <FilterPill label="Strata Manager" active={filterRole === 'Strata Manager'} onClick={() => setFilterRole('Strata Manager')} />
-        </div>
+            {/* Animated Role Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              <FilterPill label="All Roles" active={filterRole === 'all'} onClick={() => setFilterRole('all')} count={members.length} />
+              <FilterPill label="Lot Owners" active={filterRole === 'Lot Owner'} onClick={() => setFilterRole('Lot Owner')} />
+              <FilterPill label="Residents" active={filterRole === 'Resident'} onClick={() => setFilterRole('Resident')} />
+              <FilterPill label="Tenants" active={filterRole === 'Tenant'} onClick={() => setFilterRole('Tenant')} />
+              <FilterPill label="Committee" active={filterRole === 'Committee Member'} onClick={() => setFilterRole('Committee Member')} />
+              <FilterPill label="Strata Manager" active={filterRole === 'Strata Manager'} onClick={() => setFilterRole('Strata Manager')} />
+            </div>
 
-      </div>
+          </div>
 
-      {/* Member Roster Table with "Fading Slowly & Going Behind" Depth Animation */}
-      <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Member Roster ({filteredMembers.length})</h3>
+          {/* Member Roster Table with "Fading Slowly & Going Behind" Depth Animation */}
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Member Roster ({filteredMembers.length})</h3>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-separate border-spacing-0">
-            <thead>
-              <tr className="text-gray-400 font-bold uppercase text-[10px] tracking-wider">
-                <th className="py-3 px-4 border-b border-gray-100">Primary Member & Role</th>
-                <th className="py-3 px-4 border-b border-gray-100">Unit / Lot #</th>
-                <th className="py-3 px-4 border-b border-gray-100">Contact Info</th>
-                <th className="py-3 px-4 border-b border-gray-100">Mapped Occupants in Lot</th>
-                <th className="py-3 px-4 border-b border-gray-100">Status</th>
-                <th className="py-3 px-4 border-b border-gray-100 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="font-medium">
-              <AnimatePresence mode="popLayout">
-                {filteredMembers.map(m => (
-                  <motion.tr 
-                    key={m.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.97, y: 6 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ 
-                      opacity: 0, 
-                      scale: 0.94, 
-                      y: 8, 
-                      filter: 'blur(2px)' 
-                    }}
-                    transition={{ 
-                      duration: 0.35, 
-                      ease: [0.16, 1, 0.3, 1] 
-                    }}
-                    className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 outline-none"
-                  >
-                    <td className="py-4 px-4 border-b border-gray-100">
-                      <div className="font-bold text-gray-900 text-sm">{m.name}</div>
-                      <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                        {m.role}
-                      </span>
-                    </td>
-
-                    <td className="py-4 px-4 border-b border-gray-100">
-                      <div className="font-bold text-gray-900">{m.unitId}</div>
-                      <div className="text-[10px] text-gray-400 font-semibold">Lot {m.lotNumber}</div>
-                    </td>
-
-                    <td className="py-4 px-4 border-b border-gray-100 space-y-0.5">
-                      <div className="flex items-center gap-1.5 text-gray-700 font-semibold"><Mail size={12} className="text-gray-400" /> {m.email}</div>
-                      <div className="flex items-center gap-1.5 text-gray-500"><Phone size={12} className="text-gray-400" /> {m.phone}</div>
-                    </td>
-
-                    <td className="py-4 px-4 border-b border-gray-100">
-                      {m.additionalOccupants && m.additionalOccupants.length > 0 ? (
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-bold text-[#8B8CF8] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
-                            {m.additionalOccupants.length} Extra Occupants
-                          </span>
-                          <div className="text-[11px] text-gray-600 truncate max-w-[180px]">
-                            {m.additionalOccupants.map(o => o.name).join(', ')}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">1 Occupant</span>
-                      )}
-                    </td>
-
-                    <td className="py-4 px-4 border-b border-gray-100">
-                      <MemberStatusBadge status={m.status} />
-                    </td>
-
-                    <td className="py-4 px-4 border-b border-gray-100 text-right space-x-2">
-                      <button
-                        onClick={() => setSelectedMember(m)}
-                        className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-100 cursor-pointer"
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-separate border-spacing-0">
+                <thead>
+                  <tr className="text-gray-400 font-bold uppercase text-[10px] tracking-wider">
+                    <th className="py-3 px-4 border-b border-gray-100">Primary Member & Role</th>
+                    <th className="py-3 px-4 border-b border-gray-100">Unit / Lot #</th>
+                    <th className="py-3 px-4 border-b border-gray-100">Contact Info</th>
+                    <th className="py-3 px-4 border-b border-gray-100">Mapped Occupants in Lot</th>
+                    <th className="py-3 px-4 border-b border-gray-100">Status</th>
+                    <th className="py-3 px-4 border-b border-gray-100 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="font-medium">
+                  <AnimatePresence mode="popLayout">
+                    {filteredMembers.map(m => (
+                      <motion.tr 
+                        key={m.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.97, y: 6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ 
+                          opacity: 0, 
+                          scale: 0.94, 
+                          y: 8, 
+                          filter: 'blur(2px)' 
+                        }}
+                        transition={{ 
+                          duration: 0.35, 
+                          ease: [0.16, 1, 0.3, 1] 
+                        }}
+                        className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 outline-none"
                       >
-                        View Details
-                      </button>
-                      {m.status === 'Active' ? (
-                        <button
-                          onClick={() => onUpdateStatus(m.id, 'Restricted')}
-                          className="px-3 py-1.5 rounded-xl border border-red-200 text-xs font-bold text-red-500 hover:bg-red-50 cursor-pointer"
-                        >
-                          Restrict Access
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => onUpdateStatus(m.id, 'Active')}
-                          className="px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-bold text-emerald-600 hover:bg-emerald-50 cursor-pointer"
-                        >
-                          Activate
-                        </button>
-                      )}
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                        <td className="py-4 px-4 border-b border-gray-100">
+                          <div className="font-bold text-gray-900 text-sm">{m.name}</div>
+                          <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                            {m.role}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-4 border-b border-gray-100">
+                          <div className="font-bold text-gray-900">{m.unitId}</div>
+                          <div className="text-[10px] text-gray-400 font-semibold">Lot {m.lotNumber}</div>
+                        </td>
+
+                        <td className="py-4 px-4 border-b border-gray-100 space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-gray-700 font-semibold"><Mail size={12} className="text-gray-400" /> {m.email}</div>
+                          <div className="flex items-center gap-1.5 text-gray-500"><Phone size={12} className="text-gray-400" /> {m.phone}</div>
+                        </td>
+
+                        <td className="py-4 px-4 border-b border-gray-100">
+                          {m.additionalOccupants && m.additionalOccupants.length > 0 ? (
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-bold text-[#8B8CF8] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
+                                {m.additionalOccupants.length} Extra Occupants
+                              </span>
+                              <div className="text-[11px] text-gray-600 truncate max-w-[180px]">
+                                {m.additionalOccupants.map(o => o.name).join(', ')}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">1 Occupant</span>
+                          )}
+                        </td>
+
+                        <td className="py-4 px-4 border-b border-gray-100">
+                          <MemberStatusBadge status={m.status} />
+                        </td>
+
+                        <td className="py-4 px-4 border-b border-gray-100 text-right space-x-2">
+                          <button
+                            onClick={() => setSelectedMember(m)}
+                            className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          >
+                            View Details
+                          </button>
+                          {m.status === 'Active' ? (
+                            <button
+                              onClick={() => onUpdateStatus(m.id, 'Restricted')}
+                              className="px-3 py-1.5 rounded-xl border border-red-200 text-xs font-bold text-red-500 hover:bg-red-50 cursor-pointer"
+                            >
+                              Restrict Access
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => onUpdateStatus(m.id, 'Active')}
+                              className="px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-bold text-emerald-600 hover:bg-emerald-50 cursor-pointer"
+                            >
+                              Activate
+                            </button>
+                          )}
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Role Permissions Matrix Section */
+        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Scheme Role Permission Matrix</h3>
+            <p className="text-xs text-gray-500 mt-1">Configure functional access controls for roles in Strata Plan {activeSchemeId}. Checked items indicate permitted actions.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.keys(rolePermissions || {}).map(role => {
+              const perms = rolePermissions[role] || [];
+              return (
+                <div key={role} className="bg-gray-50 rounded-2xl p-6 border border-gray-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                    <span className="font-extrabold text-gray-900 text-sm">{role}</span>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-250 text-gray-600 border border-gray-300">Role Profile</span>
+                  </div>
+                  <div className="space-y-4 pt-1">
+                    {perms.map(p => (
+                      <div key={p.label} className="flex items-center justify-between py-1">
+                        <span className="text-xs font-bold text-gray-700">{p.label}</span>
+                        {p.locked ? (
+                          <span className="text-[10px] text-gray-400 font-extrabold bg-gray-200 px-2 py-0.5 rounded">Always On</span>
+                        ) : (
+                          <CustomCheckbox 
+                            checked={p.active} 
+                            onChange={() => onTogglePermission(role, p.label)} 
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Member Details Drawer */}
       <AnimatePresence>

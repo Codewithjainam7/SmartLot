@@ -13,27 +13,132 @@ import { ResidentDashboardView } from './components/ResidentDashboardView';
 import { CreateRequestModal } from './components/CreateRequestModal';
 import { ResidentRequestsView } from './components/ResidentRequestsView';
 
+// Module 1 New Views
+import { LandingPageView } from './components/LandingPageView';
+import { AdminView } from './components/AdminView';
+
 export default function App() {
   const store = useSmartLotStore();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
 
+  // Landing page and admin navigation state
+  const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_console' | 'dashboard'>('landing');
+
+  // Pre-fill parameters when redirecting from landing page simulating a persona
+  const [prefillPersona, setPrefillPersona] = useState<string | null>(null);
+
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
-  const handleLoginSuccess = (role: 'Lot Owner' | 'Resident' | 'Tenant', name: string) => {
-    store.setIsLoggedIn(true);
-    store.setActivePersona({
-      id: role.toLowerCase().replace(/\s+/g, '_'),
-      role: role === 'Lot Owner' ? 'Off-Site Lot Owner' : role === 'Tenant' ? 'Tenant Occupant' : 'On-Site Resident',
-      name,
-      context: 'Unit 10',
-    });
-    store.setActiveView('dashboard');
+  const handleSelectPersona = (personaId: string) => {
+    if (personaId === 'web_admin') {
+      setSessionState('admin_console');
+    } else if (personaId === 'guest') {
+      setPrefillPersona(null);
+      setSessionState('login');
+    } else {
+      // Simulate/Trigger signup with preset parameters
+      setPrefillPersona(personaId);
+      setSessionState('login');
+    }
   };
 
-  if (!store.isLoggedIn) {
-    return <ResidentLoginView onLoginSuccess={handleLoginSuccess} />;
+  const handleLoginSuccess = (
+    role: string, 
+    name: string, 
+    siteInfo?: { id: string; name: string; lots: number }
+  ) => {
+    let scheme = store.activeScheme;
+    if (siteInfo) {
+      // Check if scheme already exists
+      const existing = store.schemes.find(s => s.id === siteInfo.id);
+      if (existing) {
+        scheme = existing;
+      } else {
+        scheme = store.addScheme(siteInfo.id, `${siteInfo.id} - ${siteInfo.name}`, siteInfo.lots);
+      }
+      store.setActiveScheme(scheme);
+    }
+
+    const personaId = name.toLowerCase().replace(/\s+/g, '_');
+    const newPersona = {
+      id: personaId,
+      role: role,
+      name: name,
+      context: siteInfo ? `Unit 1 (${siteInfo.name})` : 'Unit 10',
+    };
+
+    store.setActivePersona(newPersona);
+    store.setIsLoggedIn(true);
+    setSessionState('dashboard');
+    store.setActiveView('dashboard');
+
+    // Register member context in store if not present
+    const memberExists = store.members.some(m => m.name === name);
+    if (!memberExists) {
+      store.setMembers(prev => [
+        {
+          id: `MEM-${100 + store.members.length + 1}`,
+          name,
+          email: `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+          phone: '0400 000 000',
+          schemeId: scheme.id,
+          role: (role === 'Strata Admin' ? 'Strata Manager' : role) as any,
+          unitId: 'Unit 1',
+          lotNumber: 1,
+          status: 'Active',
+          joinedAt: new Date().toISOString().split('T')[0],
+        },
+        ...prev
+      ]);
+    }
+  };
+
+  const handleLogout = () => {
+    store.setIsLoggedIn(false);
+    setSessionState('landing');
+  };
+
+  // Render unauthenticated screens
+  if (sessionState === 'landing') {
+    return <LandingPageView onSelectPersona={handleSelectPersona} />;
   }
+
+  if (sessionState === 'admin_console') {
+    return (
+      <AdminView 
+        members={store.members}
+        schemes={store.schemes}
+        onBackToLanding={() => setSessionState('landing')}
+        onDeleteMember={store.deleteMember}
+        onDeleteScheme={store.deleteScheme}
+      />
+    );
+  }
+
+  if (sessionState === 'login') {
+    return (
+      <ResidentLoginView 
+        onLoginSuccess={handleLoginSuccess} 
+        onAdminLogin={() => setSessionState('admin_console')}
+        onBack={() => setSessionState('landing')}
+      />
+    );
+  }
+
+  // Handle active scheme switcher filters dynamically
+  const filteredRequests = store.residentRequests.filter(r => {
+    // If the persona has context, filter or display matching scheme requests
+    if (store.activePersona.name === 'Emma Wilson') {
+      // Emma can see Coronation (SP102) and Cavaller (SP103) requests based on switch
+      if (store.activeScheme.id === 'SP102') {
+        return r.unit.includes('Coronation') || r.id === 'REQ-102'; // Coronation mocks
+      } else if (store.activeScheme.id === 'SP103') {
+        return r.unit.includes('Cavaller') || r.id === 'REQ-101'; // Cavaller mocks
+      }
+    }
+    return true; // Default fallthrough
+  });
 
   return (
     <div className="flex h-screen bg-[#F4F6F9] font-sans text-gray-900 overflow-hidden relative">
@@ -45,27 +150,38 @@ export default function App() {
         pendingTriageCount={pendingTriageCount}
         activePersonaName={store.activePersona.name}
         activePersonaRole={store.activePersona.role}
+        hasPermission={store.hasPermission}
+        onLogout={handleLogout}
       />
       
       {/* Content Area */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
         <Topbar 
+          schemes={store.schemes}
           activeScheme={store.activeScheme} 
           setActiveScheme={store.setActiveScheme}
+          personas={store.activePersona.name === 'Emma Wilson' 
+            ? [
+                store.activePersona,
+                { id: 'emma_coronation', role: 'Strata Manager', name: 'Emma Wilson', context: 'Coronation' },
+                { id: 'emma_cavaller', role: 'Strata Manager Admin', name: 'Emma Wilson', context: 'Cavaller' }
+              ]
+            : [store.activePersona]
+          }
           activePersona={store.activePersona}
           setActivePersona={store.setActivePersona}
         />
         
-        {/* Dynamic View Rendering focusing on User Management & Requests Module */}
+        {/* Dynamic View Rendering */}
         <div className="flex-1 overflow-hidden relative">
           
           {/* Dashboard View */}
           {store.activeView === 'dashboard' && (
-            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager')) ? (
+            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager') || store.activePersona.role.includes('Super')) ? (
               <Dashboard />
             ) : (
               <ResidentDashboardView 
-                requests={store.residentRequests}
+                requests={filteredRequests}
                 onNavigateToRequests={() => store.setActiveView('requests')}
                 onSubmitRequest={store.submitResidentRequest}
                 activePersonaName={store.activePersona.name}
@@ -74,20 +190,23 @@ export default function App() {
             )
           )}
 
-          {/* User Management Module */}
-          {store.activeView === 'user_management' && (
+          {/* Team Access View (User Management View with active scheme and permissions matrix) */}
+          {store.activeView === 'user_management' && store.hasPermission('Team Access & Invites') && (
             <UserManagementView 
-              members={store.members}
+              members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
               onAddMember={store.addMember}
               onUpdateStatus={store.updateMemberStatus}
               onDeleteMember={store.deleteMember}
+              activeSchemeId={store.activeScheme.id}
+              rolePermissions={store.rolePermissions[store.activeScheme.id] || {}}
+              onTogglePermission={(role, perm) => store.togglePermission(store.activeScheme.id, role, perm)}
             />
           )}
 
           {/* Requests Module */}
           {store.activeView === 'requests' && (
             <ResidentRequestsView 
-              requests={store.residentRequests}
+              requests={filteredRequests}
               onSubmitRequest={store.submitResidentRequest}
               onCloseRequest={store.closeResidentRequest}
               onAddComment={store.addCommentToRequest}
@@ -99,7 +218,7 @@ export default function App() {
           {/* Manager Triage View */}
           {store.activeView === 'triage' && (
             <TriageView 
-              cases={store.residentRequests as any}
+              cases={filteredRequests as any}
               onSubmitCase={store.submitResidentRequest as any}
               onTriageCase={store.triageRequest}
               activePersonaRole={store.activePersona.role}
@@ -108,14 +227,16 @@ export default function App() {
 
         </div>
         
-        {/* Floating CTA Pill Button */}
-        <button
-          onClick={() => setShowOnboarding(true)}
-          className="fixed bottom-8 right-8 bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-full shadow-2xl font-bold text-sm flex items-center gap-2.5 transition-all hover:scale-105 z-30 border border-white/10 cursor-pointer"
-        >
-          <span className="w-6 h-6 rounded-full bg-[#D8F235] text-[#121316] flex items-center justify-center font-bold text-base leading-none pb-0.5">+</span>
-          <span>New Scheme Setup</span>
-        </button>
+        {/* Floating CTA Pill Button for Scheme Setup */}
+        {(store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager')) && (
+          <button
+            onClick={() => setShowOnboarding(true)}
+            className="fixed bottom-8 right-8 bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-full shadow-2xl font-bold text-sm flex items-center gap-2.5 transition-all hover:scale-105 z-30 border border-white/10 cursor-pointer"
+          >
+            <span className="w-6 h-6 rounded-full bg-[#D8F235] text-[#121316] flex items-center justify-center font-bold text-base leading-none pb-0.5">+</span>
+            <span>New Scheme Setup</span>
+          </button>
+        )}
       </div>
 
       {/* Onboarding Provisioning Modal */}
@@ -127,7 +248,7 @@ export default function App() {
         onClose={() => setShowCreateRequestModal(false)}
         onSubmit={store.submitResidentRequest}
         requestorName={store.activePersona.name}
-        requestorEmail="lisa@unit10.com"
+        requestorEmail={`${store.activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit10.com`}
         requestorPhone="0412 888 999"
       />
 

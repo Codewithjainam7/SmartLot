@@ -14,6 +14,8 @@ interface SidebarProps {
   pendingTriageCount?: number;
   activePersonaName?: string;
   activePersonaRole?: string;
+  hasPermission: (perm: string) => boolean;
+  onLogout: () => void;
 }
 
 export function Sidebar({ 
@@ -21,7 +23,9 @@ export function Sidebar({
   setActiveView, 
   pendingTriageCount = 2,
   activePersonaName = 'Alex Vance',
-  activePersonaRole = 'Strata Manager'
+  activePersonaRole = 'Strata Manager',
+  hasPermission,
+  onLogout
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -36,12 +40,14 @@ export function Sidebar({
       <div className={`flex items-center ${isCollapsed ? 'justify-center flex-col gap-4' : 'justify-between px-6'} py-6 mb-2 transition-all duration-300`}>
         <div 
           className="flex items-center gap-3 overflow-hidden cursor-pointer" 
-          onClick={() => setActiveView('dashboard')}
-          title="SmartLot Dashboard"
+          onClick={onLogout}
+          title="Back to Landing Page"
         >
-          <div className="w-8 h-8 shrink-0 rounded-full bg-[#D8F235] flex items-center justify-center text-[#121316] font-bold">
-            SL
-          </div>
+          <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#D8F235" />
+            <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+            <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+          </svg>
           {!isCollapsed && (
             <span className="text-xl font-bold tracking-tight whitespace-nowrap">
               SmartLot
@@ -78,10 +84,10 @@ export function Sidebar({
               onClick={() => setActiveView('dashboard')}
               isCollapsed={isCollapsed} 
             />
-            {(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager')) && (
+            {hasPermission('Team Access & Invites') && (
               <NavItem 
                 icon={<Users size={18} />} 
-                label="User Management" 
+                label="Team Access" 
                 active={activeView === 'user_management'} 
                 onClick={() => setActiveView('user_management')}
                 isCollapsed={isCollapsed} 
@@ -105,12 +111,20 @@ export function Sidebar({
         <div className={`flex items-center gap-3 py-3 mt-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}>
           <img src="https://i.pravatar.cc/150?img=47" className="w-10 h-10 shrink-0 rounded-full object-cover border-2 border-white/10" alt="User" />
           {!isCollapsed && (
-            <div className="whitespace-nowrap">
-              <div className="text-sm font-semibold text-white truncate max-w-[150px]">{activePersonaName}</div>
-              <div className="text-xs text-gray-500 truncate max-w-[150px]">{activePersonaRole}</div>
+            <div className="whitespace-nowrap flex-1">
+              <div className="text-sm font-semibold text-white truncate max-w-[120px]">{activePersonaName}</div>
+              <div className="text-xs text-gray-500 truncate max-w-[120px]">{activePersonaRole}</div>
             </div>
           )}
         </div>
+        <button
+          onClick={onLogout}
+          className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 text-red-400 hover:text-white hover:bg-red-500/20 cursor-pointer ${
+            isCollapsed ? 'px-0' : 'px-4'
+          }`}
+        >
+          {!isCollapsed ? 'Log Out to Landing' : 'Exit'}
+        </button>
       </div>
 
     </div>

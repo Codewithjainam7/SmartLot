@@ -1,15 +1,24 @@
 import React from 'react';
 import { Building2, UserCircle, ChevronDown, CheckCircle2 } from 'lucide-react';
-import { PERSONAS, SCHEMES, Persona, Scheme } from '../types';
+import { Persona, Scheme } from '../types';
 
 interface TopbarProps {
+  schemes: Scheme[];
   activeScheme: Scheme;
   setActiveScheme: (scheme: Scheme) => void;
+  personas: Persona[];
   activePersona: Persona;
   setActivePersona: (persona: Persona) => void;
 }
 
-export function Topbar({ activeScheme, setActiveScheme, activePersona, setActivePersona }: TopbarProps) {
+export function Topbar({ 
+  schemes, 
+  activeScheme, 
+  setActiveScheme, 
+  personas, 
+  activePersona, 
+  setActivePersona 
+}: TopbarProps) {
   return (
     <div className="h-20 bg-white/50 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 sticky top-0 z-20">
       
@@ -26,7 +35,7 @@ export function Topbar({ activeScheme, setActiveScheme, activePersona, setActive
           {/* Dropdown Menu */}
           <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top">
             <div className="p-2 space-y-1">
-              {SCHEMES.map(scheme => (
+              {schemes.map(scheme => (
                 <button
                   key={scheme.id}
                   onClick={() => setActiveScheme(scheme)}
@@ -45,7 +54,7 @@ export function Topbar({ activeScheme, setActiveScheme, activePersona, setActive
         {/* Quick Metrics */}
         <div className="hidden md:flex items-center gap-3">
           <MetricPill label={`${activeScheme.lots} Total Lots`} />
-          <MetricPill label="1 Active Scheme" />
+          <MetricPill label={`${schemes.length} Active Schemes`} />
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#6EE7B7]/20 text-[#059669] text-xs font-semibold">
             <CheckCircle2 size={14} />
             Verified Compliance
@@ -72,7 +81,7 @@ export function Topbar({ activeScheme, setActiveScheme, activePersona, setActive
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Simulate Persona</div>
           </div>
           <div className="p-2 space-y-1">
-            {PERSONAS.map(persona => (
+            {personas.map(persona => (
               <button
                 key={persona.id}
                 onClick={() => setActivePersona(persona)}

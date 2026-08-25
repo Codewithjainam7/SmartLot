@@ -334,6 +334,7 @@ const INITIAL_UNITS: UnitData[] = [
 ];
 
 export function useSmartLotStore() {
+  const [schemes, setSchemes] = useState<Scheme[]>(SCHEMES);
   const [activeScheme, setActiveScheme] = useState<Scheme>(SCHEMES[0]);
   const [activePersona, setActivePersona] = useState<Persona>(PERSONAS[1]); // Default to Strata Manager Alex Vance
   const [activeView, setActiveView] = useState<'dashboard' | 'user_management' | 'requests' | 'triage'>('dashboard');
@@ -343,6 +344,134 @@ export function useSmartLotStore() {
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [residentRequests, setResidentRequests] = useState<ResidentRequest[]>(INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = useState<UnitData[]>(INITIAL_UNITS);
+
+  // Initialize permissions list for all roles in all schemes
+  const [rolePermissions, setRolePermissions] = useState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>({
+    'SP10482': {
+      'Strata Manager': [
+        { label: 'Noticeboard Access', active: true, locked: true },
+        { label: 'Maintenance Logging', active: true, locked: true },
+        { label: 'Voting Rights (Ballots)', active: true, locked: true },
+        { label: 'Team Access & Invites', active: true, locked: true },
+      ],
+      'Committee Member': [
+        { label: 'Noticeboard Access', active: true },
+        { label: 'Maintenance Logging', active: true },
+        { label: 'Voting Rights (Ballots)', active: true },
+        { label: 'Team Access & Invites', active: false },
+      ],
+      'Lot Owner': [
+        { label: 'Noticeboard Access', active: true },
+        { label: 'Maintenance Logging', active: true },
+        { label: 'Voting Rights (Ballots)', active: true },
+        { label: 'Team Access & Invites', active: false },
+      ],
+      'Resident': [
+        { label: 'Noticeboard Access', active: true },
+        { label: 'Maintenance Logging', active: true },
+        { label: 'Voting Rights (Ballots)', active: false },
+        { label: 'Team Access & Invites', active: false, locked: true },
+      ],
+      'Tenant': [
+        { label: 'Noticeboard Access', active: true },
+        { label: 'Maintenance Logging', active: true },
+        { label: 'Voting Rights (Ballots)', active: false },
+        { label: 'Team Access & Invites', active: false, locked: true },
+      ],
+    }
+  });
+
+  const addScheme = (id: string, name: string, lots: number) => {
+    const newScheme = { id, name, lots, active: true };
+    setSchemes(prev => [...prev, newScheme]);
+    
+    // Auto-initialize permissions for the new scheme
+    setRolePermissions(prev => ({
+      ...prev,
+      [id]: {
+        'Strata Manager': [
+          { label: 'Noticeboard Access', active: true, locked: true },
+          { label: 'Maintenance Logging', active: true, locked: true },
+          { label: 'Voting Rights (Ballots)', active: true, locked: true },
+          { label: 'Team Access & Invites', active: true, locked: true },
+        ],
+        'Committee Member': [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+          { label: 'Team Access & Invites', active: false },
+        ],
+        'Lot Owner': [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+          { label: 'Team Access & Invites', active: false },
+        ],
+        'Resident': [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+          { label: 'Voting Rights (Ballots)', active: false },
+          { label: 'Team Access & Invites', active: false, locked: true },
+        ],
+        'Tenant': [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+          { label: 'Voting Rights (Ballots)', active: false },
+          { label: 'Team Access & Invites', active: false, locked: true },
+        ],
+      }
+    }));
+
+    return newScheme;
+  };
+
+  const deleteScheme = (id: string) => {
+    setSchemes(prev => prev.filter(s => s.id !== id));
+  };
+
+  const togglePermission = (schemeId: string, role: string, permissionLabel: string) => {
+    setRolePermissions(prev => {
+      const schemeRoles = prev[schemeId] || {};
+      const rolePerms = schemeRoles[role] || [];
+      const updatedPerms = rolePerms.map(p => 
+        p.label === permissionLabel && !p.locked ? { ...p, active: !p.active } : p
+      );
+      return {
+        ...prev,
+        [schemeId]: {
+          ...schemeRoles,
+          [role]: updatedPerms
+        }
+      };
+    });
+  };
+
+  const hasPermission = (permissionLabel: string) => {
+    if (activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator') {
+      return true;
+    }
+
+    const currentRole = activePersona.role;
+    
+    // Strata Admin / Strata Manager (by design, always has full permissions)
+    if (currentRole.includes('Admin') || currentRole.includes('Manager') || currentRole.includes('Strata Admin')) {
+      return true;
+    }
+
+    // Standard lookup
+    const schemeRoles = rolePermissions[activeScheme.id] || {};
+    
+    // Map Persona roles to Member Roles
+    let roleKey = 'Resident';
+    if (currentRole.includes('Committee')) roleKey = 'Committee Member';
+    else if (currentRole.includes('Owner')) roleKey = 'Lot Owner';
+    else if (currentRole.includes('Tenant')) roleKey = 'Tenant';
+    else if (currentRole.includes('Resident')) roleKey = 'Resident';
+
+    const rolePerms = schemeRoles[roleKey] || [];
+    const perm = rolePerms.find(p => p.label === permissionLabel);
+    return perm ? perm.active : false;
+  };
 
   const addMember = (memberData: {
     name: string;
@@ -483,6 +612,7 @@ export function useSmartLotStore() {
   };
 
   return {
+    schemes,
     activeScheme,
     setActiveScheme,
     activePersona,
@@ -492,6 +622,7 @@ export function useSmartLotStore() {
     isLoggedIn,
     setIsLoggedIn,
     members,
+    setMembers,
     residentRequests,
     cases: residentRequests,
     motions: [],
@@ -507,6 +638,11 @@ export function useSmartLotStore() {
     addCommentToRequest,
     addResidentToUnit,
     offboardActor,
+    addScheme,
+    deleteScheme,
+    togglePermission,
+    hasPermission,
+    rolePermissions,
     submitCase: submitResidentRequest,
     triageCase: triageRequest,
     castBallot: () => {},
