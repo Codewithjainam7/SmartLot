@@ -10,43 +10,57 @@
 }
 @font-face {
   font-family: "Acorn";
-  src: url("/fonts/Acorn-ExtraLight.otf") format("opentype");
+  src: url("/fonts/Acorn-Thin.otf") format("opentype");
   font-weight: 200;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Acorn";
-  src: url("/fonts/Acorn-Light.otf") format("opentype");
+  src: url("/fonts/Acorn-ExtraLight.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Acorn";
+  src: url("/fonts/Acorn-Light.otf") format("opentype");
+  font-weight: 400; /* Map Light to 400 (Regular text) for cleaner body copy */
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
   src: url("/fonts/Acorn-Regular.otf") format("opentype");
-  font-weight: 400;
+  font-weight: 500; /* Map Regular to 500 (Medium text) */
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Acorn";
   src: url("/fonts/Acorn-Medium.otf") format("opentype");
-  font-weight: 500;
+  font-weight: 600; /* Map Medium to 600 (SemiBold text) */
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Acorn";
   src: url("/fonts/Acorn-SemiBold.otf") format("opentype");
-  font-weight: 600;
+  font-weight: 700; /* Map SemiBold to 700 (Bold text) for readable titles */
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Acorn";
   src: url("/fonts/Acorn-Bold.otf") format("opentype");
-  font-weight: 700;
+  font-weight: 800; /* Map Bold to 800 */
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Acorn";
+  src: url("/fonts/Acorn-Bold.otf") format("opentype");
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -57,29 +71,49 @@
 
 body {
   font-family: "Acorn", ui-sans-serif, system-ui, sans-serif;
-  /* Acorn typography tuning — open spacing for legibility */
-  letter-spacing: 0.02em;
-  line-height: 1.6;
+  /* Acorn typography tuning — open spacing and light weight for legibility */
+  letter-spacing: 0.04em;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
-/* Headings — slightly open tracking */
+/* Headings — open tracking to prevent characters from bleeding */
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: 0.01em;
-  line-height: 1.25;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
 }
 
-/* Small labels, badges, caps — a little more air */
-.text-xs, .text-\[10px\], .text-\[11px\] {
-  letter-spacing: 0.03em;
+/* Small labels, badges, caps — high tracking for extreme clarity */
+.text-xs, .text-\[10px\], .text-\[11px\], .text-sm {
+  letter-spacing: 0.06em;
 }
 
 /* Inputs, Textareas, Buttons */
 input, textarea, select, button {
   font-family: "Acorn", ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+}
+
+/* Override Tailwind letter-spacing classes specifically for Acorn font */
+.tracking-tighter {
+  letter-spacing: 0.01em !important;
+}
+.tracking-tight {
+  letter-spacing: 0.03em !important;
+}
+.tracking-normal {
+  letter-spacing: 0.04em !important;
+}
+.tracking-wide {
+  letter-spacing: 0.06em !important;
+}
+.tracking-wider {
+  letter-spacing: 0.08em !important;
+}
+.tracking-widest {
+  letter-spacing: 0.14em !important;
 }
 
 /* Global Custom Scrollbar System */
