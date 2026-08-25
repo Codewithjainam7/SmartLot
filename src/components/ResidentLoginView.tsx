@@ -19,39 +19,25 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
   const [fullName, setFullName] = useState('Mike Davies');
   const [unitNo, setUnitNo] = useState('Unit 10');
 
-  // Site creation fields
-  const [createSite, setCreateSite] = useState(false);
-  const [newSiteName, setNewSiteName] = useState('Sunset Duplex');
-  const [newSiteId, setNewSiteId] = useState('SP101');
-  const [newSiteLots, setNewSiteLots] = useState(2);
+
 
   const handleQuickFill = (persona: 'sarah' | 'michael' | 'emma') => {
     setAuthMode('signup');
-    setCreateSite(true);
     if (persona === 'sarah') {
       setFullName('Sarah Jones');
       setEmail('sarah.jones@duplex.com');
       setSelectedRole('Strata Admin');
       setUnitNo('Unit 1');
-      setNewSiteName('Sunset Duplex');
-      setNewSiteId('SP101');
-      setNewSiteLots(2);
     } else if (persona === 'michael') {
       setFullName('Michael Chen');
       setEmail('michael.chen@coronation.com');
       setSelectedRole('Strata Admin');
       setUnitNo('Unit 3');
-      setNewSiteName('Coronation Townhouses');
-      setNewSiteId('SP102');
-      setNewSiteLots(4);
     } else if (persona === 'emma') {
       setFullName('Emma Wilson');
       setEmail('emma.wilson@cavaller.com');
       setSelectedRole('Strata Manager');
       setUnitNo('Cavaller HQ');
-      setNewSiteName('Cavaller Apartments');
-      setNewSiteId('SP103');
-      setNewSiteLots(32);
     }
   };
 
@@ -60,8 +46,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
     if (authMode === 'signup') {
       onLoginSuccess(
         selectedRole, 
-        fullName,
-        createSite ? { id: newSiteId, name: newSiteName, lots: Number(newSiteLots) } : undefined
+        fullName
       );
     } else {
       // Simulate standard login fills
@@ -204,55 +189,6 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                   </div>
                 </div>
 
-                {/* Site Creation Option */}
-                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200/80 space-y-3">
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                    <input 
-                      type="checkbox" 
-                      checked={createSite} 
-                      onChange={e => setCreateSite(e.target.checked)}
-                      className="rounded border-gray-300 text-[#121316] focus:ring-black"
-                    />
-                    <span className="text-xs font-bold text-gray-900 flex items-center gap-1">
-                      <Plus size={14} className="text-[#8B8CF8]" /> Create a new Strata Site / Scheme
-                    </span>
-                  </label>
-
-                  {createSite && (
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200/60">
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Scheme Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={newSiteName}
-                          onChange={e => setNewSiteName(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs outline-none font-bold text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Plan ID (e.g. SP101)</label>
-                        <input
-                          type="text"
-                          required
-                          value={newSiteId}
-                          onChange={e => setNewSiteId(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs outline-none font-bold text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Lots Count</label>
-                        <input
-                          type="number"
-                          required
-                          value={newSiteLots}
-                          onChange={e => setNewSiteLots(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs outline-none font-bold text-gray-900"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
               </>
             )}
 

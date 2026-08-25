@@ -11,6 +11,7 @@ import {
   UserCheck, 
   Sparkles 
 } from 'lucide-react';
+import { useSmartLotStore } from '../store/smartLotStore';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -18,7 +19,25 @@ interface OnboardingModalProps {
 }
 
 export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
+  const store = useSmartLotStore();
   const [selectedPath, setSelectedPath] = useState<'A' | 'B' | 'C'>('A');
+
+  // Dynamic Site Creation fields under Path A
+  const [schemeName, setSchemeName] = useState('Sunset Duplex');
+  const [schemeId, setSchemeId] = useState('SP101');
+  const [lotsCount, setLotsCount] = useState(2);
+
+  const handleComplete = () => {
+    if (selectedPath === 'A') {
+      const existing = store.schemes.find(s => s.id === schemeId);
+      let scheme = existing;
+      if (!existing) {
+        scheme = store.addScheme(schemeId, `${schemeId} - ${schemeName}`, lotsCount);
+      }
+      store.setActiveScheme(scheme);
+    }
+    onClose();
+  };
 
   return (
     <AnimatePresence>
@@ -78,7 +97,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                   Path A
                 </div>
                 <div>
-                  <h3 className="font-bold text-base">Self-Service Committee Freemium</h3>
+                  <h3 className="font-bold text-base">Self-Service Committee</h3>
                   <p className={`text-xs mt-1 ${selectedPath === 'A' ? 'text-gray-300' : 'text-gray-500'}`}>
                     1 Committee Member signs up, provisions scheme SP10482, and generates instant occupant invite links.
                   </p>
@@ -133,12 +152,48 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
             </div>
 
+            {/* Scheme Details Customization Form for Path A */}
+            {selectedPath === 'A' && (
+              <div className="bg-[#F4F6F9] p-5 rounded-2xl border border-gray-200 space-y-3">
+                <h4 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Provision Sunset Duplex or New Strata Site</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 mb-1">Scheme Name</label>
+                    <input
+                      type="text"
+                      value={schemeName}
+                      onChange={e => setSchemeName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 mb-1">Plan ID (e.g. SP101)</label>
+                    <input
+                      type="text"
+                      value={schemeId}
+                      onChange={e => setSchemeId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 mb-1">Lots Count</label>
+                    <input
+                      type="number"
+                      value={lotsCount}
+                      onChange={e => setLotsCount(Number(e.target.value))}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none text-gray-900"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Selected Pathway Live Simulation Details */}
             <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Universal Join Link Format</span>
                 <span className="text-xs font-mono font-bold text-[#8B8CF8] bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                  smartlot.io/join/SP10482
+                  smartlot.io/join/{schemeId}
                 </span>
               </div>
 
@@ -148,7 +203,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                     <Key size={16} className="text-[#8B8CF8]" /> Automatic Scheme Isolation
                   </div>
                   <p className="text-gray-500 leading-relaxed">
-                    Every member joining via SP10482 link automatically inherits universal scheme context restrictions.
+                    Every member joining via {schemeId} link automatically inherits universal scheme context restrictions.
                   </p>
                 </div>
 
@@ -174,7 +229,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
               </button>
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleComplete}
                 className="bg-[#121316] hover:bg-black text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md hover:scale-105 transition-all cursor-pointer"
               >
                 <Sparkles size={16} className="text-[#D8F235]" /> Complete Pathway Simulation

@@ -75,9 +75,11 @@ export default function App() {
     }
 
     const personaId = name.toLowerCase().replace(/\s+/g, '_');
+    // Anyone creating a new site automatically becomes Strata Admin
+    const userRole = siteInfo ? 'Strata Admin' : role;
     const newPersona = {
       id: personaId,
-      role: role,
+      role: userRole,
       name: name,
       context: siteInfo ? `Unit 1 (${siteInfo.name})` : 'Unit 10',
     };
