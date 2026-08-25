@@ -145,18 +145,9 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
         {/* Right Form Panel */}
         <div className="flex-1 p-10 flex flex-col justify-center max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onBack}
-                className="text-xs font-bold text-gray-500 hover:text-black flex items-center gap-1 hover:bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm transition-all cursor-pointer mr-2"
-              >
-                ← Back
-              </button>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {authMode === 'signin' ? 'Sign In' : 'Create Account'}
-              </h2>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {authMode === 'signin' ? 'Sign In to SmartLot' : 'Create Account'}
+            </h2>
 
             <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-bold shrink-0">
               <button
@@ -298,6 +289,14 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
             >
               <span>{authMode === 'signin' ? `Log In as ${selectedRole}` : `Create ${selectedRole} Account`}</span>
               <ArrowRight size={18} className="text-[#D8F235]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={onBack}
+              className="w-full text-gray-500 hover:text-black hover:bg-gray-100 border border-gray-200 shadow-sm py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-3"
+            >
+              ← Back to Home Page
             </button>
           </form>
 

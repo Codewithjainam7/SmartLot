@@ -28,12 +28,6 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => onSelectPersona('web_admin')} 
-            className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-black hover:bg-gray-100 rounded-full transition-all cursor-pointer"
-          >
-            Admin Panel
-          </button>
-          <button 
             onClick={() => onSelectPersona('guest')}
             className="bg-[#121316] hover:bg-black text-[#D8F235] hover:text-white px-5 py-2 rounded-full font-bold text-xs shadow-md transition-all cursor-pointer"
           >

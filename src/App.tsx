@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -28,11 +28,25 @@ export default function App() {
   // Pre-fill parameters when redirecting from landing page simulating a persona
   const [prefillPersona, setPrefillPersona] = useState<string | null>(null);
 
+  // Separate Admin console hash router trigger
+  useEffect(() => {
+    const checkHash = () => {
+      if (window.location.hash === '#/admin') {
+        setSessionState('admin_console');
+      } else if (sessionState === 'admin_console') {
+        setSessionState('landing');
+      }
+    };
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, [sessionState]);
+
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
   const handleSelectPersona = (personaId: string) => {
     if (personaId === 'web_admin') {
-      setSessionState('admin_console');
+      window.location.hash = '#/admin';
     } else if (personaId === 'guest') {
       setPrefillPersona(null);
       setSessionState('login');
@@ -109,7 +123,10 @@ export default function App() {
       <AdminView 
         members={store.members}
         schemes={store.schemes}
-        onBackToLanding={() => setSessionState('landing')}
+        onBackToLanding={() => {
+          window.location.hash = '';
+          setSessionState('landing');
+        }}
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
       />
@@ -120,7 +137,10 @@ export default function App() {
     return (
       <ResidentLoginView 
         onLoginSuccess={handleLoginSuccess} 
-        onAdminLogin={() => setSessionState('admin_console')}
+        onAdminLogin={() => {
+          window.location.hash = '#/admin';
+          setSessionState('admin_console');
+        }}
         onBack={() => setSessionState('landing')}
       />
     );
