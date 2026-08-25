@@ -192,6 +192,7 @@ export default function App() {
           }
           activePersona={store.activePersona}
           setActivePersona={store.setActivePersona}
+          onAddSchemeClick={() => setShowOnboarding(true)}
         />
         
         {/* Dynamic View Rendering */}
@@ -249,16 +250,6 @@ export default function App() {
 
         </div>
         
-        {/* Floating CTA Pill Button for Scheme Setup */}
-        {(store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager')) && (
-          <button
-            onClick={() => setShowOnboarding(true)}
-            className="fixed bottom-8 right-8 bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-full shadow-2xl font-bold text-sm flex items-center gap-2.5 transition-all hover:scale-105 z-30 border border-white/10 cursor-pointer"
-          >
-            <span className="w-6 h-6 rounded-full bg-[#D8F235] text-[#121316] flex items-center justify-center font-bold text-base leading-none pb-0.5">+</span>
-            <span>New Scheme Setup</span>
-          </button>
-        )}
       </div>
 
       {/* Onboarding Provisioning Modal */}

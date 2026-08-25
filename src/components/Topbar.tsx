@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, UserCircle, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Building2, UserCircle, ChevronDown, CheckCircle2, Plus } from 'lucide-react';
 import { Persona, Scheme } from '../types';
 
 interface TopbarProps {
@@ -9,6 +9,7 @@ interface TopbarProps {
   personas: Persona[];
   activePersona: Persona;
   setActivePersona: (persona: Persona) => void;
+  onAddSchemeClick: () => void;
 }
 
 export function Topbar({ 
@@ -17,7 +18,8 @@ export function Topbar({
   setActiveScheme, 
   personas, 
   activePersona, 
-  setActivePersona 
+  setActivePersona,
+  onAddSchemeClick
 }: TopbarProps) {
   return (
     <div className="h-20 bg-white/50 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 sticky top-0 z-20">
@@ -47,6 +49,17 @@ export function Topbar({
                   <div className="text-xs text-gray-500">{scheme.lots} Lots - {scheme.name.split('-')[1]?.trim() || scheme.name}</div>
                 </button>
               ))}
+
+              <div className="border-t border-gray-100 pt-1.5 mt-1.5">
+                <button
+                  type="button"
+                  onClick={onAddSchemeClick}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#8B8CF8] hover:bg-[#8B8CF8]/5 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus size={14} />
+                  Add New Strata Site
+                </button>
+              </div>
             </div>
           </div>
         </div>
