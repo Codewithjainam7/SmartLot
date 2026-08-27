@@ -8,6 +8,7 @@ import {
   UserCheck,
   FileText
 } from 'lucide-react';
+import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SidebarProps {
   activeView: 'dashboard' | 'user_management' | 'requests' | 'triage';
@@ -44,16 +45,7 @@ export function Sidebar({
           onClick={onLogout}
           title="Back to Landing Page"
         >
-          <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00D4B2" />
-            <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-            <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-          </svg>
-          {!isCollapsed && (
-            <span className="text-xl font-bold tracking-tight whitespace-nowrap">
-              SmartLot
-            </span>
-          )}
+          <SmartLotLogo className="h-8" iconOnly={isCollapsed} textColor="text-white" />
         </div>
 
         <button 

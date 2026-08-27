@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Building, User, Users, ShieldCheck, ArrowRight, Key, Mail, Lock, Plus } from 'lucide-react';
+import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface ResidentLoginViewProps {
   onLoginSuccess: (
@@ -66,22 +67,15 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
         {/* Left Visual Branding Panel */}
         <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10 space-y-6">
-            <svg 
+            <div 
               onClick={onBack}
-              className="w-12 h-12 shrink-0 cursor-pointer hover:scale-105 transition-all" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
+              className="cursor-pointer hover:scale-102 transition-all"
               title="Back to Landing Page"
             >
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00D4B2" />
-              <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-              <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-            </svg>
+              <SmartLotLogo className="h-12" textColor="text-white" />
+            </div>
 
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#00D4B2]">SmartLot Strata</span>
-              <h1 className="text-3xl font-bold tracking-tight mt-1">Strata Portal</h1>
               <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                 Log service requests, manage scheme members, assign role permissions, and vote on community decisions.
               </p>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Building2, Shield, Users, Layers, Layout, ArrowRight, CheckCircle2, ShieldCheck, HelpCircle, Activity, Globe, Scale } from 'lucide-react';
 import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
+import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface LandingPageViewProps {
   onSelectPersona: (personaId: 'sarah_jones' | 'michael_chen' | 'emma_wilson' | 'web_admin' | 'guest') => void;
@@ -52,17 +53,14 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
       {/* Decorative Blur Backgrounds */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-[#0055FF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
+ 
       {/* Floating Premium Capsule Navbar (Light Theme) */}
       <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl bg-white/80 backdrop-blur-xl border border-gray-200 rounded-full px-8 py-4 flex items-center justify-between shadow-lg z-50">
         <div 
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center cursor-pointer group"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <div className="w-8 h-8 rounded-xl bg-[#0B1121] flex items-center justify-center text-[#00D4B2] font-black shadow-lg">
-            S
-          </div>
-          <span className="text-lg font-black tracking-tight text-gray-900 group-hover:text-[#0055FF] transition-colors">SmartLot</span>
+          <SmartLotLogo className="h-8" textColor="text-gray-900" />
         </div>
         
         <nav className="hidden md:flex items-center gap-8 text-xs font-black uppercase tracking-widest text-gray-500">
