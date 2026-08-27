@@ -214,9 +214,10 @@ export default function App() {
           )}
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
-          {store.activeView === 'user_management' && store.hasPermission('Team Access & Invites') && (
+          {store.activeView === 'user_management' && store.hasPermission('Role & Permission Setup') && (
             <UserManagementView 
               members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
+              activePersonaName={store.activePersona.name}
               onAddMember={store.addMember}
               onUpdateStatus={store.updateMemberStatus}
               onDeleteMember={store.deleteMember}

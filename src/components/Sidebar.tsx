@@ -5,7 +5,8 @@ import {
   PanelLeftClose, 
   PanelLeftOpen,
   Wrench,
-  UserCheck
+  UserCheck,
+  FileText
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -84,7 +85,7 @@ export function Sidebar({
               onClick={() => setActiveView('dashboard')}
               isCollapsed={isCollapsed} 
             />
-            {hasPermission('Team Access & Invites') && (
+            {hasPermission('Role & Permission Setup') && (
               <NavItem 
                 icon={<Users size={18} />} 
                 label="Team Access" 
@@ -99,6 +100,13 @@ export function Sidebar({
               active={activeView === 'requests' || activeView === 'triage'} 
               onClick={() => setActiveView(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') ? 'triage' : 'requests')}
               badge={(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager')) && pendingTriageCount > 0 ? String(pendingTriageCount) : undefined}
+              isCollapsed={isCollapsed} 
+            />
+            <NavItem 
+              icon={<FileText size={18} />} 
+              label="Bylaws Library" 
+              active={false} 
+              onClick={() => alert("SmartLot Bylaws Library: Opening standard scheme by-laws...")}
               isCollapsed={isCollapsed} 
             />
           </div>
@@ -123,7 +131,7 @@ export function Sidebar({
             isCollapsed ? 'px-0' : 'px-4'
           }`}
         >
-          {!isCollapsed ? 'Log Out to Landing' : 'Exit'}
+          {!isCollapsed ? 'Log Out' : 'Exit'}
         </button>
       </div>
 

@@ -86,7 +86,6 @@ export function Topbar({
 
         {/* Quick Metrics */}
         <div className="hidden md:flex items-center gap-3">
-          <MetricPill label={`${activeScheme.lots} Total Lots`} />
           <MetricPill label={`${schemes.length} Active Schemes`} />
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#6EE7B7]/20 text-[#059669] text-xs font-semibold">
             <CheckCircle2 size={14} />
@@ -109,7 +108,7 @@ export function Topbar({
         </button>
 
         {/* Dropdown Menu */}
-        <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right">
           
           {/* Active Roles Selector */}
           {!activePersona.isSystemAdmin && activeRoles.length > 0 && setActiveRoles && (

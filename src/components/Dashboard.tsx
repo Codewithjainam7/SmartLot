@@ -15,6 +15,7 @@ import {
   Settings, 
   ShieldCheck,
   Building,
+  Plus,
   X 
 } from 'lucide-react';
 
@@ -26,7 +27,7 @@ export function Dashboard({ store }: DashboardProps) {
   const activeScheme = store.activeScheme;
   const members = store.members.filter(m => m.schemeId === activeScheme.id);
   const pendingRequests = store.residentRequests.filter(r => r.status === 'pending_triage');
-  const vacantCount = store.units.filter(u => u.status === 'Vacant').length;
+  const vacantCount = store.units.filter((u: any) => u.status === 'Vacant' && u.schemeId === activeScheme.id).length;
 
   // Setup Popup states
   const [showSetupPopup, setShowSetupPopup] = useState(false);
@@ -154,6 +155,16 @@ export function Dashboard({ store }: DashboardProps) {
               </div>
             )}
           </div>
+
+          {/* Quick Invite CTA inside Directory */}
+          {store.hasPermission('Role & Permission Setup') && (
+            <button
+              onClick={() => store.setActiveView('user_management')}
+              className="w-full mt-4 bg-[#121316] hover:bg-black text-[#D8F235] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#D8F235]/10"
+            >
+              <Plus size={14} /> Invite Occupant / Tenant
+            </button>
+          )}
         </div>
       </div>
 
@@ -181,6 +192,7 @@ export function Dashboard({ store }: DashboardProps) {
               title="Maintenance Request"
               desc="Lisa Ray reported a leaking tap in the kitchen."
               time="Yesterday"
+              hasAssignPermission={store.hasPermission('Assign Selected Vendor')}
             />
             <FeedItem 
               type="system"
@@ -195,67 +207,89 @@ export function Dashboard({ store }: DashboardProps) {
       {/* Column 3: Right Action Column */}
       <div className="lg:col-span-3 space-y-6">
         
-        {/* Lavender Card - Scheme Summary */}
-        <div className="bg-gradient-to-br from-[#A5B4FC] to-[#8B8CF8] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-20">
-            <ShieldCheck size={64} />
-          </div>
-          <div className="relative z-10">
-            <div className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Financial Health</div>
-            <h3 className="text-2xl font-bold mb-4">$42,500</h3>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-white/90">Admin Fund</span>
-                <span className="font-semibold">$12,000</span>
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-1.5">
-                <div className="bg-white h-1.5 rounded-full" style={{ width: '40%' }}></div>
+        {/* Lavender Card - Scheme Summary (Financial Health) - Gated */}
+        {store.hasPermission('View & Compare Quotes') && (
+          <div className="bg-gradient-to-br from-[#A5B4FC] to-[#8B8CF8] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-20">
+              <ShieldCheck size={64} />
+            </div>
+            <div className="relative z-10">
+              <div className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Financial Health</div>
+              <h3 className="text-2xl font-bold mb-4">$42,500</h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-white/90">Admin Fund</span>
+                  <span className="font-semibold">$12,000</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-1.5">
+                  <div className="bg-white h-1.5 rounded-full" style={{ width: '40%' }}></div>
+                </div>
+                
+                <div className="flex justify-between items-center text-sm pt-2">
+                  <span className="text-white/90">Capital Works</span>
+                  <span className="font-semibold">$30,500</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-1.5">
+                  <div className="bg-white h-1.5 rounded-full" style={{ width: '70%' }}></div>
+                </div>
               </div>
               
-              <div className="flex justify-between items-center text-sm pt-2">
-                <span className="text-white/90">Capital Works</span>
-                <span className="font-semibold">$30,500</span>
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-1.5">
-                <div className="bg-white h-1.5 rounded-full" style={{ width: '70%' }}></div>
-              </div>
+              <button className="w-full mt-6 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                View Reports
+              </button>
             </div>
-            
-            <button className="w-full mt-6 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
-              View Reports
-            </button>
           </div>
-        </div>
+        )}
 
         {/* Electric Lime Card - Quick Action */}
-        <div className="bg-[#D8F235] rounded-3xl p-6 shadow-md border border-[#c4db30]">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#121316] text-[#D8F235] flex items-center justify-center">
-              <Zap size={20} />
+        {vacantCount > 0 && (
+          <div className="bg-[#D8F235] rounded-3xl p-6 shadow-md border border-[#c4db30]">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-10 h-10 rounded-full bg-[#121316] text-[#D8F235] flex items-center justify-center">
+                <Zap size={20} />
+              </div>
+              <span className="bg-[#121316]/10 text-[#121316] text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                Action Required
+              </span>
             </div>
-            <span className="bg-[#121316]/10 text-[#121316] text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
-              Action Required
-            </span>
-          </div>
-          <h3 className="text-lg font-bold text-[#121316] mb-2 leading-tight">Missing Resident Registrations</h3>
-          <p className="text-sm text-[#121316]/70 mb-6 font-medium">
-            {vacantCount} {vacantCount === 1 ? 'unit has' : 'units have'} not completed profile setup.
-          </p>
-          
-          <div className="bg-white/50 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between border border-[#121316]/10 mb-4">
-            <span className="text-xs font-semibold text-[#121316] truncate">
-              {activeScheme.id === 'NO_SCHEME' ? 'smartlot.io/register' : `smartlot.io/join/${activeScheme.id}`}
-            </span>
-            <button className="text-[#121316] hover:bg-white/50 p-1.5 rounded-lg transition-colors">
-              <Share2 size={16} />
+            <h3 className="text-lg font-bold text-[#121316] mb-2 leading-tight">Missing Resident Registrations</h3>
+            <p className="text-sm text-[#121316]/70 mb-6 font-medium">
+              {vacantCount} {vacantCount === 1 ? 'unit has' : 'units have'} not completed profile setup.
+            </p>
+            
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between border border-[#121316]/10 mb-2">
+              <span className="text-xs font-semibold text-[#121316] truncate">
+                {activeScheme.id === 'NO_SCHEME' ? 'smartlot.io/register' : `smartlot.io/join/${activeScheme.id}`}
+              </span>
+              <button className="text-[#121316] hover:bg-white/50 p-1.5 rounded-lg transition-colors">
+                <Share2 size={16} />
+              </button>
+            </div>
+
+            {/* Quick Invite SMS / Email Toggles */}
+            {store.hasPermission('Role & Permission Setup') && (
+              <div className="grid grid-cols-2 gap-1.5 mb-4">
+                <button 
+                  onClick={() => alert('Invite sent via Email!')} 
+                  className="bg-white/20 hover:bg-white/35 text-[#121316] text-[10px] font-black py-2 rounded-xl border border-[#121316]/15 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                >
+                  <Mail size={11} /> Email Invite
+                </button>
+                <button 
+                  onClick={() => alert('Invite sent via SMS!')} 
+                  className="bg-white/20 hover:bg-white/35 text-[#121316] text-[10px] font-black py-2 rounded-xl border border-[#121316]/15 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                >
+                  <Phone size={11} /> SMS Invite
+                </button>
+              </div>
+            )}
+
+            <button className="w-full bg-[#121316] hover:bg-black text-white rounded-xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all">
+              Send Reminders <ArrowRight size={16} />
             </button>
           </div>
-
-          <button className="w-full bg-[#121316] hover:bg-black text-white rounded-xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all">
-            Send Reminders <ArrowRight size={16} />
-          </button>
-        </div>
+        )}
       </div>
 
       {/* 5-Second Strata Scheme Creation Popup */}
@@ -461,7 +495,7 @@ function WorklistItem({ unit, owner, active, alert }: { unit: string, owner: str
   );
 }
 
-function FeedItem({ type, title, desc, time }: { type: 'verified' | 'alert' | 'system', title: string, desc: string, time: string }) {
+function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'verified' | 'alert' | 'system', title: string, desc: string, time: string, hasAssignPermission?: boolean }) {
   const getIcon = () => {
     switch (type) {
       case 'verified': return <ShieldCheck size={14} className="text-[#059669]" />;
@@ -492,6 +526,15 @@ function FeedItem({ type, title, desc, time }: { type: 'verified' | 'alert' | 's
           </div>
           <h4 className="text-sm font-bold text-gray-900 mb-1">{title}</h4>
           <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+          
+          {type === 'alert' && hasAssignPermission && (
+            <button 
+              onClick={() => alert('Plumbing Specialist dispatched. Work Order #WO-105 created.')}
+              className="mt-3 w-full bg-[#121316] hover:bg-black text-[#D8F235] text-[10px] font-extrabold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#D8F235]/10"
+            >
+              <Zap size={11} /> Assign Service Provider
+            </button>
+          )}
         </div>
       </div>
     </div>

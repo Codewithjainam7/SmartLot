@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SCHEMES, PERSONAS, Scheme, Persona } from '../types';
 
 export type RequestStream = 
@@ -172,20 +172,71 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [];
 
 const INITIAL_UNITS: UnitData[] = [];
 
+export const getDefaultPermissionsForRole = (role: string): { label: string; active: boolean; locked?: boolean }[] => {
+  const isManagerOrAdmin = role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager';
+  
+  return [
+    // 1. Service Requests
+    { label: 'Submit Request', active: role !== 'Service Provider', locked: isManagerOrAdmin },
+    { label: 'Add Comment on Request', active: true, locked: isManagerOrAdmin },
+    { label: 'View Requests', active: true, locked: isManagerOrAdmin },
+    { label: 'Review & Edit Request Fields', active: isManagerOrAdmin, locked: isManagerOrAdmin },
+    { label: 'Approve / Reject Requests', active: isManagerOrAdmin, locked: isManagerOrAdmin },
+    
+    // 2. Voting & Governance
+    { label: 'Create & Publish Motion', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin', locked: isManagerOrAdmin && role !== 'Building Manager' },
+    { label: 'Cast Vote', active: role === 'Committee Member' || role === 'Lot Owner' || role === 'Strata Admin', locked: role === 'Tenant' || role === 'Service Provider' },
+    { label: 'View Final Vote Results', active: role !== 'Service Provider' && role !== 'Tenant', locked: isManagerOrAdmin },
+    
+    // 3. Vendors & Quotes
+    { label: 'Request Quotes from Vendors', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager', locked: isManagerOrAdmin },
+    { label: 'Submit Quote', active: role === 'Service Provider', locked: role === 'Service Provider' },
+    { label: 'View & Compare Quotes', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager' || role === 'Committee Member', locked: isManagerOrAdmin },
+    { label: 'Assign Selected Vendor', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager', locked: isManagerOrAdmin },
+    
+    // 4. Work Orders
+    { label: 'Upload PO / Begin Task', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager', locked: isManagerOrAdmin },
+    { label: 'Upload Completion Evidence', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager' || role === 'Service Provider', locked: isManagerOrAdmin },
+    { label: 'Mark Task Completed', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager' || role === 'Service Provider', locked: isManagerOrAdmin },
+    
+    // 5. System Settings
+    { label: 'Role & Permission Setup', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin', locked: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' },
+    { label: 'Module Access Control', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin', locked: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' }
+  ];
+};
+
+function usePersistedState<T>(key: string, defaultValue: T | (() => T)): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      if (item) return JSON.parse(item);
+    } catch (error) {
+      console.error(error);
+    }
+    return defaultValue instanceof Function ? defaultValue() : defaultValue;
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(state));
+  }, [key, state]);
+
+  return [state, setState];
+}
+
 export function useSmartLotStore() {
-  const [schemes, setSchemes] = useState<Scheme[]>(SCHEMES);
-  const [activeScheme, setActiveScheme] = useState<Scheme>(
+  const [schemes, setSchemes] = usePersistedState<Scheme[]>('smartlot_schemes', SCHEMES);
+  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>('smartlot_activeScheme',
     SCHEMES.length > 0 
       ? SCHEMES[0] 
       : { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
   );
-  const [activePersona, setActivePersona] = useState<Persona>(PERSONAS[1]); // Default to Strata Manager Alex Vance
-  const [activeRoles, setActiveRoles] = useState<string[]>(['Strata Manager']);
-  const [activeView, setActiveView] = useState<'dashboard' | 'user_management' | 'requests' | 'triage'>('dashboard');
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
-  const [residentRequests, setResidentRequests] = useState<ResidentRequest[]>(INITIAL_RESIDENT_REQUESTS);
-  const [units, setUnits] = useState<UnitData[]>(INITIAL_UNITS);
+  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona', PERSONAS[1]); // Default to Strata Manager Alex Vance
+  const [activeRoles, setActiveRoles] = usePersistedState<string[]>('smartlot_activeRoles', ['Strata Manager']);
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage'>('smartlot_activeView', 'dashboard');
+  const [isLoggedIn, setIsLoggedIn] = usePersistedState('smartlot_isLoggedIn', true);
+  const [members, setMembers] = usePersistedState<Member[]>('smartlot_members', INITIAL_MEMBERS);
+  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>('smartlot_residentRequests', INITIAL_RESIDENT_REQUESTS);
+  const [units, setUnits] = usePersistedState<UnitData[]>('smartlot_units', INITIAL_UNITS);
 
   useEffect(() => {
     if (!activePersona) return;
@@ -310,39 +361,20 @@ export function useSmartLotStore() {
 
 
   // Initialize permissions list for all roles in all schemes
-  const [rolePermissions, setRolePermissions] = useState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>({
-    'SP10482': {
-      'Strata Manager': [
-        { label: 'Noticeboard Access', active: true, locked: true },
-        { label: 'Maintenance Logging', active: true, locked: true },
-        { label: 'Voting Rights (Ballots)', active: true, locked: true },
-        { label: 'Team Access & Invites', active: true, locked: true },
-      ],
-      'Committee Member': [
-        { label: 'Noticeboard Access', active: true },
-        { label: 'Maintenance Logging', active: true },
-        { label: 'Voting Rights (Ballots)', active: true },
-        { label: 'Team Access & Invites', active: false },
-      ],
-      'Lot Owner': [
-        { label: 'Noticeboard Access', active: true },
-        { label: 'Maintenance Logging', active: true },
-        { label: 'Voting Rights (Ballots)', active: true },
-        { label: 'Team Access & Invites', active: false },
-      ],
-      'Resident': [
-        { label: 'Noticeboard Access', active: true },
-        { label: 'Maintenance Logging', active: true },
-        { label: 'Voting Rights (Ballots)', active: false },
-        { label: 'Team Access & Invites', active: false, locked: true },
-      ],
-      'Tenant': [
-        { label: 'Noticeboard Access', active: true },
-        { label: 'Maintenance Logging', active: true },
-        { label: 'Voting Rights (Ballots)', active: false },
-        { label: 'Team Access & Invites', active: false, locked: true },
-      ],
-    }
+  const [rolePermissions, setRolePermissions] = usePersistedState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>('smartlot_rolePermissions', () => {
+    const initialPerms: Record<string, { label: string; active: boolean; locked?: boolean }[]> = {};
+    ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'].forEach(role => {
+      initialPerms[role] = getDefaultPermissionsForRole(role);
+    });
+    
+    const result: Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>> = {};
+    SCHEMES.forEach(s => {
+      result[s.id] = initialPerms;
+    });
+    // Fallback if somehow empty
+    result['SP10482'] = initialPerms;
+    result['SP101'] = initialPerms;
+    return result;
   });
 
   const addScheme = (id: string, name: string, lots: number) => {
@@ -350,40 +382,14 @@ export function useSmartLotStore() {
     setSchemes(prev => [...prev, newScheme]);
     
     // Auto-initialize permissions for the new scheme
+    const schemePerms: Record<string, { label: string; active: boolean; locked?: boolean }[]> = {};
+    ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'].forEach(role => {
+      schemePerms[role] = getDefaultPermissionsForRole(role);
+    });
+
     setRolePermissions(prev => ({
       ...prev,
-      [id]: {
-        'Strata Manager': [
-          { label: 'Noticeboard Access', active: true, locked: true },
-          { label: 'Maintenance Logging', active: true, locked: true },
-          { label: 'Voting Rights (Ballots)', active: true, locked: true },
-          { label: 'Team Access & Invites', active: true, locked: true },
-        ],
-        'Committee Member': [
-          { label: 'Noticeboard Access', active: true },
-          { label: 'Maintenance Logging', active: true },
-          { label: 'Voting Rights (Ballots)', active: true },
-          { label: 'Team Access & Invites', active: false },
-        ],
-        'Lot Owner': [
-          { label: 'Noticeboard Access', active: true },
-          { label: 'Maintenance Logging', active: true },
-          { label: 'Voting Rights (Ballots)', active: true },
-          { label: 'Team Access & Invites', active: false },
-        ],
-        'Resident': [
-          { label: 'Noticeboard Access', active: true },
-          { label: 'Maintenance Logging', active: true },
-          { label: 'Voting Rights (Ballots)', active: false },
-          { label: 'Team Access & Invites', active: false, locked: true },
-        ],
-        'Tenant': [
-          { label: 'Noticeboard Access', active: true },
-          { label: 'Maintenance Logging', active: true },
-          { label: 'Voting Rights (Ballots)', active: false },
-          { label: 'Team Access & Invites', active: false, locked: true },
-        ],
-      }
+      [id]: schemePerms
     }));
 
     // Auto-initialize units roster for the new scheme
@@ -422,29 +428,34 @@ export function useSmartLotStore() {
   };
 
   const hasPermission = (permissionLabel: string) => {
-    if (activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator' || activePersona.isSystemAdmin) {
+    // Platform super admins always bypass
+    if (activePersona.isSystemAdmin || activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator') {
       return true;
     }
 
-    // Strata Admin / Strata Manager (by design, always has full permissions)
-    if (activeRoles.some(r => r.includes('Admin') || r.includes('Manager') || r.includes('Strata Admin'))) {
-      return true;
+    // Fetch the permissions configuration for the active scheme
+    const schemeRoles = rolePermissions[activeScheme.id];
+    if (!schemeRoles) {
+      // Fallback if scheme isn't registered/setup yet: check default matrix
+      return activeRoles.some(r => {
+        const defaultPerms = getDefaultPermissionsForRole(r);
+        return defaultPerms.some(p => p.label === permissionLabel && p.active);
+      });
     }
 
-    // Standard lookup
-    const schemeRoles = rolePermissions[activeScheme.id] || {};
-    
-    // Map active roles to Member Roles and check if any active role has permission
+    // Check if any of the user's active roles has the permission set to active
     return activeRoles.some(r => {
-      let roleKey = 'Resident';
-      if (r.includes('Committee')) roleKey = 'Committee Member';
-      else if (r.includes('Owner')) roleKey = 'Lot Owner';
-      else if (r.includes('Tenant')) roleKey = 'Tenant';
-      else if (r.includes('Resident')) roleKey = 'Resident';
+      // Map checkable display roles back to rolePermissions key
+      let roleKey = r;
+      if (r === 'Committee Member Admin') roleKey = 'Committee Member';
+      else if (r === 'Strata Manager Admin') roleKey = 'Strata Manager';
+      else if (r === 'Off-Site Lot Owner') roleKey = 'Lot Owner';
+      else if (r === 'On-Site Resident') roleKey = 'Resident';
+      else if (r === 'Real Estate Property Manager') roleKey = 'Service Provider';
 
       const rolePerms = schemeRoles[roleKey] || [];
-      const perm = rolePerms.find(p => p.label === permissionLabel);
-      return perm ? perm.active : false;
+      const permObj = rolePerms.find(p => p.label === permissionLabel);
+      return permObj ? permObj.active : false;
     });
   };
 
@@ -558,32 +569,84 @@ export function useSmartLotStore() {
     }));
   };
 
-  const addResidentToUnit = (unitId: string, name: string, email: string) => {
+  const updateUnitMetadata = (schemeId: string, unitId: string, entitlement: string, status: 'Occupied' | 'Vacant') => {
     setUnits(prev => prev.map(u => {
-      if (u.unitId !== unitId) return u;
-      const newActor: UnitActor = {
-        id: `ACT-${Date.now()}`,
-        role: 'On-Site Resident',
-        name,
-        email,
-        verified: true,
-        permissions: [
-          { label: 'Noticeboard Access', active: true },
-          { label: 'Maintenance Logging', active: true },
-        ],
-      };
-      return { ...u, actors: [...u.actors, newActor] };
+      if (u.schemeId !== schemeId || u.unitId !== unitId) return u;
+      return { ...u, entitlement, status };
     }));
   };
 
-  const offboardActor = (unitId: string, actorId: string) => {
+  const addResidentToUnit = (
+    schemeId: string, 
+    unitId: string, 
+    name: string, 
+    email: string, 
+    role: 'Lot Owner' | 'On-Site Resident' | 'Tenant' | 'Property Agent', 
+    phone?: string, 
+    agency?: string
+  ) => {
+    // 1. Add to units state
     setUnits(prev => prev.map(u => {
-      if (u.unitId !== unitId) return u;
+      if (u.schemeId !== schemeId || u.unitId !== unitId) return u;
+      const newActor: UnitActor = {
+        id: `ACT-${Date.now()}`,
+        role,
+        name,
+        email,
+        phone,
+        agency,
+        verified: true,
+        permissions: [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: role !== 'Tenant' },
+        ],
+      };
+      return { ...u, status: 'Occupied', actors: [...u.actors, newActor] };
+    }));
+
+    // 2. Add to members state to sync roster
+    const memberRole = (role === 'On-Site Resident' ? 'Resident' : role) as MemberRole;
+    const lotNo = parseInt(unitId.replace(/\D/g, '')) || 1;
+    setMembers(prev => {
+      if (prev.some(m => m.email === email && m.schemeId === schemeId)) return prev;
+      return [
+        {
+          id: `MEM-${100 + prev.length + 1}`,
+          name,
+          email,
+          phone: phone || '0400 000 000',
+          schemeId,
+          role: memberRole,
+          unitId,
+          lotNumber: lotNo,
+          status: 'Active',
+          joinedAt: new Date().toISOString().split('T')[0],
+        },
+        ...prev
+      ];
+    });
+  };
+
+  const offboardActor = (schemeId: string, unitId: string, actorId: string) => {
+    let emailToOffboard = '';
+    
+    setUnits(prev => prev.map(u => {
+      if (u.schemeId !== schemeId || u.unitId !== unitId) return u;
+      const targetActor = u.actors.find(a => a.id === actorId);
+      if (targetActor) emailToOffboard = targetActor.email;
+      
+      const newActors = u.actors.filter(a => a.id !== actorId);
+      const newStatus = newActors.length === 0 ? 'Vacant' : u.status;
       return {
         ...u,
-        actors: u.actors.filter(a => a.id !== actorId),
+        status: newStatus,
+        actors: newActors,
       };
     }));
+
+    if (emailToOffboard) {
+      setMembers(prev => prev.filter(m => !(m.email === emailToOffboard && m.schemeId === schemeId)));
+    }
   };
 
   return {
@@ -613,6 +676,7 @@ export function useSmartLotStore() {
     addCommentToRequest,
     addResidentToUnit,
     offboardActor,
+    updateUnitMetadata,
     addScheme,
     deleteScheme,
     togglePermission,
