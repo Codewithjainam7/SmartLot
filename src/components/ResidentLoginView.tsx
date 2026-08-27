@@ -5,7 +5,7 @@ interface ResidentLoginViewProps {
   onLoginSuccess: (
     role: string, 
     name: string, 
-    siteInfo?: { id: string; name: string; lots: number }
+    siteInfo?: { id: string; name: string; lots: number; unit?: string }
   ) => void;
   onAdminLogin: () => void;
   onBack: () => void;
@@ -19,19 +19,17 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
   const [fullName, setFullName] = useState('Mike Davies');
   const [unitNo, setUnitNo] = useState('Unit 10');
 
-
-
   const handleQuickFill = (persona: 'sarah' | 'michael' | 'emma') => {
     setAuthMode('signup');
     if (persona === 'sarah') {
       setFullName('Sarah Jones');
       setEmail('sarah.jones@duplex.com');
-      setSelectedRole('Strata Admin');
+      setSelectedRole('Lot Owner');
       setUnitNo('Unit 1');
     } else if (persona === 'michael') {
       setFullName('Michael Chen');
       setEmail('michael.chen@coronation.com');
-      setSelectedRole('Strata Admin');
+      setSelectedRole('Lot Owner');
       setUnitNo('Unit 3');
     } else if (persona === 'emma') {
       setFullName('Emma Wilson');
@@ -45,8 +43,9 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
     e.preventDefault();
     if (authMode === 'signup') {
       onLoginSuccess(
-        selectedRole, 
-        fullName
+        selectedRole,
+        fullName,
+        { id: '', name: '', lots: 0, unit: unitNo }
       );
     } else {
       // Simulate standard login fills
@@ -165,31 +164,28 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
             </div>
 
             {authMode === 'signup' && (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={e => setFullName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1">Unit Number</label>
-                    <input
-                      type="text"
-                      required
-                      value={unitNo}
-                      onChange={e => setUnitNo(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-3 mb-4 animate-fade-in">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
+                  />
                 </div>
-
-              </>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Unit Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={unitNo}
+                    onChange={e => setUnitNo(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
+                  />
+                </div>
+              </div>
             )}
 
             <div>

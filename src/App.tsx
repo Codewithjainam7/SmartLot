@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
+import { PERSONAS, Persona } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { Dashboard } from './components/Dashboard';
@@ -9,7 +10,7 @@ import { OnboardingModal } from './components/OnboardingModal';
 // User Management & Requests Module Views
 import { UserManagementView } from './components/UserManagementView';
 import { ResidentLoginView } from './components/ResidentLoginView';
-import { ResidentDashboardView } from './components/ResidentDashboardView';
+
 import { CreateRequestModal } from './components/CreateRequestModal';
 import { ResidentRequestsView } from './components/ResidentRequestsView';
 
@@ -63,7 +64,7 @@ export default function App() {
     siteInfo?: { id: string; name: string; lots: number }
   ) => {
     let scheme = store.activeScheme;
-    if (siteInfo) {
+    if (siteInfo && siteInfo.id !== '') {
       // Check if scheme already exists
       const existing = store.schemes.find(s => s.id === siteInfo.id);
       if (existing) {
@@ -75,13 +76,27 @@ export default function App() {
     }
 
     const personaId = name.toLowerCase().replace(/\s+/g, '_');
+    const isFreshSignup = siteInfo && siteInfo.id === '';
+    
     // Anyone creating a new site automatically becomes Strata Admin
-    const userRole = siteInfo ? 'Strata Admin' : role;
+    const userRole = siteInfo ? (isFreshSignup ? role : 'Strata Admin') : role;
+
+    // Look up matching seeded persona to preserve their portfolio memberships
+    const seeded = !isFreshSignup ? PERSONAS.find(p => p.name.toLowerCase() === name.toLowerCase() || p.id === personaId) : null;
+    const memberships = seeded?.memberships || (isFreshSignup ? [] : [
+      {
+        schemeId: scheme.id,
+        roles: [userRole as any]
+      }
+    ]);
+
     const newPersona = {
       id: personaId,
       role: userRole,
       name: name,
-      context: siteInfo ? `Unit 1 (${siteInfo.name})` : 'Unit 10',
+      context: siteInfo ? (isFreshSignup ? 'Unit 10' : `Unit 1 (${siteInfo.name})`) : 'Unit 10',
+      email: seeded?.email || `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+      memberships
     };
 
     store.setActivePersona(newPersona);
@@ -182,35 +197,20 @@ export default function App() {
           schemes={store.schemes}
           activeScheme={store.activeScheme} 
           setActiveScheme={store.setActiveScheme}
-          personas={store.activePersona.name === 'Emma Wilson' 
-            ? [
-                store.activePersona,
-                { id: 'emma_coronation', role: 'Strata Manager', name: 'Emma Wilson', context: 'Coronation' },
-                { id: 'emma_cavaller', role: 'Strata Manager Admin', name: 'Emma Wilson', context: 'Cavaller' }
-              ]
-            : [store.activePersona]
-          }
+          personas={store.activePersona.role === 'Super Admin' || store.activePersona.role === 'Website Administrator' ? PERSONAS : PERSONAS}
           activePersona={store.activePersona}
           setActivePersona={store.setActivePersona}
           onAddSchemeClick={() => setShowOnboarding(true)}
+          activeRoles={store.activeRoles}
+          setActiveRoles={store.setActiveRoles}
         />
         
         {/* Dynamic View Rendering */}
         <div className="flex-1 overflow-hidden relative">
           
-          {/* Dashboard View */}
+           {/* Dashboard View */}
           {store.activeView === 'dashboard' && (
-            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager') || store.activePersona.role.includes('Super')) ? (
-              <Dashboard />
-            ) : (
-              <ResidentDashboardView 
-                requests={filteredRequests}
-                onNavigateToRequests={() => store.setActiveView('requests')}
-                onSubmitRequest={store.submitResidentRequest}
-                activePersonaName={store.activePersona.name}
-                activePersonaRole={store.activePersona.role}
-              />
-            )
+            <Dashboard store={store} />
           )}
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
@@ -253,7 +253,7 @@ export default function App() {
       </div>
 
       {/* Onboarding Provisioning Modal */}
-      <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} store={store} />
 
       {/* Backup Create Request Modal */}
       <CreateRequestModal 
@@ -264,7 +264,6 @@ export default function App() {
         requestorEmail={`${store.activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit10.com`}
         requestorPhone="0412 888 999"
       />
-
     </div>
   );
 }

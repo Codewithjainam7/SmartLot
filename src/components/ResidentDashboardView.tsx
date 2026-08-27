@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { ResidentRequest } from '../store/smartLotStore';
 import { 
   MorphingPopover, 
@@ -13,7 +14,10 @@ import {
   ArrowRight,
   User,
   Mail,
-  Home
+  Home,
+  Sparkles,
+  Building,
+  X
 } from 'lucide-react';
 
 interface ResidentDashboardViewProps {
@@ -23,6 +27,12 @@ interface ResidentDashboardViewProps {
   onSubmitRequest: (data: any) => void;
   activePersonaName: string;
   activePersonaRole: string;
+  activePersonaMemberships?: any[];
+  onAddScheme: (id: string, name: string, lots: number) => any;
+  setActiveScheme: (scheme: any) => void;
+  setActivePersona: (persona: any) => void;
+  schemes: any[];
+  setMembers?: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 export function ResidentDashboardView({
@@ -31,7 +41,114 @@ export function ResidentDashboardView({
   onSubmitRequest,
   activePersonaName,
   activePersonaRole,
+  activePersonaMemberships = [],
+  onAddScheme,
+  setActiveScheme,
+  setActivePersona,
+  schemes,
+  setMembers,
 }: ResidentDashboardViewProps) {
+  const [showSetupPopup, setShowSetupPopup] = useState(false);
+  const [buildingType, setBuildingType] = useState<'duplex' | 'townhouse' | 'apartment' | 'custom'>('duplex');
+  const [newSchemeId, setNewSchemeId] = useState('SP101');
+  const [newSchemeName, setNewSchemeName] = useState('Sunset Duplex');
+  const [newLotsCount, setNewLotsCount] = useState(2);
+
+  const handleBuildingTypeChange = (type: 'duplex' | 'townhouse' | 'apartment' | 'custom') => {
+    setBuildingType(type);
+    if (type === 'duplex') {
+      setNewSchemeId('SP101');
+      setNewSchemeName('Sunset Duplex');
+      setNewLotsCount(2);
+    } else if (type === 'townhouse') {
+      setNewSchemeId('SP102');
+      setNewSchemeName('Coronation Townhouses');
+      setNewLotsCount(4);
+    } else if (type === 'apartment') {
+      setNewSchemeId('SP103');
+      setNewSchemeName('Cavaller Apartments');
+      setNewLotsCount(32);
+    } else {
+      setNewSchemeId('SP104');
+      setNewSchemeName('My New Strata Scheme');
+      setNewLotsCount(8);
+    }
+  };
+
+  // Prefill setup details dynamically based on selected user name
+  useEffect(() => {
+    if (activePersonaName === 'Sarah Jones') {
+      handleBuildingTypeChange('duplex');
+    } else if (activePersonaName === 'Michael Chen') {
+      handleBuildingTypeChange('townhouse');
+    } else if (activePersonaName === 'Emma Wilson') {
+      handleBuildingTypeChange('apartment');
+    } else {
+      handleBuildingTypeChange('custom');
+    }
+  }, [activePersonaName]);
+
+  // Trigger popup after 5 seconds of mounting if the user has no scheme memberships linked
+  useEffect(() => {
+    const hasNoMemberships = !activePersonaMemberships || activePersonaMemberships.length === 0;
+
+    if (hasNoMemberships) {
+      const timer = setTimeout(() => {
+        setShowSetupPopup(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [activePersonaName, activePersonaMemberships]);
+
+  const handleCreateSchemeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // 1. Create the scheme in store
+    const createdScheme = onAddScheme(newSchemeId, newSchemeName, newLotsCount);
+    
+    // 2. Set active scheme
+    setActiveScheme(createdScheme);
+
+    // Determine target role assignment based on who setup the scheme
+    const assignRole = activePersonaName === 'Emma Wilson' ? 'Strata Manager' : 'Strata Admin';
+
+    // 3. Link memberships for activePersona
+    const memberships = [
+      {
+        schemeId: newSchemeId,
+        roles: [assignRole as any]
+      }
+    ];
+
+    setActivePersona((prev: any) => ({
+      ...prev,
+      role: assignRole,
+      memberships: memberships,
+      context: activePersonaName === 'Emma Wilson' ? 'Cavaller HQ' : `Unit 1 (${newSchemeName})`
+    }));
+
+    // 4. Register active user on the members roster
+    if (setMembers) {
+      setMembers(prev => [
+        {
+          id: `MEM-${100 + prev.length + 1}`,
+          name: activePersonaName,
+          email: `${activePersonaName.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+          phone: '0400 000 000',
+          schemeId: newSchemeId,
+          role: assignRole,
+          unitId: activePersonaName === 'Emma Wilson' ? 'Office' : 'Unit 1',
+          lotNumber: activePersonaName === 'Emma Wilson' ? 0 : 1,
+          status: 'Active',
+          joinedAt: new Date().toISOString().split('T')[0],
+        },
+        ...prev
+      ]);
+    }
+
+    setShowSetupPopup(false);
+  };
+
   const myRequests = requests.filter(r => r.requestorName === activePersonaName);
   const pendingCount = myRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
@@ -160,6 +277,172 @@ export function ResidentDashboardView({
           ))}
         </div>
       </div>
+
+      {/* 5-Second Strata Scheme Creation Popup */}
+      <AnimatePresence>
+        {showSetupPopup && (() => {
+          const info = (() => {
+            switch (buildingType) {
+              case 'duplex':
+                return {
+                  title: 'Setup Your Duplex Strata',
+                  subtitle: 'Duplex Strata (2 Lots)',
+                  desc: "Let's register your Sunset Duplex site details to activate Strata Admin features."
+                };
+              case 'townhouse':
+                return {
+                  title: 'Setup Your Townhouse Strata',
+                  subtitle: 'Townhouse Strata (4 Lots)',
+                  desc: "Let's register your Coronation Townhouses site details to activate Strata Admin features."
+                };
+              case 'apartment':
+                return {
+                  title: 'Setup Your Apartment Block Strata',
+                  subtitle: 'Apartment Strata (32 Lots)',
+                  desc: "Let's register your Cavaller Apartments site details to activate Strata Manager features."
+                };
+              default:
+                return {
+                  title: 'Setup Your Strata Scheme',
+                  subtitle: 'Custom Strata Scheme',
+                  desc: "Enter your building site details to activate Strata Administration features."
+                };
+            }
+          })();
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-[#121316]/75 backdrop-blur-md"
+                onClick={() => setShowSetupPopup(false)}
+              />
+
+              {/* Modal Box */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                className="bg-[#121316] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-6 overflow-hidden"
+              >
+                {/* Close Button */}
+                <button 
+                  type="button"
+                  onClick={() => setShowSetupPopup(false)}
+                  className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
+                >
+                  <X size={16} />
+                </button>
+
+                {/* Decorative Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#D8F235]/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="text-center space-y-2.5 relative z-10 pt-4">
+                  <div className="w-14 h-14 rounded-2xl bg-[#D8F235]/10 text-[#D8F235] flex items-center justify-center mx-auto border border-[#D8F235]/20 animate-pulse">
+                    <Building size={28} />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-extrabold text-[#D8F235] tracking-widest uppercase bg-[#D8F235]/10 px-2.5 py-0.5 rounded-full border border-[#D8F235]/25 inline-block">
+                      {info.subtitle}
+                    </span>
+                    <h3 className="text-2xl font-bold tracking-tight text-white mt-1">{info.title}</h3>
+                  </div>
+                  <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
+                    {info.desc}
+                  </p>
+                </div>
+
+                {/* Strata Option Selector */}
+                <div className="relative z-10">
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Australian Strata Classification</label>
+                  <div className="grid grid-cols-4 gap-1 bg-white/5 p-1 rounded-2xl border border-white/5 text-center relative z-0">
+                    {(['duplex', 'townhouse', 'apartment', 'custom'] as const).map(type => {
+                      const isActive = buildingType === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => handleBuildingTypeChange(type)}
+                          className={`relative py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer outline-none z-10 ${
+                            isActive ? 'text-[#121316]' : 'text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {isActive && (
+                            <motion.span
+                              layoutId="activeTabDashboardPopup"
+                              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                              className="absolute inset-0 bg-[#D8F235] rounded-xl -z-10 shadow-md"
+                            />
+                          )}
+                          {type}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <form onSubmit={handleCreateSchemeSubmit} className="space-y-4 relative z-10">
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Strata Scheme ID</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="e.g. SP101"
+                      value={newSchemeId}
+                      onChange={e => setNewSchemeId(e.target.value)}
+                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold focus:border-[#D8F235]/50 focus:bg-white/10 transition-all placeholder:text-gray-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Building/Site Name</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="e.g. Sunset Duplex"
+                      value={newSchemeName}
+                      onChange={e => setNewSchemeName(e.target.value)}
+                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold focus:border-[#D8F235]/50 focus:bg-white/10 transition-all placeholder:text-gray-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Unit Lots Size</label>
+                    <input 
+                      type="number"
+                      disabled={buildingType !== 'custom'}
+                      value={newLotsCount}
+                      onChange={e => setNewLotsCount(parseInt(e.target.value) || 2)}
+                      className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none font-bold transition-all ${
+                        buildingType !== 'custom'
+                          ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
+                          : 'border-white/10 bg-white/5 text-white focus:border-[#D8F235]/50 focus:bg-white/10'
+                      }`}
+                    />
+                    <span className="text-[10px] text-gray-500 mt-2 block">
+                      {buildingType !== 'custom'
+                        ? `Lots size is preset to ${newLotsCount} for this Australian strata template.`
+                        : 'Enter the total number of lots in this strata scheme.'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#D8F235] hover:bg-[#c8e02d] text-[#121316] py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#D8F235]/15 mt-4"
+                  >
+                    <span>Activate Strata Scheme</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
 
     </div>
   );

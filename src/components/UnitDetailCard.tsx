@@ -1,14 +1,61 @@
 import React, { useState } from 'react';
 import { Home, Phone, Mail, FileText, Settings, User, Building, Users, Key, ToggleLeft, ToggleRight, CheckCircle2 } from 'lucide-react';
+interface UnitDetailCardProps {
+  store: any;
+}
 
-export function UnitDetailCard() {
+export function UnitDetailCard({ store }: UnitDetailCardProps) {
+  const activeScheme = store.activeScheme;
+  const activeUnits = store.units.filter((u: any) => u.schemeId === activeScheme.id);
+
+  const [selectedUnitIndex, setSelectedUnitIndex] = useState(0);
+
+  if (activeUnits.length === 0 || activeScheme.id === 'NO_SCHEME') {
+    return (
+      <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center space-y-4 min-h-[350px]">
+        <div className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center">
+          <Home size={32} />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-gray-900">No Strata Units Registered</h3>
+          <p className="text-xs text-gray-400 max-w-xs mt-1">
+            Register your strata building scheme to populate and view unit matrix entries.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentUnit = activeUnits[selectedUnitIndex] || activeUnits[0];
+  const unitMembers = store.members.filter(m => m.schemeId === activeScheme.id && m.unitId === currentUnit.unitId);
+
   return (
     <div className="bg-white rounded-3xl p-1 overflow-hidden shadow-sm border border-gray-100">
+      
+      {/* Unit Selector Tabs */}
+      {activeUnits.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-gray-100 mb-2 px-4 pt-4">
+          {activeUnits.map((u, index) => (
+            <button
+              key={u.unitId}
+              onClick={() => setSelectedUnitIndex(index)}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                selectedUnitIndex === index 
+                  ? 'bg-[#121316] text-[#D8F235]' 
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              {u.unitId}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Header Profile Area */}
-      <div className="bg-[#121316] rounded-[22px] p-6 text-white relative">
+      <div className="bg-[#121316] rounded-[22px] p-6 text-white relative m-3">
         <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#6EE7B7] animate-pulse"></div>
-          Occupied
+          <div className={`w-1.5 h-1.5 rounded-full ${unitMembers.length > 0 ? 'bg-[#6EE7B7] animate-pulse' : 'bg-gray-400'}`}></div>
+          {unitMembers.length > 0 ? 'Occupied' : 'Vacant'}
         </div>
         
         <div className="flex items-start gap-4 mb-6">
@@ -16,13 +63,11 @@ export function UnitDetailCard() {
             <Home size={32} className="text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Unit 10</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{currentUnit.unitId}</h2>
             <div className="flex items-center gap-3 text-gray-400 text-sm mt-1">
-              <span>Lot 10</span>
+              <span>Lot {currentUnit.lotNumber}</span>
               <span className="w-1 h-1 rounded-full bg-gray-600"></span>
-              <span>Entitlement: 12.5%</span>
-              <span className="w-1 h-1 rounded-full bg-gray-600"></span>
-              <span className="text-[#D8F235] font-medium">Clear Account</span>
+              <span>Entitlement: {currentUnit.entitlement}</span>
             </div>
           </div>
         </div>
@@ -36,7 +81,7 @@ export function UnitDetailCard() {
         </div>
       </div>
 
-      {/* Actors & RBAC Matrix */}
+      {/* Actors & Access Matrix */}
       <div className="p-5 space-y-4">
         
         <div className="flex items-center justify-between mb-2">
@@ -44,48 +89,34 @@ export function UnitDetailCard() {
           <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Live Sync</span>
         </div>
 
-        {/* Actor 1: Owner */}
-        <ActorSection 
-          icon={<User size={18} />}
-          role="Off-Site Lot Owner"
-          name="Mike Davies"
-          email="mike@owner.com"
-          color="bg-blue-50 text-blue-600 border-blue-100"
-          permissions={[
-            { label: 'Levies & Financials', active: true },
-            { label: 'Voting Rights (Ballots)', active: true },
-            { label: 'Maintenance Requests', active: false },
-          ]}
-        />
-
-        {/* Actor 2: Residents */}
-        <ActorSection 
-          icon={<Users size={18} />}
-          role="On-Site Residents (Tenants)"
-          name="Lisa Ray & John Smith"
-          email="lisa@unit10.com"
-          color="bg-emerald-50 text-emerald-600 border-emerald-100"
-          verified
-          permissions={[
-            { label: 'Noticeboard Access', active: true },
-            { label: 'Maintenance Logging', active: true },
-            { label: 'Voting Rights', active: false, locked: true },
-          ]}
-        />
-
-        {/* Actor 3: Property Manager */}
-        <ActorSection 
-          icon={<Building size={18} />}
-          role="Managing Agent"
-          name="Sarah Palmer"
-          email="sarah.p@raywhite.com.au"
-          agency="RayWhite Prestige"
-          color="bg-purple-50 text-purple-600 border-purple-100"
-          permissions={[
-            { label: 'Lease Term Updates', active: true },
-            { label: 'Authorized Entry (Keys)', active: true },
-          ]}
-        />
+        {unitMembers.length > 0 ? (
+          unitMembers.map(member => (
+            <ActorSection 
+              key={member.id}
+              icon={<User size={18} />}
+              role={member.role}
+              name={member.name}
+              email={member.email}
+              color={
+                member.role === 'Strata Admin' || member.role === 'Strata Manager'
+                  ? 'bg-purple-50 text-purple-600 border-purple-100'
+                  : member.role === 'Lot Owner'
+                  ? 'bg-blue-50 text-blue-600 border-blue-100'
+                  : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+              }
+              verified={member.status === 'Active'}
+              permissions={[
+                { label: 'Noticeboard Access', active: true },
+                { label: 'Maintenance Logging', active: member.role !== 'Tenant' },
+                { label: 'Voting Rights (Ballots)', active: member.role === 'Lot Owner' || member.role === 'Strata Admin' },
+              ]}
+            />
+          ))
+        ) : (
+          <div className="text-center py-8 bg-gray-50 rounded-2xl border border-gray-100">
+            <span className="text-xs text-gray-400 font-medium">No occupants linked to this unit lot.</span>
+          </div>
+        )}
       </div>
     </div>
   );

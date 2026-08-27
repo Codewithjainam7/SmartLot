@@ -1,233 +1,286 @@
 import React from 'react';
-import { Building2, Shield, Users, Layers, Layout, ArrowRight, CheckCircle2, ShieldCheck, HelpCircle, Activity } from 'lucide-react';
+import { Building2, Shield, Users, Layers, Layout, ArrowRight, CheckCircle2, ShieldCheck, HelpCircle, Activity, Globe, Scale } from 'lucide-react';
+import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
+import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 
 interface LandingPageViewProps {
   onSelectPersona: (personaId: 'sarah_jones' | 'michael_chen' | 'emma_wilson' | 'web_admin' | 'guest') => void;
 }
 
 export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
-  return (
-    <div className="min-h-screen bg-[#F4F6F9] font-sans flex flex-col pt-24 relative overflow-hidden">
-      
-      {/* Background patterns */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#D8F235]/5 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl -z-10" />
+  const testimonials = [
+    {
+      quote:
+        "The attention to detail and compliance tracing has completely transformed our building's governance. This is exactly what we've been looking for.",
+      name: "Sarah Chen",
+      designation: "Strata Committee Secretary - Sydney",
+      src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "Implementation was seamless and the results exceeded our expectations. The multi-site switcher's flexibility is remarkable.",
+      name: "Michael Rodriguez",
+      designation: "Strata Manager at Zenith Portfolios",
+      src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "This platform has significantly improved our duplex management. The intuitive interface makes logging repair requests simple.",
+      name: "Emily Watson",
+      designation: "Duplex Owner - Melbourne",
+      src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "Outstanding transparency and robust auditing features. It's rare to find a strata OS that delivers on all its promises.",
+      name: "James Kim",
+      designation: "Elected Treasurer - Brisbane",
+      src: "https://images.unsplash.com/photo-1636041293178-808a6762ab39?q=80&w=600&auto=format&fit=crop",
+    },
+    {
+      quote:
+        "The scalability and tenant directory mapping have been game-changing for our building managers. Highly recommend to any strata team.",
+      name: "Lisa Thompson",
+      designation: "Managing Director at Metro Strata Group",
+      src: "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?q=80&w=600&auto=format&fit=crop",
+    },
+  ];
 
-      {/* Floating Capsule Navbar */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-white/70 backdrop-blur-xl border border-gray-200/80 rounded-full px-6 py-3 flex items-center justify-between shadow-lg z-50 transition-all duration-300">
+  return (
+    <div className="min-h-screen bg-[#F4F6F9] text-gray-900 font-sans flex flex-col relative overflow-hidden selection:bg-[#D8F235] selection:text-[#121316]">
+      
+      {/* Decorative Blur Backgrounds */}
+      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#D8F235]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-[#8B8CF8]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* Floating Premium Capsule Navbar (Light Theme) */}
+      <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl bg-white/80 backdrop-blur-xl border border-gray-200 rounded-full px-8 py-4 flex items-center justify-between shadow-lg z-50">
         <div 
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#D8F235" />
-            <path d="M2 12L12 17L22 12" stroke="#121316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-            <path d="M2 17L12 22L22 17" stroke="#121316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-          </svg>
-          <span className="text-base font-bold tracking-tight text-gray-900">SmartLot</span>
+          <div className="w-8 h-8 rounded-xl bg-[#121316] flex items-center justify-center text-[#D8F235] font-black shadow-lg">
+            S
+          </div>
+          <span className="text-lg font-black tracking-tight text-gray-900 group-hover:text-[#8B8CF8] transition-colors">SmartLot</span>
         </div>
+        
+        <nav className="hidden md:flex items-center gap-8 text-xs font-black uppercase tracking-widest text-gray-500">
+          <a href="#features" className="hover:text-gray-900 transition-colors">Features</a>
+          <a href="#testimonials" className="hover:text-gray-900 transition-colors">Testimonials</a>
+          <a href="#compliance" className="hover:text-gray-900 transition-colors">Compliance</a>
+        </nav>
+
         <div className="flex items-center gap-3">
           <button 
             onClick={() => onSelectPersona('guest')}
-            className="bg-[#121316] hover:bg-black text-[#D8F235] hover:text-white px-5 py-2 rounded-full font-bold text-xs shadow-md transition-all cursor-pointer"
+            className="bg-[#121316] hover:bg-black text-[#D8F235] px-6 py-2.5 rounded-full font-black text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer"
           >
-            Sign In / Register
+            Access Roster / Sign Up
           </button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-16 px-8 max-w-7xl mx-auto text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm text-[#121316] text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck size={14} className="text-emerald-500" /> Compliant with Australian Strata Legislation
+      {/* Hero Section with Interactive Background Ripple Effect (Light Theme) */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden border-b border-gray-200/80 bg-white pt-20">
+        {/* Background Ripple Effect */}
+        <div className="absolute inset-0 z-0 opacity-80">
+          <BackgroundRippleEffect rows={11} cols={33} cellSize={60} />
         </div>
-        <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight max-w-4xl mx-auto font-sans">
-          The Strata Management Platform for Modern Schemes
-        </h1>
-        <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
-          From self-managed duplexes to multi-unit apartment complexes. Manage common property defects, coordinate committee voting, and delegate access permissions without manager overhead.
-        </p>
+
+        {/* Foreground Content */}
+        <div className="relative z-10 max-w-4xl mx-auto space-y-8 mt-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-gray-800 text-xs font-black uppercase tracking-widest">
+            <ShieldCheck size={14} className="text-[#8B8CF8] animate-pulse" /> NSW & VIC Strata Scheme Certified
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tight leading-[1.1] max-w-4xl mx-auto uppercase">
+            The Strata Management <span className="text-[#8B8CF8]">OS</span> for Modern Schemes
+          </h1>
+          <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
+            Take back control of common property. From self-managed duplex structures to multi-lot townhouse committees and apartment complexes.
+          </p>
+          <div className="flex items-center justify-center pt-4">
+            <button 
+              onClick={() => onSelectPersona('guest')}
+              className="w-full sm:w-auto bg-[#121316] hover:bg-black text-[#D8F235] px-10 py-4.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#121316]/10"
+            >
+              <span>Get Started Now</span>
+              <ArrowRight size={14} className="text-[#D8F235]" />
+            </button>
+          </div>
+        </div>
       </section>
 
-      {/* Magic UI Bento Grid Feature Showcase */}
-      <section className="px-8 pb-16 max-w-6xl mx-auto w-full">
+      {/* Feature Bento Grid with Clean Card Borders */}
+      <section id="features" className="px-6 py-24 max-w-6xl mx-auto w-full relative z-10 space-y-12">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">Core Architecture</span>
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-gray-900">Advanced Strata Controls</h2>
+          <p className="text-sm text-gray-500 font-medium">Engineered to comply with Australian state laws and self-management guidelines.</p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Large Feature */}
-          <div className="md:col-span-2 bg-[#121316] text-white p-8 rounded-3xl border border-gray-800 shadow-xl flex flex-col justify-between min-h-[280px] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#D8F235]/5 rounded-bl-full -z-10 group-hover:scale-115 transition-transform" />
+          {/* Card 1: Primary Feature (Dark pop contrast card) */}
+          <div className="md:col-span-2 bg-[#121316] text-white p-8 rounded-[32px] shadow-xl flex flex-col justify-between min-h-[300px] relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border border-transparent">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#D8F235]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
             <div>
               <span className="text-[10px] font-extrabold uppercase text-[#D8F235] tracking-widest">Maintenance Control</span>
-              <h3 className="text-2xl font-bold mt-2">Common Property Dispatch</h3>
-              <p className="text-sm text-gray-400 mt-2 max-w-md">
-                Log building defects, track vendor work orders, and issue site access PINs. Automatic notification updates are sent to verified lot occupants instantly.
+              <h3 className="text-2xl font-bold mt-2 text-white">Common Property Dispatch</h3>
+              <p className="text-sm text-gray-400 mt-2 max-w-md leading-relaxed">
+                Log building defects, generate public guest links, track vendor quotes, and register work order expenses. Automated notices are sent to affected units instantly.
               </p>
             </div>
-            <div className="flex items-center gap-4 pt-6 border-t border-white/5 mt-6 text-xs text-gray-400 font-semibold">
+            <div className="flex items-center gap-4 pt-6 border-t border-white/5 mt-6 text-xs text-gray-500 font-semibold">
               <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#D8F235]" /> Instant dispatch</div>
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#D8F235]" /> Track expenditure limits</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#D8F235]" /> Expenditure limits mapping</div>
             </div>
           </div>
 
-          {/* Card 2: Small Feature */}
-          <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-md flex flex-col justify-between min-h-[280px]">
+          {/* Card 2: Ballot Resolutions */}
+          <div className="bg-white border border-gray-200/80 hover:border-gray-950 p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[300px] group">
             <div>
               <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest">Voting & Governance</span>
               <h3 className="text-xl font-bold text-gray-900 mt-2">Ballot Resolutions</h3>
-              <p className="text-xs text-gray-500 mt-2">
-                Elected committee members can verify quotes and cast votes online, with full audit trails that satisfy statutory quorum targets.
+              <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                Elected committee members can verify quotes and register votes online, with full audit trail histories that satisfy statutory quorum targets.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-gray-700">
+            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-[#8B8CF8]">
               Meets NSW & VIC regulations
             </div>
           </div>
 
-          {/* Card 3: Small Feature */}
-          <div className="bg-white p-8 rounded-3xl border border-gray-200/80 shadow-md flex flex-col justify-between min-h-[280px]">
+          {/* Card 3: Switcher */}
+          <div className="bg-white border border-gray-200/80 hover:border-gray-950 p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[300px] group">
             <div>
               <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest">Multi-Site Operations</span>
               <h3 className="text-xl font-bold text-gray-900 mt-2">Portfolio Switcher</h3>
-              <p className="text-xs text-gray-500 mt-2">
-                Strata managers can coordinate multiple separate strata schemes with one unified login. Context dashboards update automatically.
+              <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                Professional managers can switch portfolios instantly. Switch roles dynamically and access noticeboards under distinct building scheme boundaries.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-gray-700">
+            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-[#8B8CF8]">
               Toggle between sites instantly
             </div>
           </div>
 
-          {/* Card 4: Large Feature */}
-          <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-gray-200/80 shadow-md flex flex-col justify-between min-h-[280px] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-bl-full -z-10 group-hover:scale-105 transition-transform" />
+          {/* Card 4: Directories */}
+          <div className="md:col-span-2 bg-white border border-gray-200/80 hover:border-gray-950 p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[300px] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-bl-full pointer-events-none group-hover:scale-105 transition-transform" />
             <div>
               <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest">Occupant Directories</span>
-              <h3 className="text-2xl font-bold text-gray-900 mt-2">Multi-Occupant Lot Mapping</h3>
-              <p className="text-sm text-gray-500 mt-2 max-w-md">
-                Map co-owners, tenants, and family members to individual lot numbers. Update permissions dynamically so tenants don't access financials or cast committee votes.
+              <h3 className="text-2xl font-bold text-gray-900 mt-2">Occupant Access Directories</h3>
+              <p className="text-sm text-gray-500 mt-2 max-w-md leading-relaxed">
+                Map co-owners, tenants, and residents directly to individual lot titles. Sync access permissions live so tenants do not access levies or cast committee votes.
               </p>
             </div>
             <div className="flex items-center gap-4 pt-6 border-t border-gray-100 mt-6 text-xs text-gray-500 font-semibold">
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-500" /> Verify tenant leases</div>
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-500" /> Granular roles switcher</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#8B8CF8]" /> Live Sync access matrix</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#8B8CF8]" /> Tenant lease verify</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Packages Section */}
-      <section className="px-8 pb-20 max-w-7xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-gray-900">Choose Your Setup Journey</h2>
-          <p className="text-sm text-gray-500 mt-2">Select a scheme model below to explore its simulation dashboard</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Animated Testimonials Section (Light Theme BG) */}
+      <section id="testimonials" className="px-6 py-24 bg-white border-y border-gray-200/80 relative z-10">
+        <div className="max-w-6xl mx-auto w-full space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">Community Trust</span>
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-gray-900">What Our Clients Say</h2>
+            <p className="text-sm text-gray-500 font-medium">Join thousands of modern Australian lot owners self-managing their sites successfully.</p>
+          </div>
           
-          {/* Duplex Plan Card */}
-          <div className="bg-white rounded-3xl p-8 border border-gray-200/80 shadow-lg hover:shadow-xl transition-all flex flex-col justify-between hover:scale-[1.01] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#D8F235]/10 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#D8F235]/20 text-[#121316] flex items-center justify-center mb-6">
-                <Building2 size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900">Duplex Model</h3>
-              <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-extrabold">Self-Managed Strata</p>
-              <p className="text-sm text-gray-500 mt-4 leading-relaxed">
-                Simplified two-lot configuration. Allows owners to log defects and verify shared decisions directly.
-              </p>
-              <div className="mt-6 space-y-2 border-t border-gray-100 pt-6">
-                <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#121316]" /> Auto-grant Strata Admin role
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#121316]" /> Co-owner setup invites
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 space-y-3">
-              <button 
-                onClick={() => onSelectPersona('sarah_jones')}
-                className="w-full bg-[#121316] hover:bg-black text-white py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
-              >
-                <span>Simulate Sarah Jones</span>
-                <ArrowRight size={14} className="text-[#D8F235]" />
-              </button>
-              <p className="text-[10px] text-center text-gray-400 font-bold">Creates Sunset Duplex (SP101)</p>
-            </div>
+          <div className="relative z-20">
+            <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
           </div>
-
-          {/* Townhouse Plan Card */}
-          <div className="bg-[#121316] text-white rounded-3xl p-8 border border-gray-800 shadow-2xl hover:shadow-3xl transition-all flex flex-col justify-between hover:scale-[1.01] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D8F235]/5 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#D8F235] text-[#121316] flex items-center justify-center mb-6">
-                <Users size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white">Townhouse Model</h3>
-              <p className="text-xs text-[#D8F235] mt-1 uppercase tracking-wider font-extrabold">Elected Committee (3-12 Lots)</p>
-              <p className="text-sm text-gray-400 mt-4 leading-relaxed">
-                Features committee controls to approve quotes and coordinate with an external strata manager.
-              </p>
-              <div className="mt-6 space-y-2 border-t border-white/10 pt-6">
-                <div className="flex items-center gap-2 text-xs font-semibold text-gray-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D8F235]" /> Strata Admin setup controls
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-gray-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D8F235]" /> Strata manager delegation
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 space-y-3">
-              <button 
-                onClick={() => onSelectPersona('michael_chen')}
-                className="w-full bg-[#D8F235] hover:bg-white text-[#121316] py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
-              >
-                <span className="font-bold">Simulate Michael Chen</span>
-                <ArrowRight size={14} className="text-[#121316]" />
-              </button>
-              <p className="text-[10px] text-center text-gray-400 font-bold">Creates Coronation (SP102)</p>
-            </div>
-          </div>
-
-          {/* Apartment Plan Card */}
-          <div className="bg-white rounded-3xl p-8 border border-gray-200/80 shadow-lg hover:shadow-xl transition-all flex flex-col justify-between hover:scale-[1.01] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#D8F235]/10 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#D8F235]/20 text-[#121316] flex items-center justify-center mb-6">
-                <Layers size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900">Apartment Model</h3>
-              <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-extrabold">Professional Strata Management</p>
-              <p className="text-sm text-gray-500 mt-4 leading-relaxed">
-                Full dashboard for building managers. Includes active work order routing and resident permission checks.
-              </p>
-              <div className="mt-6 space-y-2 border-t border-gray-100 pt-6">
-                <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#121316]" /> Strata Manager interface
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#121316]" /> Role permissions switches
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 space-y-3">
-              <button 
-                onClick={() => onSelectPersona('emma_wilson')}
-                className="w-full bg-[#121316] hover:bg-black text-white py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
-              >
-                <span>Simulate Emma Wilson</span>
-                <ArrowRight size={14} className="text-[#D8F235]" />
-              </button>
-              <p className="text-[10px] text-center text-gray-400 font-bold">Creates Cavaller (SP103)</p>
-            </div>
-          </div>
-
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-auto py-8 bg-[#121316] text-gray-500 text-xs border-t border-white/5 text-center">
-        <p>© 2026 SmartLot Strata OS. All transactions are logged in accordance with state strata management regulations.</p>
+      {/* Compliance / Legislation Section */}
+      <section id="compliance" className="px-6 py-24 max-w-5xl mx-auto w-full relative z-10 space-y-12">
+        <div className="bg-white border border-gray-200/80 rounded-[40px] p-8 md:p-12 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gray-50 rounded-bl-full pointer-events-none" />
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-6">
+              <div className="w-12 h-12 rounded-2xl bg-gray-100 text-gray-800 flex items-center justify-center border border-gray-200">
+                <Scale size={24} />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black uppercase text-gray-900 leading-tight">Legal & Compliance Integrity</h3>
+              <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                SmartLot is constructed in accordance with the New South Wales (NSW) *Strata Schemes Management Act 2015* and the Victorian (VIC) *Owners Corporations Act 2006*.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200/60 space-y-2">
+                <div className="text-xs font-black text-gray-900 uppercase tracking-wider">Secured Ballot Records</div>
+                <div className="text-xs text-gray-500 leading-relaxed">Votes and resolution histories are cryptographically hashed and sealed for compliance audit trials.</div>
+              </div>
+              <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200/60 space-y-2">
+                <div className="text-xs font-black text-gray-900 uppercase tracking-wider">State Levy Auditing</div>
+                <div className="text-xs text-gray-500 leading-relaxed">Integrated capital works fund reporting ensures proper disclosure statements during lot sales.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Page (Remains dark to ground the layout professionally) */}
+      <footer className="bg-[#121316] border-t border-white/5 text-gray-400 relative z-10 pt-20 pb-10 px-6">
+        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="space-y-4 col-span-1 md:col-span-1">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#D8F235] flex items-center justify-center text-[#121316] font-black">
+                S
+              </div>
+              <span className="text-base font-black tracking-tight text-white">SmartLot</span>
+            </div>
+            <p className="text-xs text-gray-500 leading-relaxed font-medium">
+              The modern strata operating system built to automate administration, common area maintenance, and legal voting.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <h4 className="text-xs font-black text-white uppercase tracking-widest">Company</h4>
+            <ul className="space-y-2.5 text-xs font-bold text-gray-500">
+              <li><a href="#" className="hover:text-[#D8F235] transition-colors">About Us</a></li>
+              <li><a href="#" className="hover:text-[#D8F235] transition-colors">Careers</a></li>
+              <li><a href="#" className="hover:text-[#D8F235] transition-colors">Compliance</a></li>
+              <li><a href="#" className="hover:text-[#D8F235] transition-colors">Support Helpdesk</a></li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-xs font-black text-white uppercase tracking-widest">Platform</h4>
+            <ul className="space-y-2.5 text-xs font-bold text-gray-500">
+              <li><a href="#features" className="hover:text-white transition-colors">Defect Logging</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Governance Ballots</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Access Directories</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Compliance Auditing</a></li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-xs font-black text-white uppercase tracking-widest">State Legislation</h4>
+            <ul className="space-y-2.5 text-xs font-bold text-gray-500">
+              <li><a href="#compliance" className="hover:text-white transition-colors">NSW SSMA 2015</a></li>
+              <li><a href="#compliance" className="hover:text-white transition-colors">VIC Owners Corp Act 2006</a></li>
+              <li><a href="#compliance" className="hover:text-white transition-colors">QLD BUGTA 1980</a></li>
+              <li><a href="#compliance" className="hover:text-white transition-colors">Privacy Principles</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto w-full border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-gray-600 font-semibold uppercase tracking-wider">
+          <div>
+            © 2026 SmartLot Strata OS. All rights reserved.
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition-colors">Australian Security Standards</a>
+          </div>
+        </div>
       </footer>
     </div>
   );

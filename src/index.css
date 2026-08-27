@@ -69,6 +69,26 @@
   --font-sans: "Acorn", ui-sans-serif, system-ui, sans-serif;
 }
 
+@keyframes cell-ripple {
+  0% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    background-color: rgba(216, 242, 53, 0.25);
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+}
+
+.animate-cell-ripple {
+  animation: cell-ripple var(--duration, 600ms) cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0ms) 1 !important;
+}
+
 body {
   font-family: "Acorn", ui-sans-serif, system-ui, sans-serif;
   /* Acorn typography tuning — open spacing and light weight for legibility */

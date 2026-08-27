@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SCHEMES, PERSONAS, Scheme, Persona } from '../types';
 
 export type RequestStream = 
@@ -156,6 +156,7 @@ export type UnitActor = {
 };
 
 export type UnitData = {
+  schemeId: string;
   unitId: string;
   lotNumber: number;
   entitlement: string;
@@ -164,186 +165,149 @@ export type UnitData = {
 };
 
 // Initial Seed Members with Multiple Occupants in Unit 10
-const INITIAL_MEMBERS: Member[] = [
-  {
-    id: 'MEM-101',
-    name: 'Sarah Jenkins',
-    email: 'sarah.j@building.com.au',
-    phone: '0400 111 222',
-    schemeId: 'SP10482',
-    role: 'Committee Member',
-    unitId: 'Unit 2',
-    lotNumber: 2,
-    status: 'Active',
-    joinedAt: '2025-01-15',
-  },
-  {
-    id: 'MEM-102',
-    name: 'Alex Vance',
-    email: 'alex.vance@strata.com.au',
-    phone: '0411 999 888',
-    schemeId: 'SP10482',
-    role: 'Strata Manager',
-    unitId: 'Office',
-    lotNumber: 0,
-    status: 'Active',
-    joinedAt: '2024-11-01',
-  },
-  {
-    id: 'MEM-103',
-    name: 'Mike Davies',
-    email: 'mike@owner.com',
-    phone: '0411 222 333',
-    schemeId: 'SP10482',
-    role: 'Lot Owner',
-    unitId: 'Unit 10',
-    lotNumber: 10,
-    hasCoOwner: true,
-    coOwnerName: 'Emma Davies',
-    coOwnerEmail: 'emma@owner.com',
-    additionalOccupants: [
-      { id: 'OCC-1', name: 'Lisa Ray', email: 'lisa@unit10.com', role: 'Resident' },
-      { id: 'OCC-2', name: 'John Smith', email: 'john@unit10.com', role: 'Tenant' },
-      { id: 'OCC-3', name: 'Chloe Davies', email: 'chloe@unit10.com', role: 'Family Member' },
-    ],
-    status: 'Active',
-    joinedAt: '2025-02-10',
-  },
-  {
-    id: 'MEM-104',
-    name: 'Lisa Ray',
-    email: 'lisa@unit10.com',
-    phone: '0412 888 999',
-    schemeId: 'SP10482',
-    role: 'Resident',
-    unitId: 'Unit 10',
-    lotNumber: 10,
-    status: 'Active',
-    joinedAt: '2025-03-01',
-  },
-  {
-    id: 'MEM-105',
-    name: 'John Smith',
-    email: 'john@unit10.com',
-    phone: '0413 777 666',
-    schemeId: 'SP10482',
-    role: 'Tenant',
-    unitId: 'Unit 10',
-    lotNumber: 10,
-    status: 'Active',
-    joinedAt: '2025-04-12',
-  },
-];
+const INITIAL_MEMBERS: Member[] = [];
 
 // Initial Seed Requests
-const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
-  {
-    id: 'REQ-101',
-    unit: 'Unit 10',
-    title: 'Shared Vehicle Entrance Gate Repairs',
-    description: 'Automatic vehicle entrance gate motor is grinding and stopping halfway.',
-    requestType: 'maintenance_upgrade',
-    stream: 'common_area_repair',
-    priority: 'High',
-    dueDate: '2026-08-25',
-    attachmentUrl: 'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=500&auto=format&fit=crop',
-    status: 'pending_triage',
-    createdAt: '2 hours ago',
-    requestorName: 'Lisa Ray',
-    reportedBy: 'Lisa Ray (Resident)',
-    requestorEmail: 'lisa@unit10.com',
-    requestorPhone: '0412 888 999',
-    requestorRole: 'Resident',
-    comments: [
-      { id: 'C1', authorName: 'Mike Davies', authorRole: 'Lot Owner', text: 'Agreed, this gate has been failing for two weeks.', createdAt: '1 hour ago' },
-      { id: 'C2', authorName: 'Sarah Jenkins', authorRole: 'Committee Admin', text: 'Inspected on site, needs motor replacement.', createdAt: '30 mins ago' },
-    ],
-  },
-  {
-    id: 'REQ-102',
-    unit: 'Unit 2',
-    title: 'Basement Garage Water Pipe Leak',
-    description: 'High pressure water leak spraying near main electric board in basement B1.',
-    requestType: 'emergency',
-    stream: 'emergency_repair',
-    priority: 'Emergency',
-    dueDate: '2026-08-21',
-    status: 'approved',
-    createdAt: '30 mins ago',
-    requestorName: 'Sarah Jenkins',
-    reportedBy: 'Sarah Jenkins (Committee Admin)',
-    requestorEmail: 'sarah@unit2.com',
-    requestorPhone: '0400 111 222',
-    requestorRole: 'Lot Owner',
-    comments: [],
-  },
-  {
-    id: 'REQ-103',
-    unit: 'Unit 1',
-    title: 'Noise Complaint - Late Night Music',
-    description: 'Loud music from common balcony area past 11 PM on weekends.',
-    requestType: 'complaint',
-    stream: 'general_inquiry',
-    priority: 'Medium',
-    status: 'approved',
-    createdAt: '1 day ago',
-    requestorName: 'Smith Family',
-    reportedBy: 'Smith Family (Lot Owner)',
-    requestorEmail: 'smith@unit1.com',
-    requestorPhone: '0433 222 111',
-    requestorRole: 'Lot Owner',
-    comments: [
-      { id: 'C3', authorName: 'Alex Vance', authorRole: 'Strata Manager', text: 'Formal bylaw notice issued to relevant lot.', createdAt: 'Yesterday' }
-    ],
-  },
-];
+const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [];
 
-const INITIAL_UNITS: UnitData[] = [
-  {
-    unitId: 'Unit 10',
-    lotNumber: 10,
-    entitlement: '12.5%',
-    status: 'Occupied',
-    actors: [
-      {
-        id: 'ACT-1',
-        role: 'Lot Owner',
-        name: 'Mike Davies',
-        email: 'mike@owner.com',
-        phone: '0411 222 333',
-        verified: true,
-        permissions: [
-          { label: 'Levies & Financials', active: true },
-          { label: 'Voting Rights (Ballots)', active: true },
-        ],
-      },
-      {
-        id: 'ACT-2',
-        role: 'On-Site Resident',
-        name: 'Lisa Ray',
-        email: 'lisa@unit10.com',
-        phone: '0412 888 999',
-        verified: true,
-        permissions: [
-          { label: 'Noticeboard Access', active: true },
-          { label: 'Maintenance Logging', active: true },
-        ],
-      },
-    ],
-  },
-];
+const INITIAL_UNITS: UnitData[] = [];
 
 export function useSmartLotStore() {
   const [schemes, setSchemes] = useState<Scheme[]>(SCHEMES);
-  const [activeScheme, setActiveScheme] = useState<Scheme>(SCHEMES[0]);
+  const [activeScheme, setActiveScheme] = useState<Scheme>(
+    SCHEMES.length > 0 
+      ? SCHEMES[0] 
+      : { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
+  );
   const [activePersona, setActivePersona] = useState<Persona>(PERSONAS[1]); // Default to Strata Manager Alex Vance
+  const [activeRoles, setActiveRoles] = useState<string[]>(['Strata Manager']);
   const [activeView, setActiveView] = useState<'dashboard' | 'user_management' | 'requests' | 'triage'>('dashboard');
-  
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [residentRequests, setResidentRequests] = useState<ResidentRequest[]>(INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = useState<UnitData[]>(INITIAL_UNITS);
+
+  useEffect(() => {
+    if (!activePersona) return;
+
+    if (activePersona.isSystemAdmin) {
+      if (!activeRoles.includes('Super Admin')) {
+        setActiveRoles(['Super Admin']);
+      }
+      return;
+    }
+
+    // Auto-populate schemes, units, and member roster for the persona's memberships
+    if (activePersona.memberships && activePersona.memberships.length > 0) {
+      activePersona.memberships.forEach(m => {
+        // 1. Ensure scheme is registered
+        const hasScheme = schemes.some(s => s.id === m.schemeId);
+        if (!hasScheme) {
+          let lots = 2;
+          let sName = 'Strata Scheme';
+          if (m.schemeId === 'SP101') {
+            lots = 2;
+            sName = 'Sunset Duplex';
+          } else if (m.schemeId === 'SP102') {
+            lots = 4;
+            sName = 'Coronation Townhouses';
+          } else if (m.schemeId === 'SP103') {
+            lots = 32;
+            sName = 'Cavaller Apartments';
+          } else if (m.schemeId === 'SP10482') {
+            lots = 10;
+            sName = 'SmartLot Complex';
+          }
+          
+          const newScheme = { id: m.schemeId, name: `${m.schemeId} - ${sName}`, lots, active: true };
+          setSchemes(prev => {
+            if (prev.some(s => s.id === m.schemeId)) return prev;
+            return [...prev, newScheme];
+          });
+
+          // Generate units
+          const newUnits: UnitData[] = Array.from({ length: lots }, (_, i) => ({
+            schemeId: m.schemeId,
+            unitId: `Unit ${i + 1}`,
+            lotNumber: i + 1,
+            entitlement: `${(100 / lots).toFixed(1)}%`,
+            status: 'Vacant',
+            actors: []
+          }));
+          setUnits(prev => {
+            const filteredPrev = prev.filter(u => u.schemeId !== m.schemeId);
+            return [...filteredPrev, ...newUnits];
+          });
+        }
+
+        // 2. Ensure member record for activePersona exists in store.members for this scheme
+        const hasMemberRecord = members.some(mb => mb.name === activePersona.name && mb.schemeId === m.schemeId);
+        if (!hasMemberRecord) {
+          const role = m.roles[0] || 'Resident';
+          let unitId = 'Unit 1';
+          let lotNumber = 1;
+          if (activePersona.name === 'Sarah Jones') {
+            unitId = 'Unit 1';
+            lotNumber = 1;
+          } else if (activePersona.name === 'Michael Chen') {
+            unitId = 'Unit 3';
+            lotNumber = 3;
+          } else if (activePersona.name === 'Emma Wilson') {
+            unitId = 'Office';
+            lotNumber = 0;
+          } else if (activePersona.context && activePersona.context.includes('Unit')) {
+            unitId = activePersona.context.split(' ')[0] + ' ' + activePersona.context.split(' ')[1]?.replace(/\D/g, '');
+            lotNumber = parseInt(unitId.replace(/\D/g, '')) || 1;
+          }
+
+          const newMember = {
+            id: `MEM-${100 + members.length + Math.floor(Math.random() * 100)}`,
+            name: activePersona.name,
+            email: activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+            phone: '0400 000 000',
+            schemeId: m.schemeId,
+            role: role as any,
+            unitId,
+            lotNumber,
+            status: 'Active' as const,
+            joinedAt: new Date().toISOString().split('T')[0],
+          };
+          setMembers(prev => {
+            if (prev.some(mb => mb.name === activePersona.name && mb.schemeId === m.schemeId)) return prev;
+            return [...prev, newMember];
+          });
+        }
+      });
+    }
+
+    // Align activeScheme with the activePersona's memberships if they switch
+    const hasMembershipInActiveScheme = activePersona.memberships?.some(m => m.schemeId === activeScheme.id);
+    if (!hasMembershipInActiveScheme && activePersona.memberships && activePersona.memberships.length > 0) {
+      const firstMembershipSchemeId = activePersona.memberships[0].schemeId;
+      const targetScheme = schemes.find(s => s.id === firstMembershipSchemeId);
+      if (targetScheme) {
+        setActiveScheme(targetScheme);
+        return;
+      }
+    }
+
+    const membership = activePersona.memberships?.find(m => m.schemeId === activeScheme.id);
+    const newRoles = membership ? membership.roles : [];
+    const newRolesStr = newRoles.join(', ');
+
+    const currentRolesStr = activeRoles.join(', ');
+    if (currentRolesStr !== newRolesStr) {
+      setActiveRoles(newRoles);
+    }
+
+    if (activePersona.role !== newRolesStr && newRolesStr) {
+      setActivePersona(prev => ({
+        ...prev,
+        role: newRolesStr
+      }));
+    }
+  }, [activePersona.id, activeScheme.id, activePersona.role, activeRoles, schemes, members]);
+
 
   // Initialize permissions list for all roles in all schemes
   const [rolePermissions, setRolePermissions] = useState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>({
@@ -422,6 +386,17 @@ export function useSmartLotStore() {
       }
     }));
 
+    // Auto-initialize units roster for the new scheme
+    const newUnits: UnitData[] = Array.from({ length: lots }, (_, i) => ({
+      schemeId: id,
+      unitId: `Unit ${i + 1}`,
+      lotNumber: i + 1,
+      entitlement: `${(100 / lots).toFixed(1)}%`,
+      status: 'Vacant',
+      actors: []
+    }));
+    setUnits(prev => [...prev, ...newUnits]);
+
     return newScheme;
   };
 
@@ -447,30 +422,30 @@ export function useSmartLotStore() {
   };
 
   const hasPermission = (permissionLabel: string) => {
-    if (activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator') {
+    if (activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator' || activePersona.isSystemAdmin) {
       return true;
     }
 
-    const currentRole = activePersona.role;
-    
     // Strata Admin / Strata Manager (by design, always has full permissions)
-    if (currentRole.includes('Admin') || currentRole.includes('Manager') || currentRole.includes('Strata Admin')) {
+    if (activeRoles.some(r => r.includes('Admin') || r.includes('Manager') || r.includes('Strata Admin'))) {
       return true;
     }
 
     // Standard lookup
     const schemeRoles = rolePermissions[activeScheme.id] || {};
     
-    // Map Persona roles to Member Roles
-    let roleKey = 'Resident';
-    if (currentRole.includes('Committee')) roleKey = 'Committee Member';
-    else if (currentRole.includes('Owner')) roleKey = 'Lot Owner';
-    else if (currentRole.includes('Tenant')) roleKey = 'Tenant';
-    else if (currentRole.includes('Resident')) roleKey = 'Resident';
+    // Map active roles to Member Roles and check if any active role has permission
+    return activeRoles.some(r => {
+      let roleKey = 'Resident';
+      if (r.includes('Committee')) roleKey = 'Committee Member';
+      else if (r.includes('Owner')) roleKey = 'Lot Owner';
+      else if (r.includes('Tenant')) roleKey = 'Tenant';
+      else if (r.includes('Resident')) roleKey = 'Resident';
 
-    const rolePerms = schemeRoles[roleKey] || [];
-    const perm = rolePerms.find(p => p.label === permissionLabel);
-    return perm ? perm.active : false;
+      const rolePerms = schemeRoles[roleKey] || [];
+      const perm = rolePerms.find(p => p.label === permissionLabel);
+      return perm ? perm.active : false;
+    });
   };
 
   const addMember = (memberData: {
@@ -643,6 +618,8 @@ export function useSmartLotStore() {
     togglePermission,
     hasPermission,
     rolePermissions,
+    activeRoles,
+    setActiveRoles,
     submitCase: submitResidentRequest,
     triageCase: triageRequest,
     castBallot: () => {},

@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { X, Sparkles } from 'lucide-react';
-import { useSmartLotStore } from '../store/smartLotStore';
+import { X, Sparkles, Building, ArrowRight } from 'lucide-react';
 
 interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  store: any;
 }
 
-export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
-  const store = useSmartLotStore();
+export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps) {
 
   // Dynamic Site Creation fields
   const [siteType, setSiteType] = useState<string>('duplex');
@@ -45,6 +44,48 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     if (!existing) {
       scheme = store.addScheme(schemeId, `${schemeId} - ${schemeName}`, lotsCount);
     }
+    
+    // Assign Strata Admin role to the creator of the scheme
+    const assignRole = store.activePersona.name === 'Emma Wilson' ? 'Strata Manager' : 'Strata Admin';
+    
+    // Add scheme membership to activePersona
+    const currentMemberships = store.activePersona.memberships || [];
+    const hasMembership = currentMemberships.some(m => m.schemeId === schemeId);
+    
+    if (!hasMembership) {
+      const updatedMemberships = [
+        ...currentMemberships,
+        {
+          schemeId: schemeId,
+          roles: [assignRole]
+        }
+      ];
+      
+      store.setActivePersona(prev => ({
+        ...prev,
+        role: assignRole,
+        memberships: updatedMemberships,
+        context: store.activePersona.name === 'Emma Wilson' ? 'Cavaller HQ' : `Unit 1 (${schemeName})`
+      }));
+      
+      // Add member to the roster
+      store.setMembers(prev => [
+        {
+          id: `MEM-${100 + prev.length + 1}`,
+          name: store.activePersona.name,
+          email: store.activePersona.email || `${store.activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+          phone: '0400 000 000',
+          schemeId: schemeId,
+          role: assignRole,
+          unitId: store.activePersona.name === 'Emma Wilson' ? 'Office' : 'Unit 1',
+          lotNumber: store.activePersona.name === 'Emma Wilson' ? 0 : 1,
+          status: 'Active',
+          joinedAt: new Date().toISOString().split('T')[0],
+        },
+        ...prev
+      ]);
+    }
+
     store.setActiveScheme(scheme);
     onClose();
   };
@@ -59,103 +100,141 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-[#121316]/60 backdrop-blur-md" 
+            className="absolute inset-0 bg-[#121316]/75 backdrop-blur-md" 
             onClick={onClose} 
           />
 
-          {/* Modal Container */}
+          {/* Modal Container (Premium Dark Mode styling mirroring the setup popup) */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ type: 'spring', bounce: 0.15, duration: 0.3 }}
-            className="relative bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 space-y-5"
+            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+            className="relative bg-[#121316] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl z-10 space-y-6 overflow-hidden"
           >
-            
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Create New Strata Site</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Provision a new duplex, townhouse, or scheme.</p>
+            {/* Close Button */}
+            <button 
+              type="button"
+              onClick={onClose}
+              className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Decorative Glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D8F235]/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Title / Header */}
+            <div className="text-center space-y-2.5 relative z-10 pt-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#D8F235]/10 text-[#D8F235] flex items-center justify-center mx-auto border border-[#D8F235]/20 animate-pulse">
+                <Building size={28} />
               </div>
-              <button 
-                onClick={onClose}
-                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+              <div className="space-y-1">
+                <span className="text-[9px] font-extrabold text-[#D8F235] tracking-widest uppercase bg-[#D8F235]/10 px-2.5 py-0.5 rounded-full border border-[#D8F235]/25 inline-block">
+                  Strata Provisioning
+                </span>
+                <h3 className="text-2xl font-bold tracking-tight text-white mt-1">Create New Strata Site</h3>
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
+                Provision a new duplex, townhouse, or custom scheme under compliance.
+              </p>
+            </div>
+
+            {/* Strata Classification Tab Selectors */}
+            <div className="relative z-10">
+              <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Strata Classification</label>
+              <div className="grid grid-cols-4 gap-1 bg-white/5 p-1 rounded-2xl border border-white/5 text-center relative z-0">
+                {(['duplex', 'coronation', 'cavaller', 'custom'] as const).map(type => {
+                  const isActive = siteType === type;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => handleTypeChange(type)}
+                      className={`relative py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer outline-none z-10 ${
+                        isActive ? 'text-[#121316]' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="activeTabOnboarding"
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                          className="absolute inset-0 bg-[#D8F235] rounded-xl -z-10 shadow-md"
+                        />
+                      )}
+                      {type === 'coronation' ? 'Townhouse' : type === 'cavaller' ? 'Apartment' : type}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Scheme Details Customization Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Site Type</label>
-                  <select
-                    value={siteType}
-                    onChange={e => handleTypeChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold outline-none text-gray-900 focus:bg-white focus:border-black transition-all cursor-pointer"
-                  >
-                    <option value="duplex">Duplex (Sunset Duplex - 2 Lots)</option>
-                    <option value="coronation">Coronation (Coronation Townhouses - 4 Lots)</option>
-                    <option value="cavaller">Cavaller (Cavaller Apartments - 32 Lots)</option>
-                    <option value="custom">Custom Site Setup...</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Scheme / Site Name</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Scheme / Site Name</label>
                   <input
                     type="text"
                     required
                     value={schemeName}
                     onChange={e => setSchemeName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold outline-none text-gray-900 focus:bg-white focus:border-black transition-all"
+                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 focus:shadow-[0_0_15px_rgba(216,242,53,0.15)] transition-all duration-200"
                     placeholder="e.g. Sunset Duplex"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1">Plan ID</label>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Plan ID</label>
                     <input
                       type="text"
                       required
                       value={schemeId}
                       onChange={e => setSchemeId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold outline-none text-gray-900 focus:bg-white focus:border-black transition-all"
+                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 focus:shadow-[0_0_15px_rgba(216,242,53,0.15)] transition-all duration-200"
                       placeholder="e.g. SP101"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1">Lots Count</label>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Lots Count</label>
                     <input
                       type="number"
                       required
                       min={1}
+                      disabled={siteType !== 'custom'}
                       value={lotsCount}
                       onChange={e => setLotsCount(Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold outline-none text-gray-900 focus:bg-white focus:border-black transition-all"
+                      className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none font-bold transition-all duration-200 ${
+                        siteType !== 'custom'
+                          ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
+                          : 'border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/[0.08] focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 focus:shadow-[0_0_15px_rgba(216,242,53,0.15)]'
+                      }`}
                       placeholder="e.g. 2"
                     />
                   </div>
                 </div>
+                <span className="text-[10px] text-gray-500 block">
+                  {siteType !== 'custom'
+                    ? `Lots size is preset to ${lotsCount} for this strata template.`
+                    : 'Enter the total number of lots in this strata scheme.'}
+                </span>
               </div>
 
               {/* Modal Actions */}
-              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <div className="flex justify-end gap-3 pt-3 border-t border-white/5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  className="px-5 py-3 rounded-2xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#121316] hover:bg-black text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md hover:scale-102 transition-all cursor-pointer"
+                  className="bg-[#D8F235] hover:bg-[#c8e02d] text-[#121316] px-8 py-3.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-lg shadow-[#D8F235]/15 hover:scale-[1.02] transition-all cursor-pointer"
                 >
-                  <Sparkles size={14} className="text-[#D8F235]" /> Create Scheme
+                  Create Scheme
                 </button>
               </div>
             </form>
