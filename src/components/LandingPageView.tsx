@@ -80,7 +80,7 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
       </header>
 
       {/* Hero Section with Interactive Background Ripple Effect (Light Theme) */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden border-b border-gray-200/80 bg-white pt-20">
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden pt-20">
         {/* Background Ripple Effect */}
         <div className="absolute inset-0 z-0 opacity-80">
           <BackgroundRippleEffect rows={11} cols={33} cellSize={60} />

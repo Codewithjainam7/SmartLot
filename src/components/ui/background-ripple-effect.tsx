@@ -25,12 +25,12 @@ export const BackgroundRippleEffect = ({
     <div
       ref={ref}
       className={cn(
-        "absolute inset-0 h-full w-full pointer-events-auto overflow-hidden bg-white/40",
+        "absolute inset-0 h-full w-full pointer-events-auto overflow-hidden bg-transparent",
         "[--cell-border-color:rgba(18,19,22,0.04)] [--cell-fill-color:rgba(0,212,178,0.005)]",
       )}
     >
       <div className="relative h-auto w-auto overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 z-[2] h-full w-full overflow-hidden bg-gradient-to-b from-transparent to-[#F4F6F9]" />
+        <div className="pointer-events-none absolute inset-0 z-[10] h-full w-full overflow-hidden bg-gradient-to-b from-transparent to-[#F4F6F9]" />
         <DivGrid
           key={`base-${rippleKey}`}
           className="opacity-100"
