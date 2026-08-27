@@ -106,7 +106,7 @@ export function DialogContent({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#121316]/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#0B1121]/50 backdrop-blur-sm"
             onClick={() => context.setIsOpen(false)}
           />
           <motion.div

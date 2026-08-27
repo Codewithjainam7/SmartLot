@@ -41,7 +41,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
       {/* Header Banner */}
       <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121316]/5 text-[#121316] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B1121]/5 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
             Multi-Actor Identity Architecture
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Units & Occupant Directory</h1>
@@ -50,9 +50,9 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
 
         <button
           onClick={() => setIsAddResidentOpen(true)}
-          className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer"
+          className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer"
         >
-          <Plus size={18} className="text-[#D8F235]" /> Add Resident Login
+          <Plus size={18} className="text-[#00D4B2]" /> Add Resident Login
         </button>
       </div>
 
@@ -71,7 +71,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                   onClick={() => setSelectedUnit(u)}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer ${
                     currentUnit.unitId === u.unitId 
-                      ? 'bg-[#121316] text-white shadow-md font-bold' 
+                      ? 'bg-[#0B1121] text-white shadow-md font-bold' 
                       : 'text-gray-900 font-semibold hover:text-black'
                   }`}
                 >
@@ -82,7 +82,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                     </div>
                   </div>
                   <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
-                    currentUnit.unitId === u.unitId ? 'bg-[#D8F235] text-[#121316]' : 'bg-emerald-100 text-[#10B981]'
+                    currentUnit.unitId === u.unitId ? 'bg-[#00D4B2] text-[#0B1121]' : 'bg-emerald-100 text-[#10B981]'
                   }`}>
                     {u.status}
                   </span>
@@ -102,7 +102,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsAddResidentOpen(true)}
-                className="bg-emerald-50 hover:bg-emerald-100 text-[#10B981] border border-emerald-200 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="bg-[#00D4B2]/10 hover:bg-emerald-100 text-[#10B981] border border-[#00D4B2]/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Plus size={14} /> Add Occupant
               </button>
@@ -116,8 +116,8 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-sm ${
-                      actor.role === 'Lot Owner' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                      actor.role === 'On-Site Resident' ? 'bg-emerald-50 text-[#10B981] border-emerald-200' :
+                      actor.role === 'Lot Owner' ? 'bg-[#0055FF]/10 text-[#0033CC] border-blue-200' :
+                      actor.role === 'On-Site Resident' ? 'bg-[#00D4B2]/10 text-[#10B981] border-[#00D4B2]/30' :
                       'bg-purple-50 text-purple-600 border-purple-200'
                     }`}>
                       {actor.role === 'Lot Owner' && <User size={24} />}
@@ -138,7 +138,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                   {actor.role === 'On-Site Resident' && (
                     <button
                       onClick={() => onOffboardActor(currentUnit.unitId, actor.id)}
-                      className="bg-red-50 hover:bg-red-100 text-[#FF6B6B] border border-red-200 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                      className="bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF6B6B] border border-[#FF4757]/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
                       title="Revoke active JWT tokens & offboard tenant while preserving historical logs"
                     >
                       <UserX size={14} /> Offboard Tenant
@@ -155,7 +155,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                         perm.active ? 'bg-white border border-gray-200 text-gray-800 shadow-sm' : 'bg-gray-100 text-gray-400'
                       }`}
                     >
-                      <Key size={12} className={perm.active ? 'text-[#8B8CF8]' : 'text-gray-400'} />
+                      <Key size={12} className={perm.active ? 'text-[#0055FF]' : 'text-gray-400'} />
                       {perm.label}
                     </span>
                   ))}
@@ -170,7 +170,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
       {/* Add Resident Modal */}
       {isAddResidentOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#121316]/40 backdrop-blur-sm" onClick={() => setIsAddResidentOpen(false)} />
+          <div className="absolute inset-0 bg-[#0B1121]/40 backdrop-blur-sm" onClick={() => setIsAddResidentOpen(false)} />
           <div className="relative bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
             <button onClick={() => setIsAddResidentOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 cursor-pointer">
               <X size={18} />
@@ -205,7 +205,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
 
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setIsAddResidentOpen(false)} className="px-4 py-2 text-xs font-bold text-gray-600 cursor-pointer">Cancel</button>
-                <button type="submit" className="px-5 py-2.5 rounded-xl bg-[#121316] hover:bg-black text-white text-xs font-bold transition-all cursor-pointer">
+                <button type="submit" className="px-5 py-2.5 rounded-xl bg-[#0B1121] hover:bg-black text-white text-xs font-bold transition-all cursor-pointer">
                   Send Activation Invite
                 </button>
               </div>

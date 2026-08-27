@@ -123,7 +123,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                 onClick={() => setSelectedUnitIndex(index)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
                   selectedUnitIndex === index 
-                    ? 'bg-[#121316] text-[#D8F235]' 
+                    ? 'bg-[#0B1121] text-[#00D4B2]' 
                     : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                 }`}
               >
@@ -135,14 +135,14 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       )}
 
       {/* Header Profile Area */}
-      <div className="bg-[#121316] rounded-[22px] p-6 text-white relative m-3">
+      <div className="bg-[#0B1121] rounded-[22px] p-6 text-white relative m-3">
         <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
           <div className={`w-1.5 h-1.5 rounded-full ${unitMembers.length > 0 ? 'bg-[#6EE7B7] animate-pulse' : 'bg-gray-400'}`}></div>
           {unitMembers.length > 0 ? 'Occupied' : 'Vacant'}
         </div>
         
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#8B8CF8] to-[#6366F1] flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-[#0F172A] flex items-center justify-center shadow-lg">
             <Home size={32} className="text-white" />
           </div>
           <div>
@@ -193,7 +193,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                 setNewActorRole('On-Site Resident');
                 setShowAddOccupantModal(true);
               }}
-              className="text-xs font-bold bg-[#121316] hover:bg-black text-[#D8F235] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all"
+              className="text-xs font-bold bg-[#0B1121] hover:bg-black text-[#00D4B2] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all"
             >
               <Plus size={14} /> Add Occupant
             </button>
@@ -211,10 +211,10 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               phone={member.phone}
               color={
                 member.role === 'Strata Admin' || member.role === 'Strata Manager'
-                  ? 'bg-purple-50 text-purple-600 border-purple-100'
+                  ? 'bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]/20'
                   : member.role === 'Lot Owner'
-                  ? 'bg-blue-50 text-blue-600 border-blue-100'
-                  : 'bg-emerald-50 text-[#10B981] border-emerald-100'
+                  ? 'bg-[#7C3AED]/10 text-[#7C3AED] border-[#7C3AED]/20'
+                  : 'bg-[#00D4B2]/10 text-[#00A38C] border-[#00D4B2]/20'
               }
               verified={member.status === 'Active'}
               canManage={canManage}
@@ -240,7 +240,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#121316]/75 backdrop-blur-md"
+              className="absolute inset-0 bg-[#0B1121]/75 backdrop-blur-md"
               onClick={() => setShowEditLotModal(false)}
             />
             <motion.div 
@@ -248,7 +248,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-[#121316] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-6 overflow-hidden"
+              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-6 overflow-hidden"
             >
               <button 
                 type="button"
@@ -259,7 +259,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               </button>
 
               <div className="space-y-1">
-                <span className="text-[9px] font-extrabold text-[#D8F235] tracking-widest uppercase bg-[#D8F235]/10 px-2.5 py-0.5 rounded-full border border-[#D8F235]/25 inline-block">
+                <span className="text-[9px] font-extrabold text-[#00D4B2] tracking-widest uppercase bg-[#00D4B2]/10 px-2.5 py-0.5 rounded-full border border-[#00D4B2]/25 inline-block">
                   Metadata Editor
                 </span>
                 <h3 className="text-xl font-bold text-white mt-1">Edit {currentUnit.unitId} Details</h3>
@@ -274,7 +274,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                     placeholder="e.g. 50%"
                     value={editEntitlement}
                     onChange={e => setEditEntitlement(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 transition-all"
+                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 transition-all"
                   />
                 </div>
 
@@ -289,7 +289,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                           type="button"
                           onClick={() => setEditStatus(status)}
                           className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            isActive ? 'bg-[#D8F235] text-[#121316] shadow' : 'text-gray-400 hover:text-white'
+                            isActive ? 'bg-[#00D4B2] text-[#0B1121] shadow' : 'text-gray-400 hover:text-white'
                           }`}
                         >
                           {status}
@@ -301,7 +301,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#D8F235] hover:bg-[#c8e02d] text-[#121316] py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-2"
+                  className="w-full bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-2"
                 >
                   <span>Save Changes</span>
                   <ArrowRight size={16} />
@@ -320,7 +320,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#121316]/75 backdrop-blur-md"
+              className="absolute inset-0 bg-[#0B1121]/75 backdrop-blur-md"
               onClick={() => setShowAddOccupantModal(false)}
             />
             <motion.div 
@@ -328,7 +328,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-[#121316] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-5 overflow-hidden"
+              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-5 overflow-hidden"
             >
               <button 
                 type="button"
@@ -339,7 +339,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               </button>
 
               <div className="space-y-1">
-                <span className="text-[9px] font-extrabold text-[#D8F235] tracking-widest uppercase bg-[#D8F235]/10 px-2.5 py-0.5 rounded-full border border-[#D8F235]/25 inline-block">
+                <span className="text-[9px] font-extrabold text-[#00D4B2] tracking-widest uppercase bg-[#00D4B2]/10 px-2.5 py-0.5 rounded-full border border-[#00D4B2]/25 inline-block">
                   Roster Enroller
                 </span>
                 <h3 className="text-xl font-bold text-white mt-1">Register Occupant: {currentUnit.unitId}</h3>
@@ -354,7 +354,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                     placeholder="e.g. John Doe"
                     value={newActorName}
                     onChange={e => setNewActorName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#D8F235] transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
                   />
                 </div>
 
@@ -366,7 +366,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                     placeholder="john@example.com"
                     value={newActorEmail}
                     onChange={e => setNewActorEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#D8F235] transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
                   />
                 </div>
 
@@ -377,7 +377,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                     placeholder="e.g. 0400 123 456"
                     value={newActorPhone}
                     onChange={e => setNewActorPhone(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#D8F235] transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
                   />
                 </div>
 
@@ -392,7 +392,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                           type="button"
                           onClick={() => setNewActorRole(role)}
                           className={`py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all cursor-pointer ${
-                            isActive ? 'bg-[#D8F235] text-[#121316] shadow' : 'text-gray-400 hover:text-white'
+                            isActive ? 'bg-[#00D4B2] text-[#0B1121] shadow' : 'text-gray-400 hover:text-white'
                           }`}
                         >
                           {role.split(' ')[0]}
@@ -411,14 +411,14 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                       placeholder="e.g. RayWhite Agency"
                       value={newActorAgency}
                       onChange={e => setNewActorAgency(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#D8F235] transition-all"
+                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
                     />
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full bg-[#D8F235] hover:bg-[#c8e02d] text-[#121316] py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-2"
+                  className="w-full bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-2"
                 >
                   <span>Register on Site Roster</span>
                   <ArrowRight size={14} />
@@ -436,7 +436,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) {
   return (
     <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
-      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#D8F235] group-hover:text-[#121316] transition-colors">
+      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#00D4B2] group-hover:text-[#0B1121] transition-colors">
         {icon}
       </div>
       <span className="text-[10px] font-medium text-gray-400 group-hover:text-white transition-colors">{label}</span>
@@ -465,7 +465,7 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
         {canManage && !isSelf && (
           <button
             onClick={onOffboard}
-            className="p-2 rounded-xl border border-red-100 text-red-500 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all cursor-pointer"
+            className="p-2 rounded-xl border border-[#FF4757]/20 text-[#FF4757] hover:text-white hover:bg-[#FF4757]/100 hover:border-red-500 transition-all cursor-pointer"
             title="Offboard Occupant"
           >
             <Trash2 size={14} />
@@ -488,12 +488,12 @@ function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, l
   return (
     <div className="flex items-center justify-between group">
       <div className="flex items-center gap-2">
-        <Key size={12} className={active ? 'text-[#8B8CF8]' : 'text-gray-400'} />
+        <Key size={12} className={active ? 'text-[#0055FF]' : 'text-gray-400'} />
         <span className={`text-xs font-medium ${active ? 'text-gray-900' : 'text-gray-500'}`}>{label}</span>
       </div>
       <button 
         onClick={() => !locked && setActive(!active)}
-        className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#8B8CF8]' : 'text-gray-300'}`}
+        className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF]' : 'text-gray-300'}`}
         disabled={locked}
       >
         {active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}

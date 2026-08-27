@@ -118,7 +118,7 @@ export const AnimatedTestimonials = ({
               <h3 className="text-2xl font-black text-gray-900">
                 {testimonials[active].name}
               </h3>
-              <p className="text-xs font-black uppercase tracking-wider text-[#8B8CF8]">
+              <p className="text-xs font-black uppercase tracking-wider text-[#0055FF]">
                 {testimonials[active].designation}
               </p>
             </div>
@@ -156,7 +156,7 @@ export const AnimatedTestimonials = ({
             </button>
             <button
               onClick={handleNext}
-              className="h-12 w-12 rounded-full bg-[#121316] flex items-center justify-center group/btn cursor-pointer hover:bg-black transition-colors"
+              className="h-12 w-12 rounded-full bg-[#0B1121] flex items-center justify-center group/btn cursor-pointer hover:bg-black transition-colors"
             >
               <ArrowRight className="h-5 w-5 text-white group-hover/btn:translate-x-0.5 transition-transform" />
             </button>

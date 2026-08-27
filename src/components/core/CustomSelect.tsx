@@ -79,7 +79,7 @@ export function CustomSelect({
               damping: 28,
               mass: 0.7
             }}
-            className={`absolute ${isUp ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 right-0 z-50 bg-[#121316] text-white rounded-2xl p-2 shadow-2xl border border-white/10 max-h-64 overflow-y-auto dark-scrollbar`}
+            className={`absolute ${isUp ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 right-0 z-50 bg-[#0B1121] text-white rounded-2xl p-2 shadow-2xl border border-white/10 max-h-64 overflow-y-auto dark-scrollbar`}
           >
             {options.map(option => {
               const isSelected = option.value === value;
@@ -93,7 +93,7 @@ export function CustomSelect({
                   }}
                   className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between cursor-pointer ${
                     isSelected 
-                      ? 'bg-[#D8F235] text-[#121316] font-extrabold shadow-sm' 
+                      ? 'bg-[#00D4B2] text-[#0B1121] font-extrabold shadow-sm' 
                       : 'text-gray-300 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -102,7 +102,7 @@ export function CustomSelect({
                     <div>
                       <div>{option.label}</div>
                       {option.description && (
-                        <div className={`text-[10px] ${isSelected ? 'text-[#121316]/70' : 'text-gray-400'}`}>{option.description}</div>
+                        <div className={`text-[10px] ${isSelected ? 'text-[#0B1121]/70' : 'text-gray-400'}`}>{option.description}</div>
                       )}
                     </div>
                   </div>
@@ -112,7 +112,7 @@ export function CustomSelect({
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                     >
-                      <Check size={14} className="shrink-0 text-[#121316]" />
+                      <Check size={14} className="shrink-0 text-[#0B1121]" />
                     </motion.div>
                   )}
                 </button>

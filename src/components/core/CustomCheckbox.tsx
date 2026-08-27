@@ -21,7 +21,7 @@ export function CustomCheckbox({
         onClick={() => onChange(!checked)}
         className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           checked 
-            ? 'bg-[#121316] border-[#121316] shadow-sm' 
+            ? 'bg-[#0B1121] border-[#0B1121] shadow-sm' 
             : 'bg-gray-50 border-gray-300 hover:border-gray-400 hover:bg-white'
         }`}
       >
@@ -32,7 +32,7 @@ export function CustomCheckbox({
             exit={{ scale: 0, rotate: 15 }}
             transition={{ type: 'spring', stiffness: 500, damping: 24 }}
           >
-            <Check size={12} className="text-[#D8F235] stroke-[3]" />
+            <Check size={12} className="text-[#00D4B2] stroke-[3]" />
           </motion.div>
         )}
       </div>

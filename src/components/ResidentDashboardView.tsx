@@ -156,9 +156,9 @@ export function ResidentDashboardView({
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9]">
       
       {/* Welcome Banner with Android-Style Morphing Button */}
-      <div className="bg-gradient-to-r from-[#121316] to-[#1E2026] text-white rounded-3xl p-8 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-[#0B1121] to-[#1E2026] text-white rounded-3xl p-8 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D8F235]/10 text-[#D8F235] text-xs font-extrabold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] text-xs font-extrabold uppercase tracking-wider">
             <ShieldCheck size={14} /> SP10482 • Unit 10 Active
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Welcome, {activePersonaName}</h1>
@@ -170,7 +170,7 @@ export function ResidentDashboardView({
         {/* Morphing Capsule Button -> Center Dialog Transformation */}
         <MorphingPopover>
           <MorphingPopoverTrigger>
-            <div className="bg-[#D8F235] hover:bg-[#c4db30] text-[#121316] px-6 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-105 shrink-0 cursor-pointer">
+            <div className="bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] px-6 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-105 shrink-0 cursor-pointer">
               <Plus size={20} /> Create New Request
             </div>
           </MorphingPopoverTrigger>
@@ -190,12 +190,12 @@ export function ResidentDashboardView({
         {/* Main Requests Hub Card */}
         <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6 flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#8B8CF8]/10 text-[#6366F1] flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-2xl bg-[#0055FF]/10 text-[#0033CC] flex items-center justify-center font-bold">
               <Wrench size={24} />
             </div>
 
             <div>
-              <span className="text-xs font-extrabold text-[#8B8CF8] uppercase tracking-wider">Service & Repairs</span>
+              <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Service & Repairs</span>
               <h2 className="text-2xl font-bold text-gray-900 mt-0.5">Requests Module</h2>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">
                 Log requests across 5 categories, track real-time manager triage status (New, Approved, Rejected), and manage your lot issues.
@@ -209,7 +209,7 @@ export function ResidentDashboardView({
               </div>
               <div className="bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
                 <span className="text-gray-400 font-bold uppercase">My Requests</span>
-                <div className="text-2xl font-extrabold text-[#8B8CF8] mt-0.5">{myRequests.length}</div>
+                <div className="text-2xl font-extrabold text-[#0055FF] mt-0.5">{myRequests.length}</div>
               </div>
               <div className="bg-amber-50 p-3.5 rounded-2xl border border-amber-100">
                 <span className="text-amber-800 font-bold uppercase">Pending Triage</span>
@@ -221,7 +221,7 @@ export function ResidentDashboardView({
           <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
             <button
               onClick={onNavigateToRequests}
-              className="w-full bg-[#121316] hover:bg-black text-white py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="w-full bg-[#0B1121] hover:bg-black text-white py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               Open Requests List View <ArrowRight size={16} />
             </button>
@@ -234,7 +234,7 @@ export function ResidentDashboardView({
           
           <div className="bg-gray-50 p-4 rounded-2xl space-y-3 text-xs border border-gray-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-[#0055FF]/10 text-[#0033CC] flex items-center justify-center font-bold">
                 <Home size={20} />
               </div>
               <div>
@@ -269,7 +269,7 @@ export function ResidentDashboardView({
 
               <button
                 onClick={onNavigateToRequests}
-                className="text-xs font-bold text-[#8B8CF8] hover:text-[#6366F1] cursor-pointer"
+                className="text-xs font-bold text-[#0055FF] hover:text-[#0033CC] cursor-pointer"
               >
                 View Details
               </button>
@@ -317,7 +317,7 @@ export function ResidentDashboardView({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-[#121316]/75 backdrop-blur-md"
+                className="absolute inset-0 bg-[#0B1121]/75 backdrop-blur-md"
                 onClick={() => setShowSetupPopup(false)}
               />
 
@@ -327,7 +327,7 @@ export function ResidentDashboardView({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-                className="bg-[#121316] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-6 overflow-hidden"
+                className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-6 overflow-hidden"
               >
                 {/* Close Button */}
                 <button 
@@ -339,14 +339,14 @@ export function ResidentDashboardView({
                 </button>
 
                 {/* Decorative Glow */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#D8F235]/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="text-center space-y-2.5 relative z-10 pt-4">
-                  <div className="w-14 h-14 rounded-2xl bg-[#D8F235]/10 text-[#D8F235] flex items-center justify-center mx-auto border border-[#D8F235]/20 animate-pulse">
+                  <div className="w-14 h-14 rounded-2xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center mx-auto border border-[#00D4B2]/20 animate-pulse">
                     <Building size={28} />
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-extrabold text-[#D8F235] tracking-widest uppercase bg-[#D8F235]/10 px-2.5 py-0.5 rounded-full border border-[#D8F235]/25 inline-block">
+                    <span className="text-[9px] font-extrabold text-[#00D4B2] tracking-widest uppercase bg-[#00D4B2]/10 px-2.5 py-0.5 rounded-full border border-[#00D4B2]/25 inline-block">
                       {info.subtitle}
                     </span>
                     <h3 className="text-2xl font-bold tracking-tight text-white mt-1">{info.title}</h3>
@@ -368,14 +368,14 @@ export function ResidentDashboardView({
                           type="button"
                           onClick={() => handleBuildingTypeChange(type)}
                           className={`relative py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer outline-none z-10 ${
-                            isActive ? 'text-[#121316]' : 'text-gray-400 hover:text-white'
+                            isActive ? 'text-[#0B1121]' : 'text-gray-400 hover:text-white'
                           }`}
                         >
                           {isActive && (
                             <motion.span
                               layoutId="activeTabDashboardPopup"
                               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                              className="absolute inset-0 bg-[#D8F235] rounded-xl -z-10 shadow-md"
+                              className="absolute inset-0 bg-[#00D4B2] rounded-xl -z-10 shadow-md"
                             />
                           )}
                           {type}
@@ -394,7 +394,7 @@ export function ResidentDashboardView({
                       placeholder="e.g. SP101"
                       value={newSchemeId}
                       onChange={e => setNewSchemeId(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold focus:border-[#D8F235]/50 focus:bg-white/10 transition-all placeholder:text-gray-600"
+                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold focus:border-[#00D4B2]/50 focus:bg-white/10 transition-all placeholder:text-gray-600"
                     />
                   </div>
 
@@ -406,7 +406,7 @@ export function ResidentDashboardView({
                       placeholder="e.g. Sunset Duplex"
                       value={newSchemeName}
                       onChange={e => setNewSchemeName(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold focus:border-[#D8F235]/50 focus:bg-white/10 transition-all placeholder:text-gray-600"
+                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold focus:border-[#00D4B2]/50 focus:bg-white/10 transition-all placeholder:text-gray-600"
                     />
                   </div>
 
@@ -420,7 +420,7 @@ export function ResidentDashboardView({
                       className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none font-bold transition-all ${
                         buildingType !== 'custom'
                           ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
-                          : 'border-white/10 bg-white/5 text-white focus:border-[#D8F235]/50 focus:bg-white/10'
+                          : 'border-white/10 bg-white/5 text-white focus:border-[#00D4B2]/50 focus:bg-white/10'
                       }`}
                     />
                     <span className="text-[10px] text-gray-500 mt-2 block">
@@ -432,7 +432,7 @@ export function ResidentDashboardView({
 
                   <button
                     type="submit"
-                    className="w-full bg-[#D8F235] hover:bg-[#c8e02d] text-[#121316] py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#D8F235]/15 mt-4"
+                    className="w-full bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#00D4B2]/15 mt-4"
                   >
                     <span>Activate Strata Scheme</span>
                     <ArrowRight size={16} />

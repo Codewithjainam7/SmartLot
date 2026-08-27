@@ -64,7 +64,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
       <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[620px] border border-gray-100">
         
         {/* Left Visual Branding Panel */}
-        <div className="w-full md:w-5/12 bg-[#121316] p-10 text-white flex flex-col justify-between relative overflow-hidden">
+        <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10 space-y-6">
             <svg 
               onClick={onBack}
@@ -74,13 +74,13 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
               xmlns="http://www.w3.org/2000/svg"
               title="Back to Landing Page"
             >
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#D8F235" />
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00D4B2" />
               <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
               <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
             </svg>
 
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#D8F235]">SmartLot Strata</span>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#00D4B2]">SmartLot Strata</span>
               <h1 className="text-3xl font-bold tracking-tight mt-1">Strata Portal</h1>
               <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                 Log service requests, manage scheme members, assign role permissions, and vote on community decisions.
@@ -89,7 +89,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
             {/* Quick Simulation Personas Box */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#D8F235] block">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#00D4B2] block">
                 Simulate Foundation Journeys
               </span>
               <div className="flex flex-col gap-2">
@@ -120,7 +120,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
           <div className="relative z-10 space-y-3 pt-8 border-t border-white/10 text-xs text-gray-400">
             <div className="flex items-center gap-2 text-white font-semibold">
-              <ShieldCheck size={16} className="text-[#D8F235]" /> Verified Compliance & Scheme Isolation
+              <ShieldCheck size={16} className="text-[#00D4B2]" /> Verified Compliance & Scheme Isolation
             </div>
             <div>Secure tenant & strata manager authentication matrix.</div>
           </div>
@@ -217,10 +217,10 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
             <button
               type="submit"
-              className="w-full bg-[#121316] hover:bg-black text-white rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-[1.02] cursor-pointer mt-4"
+              className="w-full bg-[#0B1121] hover:bg-black text-white rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-[1.02] cursor-pointer mt-4"
             >
               <span>{authMode === 'signin' ? `Log In as ${selectedRole}` : `Create ${selectedRole} Account`}</span>
-              <ArrowRight size={18} className="text-[#D8F235]" />
+              <ArrowRight size={18} className="text-[#00D4B2]" />
             </button>
 
             <button
@@ -244,7 +244,7 @@ function RoleOption({ title, desc, selected, onClick }: any) {
       type="button"
       onClick={onClick}
       className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-        selected ? 'border-[#121316] bg-[#121316]/5 ring-1 ring-[#121316] font-bold text-gray-900' : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
+        selected ? 'border-[#0B1121] bg-[#0B1121]/5 ring-1 ring-[#0B1121] font-bold text-gray-900' : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
       }`}
     >
       <div className="text-xs font-bold">{title}</div>

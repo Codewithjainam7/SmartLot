@@ -100,7 +100,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-[#121316]/75 backdrop-blur-md" 
+            className="absolute inset-0 bg-[#0B1121]/75 backdrop-blur-md" 
             onClick={onClose} 
           />
 
@@ -110,7 +110,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 30 }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="relative bg-[#121316] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl z-10 space-y-6 overflow-hidden"
+            className="relative bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl z-10 space-y-6 overflow-hidden"
           >
             {/* Close Button */}
             <button 
@@ -122,15 +122,15 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             </button>
 
             {/* Decorative Glow */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D8F235]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Title / Header */}
             <div className="text-center space-y-2.5 relative z-10 pt-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#D8F235]/10 text-[#D8F235] flex items-center justify-center mx-auto border border-[#D8F235]/20 animate-pulse">
+              <div className="w-14 h-14 rounded-2xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center mx-auto border border-[#00D4B2]/20 animate-pulse">
                 <Building size={28} />
               </div>
               <div className="space-y-1">
-                <span className="text-[9px] font-extrabold text-[#D8F235] tracking-widest uppercase bg-[#D8F235]/10 px-2.5 py-0.5 rounded-full border border-[#D8F235]/25 inline-block">
+                <span className="text-[9px] font-extrabold text-[#00D4B2] tracking-widest uppercase bg-[#00D4B2]/10 px-2.5 py-0.5 rounded-full border border-[#00D4B2]/25 inline-block">
                   Strata Provisioning
                 </span>
                 <h3 className="text-2xl font-bold tracking-tight text-white mt-1">Create New Strata Site</h3>
@@ -152,14 +152,14 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                       type="button"
                       onClick={() => handleTypeChange(type)}
                       className={`relative py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer outline-none z-10 ${
-                        isActive ? 'text-[#121316]' : 'text-gray-400 hover:text-white'
+                        isActive ? 'text-[#0B1121]' : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       {isActive && (
                         <motion.span
                           layoutId="activeTabOnboarding"
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                          className="absolute inset-0 bg-[#D8F235] rounded-xl -z-10 shadow-md"
+                          className="absolute inset-0 bg-[#00D4B2] rounded-xl -z-10 shadow-md"
                         />
                       )}
                       {type === 'coronation' ? 'Townhouse' : type === 'cavaller' ? 'Apartment' : type}
@@ -179,7 +179,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                     required
                     value={schemeName}
                     onChange={e => setSchemeName(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 focus:shadow-[0_0_15px_rgba(216,242,53,0.15)] transition-all duration-200"
+                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200"
                     placeholder="e.g. Sunset Duplex"
                   />
                 </div>
@@ -192,7 +192,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                       required
                       value={schemeId}
                       onChange={e => setSchemeId(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 focus:shadow-[0_0_15px_rgba(216,242,53,0.15)] transition-all duration-200"
+                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200"
                       placeholder="e.g. SP101"
                     />
                   </div>
@@ -208,7 +208,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                       className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none font-bold transition-all duration-200 ${
                         siteType !== 'custom'
                           ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
-                          : 'border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/[0.08] focus:border-[#D8F235] focus:bg-white/10 focus:ring-2 focus:ring-[#D8F235]/25 focus:shadow-[0_0_15px_rgba(216,242,53,0.15)]'
+                          : 'border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)]'
                       }`}
                       placeholder="e.g. 2"
                     />
@@ -232,7 +232,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#D8F235] hover:bg-[#c8e02d] text-[#121316] px-8 py-3.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-lg shadow-[#D8F235]/15 hover:scale-[1.02] transition-all cursor-pointer"
+                  className="bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] px-8 py-3.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-lg shadow-[#00D4B2]/15 hover:scale-[1.02] transition-all cursor-pointer"
                 >
                   Create Scheme
                 </button>

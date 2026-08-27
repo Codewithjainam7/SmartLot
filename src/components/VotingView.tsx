@@ -20,9 +20,9 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9]">
       
       {/* Clean Header Banner */}
-      <div className="bg-gradient-to-r from-[#121316] to-[#1E2026] text-white rounded-3xl p-8 shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#0B1121] to-[#1E2026] text-white rounded-3xl p-8 shadow-md relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B8CF8]/20 text-[#8B8CF8] text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/20 text-[#0055FF] text-xs font-bold uppercase tracking-wider mb-3">
             Day 1 Committee Access Gate
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Strata Committee Voting Engine</h1>
@@ -49,14 +49,14 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-6">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="text-xs font-bold text-[#8B8CF8] uppercase tracking-wider">{motion.id} • Linked Case {motion.caseId}</span>
+                    <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{motion.id} • Linked Case {motion.caseId}</span>
                     {motion.status === 'passed' && (
                       <span className="px-3 py-1 rounded-full bg-emerald-100 text-[#10B981] text-xs font-extrabold uppercase">
                         MOTION PASSED
                       </span>
                     )}
                     {motion.status === 'active' && (
-                      <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-extrabold uppercase">
+                      <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-xs font-extrabold uppercase">
                         VOTING ACTIVE
                       </span>
                     )}
@@ -85,7 +85,7 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
                       key={quote.vendorId}
                       className={`p-5 rounded-2xl border transition-all ${
                         quote.recommended 
-                          ? 'bg-emerald-50/40 border-emerald-200 ring-1 ring-emerald-300' 
+                          ? 'bg-[#00D4B2]/10/40 border-[#00D4B2]/30 ring-1 ring-emerald-300' 
                           : 'bg-gray-50 border-gray-200'
                       }`}
                     >
@@ -110,14 +110,14 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
               <div className="bg-[#F4F6F9] p-6 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between text-sm font-bold">
                   <span className="text-gray-900 flex items-center gap-2">
-                    <Vote size={18} className="text-[#8B8CF8]" /> Live Quorum Meter
+                    <Vote size={18} className="text-[#0055FF]" /> Live Quorum Meter
                   </span>
                   <span className="text-gray-600">{totalVotes} / {motion.quorumTarget} Committee Votes ({quorumProgress}%)</span>
                 </div>
 
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-[#8B8CF8] to-[#10B981] h-3 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-[#0055FF] to-[#10B981] h-3 rounded-full transition-all duration-500"
                     style={{ width: `${quorumProgress}%` }}
                   />
                 </div>
@@ -133,8 +133,8 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
               {motion.status === 'active' && (
                 <div className="pt-4 border-t border-gray-100">
                   {hasVoted ? (
-                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl text-center text-sm font-bold text-blue-900 flex items-center justify-center gap-2">
-                      <CheckCircle2 size={18} className="text-blue-600" /> Your Digital Ballot has been securely logged for this motion.
+                    <div className="bg-[#0055FF]/10 border border-blue-100 p-4 rounded-2xl text-center text-sm font-bold text-blue-900 flex items-center justify-center gap-2">
+                      <CheckCircle2 size={18} className="text-[#0033CC]" /> Your Digital Ballot has been securely logged for this motion.
                     </div>
                   ) : (
                     <div>
@@ -168,7 +168,7 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
 
               {/* Auto-Resolution Banner */}
               {motion.status === 'passed' && (
-                <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex items-center justify-between text-emerald-900">
+                <div className="bg-[#00D4B2]/10 border border-[#00D4B2]/30 p-5 rounded-2xl flex items-center justify-between text-emerald-900">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#10B981] text-white flex items-center justify-center font-bold">
                       <CheckCircle2 size={24} />

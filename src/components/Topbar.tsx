@@ -69,7 +69,7 @@ export function Topbar({
                   <button
                     type="button"
                     onClick={onAddSchemeClick}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#8B8CF8] hover:bg-[#8B8CF8]/5 flex items-center gap-1.5 cursor-pointer"
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#0055FF] hover:bg-[#0055FF]/5 flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus size={14} />
                     Add New Strata Site
@@ -101,7 +101,7 @@ export function Topbar({
           <div className="text-xs text-gray-500 truncate max-w-[180px]">{activePersona.role} • {activePersona.context}</div>
         </div>
         <button className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 shadow-sm p-2 rounded-full transition-all cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B8CF8] to-[#6366F1] flex items-center justify-center text-white font-bold text-xs">
+          <div className="w-8 h-8 rounded-full bg-[#0F172A] flex items-center justify-center text-white font-bold text-xs">
             {activePersona.name.split(' ').map(n => n[0]).join('')}
           </div>
           <ChevronDown size={16} className="text-gray-400 mr-1" />
@@ -131,7 +131,7 @@ export function Topbar({
                             }
                           }
                         }}
-                        className="rounded border-gray-300 text-[#8B8CF8] focus:ring-[#8B8CF8]"
+                        className="rounded border-gray-300 text-[#0055FF] focus:ring-[#0055FF]"
                       />
                       <span>{role}</span>
                     </label>

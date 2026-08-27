@@ -104,7 +104,7 @@ export function CreateRequestFormContent({
       {/* Top Stepper Indicator */}
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>
-          <span className="text-xs font-extrabold text-[#8B8CF8] uppercase tracking-wider">Step {step} of 5</span>
+          <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Step {step} of 5</span>
           <h2 className="text-xl font-bold text-gray-900">
             {step === 1 && '1. Choose Request Type'}
             {step === 2 && '2. Add Title & Description'}
@@ -126,7 +126,7 @@ export function CreateRequestFormContent({
             type="maintenance_upgrade" 
             title="1. Maintenance & Upgrade Request" 
             desc="Shared common area repairs, lift maintenance, gate fixes." 
-            icon={<Wrench size={20} className="text-[#8B8CF8]" />} 
+            icon={<Wrench size={20} className="text-[#0055FF]" />} 
             selected={requestType === 'maintenance_upgrade'} 
             onClick={() => setRequestType('maintenance_upgrade')} 
           />
@@ -142,7 +142,7 @@ export function CreateRequestFormContent({
             type="complaint" 
             title="3. Complaint" 
             desc="Bylaw breaches, noise complaints, unauthorized parking." 
-            icon={<MessageSquareWarning size={20} className="text-amber-500" />} 
+            icon={<MessageSquareWarning size={20} className="text-[#FFB020]" />} 
             selected={requestType === 'complaint'} 
             onClick={() => setRequestType('complaint')} 
           />
@@ -158,7 +158,7 @@ export function CreateRequestFormContent({
             type="recurring_task" 
             title="5. Recurring Task Setup Request" 
             desc="Scheduled garden maintenance, bin cleaning, recurring pest control." 
-            icon={<Repeat size={20} className="text-blue-500" />} 
+            icon={<Repeat size={20} className="text-[#0055FF]" />} 
             selected={requestType === 'recurring_task'} 
             onClick={() => setRequestType('recurring_task')} 
           />
@@ -202,7 +202,7 @@ export function CreateRequestFormContent({
             {attachmentUrl ? (
               <div className="space-y-2 w-full">
                 <img src={attachmentUrl} alt="Attachment Preview" className="w-full h-40 object-cover rounded-2xl border border-gray-200 shadow-sm" />
-                <span className="text-xs text-emerald-600 font-bold flex items-center justify-center gap-1">
+                <span className="text-xs text-[#00A38C] font-bold flex items-center justify-center gap-1">
                   <CheckCircle2 size={14} /> Photo Attachment Attached
                 </span>
               </div>
@@ -223,7 +223,7 @@ export function CreateRequestFormContent({
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Prefilled Requestor Details (Non-Editable)</span>
             <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-gray-800"><User size={14} className="text-[#8B8CF8]" /> {requestorName}</div>
+              <div className="flex items-center gap-1.5 font-bold text-gray-800"><User size={14} className="text-[#0055FF]" /> {requestorName}</div>
               <div className="flex items-center gap-1.5 font-semibold text-gray-600"><Mail size={14} className="text-gray-400" /> {requestorEmail}</div>
               <div className="flex items-center gap-1.5 font-semibold text-gray-600"><Phone size={14} className="text-gray-400" /> {requestorPhone}</div>
             </div>
@@ -254,8 +254,8 @@ export function CreateRequestFormContent({
       {step === 5 && (
         <div className="bg-gray-50 border border-gray-200 rounded-3xl p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-            <span className="text-xs font-extrabold uppercase text-[#8B8CF8] tracking-wider">Request Preview</span>
-            <span className="px-3 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">Status: NEW</span>
+            <span className="text-xs font-extrabold uppercase text-[#0055FF] tracking-wider">Request Preview</span>
+            <span className="px-3 py-0.5 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">Status: NEW</span>
           </div>
 
           <div>
@@ -296,7 +296,7 @@ export function CreateRequestFormContent({
         {step < 5 ? (
           <button
             onClick={handleNext}
-            className="bg-[#121316] hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+            className="bg-[#0B1121] hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
           >
             Next <ArrowRight size={16} />
           </button>
@@ -333,7 +333,7 @@ export function CreateRequestModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#121316]/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#0B1121]/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white w-full max-w-2xl rounded-3xl p-8 shadow-2xl z-10 space-y-6 animate-in zoom-in-95 duration-200">
         <CreateRequestFormContent 
           onSubmit={onSubmit}
@@ -353,7 +353,7 @@ function TypeCard({ type, title, desc, icon, selected, onClick }: any) {
       type="button"
       onClick={onClick}
       className={`w-full flex items-start gap-4 p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-        selected ? 'border-[#8B8CF8] bg-[#8B8CF8]/10 ring-1 ring-[#8B8CF8]' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+        selected ? 'border-[#0055FF] bg-[#0055FF]/10 ring-1 ring-[#0055FF]' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
       }`}
     >
       <div className="p-2 rounded-xl bg-white shadow-sm shrink-0">{icon}</div>

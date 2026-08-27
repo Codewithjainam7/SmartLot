@@ -24,7 +24,7 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
             <ArrowLeft size={18} />
           </button>
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider mb-2 border border-red-100">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF4757]/10 text-[#FF4757] text-xs font-bold uppercase tracking-wider mb-2 border border-[#FF4757]/20">
               <ShieldAlert size={12} /> System Admin Directory
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Website Administrator Console</h1>
@@ -41,11 +41,11 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
         </div>
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
           <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Registered Accounts</div>
-          <div className="text-3xl font-extrabold text-[#8B8CF8] mt-2">{members.length}</div>
+          <div className="text-3xl font-extrabold text-[#0055FF] mt-2">{members.length}</div>
         </div>
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
           <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">System Status</div>
-          <div className="text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full inline-block mt-3 uppercase tracking-wider">
+          <div className="text-sm font-bold text-[#00A38C] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-3 py-1 rounded-full inline-block mt-3 uppercase tracking-wider">
             Operational
           </div>
         </div>
@@ -73,7 +73,7 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
                   <td className="py-4 px-4 border-b border-gray-100 text-right">
                     <button
                       onClick={() => onDeleteScheme(s.id)}
-                      className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-xl border border-red-200 transition-colors cursor-pointer"
+                      className="text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 hover:bg-[#FF4757]/20 p-2 rounded-xl border border-[#FF4757]/30 transition-colors cursor-pointer"
                       title="De-register Scheme"
                     >
                       <Trash2 size={14} />
@@ -108,7 +108,7 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
                   <td className="py-4 px-4 border-b border-gray-100">
                     <div className="font-bold text-gray-900 text-sm">{m.name}</div>
                     <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                      m.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'
+                      m.status === 'Active' ? 'bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20' : 'bg-amber-50 text-amber-700 border border-amber-100'
                     }`}>
                       {m.status}
                     </span>
@@ -130,7 +130,7 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
                   <td className="py-4 px-4 border-b border-gray-100 text-right">
                     <button
                       onClick={() => onDeleteMember(m.id)}
-                      className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-xl border border-red-200 transition-colors cursor-pointer"
+                      className="text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 hover:bg-[#FF4757]/20 p-2 rounded-xl border border-[#FF4757]/30 transition-colors cursor-pointer"
                       title="De-activate User"
                     >
                       <Trash2 size={14} />

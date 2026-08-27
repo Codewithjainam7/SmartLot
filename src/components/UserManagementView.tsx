@@ -106,7 +106,7 @@ export function UserManagementView({
         {/* Header Banner */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D8F235]/20 text-[#121316] text-xs font-bold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D4B2]/20 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
               Scheme Administration • Multi-Occupant Onboarding Zone
             </div>
             <h1 className="text-2xl font-bold text-gray-900">User Management Directory</h1>
@@ -118,14 +118,14 @@ export function UserManagementView({
               <button
                 type="button"
                 onClick={() => setActiveTab('roster')}
-                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'roster' ? 'bg-[#121316] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'roster' ? 'bg-[#0B1121] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Member Roster
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('permissions')}
-                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'permissions' ? 'bg-[#121316] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'permissions' ? 'bg-[#0B1121] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Role Permissions
               </button>
@@ -133,8 +133,8 @@ export function UserManagementView({
 
             {activeTab === 'roster' && (
               <MorphingPopoverTrigger>
-                <div className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
-                  <UserPlus size={18} className="text-[#D8F235]" /> 
+                <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+                  <UserPlus size={18} className="text-[#00D4B2]" /> 
                   <span>Add New Member</span>
                 </div>
               </MorphingPopoverTrigger>
@@ -242,7 +242,7 @@ export function UserManagementView({
                           <td className="py-4 px-4 border-b border-gray-100">
                             {m.additionalOccupants && m.additionalOccupants.length > 0 ? (
                               <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-[#8B8CF8] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
+                                <span className="text-[10px] font-bold text-[#0055FF] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
                                   {m.additionalOccupants.length} Extra Occupants
                                 </span>
                                 <div className="text-[11px] text-gray-600 truncate max-w-[180px]">
@@ -269,14 +269,14 @@ export function UserManagementView({
                               m.status === 'Active' ? (
                                 <button
                                   onClick={() => onUpdateStatus(m.id, 'Restricted')}
-                                  className="px-3 py-1.5 rounded-xl border border-red-200 text-xs font-bold text-red-500 hover:bg-red-50 cursor-pointer"
+                                  className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-xs font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer"
                                 >
                                   Restrict Access
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => onUpdateStatus(m.id, 'Active')}
-                                  className="px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-bold text-emerald-600 hover:bg-emerald-50 cursor-pointer"
+                                  className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-xs font-bold text-[#00A38C] hover:bg-[#00D4B2]/10 cursor-pointer"
                                 >
                                   Activate
                                 </button>
@@ -394,14 +394,14 @@ export function UserManagementView({
                 <div className="flex justify-between"><span className="text-gray-400 font-bold">Email:</span> <span className="font-bold text-gray-900">{selectedMember.email}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400 font-bold">Phone:</span> <span className="font-semibold text-gray-700">{selectedMember.phone}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400 font-bold">Unit / Lot:</span> <span className="font-bold text-gray-900">{selectedMember.unitId} (Lot {selectedMember.lotNumber})</span></div>
-                <div className="flex justify-between"><span className="text-gray-400 font-bold">Scheme ID:</span> <span className="font-bold text-[#8B8CF8]">{selectedMember.schemeId}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400 font-bold">Scheme ID:</span> <span className="font-bold text-[#0055FF]">{selectedMember.schemeId}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400 font-bold">Joined:</span> <span className="text-gray-600">{selectedMember.joinedAt}</span></div>
               </div>
 
               {/* All Additional Mapped Occupants List */}
               {selectedMember.additionalOccupants && selectedMember.additionalOccupants.length > 0 && (
                 <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl space-y-3 text-xs">
-                  <div className="font-bold text-[#8B8CF8] uppercase text-[10px]">
+                  <div className="font-bold text-[#0055FF] uppercase text-[10px]">
                     Mapped Occupants in {selectedMember.unitId} ({selectedMember.additionalOccupants.length})
                   </div>
                   
@@ -412,7 +412,7 @@ export function UserManagementView({
                           <div className="font-bold text-gray-900">{occ.name}</div>
                           <div className="text-[10px] text-gray-500">{occ.email}</div>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-[#8B8CF8]">{occ.role}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-[#0055FF]">{occ.role}</span>
                       </div>
                     ))}
                   </div>
@@ -425,7 +425,7 @@ export function UserManagementView({
                     onDeleteMember(selectedMember.id);
                     setSelectedMember(null);
                   }}
-                  className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF4757] border border-[#FF4757]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 size={16} /> Delete Member Account
                 </button>
@@ -487,7 +487,7 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
       {/* Modal Header */}
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>
-          <span className="text-xs font-extrabold text-[#8B8CF8] uppercase tracking-wider">Multi-Occupant Onboarding Zone</span>
+          <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Multi-Occupant Onboarding Zone</span>
           <h2 className="text-2xl font-bold text-gray-900">Add Member & Lot Occupants</h2>
         </div>
         <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-pointer">
@@ -575,7 +575,7 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
         <div className="pt-4 border-t border-gray-100 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-wider">Multi-Occupant Lot Mapping</span>
+              <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-wider">Multi-Occupant Lot Mapping</span>
               <h4 className="text-sm font-bold text-gray-900">Additional Lot Residents & Occupants</h4>
               <p className="text-[11px] text-gray-500">Map multiple co-owners, family members, or tenants living in {formUnit || 'this lot'}.</p>
             </div>
@@ -583,9 +583,9 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
             <button
               type="button"
               onClick={handleAddOccupantRow}
-              className="bg-[#121316] hover:bg-black text-white px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer"
+              className="bg-[#0B1121] hover:bg-black text-white px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer"
             >
-              <Plus size={14} className="text-[#D8F235]" /> 
+              <Plus size={14} className="text-[#00D4B2]" /> 
               <span>Add Additional Resident</span>
             </button>
           </div>
@@ -605,7 +605,7 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
                   >
                     <div className="flex items-center justify-between border-b border-gray-200/60 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-[#8B8CF8]/20 text-[#6366F1] flex items-center justify-center font-bold text-xs">
+                        <div className="w-7 h-7 rounded-full bg-[#0055FF]/20 text-[#0033CC] flex items-center justify-center font-bold text-xs">
                           #{idx + 1}
                         </div>
                         <span className="text-xs font-bold text-gray-900">Occupant Details</span>
@@ -614,7 +614,7 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
                       <button
                         type="button"
                         onClick={() => handleRemoveOccupantRow(occ.id)}
-                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1 border border-red-200 transition-colors cursor-pointer"
+                        className="text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 hover:bg-[#FF4757]/20 px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1 border border-[#FF4757]/30 transition-colors cursor-pointer"
                       >
                         <X size={13} /> Remove
                       </button>
@@ -690,13 +690,13 @@ function FilterPill({ label, active, onClick, count }: { label: string; active: 
       type="button"
       onClick={onClick}
       className={`relative px-4 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-        active ? 'text-[#D8F235]' : 'text-gray-600 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200/80'
+        active ? 'text-[#00D4B2]' : 'text-gray-600 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200/80'
       }`}
     >
       {active && (
         <motion.div
           layoutId="active-role-pill-bg"
-          className="absolute inset-0 bg-[#121316] rounded-full z-0 shadow-sm overflow-hidden"
+          className="absolute inset-0 bg-[#0B1121] rounded-full z-0 shadow-sm overflow-hidden"
           transition={{ type: 'spring', stiffness: 380, damping: 28 }}
         />
       )}
@@ -712,7 +712,7 @@ function MemberStatusBadge({ status }: { status: Member['status'] }) {
     case 'Active':
       return <span className="px-3 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-extrabold uppercase">ACTIVE</span>;
     case 'Invited':
-      return <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase">INVITED</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-extrabold uppercase">INVITED</span>;
     case 'Restricted':
       return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-extrabold uppercase">RESTRICTED</span>;
   }

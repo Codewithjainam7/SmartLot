@@ -47,11 +47,11 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] text-gray-900 font-sans flex flex-col relative overflow-hidden selection:bg-[#D8F235] selection:text-[#121316]">
+    <div className="min-h-screen bg-[#F4F6F9] text-gray-900 font-sans flex flex-col relative overflow-hidden selection:bg-[#00D4B2] selection:text-[#0B1121]">
       
       {/* Decorative Blur Backgrounds */}
-      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#D8F235]/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-[#8B8CF8]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-[#0055FF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Floating Premium Capsule Navbar (Light Theme) */}
       <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl bg-white/80 backdrop-blur-xl border border-gray-200 rounded-full px-8 py-4 flex items-center justify-between shadow-lg z-50">
@@ -59,10 +59,10 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
           className="flex items-center gap-3 cursor-pointer group"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <div className="w-8 h-8 rounded-xl bg-[#121316] flex items-center justify-center text-[#D8F235] font-black shadow-lg">
+          <div className="w-8 h-8 rounded-xl bg-[#0B1121] flex items-center justify-center text-[#00D4B2] font-black shadow-lg">
             S
           </div>
-          <span className="text-lg font-black tracking-tight text-gray-900 group-hover:text-[#8B8CF8] transition-colors">SmartLot</span>
+          <span className="text-lg font-black tracking-tight text-gray-900 group-hover:text-[#0055FF] transition-colors">SmartLot</span>
         </div>
         
         <nav className="hidden md:flex items-center gap-8 text-xs font-black uppercase tracking-widest text-gray-500">
@@ -74,7 +74,7 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => onSelectPersona('guest')}
-            className="bg-[#121316] hover:bg-black text-[#D8F235] px-6 py-2.5 rounded-full font-black text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer"
+            className="bg-[#0B1121] hover:bg-black text-[#00D4B2] px-6 py-2.5 rounded-full font-black text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer"
           >
             Access Roster / Sign Up
           </button>
@@ -91,10 +91,10 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
         {/* Foreground Content */}
         <div className="relative z-10 max-w-4xl mx-auto space-y-8 mt-12">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-gray-800 text-xs font-black uppercase tracking-widest">
-            <ShieldCheck size={14} className="text-[#8B8CF8] animate-pulse" /> NSW & VIC Strata Scheme Certified
+            <ShieldCheck size={14} className="text-[#0055FF] animate-pulse" /> NSW & VIC Strata Scheme Certified
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tight leading-[1.1] max-w-4xl mx-auto uppercase">
-            The Strata Management <span className="text-[#8B8CF8]">OS</span> for Modern Schemes
+            The Strata Management <span className="text-[#0055FF]">OS</span> for Modern Schemes
           </h1>
           <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
             Take back control of common property. From self-managed duplex structures to multi-lot townhouse committees and apartment complexes.
@@ -102,10 +102,10 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
           <div className="flex items-center justify-center pt-4">
             <button 
               onClick={() => onSelectPersona('guest')}
-              className="w-full sm:w-auto bg-[#121316] hover:bg-black text-[#D8F235] px-10 py-4.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#121316]/10"
+              className="w-full sm:w-auto bg-[#0B1121] hover:bg-black text-[#00D4B2] px-10 py-4.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#0B1121]/10"
             >
               <span>Get Started Now</span>
-              <ArrowRight size={14} className="text-[#D8F235]" />
+              <ArrowRight size={14} className="text-[#00D4B2]" />
             </button>
           </div>
         </div>
@@ -114,38 +114,38 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
       {/* Feature Bento Grid with Clean Card Borders */}
       <section id="features" className="px-6 py-24 max-w-6xl mx-auto w-full relative z-10 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">Core Architecture</span>
+          <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-widest bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">Core Architecture</span>
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-gray-900">Advanced Strata Controls</h2>
           <p className="text-sm text-gray-500 font-medium">Engineered to comply with Australian state laws and self-management guidelines.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Primary Feature (Dark pop contrast card) */}
-          <div className="md:col-span-2 bg-[#121316] text-white p-8 rounded-[32px] shadow-xl flex flex-col justify-between min-h-[300px] relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border border-transparent">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#D8F235]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+          <div className="md:col-span-2 bg-[#0B1121] text-white p-8 rounded-[32px] shadow-xl flex flex-col justify-between min-h-[300px] relative overflow-hidden group hover:shadow-2xl transition-all duration-300 border border-transparent">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#00D4B2]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
             <div>
-              <span className="text-[10px] font-extrabold uppercase text-[#D8F235] tracking-widest">Maintenance Control</span>
+              <span className="text-[10px] font-extrabold uppercase text-[#00D4B2] tracking-widest">Maintenance Control</span>
               <h3 className="text-2xl font-bold mt-2 text-white">Common Property Dispatch</h3>
               <p className="text-sm text-gray-400 mt-2 max-w-md leading-relaxed">
                 Log building defects, generate public guest links, track vendor quotes, and register work order expenses. Automated notices are sent to affected units instantly.
               </p>
             </div>
             <div className="flex items-center gap-4 pt-6 border-t border-white/5 mt-6 text-xs text-gray-500 font-semibold">
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#D8F235]" /> Instant dispatch</div>
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#D8F235]" /> Expenditure limits mapping</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00D4B2]" /> Instant dispatch</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00D4B2]" /> Expenditure limits mapping</div>
             </div>
           </div>
 
           {/* Card 2: Ballot Resolutions */}
           <div className="bg-white border border-gray-200/80 hover:border-gray-950 p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[300px] group">
             <div>
-              <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest">Voting & Governance</span>
+              <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-widest">Voting & Governance</span>
               <h3 className="text-xl font-bold text-gray-900 mt-2">Ballot Resolutions</h3>
               <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                 Elected committee members can verify quotes and register votes online, with full audit trail histories that satisfy statutory quorum targets.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-[#8B8CF8]">
+            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-[#0055FF]">
               Meets NSW & VIC regulations
             </div>
           </div>
@@ -153,13 +153,13 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
           {/* Card 3: Switcher */}
           <div className="bg-white border border-gray-200/80 hover:border-gray-950 p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[300px] group">
             <div>
-              <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest">Multi-Site Operations</span>
+              <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-widest">Multi-Site Operations</span>
               <h3 className="text-xl font-bold text-gray-900 mt-2">Portfolio Switcher</h3>
               <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                 Professional managers can switch portfolios instantly. Switch roles dynamically and access noticeboards under distinct building scheme boundaries.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-[#8B8CF8]">
+            <div className="pt-4 border-t border-gray-100 text-xs font-bold text-[#0055FF]">
               Toggle between sites instantly
             </div>
           </div>
@@ -168,15 +168,15 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
           <div className="md:col-span-2 bg-white border border-gray-200/80 hover:border-gray-950 p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[300px] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-bl-full pointer-events-none group-hover:scale-105 transition-transform" />
             <div>
-              <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest">Occupant Directories</span>
+              <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-widest">Occupant Directories</span>
               <h3 className="text-2xl font-bold text-gray-900 mt-2">Occupant Access Directories</h3>
               <p className="text-sm text-gray-500 mt-2 max-w-md leading-relaxed">
                 Map co-owners, tenants, and residents directly to individual lot titles. Sync access permissions live so tenants do not access levies or cast committee votes.
               </p>
             </div>
             <div className="flex items-center gap-4 pt-6 border-t border-gray-100 mt-6 text-xs text-gray-500 font-semibold">
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#8B8CF8]" /> Live Sync access matrix</div>
-              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#8B8CF8]" /> Tenant lease verify</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#0055FF]" /> Live Sync access matrix</div>
+              <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#0055FF]" /> Tenant lease verify</div>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
       <section id="testimonials" className="px-6 py-24 bg-white border-y border-gray-200/80 relative z-10">
         <div className="max-w-6xl mx-auto w-full space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-[10px] font-extrabold uppercase text-[#8B8CF8] tracking-widest bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">Community Trust</span>
+            <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-widest bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">Community Trust</span>
             <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-gray-900">What Our Clients Say</h2>
             <p className="text-sm text-gray-500 font-medium">Join thousands of modern Australian lot owners self-managing their sites successfully.</p>
           </div>
@@ -226,11 +226,11 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
       </section>
 
       {/* Footer Page (Remains dark to ground the layout professionally) */}
-      <footer className="bg-[#121316] border-t border-white/5 text-gray-400 relative z-10 pt-20 pb-10 px-6">
+      <footer className="bg-[#0B1121] border-t border-white/5 text-gray-400 relative z-10 pt-20 pb-10 px-6">
         <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="space-y-4 col-span-1 md:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#D8F235] flex items-center justify-center text-[#121316] font-black">
+              <div className="w-8 h-8 rounded-xl bg-[#00D4B2] flex items-center justify-center text-[#0B1121] font-black">
                 S
               </div>
               <span className="text-base font-black tracking-tight text-white">SmartLot</span>
@@ -243,10 +243,10 @@ export function LandingPageView({ onSelectPersona }: LandingPageViewProps) {
           <div className="space-y-4">
             <h4 className="text-xs font-black text-white uppercase tracking-widest">Company</h4>
             <ul className="space-y-2.5 text-xs font-bold text-gray-500">
-              <li><a href="#" className="hover:text-[#D8F235] transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-[#D8F235] transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-[#D8F235] transition-colors">Compliance</a></li>
-              <li><a href="#" className="hover:text-[#D8F235] transition-colors">Support Helpdesk</a></li>
+              <li><a href="#" className="hover:text-[#00D4B2] transition-colors">About Us</a></li>
+              <li><a href="#" className="hover:text-[#00D4B2] transition-colors">Careers</a></li>
+              <li><a href="#" className="hover:text-[#00D4B2] transition-colors">Compliance</a></li>
+              <li><a href="#" className="hover:text-[#00D4B2] transition-colors">Support Helpdesk</a></li>
             </ul>
           </div>
 

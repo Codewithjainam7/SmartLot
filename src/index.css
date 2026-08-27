@@ -76,7 +76,7 @@
   }
   50% {
     opacity: 0.95;
-    background-color: rgba(216, 242, 53, 0.25);
+    background-color: rgba(0, 212, 178, 0.25);
     transform: scale(1.05);
   }
   100% {
@@ -156,19 +156,19 @@ input, textarea, select, button {
 }
 
 /* Dark Container & Popover Scrollbars */
-.bg-\[\#121316\]::-webkit-scrollbar-thumb,
-.bg-\[\#121316\] ::-webkit-scrollbar-thumb,
+.bg-\[\#0B1121\]::-webkit-scrollbar-thumb,
+.bg-\[\#0B1121\] ::-webkit-scrollbar-thumb,
 .bg-\[\#050505\]::-webkit-scrollbar-thumb,
 .bg-\[\#050505\] ::-webkit-scrollbar-thumb,
 .dark-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(216, 242, 53, 0.35);
+  background: rgba(0, 212, 178, 0.35);
   border-radius: 9999px;
 }
 
-.bg-\[\#121316\]::-webkit-scrollbar-thumb:hover,
-.bg-\[\#121316\] ::-webkit-scrollbar-thumb:hover,
+.bg-\[\#0B1121\]::-webkit-scrollbar-thumb:hover,
+.bg-\[\#0B1121\] ::-webkit-scrollbar-thumb:hover,
 .dark-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(216, 242, 53, 0.7);
+  background: rgba(0, 212, 178, 0.7);
 }
 
 /* Firefox thin scrollbar support */
@@ -177,6 +177,6 @@ input, textarea, select, button {
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
-.bg-\[\#121316\] *, .dark-scrollbar {
-  scrollbar-color: rgba(216, 242, 53, 0.4) transparent;
+.bg-\[\#0B1121\] *, .dark-scrollbar {
+  scrollbar-color: rgba(0, 212, 178, 0.4) transparent;
 }

@@ -16,7 +16,7 @@ interface GlowSubmitButtonProps {
 export function GlowSubmitButton({
   label,
   loadingLabel = 'Sending Invites...',
-  icon = <Send size={14} className="text-[#D8F235]" />,
+  icon = <Send size={14} className="text-[#00D4B2]" />,
   onClick,
   type = 'submit',
   disabled = false,
@@ -47,7 +47,7 @@ export function GlowSubmitButton({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.92 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#D8F235] via-[#8B8CF8] to-[#10B981] blur-[6px] opacity-70"
+          className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#00D4B2] via-[#0055FF] to-[#10B981] blur-[6px] opacity-70"
         />
       )}
 
@@ -56,10 +56,10 @@ export function GlowSubmitButton({
         type={type}
         disabled={disabled || isLoading}
         onClick={handleClick}
-        className={`relative z-10 bg-[#121316] hover:bg-black text-white px-7 h-12 rounded-2xl text-xs font-bold flex items-center justify-center gap-2.5 shadow-lg transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] cursor-pointer border border-white/10 shrink-0 min-w-[180px] disabled:opacity-80 ${className}`}
+        className={`relative z-10 bg-[#0B1121] hover:bg-black text-white px-7 h-12 rounded-2xl text-xs font-bold flex items-center justify-center gap-2.5 shadow-lg transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] cursor-pointer border border-white/10 shrink-0 min-w-[180px] disabled:opacity-80 ${className}`}
       >
         {isLoading ? (
-          <Loader2 size={15} className="animate-spin text-[#D8F235] shrink-0" />
+          <Loader2 size={15} className="animate-spin text-[#00D4B2] shrink-0" />
         ) : (
           icon
         )}

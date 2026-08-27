@@ -17,7 +17,7 @@ export function BorderTrail({
   return (
     <div className="pointer-events-none absolute inset-0 rounded-[inherit] overflow-hidden">
       <motion.div
-        className={`absolute bg-[#D8F235] opacity-90 blur-[3px] ${className}`}
+        className={`absolute bg-[#00D4B2] opacity-90 blur-[3px] ${className}`}
         style={{
           width: size,
           height: size,

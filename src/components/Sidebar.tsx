@@ -45,7 +45,7 @@ export function Sidebar({
           title="Back to Landing Page"
         >
           <svg className="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#D8F235" />
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00D4B2" />
             <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
             <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
           </svg>
@@ -127,7 +127,7 @@ export function Sidebar({
         </div>
         <button
           onClick={onLogout}
-          className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 text-red-400 hover:text-white hover:bg-red-500/20 cursor-pointer ${
+          className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 text-red-400 hover:text-white hover:bg-[#FF4757]/100/20 cursor-pointer ${
             isCollapsed ? 'px-0' : 'px-4'
           }`}
         >
@@ -160,7 +160,7 @@ function NavItem({
       onClick={onClick}
       className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-between px-4 py-3'} rounded-2xl transition-all duration-300 ease-out group cursor-pointer ${
         active 
-          ? 'bg-[#D8F235] text-[#121316] shadow-lg font-semibold' 
+          ? 'bg-[#0F172A] text-[#00D4B2] shadow-sm border border-[#00D4B2]/20 font-bold' 
           : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'
       }`}
       title={isCollapsed ? label : undefined}
@@ -177,7 +177,7 @@ function NavItem({
       </div>
       
       {!isCollapsed && badge && (
-        <span className={`transition-all duration-300 ${active ? 'bg-[#121316] text-[#D8F235]' : 'bg-[#FF6B6B] text-white'} text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0`}>
+        <span className={`transition-all duration-300 ${active ? 'bg-[#0B1121] text-[#00D4B2]' : 'bg-[#FF4757] text-white'} text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0`}>
           {badge}
         </span>
       )}

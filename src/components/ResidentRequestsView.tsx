@@ -75,7 +75,7 @@ export function ResidentRequestsView({
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B8CF8]/10 text-[#6366F1] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0033CC] text-xs font-bold uppercase tracking-wider mb-2">
             Resident Hub • Requests Engine
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Resident Service & Repair Requests</h1>
@@ -85,8 +85,8 @@ export function ResidentRequestsView({
         {/* Morphing Capsule Button */}
         <MorphingPopover>
           <MorphingPopoverTrigger>
-            <div className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
-              <Plus size={18} className="text-[#D8F235]" /> 
+            <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+              <Plus size={18} className="text-[#00D4B2]" /> 
               <span>Create New Request</span>
             </div>
           </MorphingPopoverTrigger>
@@ -155,7 +155,7 @@ export function ResidentRequestsView({
                   <StatusBadge status={req.status} />
                 </div>
 
-                <div className="text-xs font-extrabold text-[#8B8CF8] uppercase tracking-wider mb-1 capitalize">
+                <div className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider mb-1 capitalize">
                   {req.requestType.replace(/_/g, ' ')}
                 </div>
 
@@ -171,7 +171,7 @@ export function ResidentRequestsView({
 
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-xs text-gray-500 flex items-center gap-1 font-semibold">
-                    <MessageSquare size={14} className="text-[#8B8CF8]" /> {req.comments.length} Comments
+                    <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
                   </span>
 
                   {req.status !== 'closed' && req.requestorName === activePersonaName && (
@@ -180,7 +180,7 @@ export function ResidentRequestsView({
                         e.stopPropagation();
                         setCloseModalRequest(req);
                       }}
-                      className="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 cursor-pointer"
+                      className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer"
                     >
                       Close Request
                     </button>
@@ -242,7 +242,7 @@ export function ResidentRequestsView({
               )}
 
               {activeDetail.status === 'closed' && activeDetail.closeReason && (
-                <div className="bg-red-50 border border-red-200 p-4 rounded-2xl text-xs space-y-1">
+                <div className="bg-[#FF4757]/10 border border-[#FF4757]/30 p-4 rounded-2xl text-xs space-y-1">
                   <div className="font-bold text-red-900 flex items-center gap-1.5"><AlertCircle size={14} /> Closed with Rationale:</div>
                   <p className="text-red-700">{activeDetail.closeReason}</p>
                 </div>
@@ -272,7 +272,7 @@ export function ResidentRequestsView({
                     onChange={e => setCommentInput(e.target.value)}
                     className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs outline-none focus:bg-white"
                   />
-                  <button type="submit" className="bg-[#121316] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer">
+                  <button type="submit" className="bg-[#0B1121] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer">
                     <Send size={12} /> Post
                   </button>
                 </form>
@@ -282,7 +282,7 @@ export function ResidentRequestsView({
                 <div className="pt-6 border-t border-gray-100">
                   <button
                     onClick={() => setCloseModalRequest(activeDetail)}
-                    className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF4757] border border-[#FF4757]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     Close Request & Add Reason
                   </button>
@@ -349,7 +349,7 @@ function StatusPill({ label, active, onClick, count }: any) {
     <button
       onClick={onClick}
       className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-        active ? 'bg-[#121316] text-[#D8F235]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        active ? 'bg-[#0B1121] text-[#00D4B2]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
       }`}
     >
       {label} {count !== undefined && `(${count})`}
@@ -360,11 +360,11 @@ function StatusPill({ label, active, onClick, count }: any) {
 function StatusBadge({ status }: { status: CaseStatus }) {
   switch (status) {
     case 'new':
-      return <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">NEW</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">NEW</span>;
     case 'pending_triage':
-      return <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">PENDING TRIAGE</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">PENDING TRIAGE</span>;
     case 'in_voting':
-      return <span className="px-3 py-1 rounded-full bg-purple-100 text-[#8B8CF8] text-[10px] font-bold uppercase">IN VOTING</span>;
+      return <span className="px-3 py-1 rounded-full bg-purple-100 text-[#0055FF] text-[10px] font-bold uppercase">IN VOTING</span>;
     case 'approved':
       return <span className="px-3 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase">APPROVED</span>;
     case 'rejected':

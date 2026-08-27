@@ -25,7 +25,7 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
       {/* Header Banner */}
       <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121316]/5 text-[#121316] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B1121]/5 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
             Vendor Mini-CRM & Work Orders
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Verified Contractor Directory</h1>
@@ -63,7 +63,7 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
 
               <div className="flex items-center justify-between text-xs text-gray-500 pt-2">
                 <span className="flex items-center gap-1"><Phone size={12} /> {v.phone}</span>
-                <span className="flex items-center gap-1 text-amber-500 font-bold"><Star size={12} fill="currentColor" /> {v.rating}</span>
+                <span className="flex items-center gap-1 text-[#FFB020] font-bold"><Star size={12} fill="currentColor" /> {v.rating}</span>
               </div>
             </div>
           ))}
@@ -80,7 +80,7 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-gray-200 pb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-[#8B8CF8] uppercase tracking-wider">{wo.id} • Linked Case {wo.caseId}</span>
+                    <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{wo.id} • Linked Case {wo.caseId}</span>
                     <WorkOrderStatusBadge status={wo.status} />
                   </div>
                   <h4 className="text-lg font-bold text-gray-900">{wo.scopeOfWork}</h4>
@@ -89,9 +89,9 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => onOpenGuestPortal(wo.id)}
-                    className="bg-[#121316] hover:bg-black text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    className="bg-[#0B1121] hover:bg-black text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                   >
-                    <ExternalLink size={14} className="text-[#D8F235]" /> Open Zero-Login Mobile Portal
+                    <ExternalLink size={14} className="text-[#00D4B2]" /> Open Zero-Login Mobile Portal
                   </button>
                 </div>
               </div>
@@ -109,7 +109,7 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
 
                 <div>
                   <span className="text-gray-400 font-bold uppercase">Site Access Code</span>
-                  <div className="font-extrabold text-[#8B8CF8] text-sm mt-0.5 flex items-center gap-1">
+                  <div className="font-extrabold text-[#0055FF] text-sm mt-0.5 flex items-center gap-1">
                     <Key size={14} /> PIN {wo.siteAccessPin}
                   </div>
                 </div>
@@ -163,9 +163,9 @@ function WorkOrderStatusBadge({ status }: { status: WorkOrder['status'] }) {
     case 'issued':
       return <span className="px-3 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold uppercase">Issued</span>;
     case 'in_progress':
-      return <span className="px-3 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">In Progress</span>;
+      return <span className="px-3 py-0.5 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">In Progress</span>;
     case 'completion_submitted':
-      return <span className="px-3 py-0.5 rounded-full bg-purple-100 text-[#8B8CF8] text-[10px] font-bold uppercase">Completion Submitted</span>;
+      return <span className="px-3 py-0.5 rounded-full bg-purple-100 text-[#0055FF] text-[10px] font-bold uppercase">Completion Submitted</span>;
     case 'completed':
       return <span className="px-3 py-0.5 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase">Completed & Paid</span>;
   }

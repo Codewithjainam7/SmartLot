@@ -47,7 +47,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
       {/* Clean Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121316]/5 text-[#121316] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B1121]/5 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
             Deterministic Triage Engine
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Maintenance & Triage Inbox</h1>
@@ -57,8 +57,8 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
         {/* Clean CTA Button */}
         <MorphingPopover>
           <MorphingPopoverTrigger>
-            <div className="bg-[#121316] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
-              <Plus size={18} className="text-[#D8F235]" /> 
+            <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+              <Plus size={18} className="text-[#00D4B2]" /> 
               <span>Log Issue (4-Stream)</span>
             </div>
           </MorphingPopoverTrigger>
@@ -78,7 +78,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
         <FilterPill label="1. General Inquiry" active={filterStream === 'general_inquiry'} onClick={() => setFilterStream('general_inquiry')} icon={<HelpCircle size={14} />} />
         <FilterPill label="2. Emergency Repair" active={filterStream === 'emergency_repair'} onClick={() => setFilterStream('emergency_repair')} icon={<AlertTriangle size={14} className="text-[#FF6B6B]" />} />
         <FilterPill label="3. Private Lot Repair" active={filterStream === 'private_lot_repair'} onClick={() => setFilterStream('private_lot_repair')} icon={<Home size={14} />} />
-        <FilterPill label="4. Common Area Repair" active={filterStream === 'common_area_repair'} onClick={() => setFilterStream('common_area_repair')} icon={<Building2 size={14} className="text-[#8B8CF8]" />} />
+        <FilterPill label="4. Common Area Repair" active={filterStream === 'common_area_repair'} onClick={() => setFilterStream('common_area_repair')} icon={<Building2 size={14} className="text-[#0055FF]" />} />
       </div>
 
       {/* Triage Cases Clean Grid Layout */}
@@ -103,7 +103,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               <p className="text-xs text-gray-500 leading-relaxed mb-4">{item.description}</p>
               
               {item.rejectionReason && (
-                <div className="bg-red-50 border border-red-100 p-3 rounded-xl text-xs text-red-700 font-medium">
+                <div className="bg-[#FF4757]/10 border border-[#FF4757]/20 p-3 rounded-xl text-xs text-red-700 font-medium">
                   <span className="font-bold">Rejection Reason:</span> {item.rejectionReason}
                 </div>
               )}
@@ -120,7 +120,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     onClick={() => setSelectedCaseForRejection(item)}
-                    className="w-full bg-red-50 hover:bg-red-100 text-[#FF6B6B] border border-red-200 rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                    className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF6B6B] border border-[#FF4757]/30 rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
                     <XCircle size={14} /> Reject
                   </button>
@@ -135,10 +135,10 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
 
               {item.status === 'approved_pending_vote' && (
                 <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl flex items-center justify-between">
-                  <div className="text-xs font-bold text-[#8B8CF8] flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-[#0055FF] flex items-center gap-1.5">
                     <Vote size={14} /> Committee Motion Active
                   </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#8B8CF8] text-white">{item.linkedMotionId}</span>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#0055FF] text-white">{item.linkedMotionId}</span>
                 </div>
               )}
             </div>
@@ -191,7 +191,7 @@ function FilterPill({ label, active, onClick, count, icon }: any) {
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
         active 
-          ? 'bg-[#121316] text-[#D8F235] shadow-md ring-1 ring-black' 
+          ? 'bg-[#0B1121] text-[#00D4B2] shadow-md ring-1 ring-black' 
           : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
       }`}
     >
@@ -205,11 +205,11 @@ function FilterPill({ label, active, onClick, count, icon }: any) {
 function StatusBadge({ status }: { status: CaseStatus }) {
   switch (status) {
     case 'pending_triage':
-      return <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider">Pending Triage</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase tracking-wider">Pending Triage</span>;
     case 'approved_direct_dispatch':
       return <span className="px-3 py-1 rounded-full bg-[#10B981]/20 text-[#10B981] text-[10px] font-bold uppercase tracking-wider">Approved - Direct Dispatch</span>;
     case 'approved_pending_vote':
-      return <span className="px-3 py-1 rounded-full bg-[#8B8CF8]/20 text-[#6366F1] text-[10px] font-bold uppercase tracking-wider">Approved - Pending Vote</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#0055FF]/20 text-[#0033CC] text-[10px] font-bold uppercase tracking-wider">Approved - Pending Vote</span>;
     case 'rejected':
       return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase tracking-wider">Rejected</span>;
     case 'resolved':
@@ -221,8 +221,8 @@ function StreamIcon({ stream }: { stream: RequestStream }) {
   switch (stream) {
     case 'general_inquiry': return <HelpCircle size={16} className="text-gray-500" />;
     case 'emergency_repair': return <AlertTriangle size={16} className="text-[#FF6B6B]" />;
-    case 'private_lot_repair': return <Home size={16} className="text-emerald-600" />;
-    case 'common_area_repair': return <Building2 size={16} className="text-[#8B8CF8]" />;
+    case 'private_lot_repair': return <Home size={16} className="text-[#00A38C]" />;
+    case 'common_area_repair': return <Building2 size={16} className="text-[#0055FF]" />;
   }
 }
 

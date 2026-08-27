@@ -14,7 +14,7 @@ export type GlowEffectProps = {
 export function GlowEffect({
   className = '',
   style,
-  colors = ['#D8F235', '#8B8CF8', '#10B981', '#FF6B6B'],
+  colors = ['#00D4B2', '#0055FF', '#10B981', '#FF6B6B'],
   mode = 'colorShift',
   blur = 'medium',
   duration = 4,

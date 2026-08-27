@@ -72,7 +72,7 @@ export function MorphingPopoverContent({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="absolute inset-0 bg-[#121316]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#0B1121]/60 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
 
