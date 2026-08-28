@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import type { ColDef, ICellRendererParams, GridReadyEvent, ValueFormatterParams } from 'ag-grid-community';
+import { ModuleRegistry, ClientSideRowModelModule, TextFilterModule, NumberFilterModule, ColumnAutoSizeModule } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
@@ -11,23 +16,16 @@ import {
   useMorphingPopover
 } from './core/morphing-popover';
 import { 
-  Users, 
   UserPlus, 
   Search, 
-  ShieldCheck, 
   Mail, 
   Phone, 
-  Building2, 
-  Home, 
   X, 
-  Send,
   Trash2,
-  CheckCircle2,
-  User,
-  Plus,
-  UserCheck,
-  UserCircle2
+  Plus
 } from 'lucide-react';
+
+ModuleRegistry.registerModules([ClientSideRowModelModule, TextFilterModule, NumberFilterModule, ColumnAutoSizeModule]);
 
 interface UserManagementViewProps {
   members: Member[];
@@ -186,110 +184,13 @@ export function UserManagementView({
 
             </div>
 
-            {/* Member Roster Table with "Fading Slowly & Going Behind" Depth Animation */}
-            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Member Roster ({filteredMembers.length})</h3>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-separate border-spacing-0">
-                  <thead>
-                    <tr className="text-gray-400 font-bold uppercase text-[10px] tracking-wider">
-                      <th className="py-3 px-4 border-b border-gray-100">Primary Member & Role</th>
-                      <th className="py-3 px-4 border-b border-gray-100">Unit / Lot #</th>
-                      <th className="py-3 px-4 border-b border-gray-100">Contact Info</th>
-                      <th className="py-3 px-4 border-b border-gray-100">Mapped Occupants in Lot</th>
-                      <th className="py-3 px-4 border-b border-gray-100">Status</th>
-                      <th className="py-3 px-4 border-b border-gray-100 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="font-medium">
-                    <AnimatePresence mode="popLayout">
-                      {filteredMembers.map(m => (
-                        <motion.tr 
-                          key={m.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0.97, y: 6 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ 
-                            opacity: 0, 
-                            scale: 0.94, 
-                            y: 8, 
-                            filter: 'blur(2px)' 
-                          }}
-                          transition={{ 
-                            duration: 0.35, 
-                            ease: [0.16, 1, 0.3, 1] 
-                          }}
-                          className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 outline-none"
-                        >
-                          <td className="py-4 px-4 border-b border-gray-100">
-                            <div className="font-bold text-gray-900 text-sm">{m.name}</div>
-                            <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                              {m.role}
-                            </span>
-                          </td>
-
-                          <td className="py-4 px-4 border-b border-gray-100">
-                            <div className="font-bold text-gray-900">{m.unitId}</div>
-                            <div className="text-[10px] text-gray-400 font-semibold">Lot {m.lotNumber}</div>
-                          </td>
-
-                          <td className="py-4 px-4 border-b border-gray-100 space-y-0.5">
-                            <div className="flex items-center gap-1.5 text-gray-700 font-semibold"><Mail size={12} className="text-gray-400" /> {m.email}</div>
-                            <div className="flex items-center gap-1.5 text-gray-500"><Phone size={12} className="text-gray-400" /> {m.phone}</div>
-                          </td>
-
-                          <td className="py-4 px-4 border-b border-gray-100">
-                            {m.additionalOccupants && m.additionalOccupants.length > 0 ? (
-                              <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-[#0055FF] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
-                                  {m.additionalOccupants.length} Extra Occupants
-                                </span>
-                                <div className="text-[11px] text-gray-600 truncate max-w-[180px]">
-                                  {m.additionalOccupants.map(o => o.name).join(', ')}
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-gray-400">1 Occupant</span>
-                            )}
-                          </td>
-
-                          <td className="py-4 px-4 border-b border-gray-100">
-                            <MemberStatusBadge status={m.status} />
-                          </td>
-
-                          <td className="py-4 px-4 border-b border-gray-100 text-right space-x-2">
-                            <button
-                              onClick={() => setSelectedMember(m)}
-                              className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-100 cursor-pointer"
-                            >
-                              View Details
-                            </button>
-                            {m.name !== activePersonaName && (
-                              m.status === 'Active' ? (
-                                <button
-                                  onClick={() => onUpdateStatus(m.id, 'Restricted')}
-                                  className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-xs font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer"
-                                >
-                                  Restrict Access
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => onUpdateStatus(m.id, 'Active')}
-                                  className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-xs font-bold text-[#00A38C] hover:bg-[#00D4B2]/10 cursor-pointer"
-                                >
-                                  Activate
-                                </button>
-                              )
-                            )}
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </AnimatePresence>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            {/* Member Roster AG Grid */}
+            <MemberRosterGrid
+              members={filteredMembers}
+              activePersonaName={activePersonaName}
+              onViewDetails={setSelectedMember}
+              onUpdateStatus={onUpdateStatus}
+            />
           </motion.div>
         ) : (
           /* Role Permissions Matrix Section */
@@ -439,6 +340,282 @@ export function UserManagementView({
     </div>
   );
 }
+
+// ─── AG Grid Member Roster ────────────────────────────────────────────────────
+
+interface MemberRosterGridProps {
+  members: Member[];
+  activePersonaName: string;
+  onViewDetails: (m: Member) => void;
+  onUpdateStatus: (id: string, status: 'Active' | 'Invited' | 'Restricted') => void;
+}
+
+function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateStatus }: MemberRosterGridProps) {
+  
+  // Name renderer
+  const NameRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    return (
+      <span className="font-semibold text-gray-900 text-xs">{params.data.name}</span>
+    );
+  }, []);
+
+  // Role renderer — pill badge
+  const RoleRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    const roleColors: Record<string, string> = {
+      'Lot Owner': 'bg-blue-50 text-blue-700 border-blue-200',
+      'Resident': 'bg-green-50 text-green-700 border-green-200',
+      'Tenant': 'bg-amber-50 text-amber-700 border-amber-200',
+      'Committee Member': 'bg-purple-50 text-purple-700 border-purple-200',
+      'Strata Manager': 'bg-cyan-50 text-cyan-700 border-cyan-200',
+      'Building Manager': 'bg-orange-50 text-orange-700 border-orange-200',
+      'Strata Admin': 'bg-[#0B1121]/10 text-[#0B1121] border-gray-300',
+    };
+    const cls = roleColors[params.data.role] ?? 'bg-gray-100 text-gray-600 border-gray-200';
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${cls}`}>
+        {params.data.role}
+      </span>
+    );
+  }, []);
+
+  // Unit renderer
+  const UnitRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    return (
+      <div className="leading-tight">
+        <div className="font-semibold text-gray-900 text-xs">{params.data.unitId}</div>
+        <div className="text-[10px] text-gray-400">Lot {params.data.lotNumber}</div>
+      </div>
+    );
+  }, []);
+
+  // Contact renderer
+  const ContactRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    return (
+      <div className="leading-tight">
+        <div className="flex items-center gap-1 text-xs text-gray-700 font-medium">
+          <Mail size={11} className="text-gray-400 shrink-0" />
+          <span className="truncate">{params.data.email}</span>
+        </div>
+        <div className="flex items-center gap-1 text-[11px] text-gray-400">
+          <Phone size={11} className="text-gray-400 shrink-0" />
+          {params.data.phone}
+        </div>
+      </div>
+    );
+  }, []);
+
+  // Occupants renderer
+  const OccupantsRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    const occ = params.data.additionalOccupants;
+    if (occ && occ.length > 0) {
+      return (
+        <span className="text-[10px] font-bold text-[#0055FF] bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
+          {occ.length + 1} Occupants
+        </span>
+      );
+    }
+    return <span className="text-[11px] text-gray-400">1 Occupant</span>;
+  }, []);
+
+  // Status renderer
+  const StatusRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    return <MemberStatusBadge status={params.data.status} />;
+  }, []);
+
+  // Actions renderer
+  const ActionsRenderer = useCallback((params: ICellRendererParams<Member>) => {
+    if (!params.data) return null;
+    const m = params.data;
+    return (
+      <div className="flex items-center gap-1.5 h-full">
+        <button
+          onClick={() => onViewDetails(m)}
+          className="px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-bold text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+        >
+          View
+        </button>
+        {m.name !== activePersonaName && (
+          m.status === 'Active' ? (
+            <button
+              onClick={() => onUpdateStatus(m.id, 'Restricted')}
+              className="px-2.5 py-1 rounded-lg border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-colors"
+            >
+              Restrict
+            </button>
+          ) : (
+            <button
+              onClick={() => onUpdateStatus(m.id, 'Active')}
+              className="px-2.5 py-1 rounded-lg border border-[#00D4B2]/30 text-[11px] font-bold text-[#00A38C] hover:bg-[#00D4B2]/10 cursor-pointer transition-colors"
+            >
+              Activate
+            </button>
+          )
+        )}
+      </div>
+    );
+  }, [activePersonaName, onViewDetails, onUpdateStatus]);
+
+  const columnDefs = useMemo<ColDef<Member>[]>(() => [
+    {
+      headerName: 'Member Name',
+      field: 'name',
+      cellRenderer: NameRenderer,
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      flex: 1.2,
+      minWidth: 140,
+    },
+    {
+      headerName: 'Role',
+      field: 'role',
+      cellRenderer: RoleRenderer,
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      flex: 1.2,
+      minWidth: 140,
+    },
+    {
+      headerName: 'Unit / Lot',
+      field: 'unitId',
+      cellRenderer: UnitRenderer,
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      flex: 0.7,
+      minWidth: 90,
+      valueGetter: (p) => p.data?.unitId ?? '',
+    },
+    {
+      headerName: 'Contact',
+      field: 'email',
+      cellRenderer: ContactRenderer,
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      flex: 1.6,
+      minWidth: 180,
+    },
+    {
+      headerName: 'Occupants',
+      field: 'additionalOccupants',
+      cellRenderer: OccupantsRenderer,
+      sortable: false,
+      filter: false,
+      flex: 0.8,
+      minWidth: 100,
+      valueGetter: (p) => p.data?.additionalOccupants?.length ?? 0,
+    },
+    {
+      headerName: 'Status',
+      field: 'status',
+      cellRenderer: StatusRenderer,
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      flex: 0.7,
+      minWidth: 90,
+    },
+    {
+      headerName: 'Actions',
+      cellRenderer: ActionsRenderer,
+      sortable: false,
+      filter: false,
+      flex: 1,
+      minWidth: 130,
+      pinned: 'right',
+    },
+  ], [NameRenderer, RoleRenderer, UnitRenderer, ContactRenderer, OccupantsRenderer, StatusRenderer, ActionsRenderer]);
+
+  const defaultColDef = useMemo<ColDef>(() => ({
+    resizable: true,
+    suppressMovable: false,
+    cellStyle: { display: 'flex', alignItems: 'center', overflow: 'visible', letterSpacing: 0 },
+  }), []);
+
+  return (
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="px-6 pt-5 pb-3 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+          Member Roster ({members.length})
+        </h3>
+      </div>
+      {/* Custom AG Grid theme overrides */}
+      <style>{`
+        .sl-member-grid.ag-theme-quartz {
+          --ag-font-family: inherit;
+          --ag-font-size: 12px;
+          --ag-row-height: 60px;
+          --ag-header-height: 40px;
+          --ag-header-background-color: #F9FAFB;
+          --ag-header-foreground-color: #9CA3AF;
+          --ag-border-color: #F3F4F6;
+          --ag-row-border-color: #F3F4F6;
+          --ag-odd-row-background-color: #ffffff;
+          --ag-row-hover-color: #F9FAFB;
+          --ag-selected-row-background-color: #EFF6FF;
+          --ag-cell-horizontal-padding: 16px;
+          --ag-header-column-separator-display: none;
+          letter-spacing: 0;
+          border: none;
+          border-radius: 0;
+        }
+        .sl-member-grid .ag-header-cell-label {
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+        .sl-member-grid .ag-cell {
+          overflow: visible !important;
+          display: flex !important;
+          align-items: center !important;
+        }
+        .sl-member-grid .ag-cell-wrapper {
+          display: flex !important;
+          align-items: center !important;
+          overflow: visible !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        .sl-member-grid .ag-cell-value {
+          display: flex !important;
+          align-items: center !important;
+          overflow: visible !important;
+          width: 100% !important;
+          line-height: 1.4;
+        }
+        .sl-member-grid .ag-row {
+          overflow: visible !important;
+        }
+        .sl-member-grid .ag-paging-panel {
+          font-size: 11px;
+          color: #6B7280;
+          border-top: 1px solid #F3F4F6;
+          padding: 8px 16px;
+        }
+      `}</style>
+      <div className="sl-member-grid ag-theme-quartz w-full" style={{ height: Math.max(220, members.length * 60 + 40 + 48) }}>
+        <AgGridReact<Member>
+          rowData={members}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          rowHeight={60}
+          headerHeight={40}
+          animateRows={true}
+          pagination={members.length > 15}
+          paginationPageSize={15}
+          suppressCellFocus={true}
+          domLayout="normal"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Inner Form Content
 function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {

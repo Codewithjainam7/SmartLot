@@ -77,9 +77,9 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.95;
-    background-color: rgba(0, 212, 178, 0.45);
-    transform: scale(1.08);
+    opacity: 0.6;
+    background-color: rgba(0, 212, 178, 0.18);
+    transform: scale(1.02);
   }
   100% {
     opacity: 0.15;
