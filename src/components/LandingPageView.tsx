@@ -254,12 +254,7 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
       <footer className="bg-[#0B1121] border-t border-white/5 text-gray-400 relative z-10 pt-20 pb-10 px-6">
         <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="space-y-4 col-span-1 md:col-span-1">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#00D4B2] flex items-center justify-center text-[#0B1121] font-black">
-                S
-              </div>
-              <span className="text-base font-black tracking-tight text-white">SmartLot</span>
-            </div>
+            <SmartLotLogo className="h-8" textColor="text-white" />
             <p className="text-xs text-gray-500 leading-relaxed font-medium">
               The modern strata operating system built to automate administration, common area maintenance, and legal voting.
             </p>
