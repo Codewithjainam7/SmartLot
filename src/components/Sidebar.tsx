@@ -6,13 +6,14 @@ import {
   PanelLeftOpen,
   Wrench,
   UserCheck,
-  FileText
+  FileText,
+  Settings
 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage';
-  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage') => void;
+  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings';
+  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings') => void;
   pendingTriageCount?: number;
   activePersonaName?: string;
   activePersonaRole?: string;
@@ -99,6 +100,13 @@ export function Sidebar({
               label="Bylaws Library" 
               active={false} 
               onClick={() => alert("SmartLot Bylaws Library: Opening standard scheme by-laws...")}
+              isCollapsed={isCollapsed} 
+            />
+            <NavItem 
+              icon={<Settings size={18} />} 
+              label="Settings" 
+              active={activeView === 'settings'} 
+              onClick={() => setActiveView('settings')}
               isCollapsed={isCollapsed} 
             />
           </div>

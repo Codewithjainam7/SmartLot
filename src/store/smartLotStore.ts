@@ -232,8 +232,9 @@ export function useSmartLotStore() {
   );
   const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona', PERSONAS[1]); // Default to Strata Manager Alex Vance
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>('smartlot_activeRoles', ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage'>('smartlot_activeView', 'dashboard');
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>('smartlot_activeView', 'dashboard');
   const [isLoggedIn, setIsLoggedIn] = usePersistedState('smartlot_isLoggedIn', true);
+  const [theme, setTheme] = usePersistedState<'light' | 'dark'>('smartlot_theme', 'light');
   const [members, setMembers] = usePersistedState<Member[]>('smartlot_members', INITIAL_MEMBERS);
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>('smartlot_residentRequests', INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>('smartlot_units', INITIAL_UNITS);
@@ -659,6 +660,8 @@ export function useSmartLotStore() {
     setActiveView,
     isLoggedIn,
     setIsLoggedIn,
+    theme,
+    setTheme,
     members,
     setMembers,
     residentRequests,

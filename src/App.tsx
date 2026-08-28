@@ -17,6 +17,7 @@ import { ResidentRequestsView } from './components/ResidentRequestsView';
 // Module 1 New Views
 import { LandingPageView } from './components/LandingPageView';
 import { AdminView } from './components/AdminView';
+import { SettingsView } from './components/SettingsView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -42,6 +43,15 @@ export default function App() {
     window.addEventListener('hashchange', checkHash);
     return () => window.removeEventListener('hashchange', checkHash);
   }, [sessionState]);
+
+  // Handle theme state preferences dynamically
+  useEffect(() => {
+    if (store.theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [store.theme]);
 
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
@@ -132,7 +142,13 @@ export default function App() {
 
   // Render unauthenticated screens
   if (sessionState === 'landing') {
-    return <LandingPageView onSelectPersona={handleSelectPersona} />;
+    return (
+      <LandingPageView 
+        onSelectPersona={handleSelectPersona} 
+        theme={store.theme}
+        setTheme={store.setTheme}
+      />
+    );
   }
 
   if (sessionState === 'admin_console') {
@@ -178,7 +194,7 @@ export default function App() {
   });
 
   return (
-    <div className="flex h-screen bg-[#F4F6F9] font-sans text-gray-900 overflow-hidden relative">
+    <div className="flex h-screen bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100 overflow-hidden relative">
       
       {/* Main Sidebar */}
       <Sidebar 
@@ -245,6 +261,16 @@ export default function App() {
               cases={filteredRequests as any}
               onSubmitCase={store.submitResidentRequest as any}
               onTriageCase={store.triageRequest}
+              activePersonaRole={store.activePersona.role}
+            />
+          )}
+
+          {/* Settings & Preferences View */}
+          {store.activeView === 'settings' && (
+            <SettingsView 
+              theme={store.theme}
+              setTheme={store.setTheme}
+              activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
             />
           )}

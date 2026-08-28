@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Acorn Font Family ───────────────────────────── */
 @font-face {
   font-family: "Acorn";
@@ -76,8 +78,8 @@
   }
   50% {
     opacity: 0.95;
-    background-color: rgba(0, 212, 178, 0.25);
-    transform: scale(1.05);
+    background-color: rgba(0, 212, 178, 0.45);
+    transform: scale(1.08);
   }
   100% {
     opacity: 0.15;
@@ -85,7 +87,7 @@
   }
 }
 
-.animate-cell-ripple {
+.animate-cell-ripple, .animate-ripple-1, .animate-ripple-2 {
   animation: cell-ripple var(--duration, 600ms) cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0ms) 1 !important;
 }
 
