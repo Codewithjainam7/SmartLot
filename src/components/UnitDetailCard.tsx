@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { 
   Home, 
@@ -118,7 +118,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-[#121316] rounded-3xl p-1 overflow-hidden shadow-sm border border-gray-100 dark:border-gray-850">
+    <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-1 overflow-hidden shadow-sm border border-gray-100 dark:border-white/5">
       
       {/* Unit Selector Tabs */}
       {activeUnits.length > 1 && (
@@ -129,10 +129,10 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               <button
                 key={u.unitId}
                 onClick={() => setSelectedUnitIndex(index)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                className={`relative px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors border ${
                   selectedUnitIndex === index 
-                    ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121]' 
-                    : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10'
+                    ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/30 shadow-sm' 
+                    : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 border-transparent dark:border-white/5'
                 }`}
               >
                 {u.unitId}
@@ -143,14 +143,17 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       )}
 
       {/* Header Profile Area */}
-      <div className="bg-[#0B1121] rounded-[22px] p-6 text-white relative m-3">
-        <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
+      <div className="bg-[#0B1121] dark:bg-gradient-to-br dark:from-[#0d1117] dark:to-[#161b22] rounded-[22px] p-6 text-white relative m-3 border border-transparent dark:border-[#00D4B2]/10 overflow-hidden">
+        {/* Subtle glow in dark mode */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-[22px]" />
+        
+        <div className="absolute top-4 right-4 bg-white/10 dark:bg-white/5 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-transparent dark:border-white/5 relative z-10">
           <div className={`w-1.5 h-1.5 rounded-full ${unitMembers.length > 0 ? 'bg-[#6EE7B7] animate-pulse' : 'bg-gray-400'}`}></div>
           {unitMembers.length > 0 ? 'Occupied' : 'Vacant'}
         </div>
         
-        <div className="flex items-start gap-4 mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#0F172A] flex items-center justify-center shadow-lg">
+        <div className="flex items-start gap-4 mb-6 relative z-10">
+          <div className="w-16 h-16 rounded-2xl bg-[#0F172A] dark:bg-[#1a1d27] flex items-center justify-center shadow-lg border dark:border-white/5">
             <Home size={32} className="text-white" />
           </div>
           <div>
@@ -164,23 +167,23 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                     setEditStatus(currentUnit.status);
                     setShowEditLotModal(true);
                   }}
-                  className="p-1 rounded bg-white/10 hover:bg-white/20 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer"
+                  className="p-1 rounded bg-white/10 hover:bg-white/20 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer border border-transparent dark:border-white/5"
                   title="Edit Lot Metadata"
                 >
                   <Settings size={14} />
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500 text-sm mt-1">
+            <div className="flex items-center gap-3 text-gray-450 dark:text-gray-400 text-sm mt-1">
               <span>Lot {currentUnit.lotNumber}</span>
-              <span className="w-1 h-1 rounded-full bg-gray-600"></span>
+              <span className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-500"></span>
               <span>Entitlement: {currentUnit.entitlement}</span>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
           <QuickAction icon={<Phone size={16} />} label="Call" />
           <QuickAction icon={<Mail size={16} />} label="Message" />
           <QuickAction icon={<FileText size={16} />} label="Documents" />

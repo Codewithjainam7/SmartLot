@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Moon, Sun, Monitor, Shield, Sparkles, Check } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -15,19 +15,26 @@ export function SettingsView({
   activePersonaRole 
 }: SettingsViewProps) {
   return (
-    <div className="p-8 space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pb-24">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Preferences & Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Manage system theme choices, scheme integrations, and user preferences.</p>
+    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
+        {/* Subtle glow in dark mode */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-3xl" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#0055FF]/15 text-[#0055FF] dark:text-[#6699ff] border border-[#0055FF]/20 text-xs font-bold uppercase tracking-wider mb-2">
+            System Preferences
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Preferences & Settings</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Manage system theme choices, scheme integrations, and user preferences.</p>
+        </div>
       </div>
 
       {/* Profile Summary Card */}
-      <div className="bg-white dark:bg-[#0d1117] dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200/60 dark:border-gray-800 shadow-sm flex items-center justify-between">
+      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
           <img 
             src="https://i.pravatar.cc/150?img=47" 
-            className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 dark:border-white/5 dark:border-gray-800" 
+            className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 dark:border-white/5" 
             alt="Profile avatar" 
           />
           <div>
