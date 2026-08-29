@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useSmartLotStore, Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
+import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { CustomCheckbox } from './core/CustomCheckbox';
 import { GlowSubmitButton } from './core/GlowSubmitButton';
@@ -68,12 +68,18 @@ export function UserManagementView({
   rolePermissions,
   onTogglePermission,
 }: UserManagementViewProps) {
-  const store = useSmartLotStore();
-  const hasPermission = store.hasPermission;
+
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Find the active user's role in the current scheme
+  const activeUser = members.find(m => m.name === activePersonaName);
+  const activeUserRole = activeUser?.role || 'Resident';
+  
+  // Only upper-level management can add new members
+  const canManageUsers = ['Strata Admin', 'Strata Manager', 'Building Manager'].includes(activeUserRole);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   const filteredMembers = members.filter(m => {
@@ -135,7 +141,7 @@ export function UserManagementView({
               </button>
             </div>
 
-            {activeTab === 'roster' && hasPermission('MANAGE_USERS') && (
+            {activeTab === 'roster' && canManageUsers && (
               <MorphingPopoverTrigger>
                 <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
                   <UserPlus size={18} className="text-[#00D4B2]" /> 
