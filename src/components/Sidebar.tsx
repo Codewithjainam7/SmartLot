@@ -78,13 +78,15 @@ export function Sidebar({
               onClick={() => setActiveView('dashboard')}
               isCollapsed={isCollapsed} 
             />
-            <NavItem 
-              icon={<Users size={18} />} 
-              label="Team Access" 
-              active={activeView === 'user_management'} 
-              onClick={() => setActiveView('user_management')}
-              isCollapsed={isCollapsed} 
-            />
+            {(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager')) && (
+              <NavItem 
+                icon={<Users size={18} />} 
+                label="Team Access" 
+                active={activeView === 'user_management'} 
+                onClick={() => setActiveView('user_management')}
+                isCollapsed={isCollapsed} 
+              />
+            )}
             <NavItem 
               icon={<Wrench size={18} />} 
               label={activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') ? "Triage Requests" : "My Requests"} 

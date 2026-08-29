@@ -239,16 +239,23 @@ export default function App() {
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
           {store.activeView === 'user_management' && (
-            <UserManagementView 
-              members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
-              activePersonaName={store.activePersona.name}
-              onAddMember={store.addMember}
-              onUpdateStatus={store.updateMemberStatus}
-              onDeleteMember={store.deleteMember}
-              activeSchemeId={store.activeScheme.id}
-              rolePermissions={store.rolePermissions[store.activeScheme.id] || {}}
-              onTogglePermission={(role, perm) => store.togglePermission(store.activeScheme.id, role, perm)}
-            />
+            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager')) ? (
+              <UserManagementView 
+                members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
+                activePersonaName={store.activePersona.name}
+                onAddMember={store.addMember}
+                onUpdateStatus={store.updateMemberStatus}
+                onDeleteMember={store.deleteMember}
+                activeSchemeId={store.activeScheme.id}
+                rolePermissions={store.rolePermissions[store.activeScheme.id] || {}}
+                onTogglePermission={(role, perm) => store.togglePermission(store.activeScheme.id, role, perm)}
+              />
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-500 h-full">
+                <div className="text-2xl font-bold mb-2 text-red-500 dark:text-red-400">Access Denied</div>
+                <p className="text-gray-600 dark:text-gray-400">You do not have permission to view the User Management Directory.</p>
+              </div>
+            )
           )}
 
           {/* Requests Module */}
