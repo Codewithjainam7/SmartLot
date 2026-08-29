@@ -1,5 +1,5 @@
-﻿import React, { useState } from "react";
-import { Building, User, Mail, Lock, ArrowRight, ShieldCheck, Users, Briefcase, Eye, EyeOff } from "lucide-react";
+import React, { useState } from "react";
+import { Building, User, Mail, Lock, ArrowRight, ArrowLeft, ShieldCheck, Users, Briefcase, Eye, EyeOff } from "lucide-react";
 import { SmartLotLogo } from "./core/SmartLotLogo";
 import { CustomSelect, SelectOption } from "./core/CustomSelect";
 import { useSmartLotStore } from "../store/smartLotStore";
@@ -103,6 +103,16 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
         {/* Left Visual Branding Panel */}
         <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden rounded-t-3xl md:rounded-tr-none md:rounded-l-3xl">
           <div className="relative z-10 space-y-6">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/15 cursor-pointer"
+              >
+                <ArrowLeft size={14} /> Back to Home
+              </button>
+            </div>
+
             <div 
               onClick={onBack}
               className="cursor-pointer hover:scale-105 transition-all w-fit"
@@ -141,19 +151,31 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
         {/* Right Auth Panel */}
         <div className="w-full md:w-7/12 bg-white dark:bg-[#0d1117] p-10 md:p-14 flex flex-col justify-center relative rounded-b-3xl md:rounded-bl-none md:rounded-r-3xl">
           
-          <div className="flex bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl w-full max-w-[240px] mx-auto mb-10 text-xs font-bold border border-gray-200 dark:border-white/5">
+          <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => setAuthMode("signin")}
-              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signin" ? "bg-white dark:bg-[#121316] text-gray-900 dark:text-white dark:text-white shadow-sm" : "text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white"}`}
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer shadow-sm"
             >
-              Sign In
+              <ArrowLeft size={14} /> Back to Home
             </button>
-            <button
-              onClick={() => setAuthMode("signup")}
-              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signup" ? "bg-white dark:bg-[#121316] text-gray-900 dark:text-white dark:text-white shadow-sm" : "text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white"}`}
-            >
-              Sign Up
-            </button>
+
+            <div className="flex bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl w-48 text-xs font-bold border border-gray-200 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setAuthMode("signin")}
+                className={`flex-1 py-2 rounded-xl transition-all ${authMode === "signin" ? "bg-white dark:bg-[#121316] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"}`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode("signup")}
+                className={`flex-1 py-2 rounded-xl transition-all ${authMode === "signup" ? "bg-white dark:bg-[#121316] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"}`}
+              >
+                Sign Up
+              </button>
+            </div>
           </div>
 
           <div className="max-w-md mx-auto w-full">
