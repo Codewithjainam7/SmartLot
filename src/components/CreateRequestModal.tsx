@@ -284,8 +284,9 @@ export function CreateRequestFormContent({
       <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/5 dark:border-white/5">
         {step > 1 ? (
           <button
+            type="button"
             onClick={handleBack}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/8 text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1.5 hover:bg-gray-50 dark:bg-[#1a1d27] cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/8 text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1.5 bg-gray-50 dark:bg-[#1a1d27] hover:bg-gray-100 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer transition-colors"
           >
             <ArrowLeft size={16} /> Back
           </button>
@@ -295,8 +296,9 @@ export function CreateRequestFormContent({
 
         {step < 5 ? (
           <button
+            type="button"
             onClick={handleNext}
-            className="bg-[#0B1121] hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+            className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all"
           >
             Next <ArrowRight size={16} />
           </button>

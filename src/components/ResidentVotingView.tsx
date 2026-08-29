@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ResidentRequest } from '../store/smartLotStore';
 import { 
   Vote, 
@@ -72,7 +72,7 @@ export function ResidentVotingView({
                 className={`w-full text-left p-5 rounded-2xl border transition-all cursor-pointer ${
                   activeDetail?.id === req.id 
                     ? 'bg-[#0B1121] text-white border-black shadow-md' 
-                    : 'bg-gray-50 dark:bg-[#1a1d27] border-gray-100 dark:border-white/5 hover:bg-gray-100 text-gray-900 dark:text-white'
+                    : 'bg-gray-50 dark:bg-[#1a1d27] border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-900 dark:text-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
