@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { RequestStream } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
@@ -176,7 +176,7 @@ export function CreateRequestFormContent({
               placeholder="e.g. Main Entrance Vehicle Gate Repair"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm outline-none font-bold text-gray-900 dark:text-white shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm outline-none font-bold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-sm transition-all focus:border-[#00D4B2]"
             />
           </div>
 
@@ -188,7 +188,7 @@ export function CreateRequestFormContent({
               placeholder="Provide location, symptoms, and exact details..."
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm outline-none font-semibold text-gray-800 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm outline-none font-semibold text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-sm transition-all focus:border-[#00D4B2]"
             />
           </div>
         </div>
@@ -243,7 +243,7 @@ export function CreateRequestFormContent({
                 type="date"
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm font-bold text-gray-800 outline-none shadow-sm transition-all"
+                className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm font-bold text-gray-800 dark:text-white outline-none shadow-sm transition-all focus:border-[#00D4B2]"
               />
             </div>
           </div>
