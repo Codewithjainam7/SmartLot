@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
+import { useSmartLotStore, Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { CustomCheckbox } from './core/CustomCheckbox';
 import { GlowSubmitButton } from './core/GlowSubmitButton';
@@ -68,6 +68,7 @@ export function UserManagementView({
   rolePermissions,
   onTogglePermission,
 }: UserManagementViewProps) {
+  const hasPermission = useSmartLotStore(s => s.hasPermission);
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -122,7 +123,7 @@ export function UserManagementView({
               </button>
             </div>
 
-            {activeTab === 'roster' && (
+            {activeTab === 'roster' && hasPermission('MANAGE_USERS') && (
               <MorphingPopoverTrigger>
                 <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
                   <UserPlus size={18} className="text-[#00D4B2]" /> 
@@ -135,7 +136,11 @@ export function UserManagementView({
 
         {/* Morphing Popover Content (Form Modal) */}
         <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <AddMemberFormContent onAddMember={onAddMember} />
+          <AddMemberFormContent 
+            onAddMember={onAddMember} 
+            activePersonaName={activePersonaName}
+            activeSchemeId={activeSchemeId}
+          />
         </MorphingPopoverContent>
 
       </MorphingPopover>
@@ -471,7 +476,15 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Inner Form Content
-function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
+function AddMemberFormContent({ 
+  onAddMember, 
+  activePersonaName,
+  activeSchemeId
+}: { 
+  onAddMember: any;
+  activePersonaName: string;
+  activeSchemeId: string;
+}) {
   const { setIsOpen } = useMorphingPopover();
 
   const [formName, setFormName] = useState('');
@@ -497,9 +510,36 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
     setAdditionalOccupants(prev => prev.map(o => o.id === id ? { ...o, [field]: val } : o));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formEmail) return;
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toEmail: formEmail,
+          toName: formName,
+          role: formRole,
+          schemeName: activeSchemeId, // Fallback since we only have ID here easily
+          schemeId: activeSchemeId,
+          inviterName: activePersonaName
+        })
+      });
+      
+      const data = await response.json();
+      if (!data.success) {
+        console.error('Failed to send invite:', data.error);
+        alert('Warning: API Invite failed, but user will be added locally. Error: ' + data.error);
+      }
+    } catch (err) {
+      console.error('Network error calling invite API:', err);
+    }
+
     onAddMember({
       name: formName,
       email: formEmail,
@@ -509,6 +549,8 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
       lotNumber: Number(formLot),
       additionalOccupants: additionalOccupants.filter(o => o.name.trim() && o.email.trim()),
     });
+    
+    setIsSubmitting(false);
     setIsOpen(false);
   };
 
@@ -706,6 +748,7 @@ function AddMemberFormContent({ onAddMember }: { onAddMember: any }) {
           <GlowSubmitButton 
             label="Send Invites to All Occupants"
             loadingLabel="Sending Invites..."
+            isLoading={isSubmitting}
           />
         </div>
 
