@@ -115,7 +115,9 @@ export function Sidebar({
       {/* Footer User Profile */}
       <div className="p-3 mt-auto border-t border-gray-100 dark:border-white/5 space-y-2">
         <div className={`flex items-center gap-3 py-3 mt-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}>
-          <img src="https://i.pravatar.cc/150?img=47" className="w-10 h-10 shrink-0 rounded-full object-cover border-2 border-gray-200 dark:border-white/10" alt="User" />
+          <div className="w-10 h-10 shrink-0 rounded-xl bg-[#00D4B2]/10 dark:bg-white/5 border border-[#00D4B2]/30 dark:border-white/10 text-[#00D4B2] font-black text-sm flex items-center justify-center select-none">
+            {activePersonaName ? activePersonaName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+          </div>
           {!isCollapsed && (
             <div className="whitespace-nowrap flex-1">
               <div className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{activePersonaName}</div>

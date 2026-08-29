@@ -32,11 +32,9 @@ export function SettingsView({
       {/* Profile Summary Card */}
       <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <img 
-            src="https://i.pravatar.cc/150?img=47" 
-            className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 dark:border-white/5" 
-            alt="Profile avatar" 
-          />
+          <div className="w-16 h-16 shrink-0 rounded-2xl bg-[#00D4B2]/10 dark:bg-white/5 border border-[#00D4B2]/30 dark:border-white/10 text-[#00D4B2] font-black text-xl flex items-center justify-center select-none shadow-sm">
+            {activePersonaName ? activePersonaName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+          </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{activePersonaName}</h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">{activePersonaRole}</p>
