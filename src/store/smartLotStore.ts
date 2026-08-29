@@ -33,6 +33,7 @@ export type RequestComment = {
 
 export type ResidentRequest = {
   id: string;
+  schemeId: string;
   unit: string;
   title: string;
   description: string;
@@ -224,98 +225,111 @@ function usePersistedState<T>(key: string, defaultValue: T | (() => T)): [T, Rea
 }
 
 export function useSmartLotStore() {
-  const [schemes, setSchemes] = usePersistedState<Scheme[]>('smartlot_schemes', SCHEMES);
-  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>('smartlot_activeScheme',
+  const [schemes, setSchemes] = usePersistedState<Scheme[]>('smartlot_schemes_v7', SCHEMES);
+  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>('smartlot_activeScheme_v7',
     SCHEMES.length > 0 
       ? SCHEMES[0] 
       : { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
   );
-  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona', PERSONAS[1]); // Default to Strata Manager Alex Vance
-  const [activeRoles, setActiveRoles] = usePersistedState<string[]>('smartlot_activeRoles', ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>('smartlot_activeView', 'dashboard');
-  const [isLoggedIn, setIsLoggedIn] = usePersistedState('smartlot_isLoggedIn', true);
-  const [theme, setTheme] = usePersistedState<'light' | 'dark'>('smartlot_theme', 'light');
-  const [members, setMembers] = usePersistedState<Member[]>('smartlot_members', INITIAL_MEMBERS);
-  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>('smartlot_residentRequests', INITIAL_RESIDENT_REQUESTS);
-  const [units, setUnits] = usePersistedState<UnitData[]>('smartlot_units', INITIAL_UNITS);
+  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona_v7', PERSONAS[1]); // Default to Strata Manager
+  const [activeRoles, setActiveRoles] = usePersistedState<string[]>('smartlot_activeRoles_v7', ['Strata Manager']);
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>('smartlot_activeView_v7', 'dashboard');
+  const [isLoggedIn, setIsLoggedIn] = usePersistedState('smartlot_isLoggedIn_v7', false);
+  const [theme, setTheme] = usePersistedState<'light' | 'dark'>('smartlot_theme_v7', 'light');
+  const [members, setMembers] = usePersistedState<Member[]>('smartlot_members_v7', INITIAL_MEMBERS);
+  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>('smartlot_residentRequests_v7', INITIAL_RESIDENT_REQUESTS);
+  const [units, setUnits] = usePersistedState<UnitData[]>('smartlot_units_v7', INITIAL_UNITS);
+  const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v7', []);
+
+  const addCustomPersona = (p: Persona) => {
+    setCustomPersonas(prev => {
+      // Never add duplicates by email
+      if (prev.some(c => c.email?.toLowerCase() === p.email?.toLowerCase())) return prev;
+      return [...prev, p];
+    });
+  };
+
+  const setActivePersonaWithSync = (newPersona: Persona | ((prev: Persona) => Persona)) => {
+    setActivePersona(prev => {
+      const resolved = typeof newPersona === 'function' ? newPersona(prev) : newPersona;
+      setCustomPersonas(customs => customs.map(c => c.id === resolved.id ? { ...c, ...resolved } : c));
+      return resolved;
+    });
+  };
+
+  // One-time deduplication on mount: remove duplicate members and units
+  useEffect(() => {
+    setMembers(prev => {
+      const seen = new Set<string>();
+      return prev.filter(m => {
+        const key = `${m.email}-${m.schemeId}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    });
+    setUnits(prev => {
+      const seen = new Set<string>();
+      return prev.filter(u => {
+        const key = `${u.schemeId}-${u.unitId}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!activePersona) return;
 
     if (activePersona.isSystemAdmin) {
-      if (!activeRoles.includes('Super Admin')) {
-        setActiveRoles(['Super Admin']);
-      }
+      setActiveRoles(prev => prev.includes('Super Admin') ? prev : ['Super Admin']);
       return;
     }
 
     // Auto-populate schemes, units, and member roster for the persona's memberships
     if (activePersona.memberships && activePersona.memberships.length > 0) {
       activePersona.memberships.forEach(m => {
-        // 1. Ensure scheme is registered
-        const hasScheme = schemes.some(s => s.id === m.schemeId);
-        if (!hasScheme) {
+        // 1. Ensure scheme is registered - use functional update to read latest state
+        setSchemes(prevSchemes => {
+          if (prevSchemes.some(s => s.id === m.schemeId)) return prevSchemes;
+          
           let lots = 2;
           let sName = 'Strata Scheme';
-          if (m.schemeId === 'SP101') {
-            lots = 2;
-            sName = 'Sunset Duplex';
-          } else if (m.schemeId === 'SP102') {
-            lots = 4;
-            sName = 'Coronation Townhouses';
-          } else if (m.schemeId === 'SP103') {
-            lots = 32;
-            sName = 'Cavaller Apartments';
-          } else if (m.schemeId === 'SP10482') {
-            lots = 10;
-            sName = 'SmartLot Complex';
-          }
-          
-          const newScheme = { id: m.schemeId, name: `${m.schemeId} - ${sName}`, lots, active: true };
-          setSchemes(prev => {
-            if (prev.some(s => s.id === m.schemeId)) return prev;
-            return [...prev, newScheme];
+          if (m.schemeId === 'SP101') { lots = 2; sName = 'Sunset Duplex'; }
+          else if (m.schemeId === 'SP102') { lots = 4; sName = 'Coronation Townhouses'; }
+          else if (m.schemeId === 'SP103') { lots = 32; sName = 'Cavaller Apartments'; }
+          else if (m.schemeId === 'SP10482') { lots = 10; sName = 'SmartLot Complex'; }
+
+          // Also initialize units for this scheme
+          setUnits(prevUnits => {
+            if (prevUnits.some(u => u.schemeId === m.schemeId)) return prevUnits;
+            const newUnits: UnitData[] = Array.from({ length: lots }, (_, i) => ({
+              schemeId: m.schemeId,
+              unitId: `Unit ${i + 1}`,
+              lotNumber: i + 1,
+              entitlement: `${(100 / lots).toFixed(1)}%`,
+              status: 'Vacant' as const,
+              actors: []
+            }));
+            return [...prevUnits, ...newUnits];
           });
 
-          // Generate units
-          const newUnits: UnitData[] = Array.from({ length: lots }, (_, i) => ({
-            schemeId: m.schemeId,
-            unitId: `Unit ${i + 1}`,
-            lotNumber: i + 1,
-            entitlement: `${(100 / lots).toFixed(1)}%`,
-            status: 'Vacant',
-            actors: []
-          }));
-          setUnits(prev => {
-            const filteredPrev = prev.filter(u => u.schemeId !== m.schemeId);
-            return [...filteredPrev, ...newUnits];
-          });
-        }
+          return [...prevSchemes, { id: m.schemeId, name: `${m.schemeId} - ${sName}`, lots, active: true }];
+        });
 
-        // 2. Ensure member record for activePersona exists in store.members for this scheme
-        const hasMemberRecord = members.some(mb => mb.name === activePersona.name && mb.schemeId === m.schemeId);
-        if (!hasMemberRecord) {
+        // 2. Ensure member record exists - use email as unique key
+        const memberEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
+        setMembers(prevMembers => {
+          if (prevMembers.some(mb => mb.email === memberEmail && mb.schemeId === m.schemeId)) return prevMembers;
           const role = m.roles[0] || 'Resident';
-          let unitId = 'Unit 1';
-          let lotNumber = 1;
-          if (activePersona.name === 'Sarah Jones') {
-            unitId = 'Unit 1';
-            lotNumber = 1;
-          } else if (activePersona.name === 'Michael Chen') {
-            unitId = 'Unit 3';
-            lotNumber = 3;
-          } else if (activePersona.name === 'Emma Wilson') {
-            unitId = 'Office';
-            lotNumber = 0;
-          } else if (activePersona.context && activePersona.context.includes('Unit')) {
-            unitId = activePersona.context.split(' ')[0] + ' ' + activePersona.context.split(' ')[1]?.replace(/\D/g, '');
-            lotNumber = parseInt(unitId.replace(/\D/g, '')) || 1;
-          }
-
+          const unitId = 'Unit 1';
+          const lotNumber = 1;
           const newMember = {
-            id: `MEM-${100 + members.length + Math.floor(Math.random() * 100)}`,
+            id: `MEM-${Date.now()}-${m.schemeId}`,
             name: activePersona.name,
-            email: activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+            email: memberEmail,
             phone: '0400 000 000',
             schemeId: m.schemeId,
             role: role as any,
@@ -324,11 +338,8 @@ export function useSmartLotStore() {
             status: 'Active' as const,
             joinedAt: new Date().toISOString().split('T')[0],
           };
-          setMembers(prev => {
-            if (prev.some(mb => mb.name === activePersona.name && mb.schemeId === m.schemeId)) return prev;
-            return [...prev, newMember];
-          });
-        }
+          return [...prevMembers, newMember];
+        });
       });
     }
 
@@ -336,29 +347,21 @@ export function useSmartLotStore() {
     const hasMembershipInActiveScheme = activePersona.memberships?.some(m => m.schemeId === activeScheme.id);
     if (!hasMembershipInActiveScheme && activePersona.memberships && activePersona.memberships.length > 0) {
       const firstMembershipSchemeId = activePersona.memberships[0].schemeId;
-      const targetScheme = schemes.find(s => s.id === firstMembershipSchemeId);
-      if (targetScheme) {
-        setActiveScheme(targetScheme);
-        return;
-      }
+      setSchemes(prevSchemes => {
+        const targetScheme = prevSchemes.find(s => s.id === firstMembershipSchemeId);
+        if (targetScheme) setActiveScheme(targetScheme);
+        return prevSchemes;
+      });
+      return;
     }
 
     const membership = activePersona.memberships?.find(m => m.schemeId === activeScheme.id);
     const newRoles = membership ? membership.roles : [];
     const newRolesStr = newRoles.join(', ');
+    setActiveRoles(prev => prev.join(', ') === newRolesStr ? prev : newRoles);
 
-    const currentRolesStr = activeRoles.join(', ');
-    if (currentRolesStr !== newRolesStr) {
-      setActiveRoles(newRoles);
-    }
-
-    if (activePersona.role !== newRolesStr && newRolesStr) {
-      setActivePersona(prev => ({
-        ...prev,
-        role: newRolesStr
-      }));
-    }
-  }, [activePersona.id, activeScheme.id, activePersona.role, activeRoles, schemes, members]);
+  // Only depends on persona id/role and active scheme - NOT on members/schemes arrays
+  }, [activePersona.id, activeScheme.id, activePersona.role]);
 
 
   // Initialize permissions list for all roles in all schemes
@@ -402,7 +405,10 @@ export function useSmartLotStore() {
       status: 'Vacant',
       actors: []
     }));
-    setUnits(prev => [...prev, ...newUnits]);
+    setUnits(prev => {
+      const filtered = prev.filter(u => u.schemeId !== id);
+      return [...filtered, ...newUnits];
+    });
 
     return newScheme;
   };
@@ -503,6 +509,7 @@ export function useSmartLotStore() {
     const id = `REQ-${100 + residentRequests.length + 1}`;
     const req: ResidentRequest = {
       id,
+      schemeId: activeScheme.id,
       unit: activePersona.context || 'Unit 10',
       title: newReq.title,
       description: newReq.description,
@@ -655,7 +662,7 @@ export function useSmartLotStore() {
     activeScheme,
     setActiveScheme,
     activePersona,
-    setActivePersona,
+    setActivePersona: setActivePersonaWithSync,
     activeView,
     setActiveView,
     isLoggedIn,
@@ -670,6 +677,8 @@ export function useSmartLotStore() {
     vendors: [],
     workOrders: [],
     units,
+    customPersonas,
+    addCustomPersona,
     addMember,
     updateMemberStatus,
     deleteMember,

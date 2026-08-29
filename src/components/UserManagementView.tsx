@@ -1,9 +1,4 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { AgGridReact } from 'ag-grid-react';
-import type { ColDef, ICellRendererParams, GridReadyEvent, ValueFormatterParams } from 'ag-grid-community';
-import { ModuleRegistry, ClientSideRowModelModule, TextFilterModule, NumberFilterModule, ColumnAutoSizeModule } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
@@ -25,8 +20,6 @@ import {
   Plus
 } from 'lucide-react';
 
-ModuleRegistry.registerModules([ClientSideRowModelModule, TextFilterModule, NumberFilterModule, ColumnAutoSizeModule]);
-
 interface UserManagementViewProps {
   members: Member[];
   onAddMember: (data: {
@@ -45,7 +38,7 @@ interface UserManagementViewProps {
   onDeleteMember: (memberId: string) => void;
   activeSchemeId: string;
   activePersonaName: string;
-  rolePermissions: Record<string, { label: string; active: boolean; locked?: boolean }[]>;
+  rolePermissions: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
   onTogglePermission: (role: string, permissionLabel: string) => void;
 }
 
@@ -202,9 +195,14 @@ export function UserManagementView({
             transition={{ duration: 0.2 }}
             className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6"
           >
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Scheme Role Permission Matrix</h3>
-            <p className="text-xs text-gray-500 mt-1">Configure functional access controls for roles in Strata Plan {activeSchemeId}. Checked items indicate permitted actions.</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Scheme Role Permission Matrix</h3>
+              <p className="text-xs text-gray-500 mt-1">Configure access controls for Strata Plan {activeSchemeId}. Checked = permitted. Locked = fixed by system.</p>
+            </div>
+            <span className="text-[10px] font-black bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20 px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0">
+              Module 1 Scope
+            </span>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -218,14 +216,15 @@ export function UserManagementView({
                   </div>
                   <div className="space-y-4 pt-1 divide-y divide-gray-200/40">
                     {(() => {
-                      const categories = {
-                        '📁 1. Service Requests': perms.filter(p => ['Submit Request', 'Add Comment on Request', 'View Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)),
-                        '🗳️ 2. Voting & Governance': perms.filter(p => ['Create & Publish Motion', 'Cast Vote', 'View Final Vote Results'].includes(p.label)),
-                        '💼 3. Vendors & Quotes': perms.filter(p => ['Request Quotes from Vendors', 'Submit Quote', 'View & Compare Quotes', 'Assign Selected Vendor'].includes(p.label)),
-                        '🛠️ 4. Work Orders': perms.filter(p => ['Upload PO / Begin Task', 'Upload Completion Evidence', 'Mark Task Completed'].includes(p.label)),
-                        '⚙️ 5. System Settings': perms.filter(p => ['Role & Permission Setup', 'Module Access Control'].includes(p.label)),
+                      const categories: Record<string, typeof perms> = {
+                        '📁 1. Request Submission': perms.filter(p =>
+                          ['Submit Request', 'Add Comment on Request'].includes(p.label)
+                        ),
+                        '✅ 2. Request Review & Approval': perms.filter(p =>
+                          ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
+                        ),
                       };
-                      
+
                       return Object.entries(categories).map(([catName, catPerms]) => {
                         if (catPerms.length === 0) return null;
                         return (
@@ -237,9 +236,9 @@ export function UserManagementView({
                                 {p.locked ? (
                                   <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
                                 ) : (
-                                  <CustomCheckbox 
-                                    checked={p.active} 
-                                    onChange={() => onTogglePermission(role, p.label)} 
+                                  <CustomCheckbox
+                                    checked={p.active}
+                                    onChange={() => onTogglePermission(role, p.label)}
                                   />
                                 )}
                               </div>
@@ -351,269 +350,123 @@ interface MemberRosterGridProps {
 }
 
 function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateStatus }: MemberRosterGridProps) {
-  
-  // Name renderer
-  const NameRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    return (
-      <span className="font-semibold text-gray-900 text-xs">{params.data.name}</span>
-    );
-  }, []);
-
-  // Role renderer — pill badge
-  const RoleRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    const roleColors: Record<string, string> = {
-      'Lot Owner': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Resident': 'bg-green-50 text-green-700 border-green-200',
-      'Tenant': 'bg-amber-50 text-amber-700 border-amber-200',
-      'Committee Member': 'bg-purple-50 text-purple-700 border-purple-200',
-      'Strata Manager': 'bg-cyan-50 text-cyan-700 border-cyan-200',
-      'Building Manager': 'bg-orange-50 text-orange-700 border-orange-200',
-      'Strata Admin': 'bg-[#0B1121]/10 text-[#0B1121] border-gray-300',
-    };
-    const cls = roleColors[params.data.role] ?? 'bg-gray-100 text-gray-600 border-gray-200';
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${cls}`}>
-        {params.data.role}
-      </span>
-    );
-  }, []);
-
-  // Unit renderer
-  const UnitRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    return (
-      <div className="leading-tight">
-        <div className="font-semibold text-gray-900 text-xs">{params.data.unitId}</div>
-        <div className="text-[10px] text-gray-400">Lot {params.data.lotNumber}</div>
-      </div>
-    );
-  }, []);
-
-  // Contact renderer
-  const ContactRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    return (
-      <div className="leading-tight">
-        <div className="flex items-center gap-1 text-xs text-gray-700 font-medium">
-          <Mail size={11} className="text-gray-400 shrink-0" />
-          <span className="truncate">{params.data.email}</span>
-        </div>
-        <div className="flex items-center gap-1 text-[11px] text-gray-400">
-          <Phone size={11} className="text-gray-400 shrink-0" />
-          {params.data.phone}
-        </div>
-      </div>
-    );
-  }, []);
-
-  // Occupants renderer
-  const OccupantsRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    const occ = params.data.additionalOccupants;
-    if (occ && occ.length > 0) {
-      return (
-        <span className="text-[10px] font-bold text-[#0055FF] bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
-          {occ.length + 1} Occupants
-        </span>
-      );
-    }
-    return <span className="text-[11px] text-gray-400">1 Occupant</span>;
-  }, []);
-
-  // Status renderer
-  const StatusRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    return <MemberStatusBadge status={params.data.status} />;
-  }, []);
-
-  // Actions renderer
-  const ActionsRenderer = useCallback((params: ICellRendererParams<Member>) => {
-    if (!params.data) return null;
-    const m = params.data;
-    return (
-      <div className="flex items-center gap-1.5 h-full">
-        <button
-          onClick={() => onViewDetails(m)}
-          className="px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-bold text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
-        >
-          View
-        </button>
-        {m.name !== activePersonaName && (
-          m.status === 'Active' ? (
-            <button
-              onClick={() => onUpdateStatus(m.id, 'Restricted')}
-              className="px-2.5 py-1 rounded-lg border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-colors"
-            >
-              Restrict
-            </button>
-          ) : (
-            <button
-              onClick={() => onUpdateStatus(m.id, 'Active')}
-              className="px-2.5 py-1 rounded-lg border border-[#00D4B2]/30 text-[11px] font-bold text-[#00A38C] hover:bg-[#00D4B2]/10 cursor-pointer transition-colors"
-            >
-              Activate
-            </button>
-          )
-        )}
-      </div>
-    );
-  }, [activePersonaName, onViewDetails, onUpdateStatus]);
-
-  const columnDefs = useMemo<ColDef<Member>[]>(() => [
-    {
-      headerName: 'Member Name',
-      field: 'name',
-      cellRenderer: NameRenderer,
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      flex: 1.2,
-      minWidth: 140,
-    },
-    {
-      headerName: 'Role',
-      field: 'role',
-      cellRenderer: RoleRenderer,
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      flex: 1.2,
-      minWidth: 140,
-    },
-    {
-      headerName: 'Unit / Lot',
-      field: 'unitId',
-      cellRenderer: UnitRenderer,
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      flex: 0.7,
-      minWidth: 90,
-      valueGetter: (p) => p.data?.unitId ?? '',
-    },
-    {
-      headerName: 'Contact',
-      field: 'email',
-      cellRenderer: ContactRenderer,
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      flex: 1.6,
-      minWidth: 180,
-    },
-    {
-      headerName: 'Occupants',
-      field: 'additionalOccupants',
-      cellRenderer: OccupantsRenderer,
-      sortable: false,
-      filter: false,
-      flex: 0.8,
-      minWidth: 100,
-      valueGetter: (p) => p.data?.additionalOccupants?.length ?? 0,
-    },
-    {
-      headerName: 'Status',
-      field: 'status',
-      cellRenderer: StatusRenderer,
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      flex: 0.7,
-      minWidth: 90,
-    },
-    {
-      headerName: 'Actions',
-      cellRenderer: ActionsRenderer,
-      sortable: false,
-      filter: false,
-      flex: 1,
-      minWidth: 130,
-      pinned: 'right',
-    },
-  ], [NameRenderer, RoleRenderer, UnitRenderer, ContactRenderer, OccupantsRenderer, StatusRenderer, ActionsRenderer]);
-
-  const defaultColDef = useMemo<ColDef>(() => ({
-    resizable: true,
-    suppressMovable: false,
-    cellStyle: { display: 'flex', alignItems: 'center', overflow: 'visible', letterSpacing: 0 },
-  }), []);
+  const roleColors: Record<string, string> = {
+    'Lot Owner':        'bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]/20',
+    'Resident':         'bg-[#00D4B2]/10 text-[#00A38C] border-[#00D4B2]/20',
+    'Tenant':           'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/20',
+    'Committee Member': 'bg-[#7C3AED]/10 text-[#7C3AED] border-[#7C3AED]/20',
+    'Strata Manager':   'bg-[#00D4B2]/10 text-[#00A38C] border-[#00D4B2]/20',
+    'Building Manager': 'bg-[#0055FF]/10 text-[#0033CC] border-[#0055FF]/20',
+    'Strata Admin':     'bg-[#0B1121]/10 text-[#0B1121] border-gray-300',
+  };
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-6 pt-5 pb-3 flex items-center justify-between">
+    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Table Header */}
+      <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-gray-100">
         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-          Member Roster ({members.length})
+          Member Roster <span className="text-[#00D4B2] ml-1">({members.length})</span>
         </h3>
       </div>
-      {/* Custom AG Grid theme overrides */}
-      <style>{`
-        .sl-member-grid.ag-theme-quartz {
-          --ag-font-family: inherit;
-          --ag-font-size: 12px;
-          --ag-row-height: 60px;
-          --ag-header-height: 40px;
-          --ag-header-background-color: #F9FAFB;
-          --ag-header-foreground-color: #9CA3AF;
-          --ag-border-color: #F3F4F6;
-          --ag-row-border-color: #F3F4F6;
-          --ag-odd-row-background-color: #ffffff;
-          --ag-row-hover-color: #F9FAFB;
-          --ag-selected-row-background-color: #EFF6FF;
-          --ag-cell-horizontal-padding: 16px;
-          --ag-header-column-separator-display: none;
-          letter-spacing: 0;
-          border: none;
-          border-radius: 0;
-        }
-        .sl-member-grid .ag-header-cell-label {
-          font-size: 10px;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-        }
-        .sl-member-grid .ag-cell {
-          overflow: visible !important;
-          display: flex !important;
-          align-items: center !important;
-        }
-        .sl-member-grid .ag-cell-wrapper {
-          display: flex !important;
-          align-items: center !important;
-          overflow: visible !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
-        .sl-member-grid .ag-cell-value {
-          display: flex !important;
-          align-items: center !important;
-          overflow: visible !important;
-          width: 100% !important;
-          line-height: 1.4;
-        }
-        .sl-member-grid .ag-row {
-          overflow: visible !important;
-        }
-        .sl-member-grid .ag-paging-panel {
-          font-size: 11px;
-          color: #6B7280;
-          border-top: 1px solid #F3F4F6;
-          padding: 8px 16px;
-        }
-      `}</style>
-      <div className="sl-member-grid ag-theme-quartz w-full" style={{ height: Math.max(220, members.length * 60 + 40 + 48) }}>
-        <AgGridReact<Member>
-          rowData={members}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          rowHeight={60}
-          headerHeight={40}
-          animateRows={true}
-          pagination={members.length > 15}
-          paginationPageSize={15}
-          suppressCellFocus={true}
-          domLayout="normal"
-        />
-      </div>
+
+      {members.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-4 border border-gray-100">
+            <UserPlus size={22} className="text-gray-400" />
+          </div>
+          <p className="text-sm font-bold text-gray-900">No members found</p>
+          <p className="text-xs text-gray-500 mt-1">Try adjusting your filters or add a new member.</p>
+        </div>
+      ) : (
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50/50">
+              <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Member Name</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Role</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Unit / Lot</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Contact</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Occupants</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Status</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {members.map((m) => (
+              <tr key={m.id} className="hover:bg-gray-50 transition-colors group">
+                <td className="px-6 py-4">
+                  <span className="font-bold text-gray-900 text-sm">{m.name}</span>
+                </td>
+                <td className="px-4 py-4">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                    {m.role}
+                  </span>
+                </td>
+                <td className="px-4 py-4">
+                  <div className="leading-tight">
+                    <div className="font-semibold text-gray-900 text-xs">{m.unitId}</div>
+                    <div className="text-[10px] text-gray-500">Lot {m.lotNumber}</div>
+                  </div>
+                </td>
+                <td className="px-4 py-4">
+                  <div className="leading-tight">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                      <Mail size={11} className="text-gray-400 shrink-0" />
+                      <span className="truncate max-w-[160px]">{m.email}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-0.5">
+                      <Phone size={11} className="text-gray-400 shrink-0" />
+                      {m.phone}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4">
+                  {m.additionalOccupants && m.additionalOccupants.length > 0 ? (
+                    <span className="text-[10px] font-bold text-[#0055FF] bg-[#0055FF]/10 px-2 py-0.5 rounded-full border border-[#0055FF]/20">
+                      {m.additionalOccupants.length + 1} Occupants
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-gray-500">1 Occupant</span>
+                  )}
+                </td>
+                <td className="px-4 py-4">
+                  <MemberStatusBadge status={m.status} />
+                </td>
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-2 justify-end">
+                    <button
+                      onClick={() => onViewDetails(m)}
+                      className="px-3 py-1.5 rounded-xl border border-gray-200 text-[11px] font-bold text-gray-600 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition-all"
+                    >
+                      View
+                    </button>
+                    {m.name !== activePersonaName && (
+                      m.status === 'Active' ? (
+                        <button
+                          onClick={() => onUpdateStatus(m.id, 'Restricted')}
+                          className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-all"
+                        >
+                          Restrict
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => onUpdateStatus(m.id, 'Active')}
+                          className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00A38C] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
+                        >
+                          Activate
+                        </button>
+                      )
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 

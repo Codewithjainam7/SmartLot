@@ -26,7 +26,7 @@ interface DashboardProps {
 export function Dashboard({ store }: DashboardProps) {
   const activeScheme = store.activeScheme;
   const members = store.members.filter(m => m.schemeId === activeScheme.id);
-  const pendingRequests = store.residentRequests.filter(r => r.status === 'pending_triage');
+  const pendingRequests = store.residentRequests.filter(r => r.status === 'pending_triage' && r.schemeId === activeScheme.id);
   const vacantCount = store.units.filter((u: any) => u.status === 'Vacant' && u.schemeId === activeScheme.id).length;
 
   // Setup Popup states
@@ -59,15 +59,7 @@ export function Dashboard({ store }: DashboardProps) {
 
   // Prefill details based on selected name
   useEffect(() => {
-    if (store.activePersona?.name === 'Sarah Jones') {
-      handleBuildingTypeChange('duplex');
-    } else if (store.activePersona?.name === 'Michael Chen') {
-      handleBuildingTypeChange('townhouse');
-    } else if (store.activePersona?.name === 'Emma Wilson') {
-      handleBuildingTypeChange('apartment');
-    } else {
-      handleBuildingTypeChange('custom');
-    }
+    handleBuildingTypeChange('custom');
   }, [store.activePersona?.name]);
 
   // Trigger popup after 5 seconds of mounting if memberships array is empty
@@ -101,27 +93,11 @@ export function Dashboard({ store }: DashboardProps) {
       context: store.activePersona.name === 'Emma Wilson' ? 'Cavaller HQ' : `Unit 1 (${newSchemeName})`
     }));
 
-    store.setMembers(prev => [
-      {
-        id: `MEM-${100 + prev.length + 1}`,
-        name: store.activePersona.name,
-        email: store.activePersona.email || `${store.activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
-        phone: '0400 000 000',
-        schemeId: newSchemeId,
-        role: assignRole,
-        unitId: store.activePersona.name === 'Emma Wilson' ? 'Office' : 'Unit 1',
-        lotNumber: store.activePersona.name === 'Emma Wilson' ? 0 : 1,
-        status: 'Active',
-        joinedAt: new Date().toISOString().split('T')[0],
-      },
-      ...prev
-    ]);
-
     setShowSetupPopup(false);
   };
 
   return (
-    <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] relative">
+    <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0B1121] relative">
       
       {/* Column 1: Metrics & Worklist */}
       <div className="lg:col-span-3 space-y-6">
@@ -134,9 +110,9 @@ export function Dashboard({ store }: DashboardProps) {
         </div>
 
         {/* Worklist */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121316] rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-850">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-900">Active Directory</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Active Directory</h3>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All</span>
           </div>
           <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -160,7 +136,7 @@ export function Dashboard({ store }: DashboardProps) {
           {store.hasPermission('Role & Permission Setup') && (
             <button
               onClick={() => store.setActiveView('user_management')}
-              className="w-full mt-4 bg-[#0B1121] hover:bg-black text-[#00D4B2] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
+              className="w-full mt-4 bg-[#0B1121] dark:bg-white dark:text-[#0B1121] hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-[#0B1121] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
             >
               <Plus size={14} /> Invite Occupant / Tenant
             </button>
@@ -173,13 +149,13 @@ export function Dashboard({ store }: DashboardProps) {
         <UnitDetailCard store={store} />
 
         {/* Feed / Timeline */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121316] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-850">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">Activity Log</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Activity Log</h3>
             <button className="text-sm font-semibold text-[#0055FF] hover:text-[#0033CC]">View All</button>
           </div>
           
-          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[15px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[15px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-gray-800 before:to-transparent">
             
             <FeedItem 
               type="verified"
@@ -464,15 +440,15 @@ export function Dashboard({ store }: DashboardProps) {
 function MetricTile({ icon, label, value, highlight }: { icon: React.ReactNode, label: string, value: string, highlight?: boolean }) {
   return (
     <div className={`p-4 rounded-2xl border transition-colors ${
-      highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20' : 'bg-white border-gray-100 hover:border-gray-200'
+      highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20' : 'bg-white dark:bg-[#121316] border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
     }`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 ${
-        highlight ? 'bg-[#FF6B6B] text-white shadow-[0_0_15px_rgba(255,107,107,0.3)]' : 'bg-[#F2F4F8] text-gray-600'
+        highlight ? 'bg-[#FF6B6B] text-white shadow-[0_0_15px_rgba(255,107,107,0.3)]' : 'bg-[#F2F4F8] dark:bg-white/5 text-gray-600 dark:text-gray-400'
       }`}>
         {icon}
       </div>
-      <div className="text-2xl font-bold text-gray-900 mb-0.5">{value}</div>
-      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</div>
+      <div className="text-2xl font-bold text-gray-900 dark:text-white mb-0.5">{value}</div>
+      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</div>
     </div>
   );
 }
@@ -482,11 +458,11 @@ function WorklistItem({ unit, owner, active, alert }: { unit: string, owner: str
     <button className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
       active 
         ? 'bg-[#00D4B2] text-[#0B1121] ring-1 ring-[#00A38C]' 
-        : 'hover:bg-gray-50 bg-white border border-transparent'
+        : 'hover:bg-gray-50 dark:hover:bg-white/5 bg-white dark:bg-[#121316] border border-transparent dark:border-gray-800'
     }`}>
       <div className="text-left">
-        <div className={`text-sm font-bold ${active ? 'text-[#0B1121]' : 'text-gray-900'}`}>{unit}</div>
-        <div className={`text-xs mt-0.5 ${active ? 'text-[#0B1121]/70' : 'text-gray-500'}`}>{owner}</div>
+        <div className={`text-sm font-bold ${active ? 'text-[#0B1121]' : 'text-gray-900 dark:text-white'}`}>{unit}</div>
+        <div className={`text-xs mt-0.5 ${active ? 'text-[#0B1121]/70' : 'text-gray-500 dark:text-gray-400'}`}>{owner}</div>
       </div>
       {alert && (
         <div className="w-2 h-2 rounded-full bg-[#FF6B6B] shadow-[0_0_8px_rgba(255,107,107,0.6)]"></div>
@@ -514,23 +490,23 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 
   return (
     <div className="relative flex items-start group">
-      <div className="absolute left-0 md:left-1/2 -ml-[5px] md:-ml-1.5 mt-1.5 w-3 h-3 rounded-full bg-white border-2 border-gray-300 group-hover:border-gray-400 transition-colors z-10 shadow-sm"></div>
+      <div className="absolute left-0 md:left-1/2 -ml-[5px] md:-ml-1.5 mt-1.5 w-3 h-3 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 group-hover:border-gray-400 transition-colors z-10 shadow-sm"></div>
       
       <div className="ml-6 md:ml-0 md:w-1/2 md:pr-8 md:text-right md:group-even:pl-8 md:group-even:text-left md:group-even:ml-auto">
-        <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-[#121316] border border-gray-100 dark:border-gray-800 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2 mb-1 justify-start md:justify-end md:group-even:justify-start">
             <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${getBg()}`}>
               {getIcon()}
             </div>
-            <span className="text-xs font-bold text-gray-400">{time}</span>
+            <span className="text-xs font-bold text-gray-400 dark:text-gray-500">{time}</span>
           </div>
-          <h4 className="text-sm font-bold text-gray-900 mb-1">{title}</h4>
-          <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+          <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">{title}</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
           
           {type === 'alert' && hasAssignPermission && (
             <button 
               onClick={() => alert('Plumbing Specialist dispatched. Work Order #WO-105 created.')}
-              className="mt-3 w-full bg-[#0B1121] hover:bg-black text-[#00D4B2] text-[10px] font-extrabold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
+              className="mt-3 w-full bg-[#0B1121] dark:bg-white dark:text-[#0B1121] hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-[#0B1121] text-[10px] font-extrabold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
             >
               <Zap size={11} /> Assign Service Provider
             </button>

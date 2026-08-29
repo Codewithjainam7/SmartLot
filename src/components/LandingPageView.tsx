@@ -67,9 +67,9 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
   return (
     <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0B1121] text-gray-900 dark:text-white font-sans flex flex-col relative overflow-hidden selection:bg-[#00D4B2] selection:text-[#0B1121] transition-colors duration-300">
       
-      {/* Background Ripple Effect covering the entire page */}
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-auto">
-        <BackgroundRippleEffect rows={90} cols={33} cellSize={60} />
+      {/* Background Ripple Effect covering the entire page dynamically using fixed positioning */}
+      <div className="fixed inset-0 z-0 opacity-40 pointer-events-none flex justify-center overflow-hidden">
+        <BackgroundRippleEffect rows={22} cols={45} cellSize={60} />
       </div>
 
       {/* Decorative Blur Backgrounds */}

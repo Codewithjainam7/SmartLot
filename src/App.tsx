@@ -24,8 +24,17 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
 
-  // Landing page and admin navigation state
-  const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_console' | 'dashboard'>('landing');
+  // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
+  const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_console' | 'dashboard'>(
+    () => {
+      if (window.location.hash === '#/admin') return 'admin_console';
+      try {
+        const raw = localStorage.getItem('smartlot_isLoggedIn_v7');
+        if (raw && JSON.parse(raw) === true) return 'dashboard';
+      } catch (_) {}
+      return 'landing';
+    }
+  );
 
   // Pre-fill parameters when redirecting from landing page simulating a persona
   const [prefillPersona, setPrefillPersona] = useState<string | null>(null);
@@ -92,7 +101,7 @@ export default function App() {
     const userRole = siteInfo ? (isFreshSignup ? role : 'Strata Admin') : role;
 
     // Look up matching seeded persona to preserve their portfolio memberships
-    const seeded = !isFreshSignup ? PERSONAS.find(p => p.name.toLowerCase() === name.toLowerCase() || p.id === personaId) : null;
+    const seeded = !isFreshSignup ? [...PERSONAS, ...store.customPersonas].find(p => p.name.toLowerCase() === name.toLowerCase() || p.id === personaId) : null;
     const memberships = seeded?.memberships || (isFreshSignup ? [] : [
       {
         schemeId: scheme.id,
@@ -101,6 +110,7 @@ export default function App() {
     ]);
 
     const newPersona = {
+      ...seeded,
       id: personaId,
       role: userRole,
       name: name,
@@ -114,25 +124,26 @@ export default function App() {
     setSessionState('dashboard');
     store.setActiveView('dashboard');
 
-    // Register member context in store if not present
-    const memberExists = store.members.some(m => m.name === name);
-    if (!memberExists) {
-      store.setMembers(prev => [
+    // Register member context in store - deduplicate by email+schemeId
+    const memberEmail = newPersona.email || `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
+    store.setMembers(prev => {
+      if (prev.some(m => m.email === memberEmail && m.schemeId === scheme.id)) return prev;
+      return [
         {
-          id: `MEM-${100 + store.members.length + 1}`,
+          id: `MEM-${Date.now()}`,
           name,
-          email: `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+          email: memberEmail,
           phone: '0400 000 000',
           schemeId: scheme.id,
-          role: (role === 'Strata Admin' ? 'Strata Manager' : role) as any,
+          role: (userRole === 'Strata Admin' ? 'Strata Manager' : userRole) as any,
           unitId: 'Unit 1',
           lotNumber: 1,
-          status: 'Active',
+          status: 'Active' as const,
           joinedAt: new Date().toISOString().split('T')[0],
         },
         ...prev
-      ]);
-    }
+      ];
+    });
   };
 
   const handleLogout = () => {
@@ -181,16 +192,7 @@ export default function App() {
 
   // Handle active scheme switcher filters dynamically
   const filteredRequests = store.residentRequests.filter(r => {
-    // If the persona has context, filter or display matching scheme requests
-    if (store.activePersona.name === 'Emma Wilson') {
-      // Emma can see Coronation (SP102) and Cavaller (SP103) requests based on switch
-      if (store.activeScheme.id === 'SP102') {
-        return r.unit.includes('Coronation') || r.id === 'REQ-102'; // Coronation mocks
-      } else if (store.activeScheme.id === 'SP103') {
-        return r.unit.includes('Cavaller') || r.id === 'REQ-101'; // Cavaller mocks
-      }
-    }
-    return true; // Default fallthrough
+    return r.schemeId === store.activeScheme.id;
   });
 
   return (
@@ -213,12 +215,13 @@ export default function App() {
           schemes={store.schemes}
           activeScheme={store.activeScheme} 
           setActiveScheme={store.setActiveScheme}
-          personas={store.activePersona.role === 'Super Admin' || store.activePersona.role === 'Website Administrator' ? PERSONAS : PERSONAS}
+          personas={PERSONAS}
           activePersona={store.activePersona}
           setActivePersona={store.setActivePersona}
           onAddSchemeClick={() => setShowOnboarding(true)}
           activeRoles={store.activeRoles}
           setActiveRoles={store.setActiveRoles}
+          onLogout={handleLogout}
         />
         
         {/* Dynamic View Rendering */}
@@ -230,7 +233,7 @@ export default function App() {
           )}
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
-          {store.activeView === 'user_management' && store.hasPermission('Role & Permission Setup') && (
+          {store.activeView === 'user_management' && (
             <UserManagementView 
               members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
               activePersonaName={store.activePersona.name}

@@ -59,7 +59,15 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
   }
 
   const currentUnit = activeUnits[selectedUnitIndex] || activeUnits[0];
-  const unitMembers = store.members.filter((m: any) => m.schemeId === activeScheme.id && m.unitId === currentUnit.unitId);
+  const rawUnitMembers = store.members.filter((m: any) => m.schemeId === activeScheme.id && m.unitId === currentUnit.unitId);
+  // Deduplicate by email — if same person appears with multiple roles, keep only one entry
+  const seenEmails = new Set<string>();
+  const unitMembers = rawUnitMembers.filter((m: any) => {
+    const key = (m.email || m.name || '').toLowerCase();
+    if (seenEmails.has(key)) return false;
+    seenEmails.add(key);
+    return true;
+  });
 
   // Permissions gate
   const canManage = store.hasPermission('Role & Permission Setup') || store.hasPermission('Review & Edit Request Fields');
@@ -110,21 +118,21 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-1 overflow-hidden shadow-sm border border-gray-100">
+    <div className="bg-white dark:bg-[#121316] rounded-3xl p-1 overflow-hidden shadow-sm border border-gray-100 dark:border-gray-850">
       
       {/* Unit Selector Tabs */}
       {activeUnits.length > 1 && (
         <div className="flex flex-col gap-1.5 px-4 pt-4 mb-2">
           <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Select Lot / Unit</label>
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-gray-100">
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-gray-100 dark:border-gray-800">
             {activeUnits.map((u: any, index: number) => (
               <button
                 key={u.unitId}
                 onClick={() => setSelectedUnitIndex(index)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
                   selectedUnitIndex === index 
-                    ? 'bg-[#0B1121] text-[#00D4B2]' 
-                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121]' 
+                    : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                 }`}
               >
                 {u.unitId}
@@ -183,7 +191,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       <div className="p-5 space-y-4">
         
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Access Matrix</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Access Matrix</h3>
           {canManage && (
             <button
               onClick={() => {
@@ -193,7 +201,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                 setNewActorRole('On-Site Resident');
                 setShowAddOccupantModal(true);
               }}
-              className="text-xs font-bold bg-[#0B1121] hover:bg-black text-[#00D4B2] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all"
+              className="text-xs font-bold bg-[#0B1121] dark:bg-white dark:text-[#0b1121] hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all"
             >
               <Plus size={14} /> Add Occupant
             </button>
@@ -226,7 +234,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
             />
           ))
         ) : (
-          <div className="text-center py-8 bg-gray-50 rounded-2xl border border-gray-100">
+          <div className="text-center py-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800">
             <span className="text-xs text-gray-400 font-medium">No occupants linked to this unit lot.</span>
           </div>
         )}
@@ -446,7 +454,7 @@ function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) 
 
 function ActorSection({ icon, role, name, email, phone, agency, color, permissions, verified, canManage, onOffboard, isSelf }: any) {
   return (
-    <div className="border border-gray-100 rounded-2xl p-4 hover:border-gray-200 transition-colors bg-gray-50/30">
+    <div className="border border-gray-100 dark:border-gray-800 rounded-2xl p-4 hover:border-gray-200 dark:hover:border-gray-700 transition-colors bg-gray-50/30 dark:bg-white/[0.02]">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3">
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${color}`}>
@@ -457,15 +465,15 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{role}</span>
               {verified && <CheckCircle2 size={12} className="text-[#059669]" />}
             </div>
-            <div className="font-bold text-gray-900 mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 text-gray-600">You</span>}</div>
-            <div className="text-xs text-gray-500">{email} {phone && `• ${phone}`} {agency && `• Agency: ${agency}`}</div>
+            <div className="font-bold text-gray-900 dark:text-white mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300">You</span>}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{email} {phone && `• ${phone}`} {agency && `• Agency: ${agency}`}</div>
           </div>
         </div>
 
         {canManage && !isSelf && (
           <button
             onClick={onOffboard}
-            className="p-2 rounded-xl border border-[#FF4757]/20 text-[#FF4757] hover:text-white hover:bg-[#FF4757]/100 hover:border-red-500 transition-all cursor-pointer"
+            className="p-2 rounded-xl border border-[#FF4757]/20 text-[#FF4757] hover:text-white hover:bg-[#FF4757] hover:border-red-500 transition-all cursor-pointer"
             title="Offboard Occupant"
           >
             <Trash2 size={14} />
@@ -473,7 +481,7 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
         )}
       </div>
       
-      <div className="space-y-2 mt-2 pt-3 border-t border-gray-100">
+      <div className="space-y-2 mt-2 pt-3 border-t border-gray-100 dark:border-gray-800">
         {permissions.map((perm: any, idx: number) => (
           <PermissionToggle key={idx} label={perm.label} initialActive={perm.active} locked={perm.locked} />
         ))}
@@ -488,12 +496,12 @@ function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, l
   return (
     <div className="flex items-center justify-between group">
       <div className="flex items-center gap-2">
-        <Key size={12} className={active ? 'text-[#0055FF]' : 'text-gray-400'} />
-        <span className={`text-xs font-medium ${active ? 'text-gray-900' : 'text-gray-500'}`}>{label}</span>
+        <Key size={12} className={active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-400'} />
+        <span className={`text-xs font-medium ${active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{label}</span>
       </div>
       <button 
         onClick={() => !locked && setActive(!active)}
-        className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF]' : 'text-gray-300'}`}
+        className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-300 dark:text-gray-600'}`}
         disabled={locked}
       >
         {active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}

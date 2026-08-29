@@ -75,17 +75,9 @@ export function ResidentDashboardView({
     }
   };
 
-  // Prefill setup details dynamically based on selected user name
+  // Prefill setup details dynamically
   useEffect(() => {
-    if (activePersonaName === 'Sarah Jones') {
-      handleBuildingTypeChange('duplex');
-    } else if (activePersonaName === 'Michael Chen') {
-      handleBuildingTypeChange('townhouse');
-    } else if (activePersonaName === 'Emma Wilson') {
-      handleBuildingTypeChange('apartment');
-    } else {
-      handleBuildingTypeChange('custom');
-    }
+    handleBuildingTypeChange('custom');
   }, [activePersonaName]);
 
   // Trigger popup after 5 seconds of mounting if the user has no scheme memberships linked
@@ -126,25 +118,6 @@ export function ResidentDashboardView({
       memberships: memberships,
       context: activePersonaName === 'Emma Wilson' ? 'Cavaller HQ' : `Unit 1 (${newSchemeName})`
     }));
-
-    // 4. Register active user on the members roster
-    if (setMembers) {
-      setMembers(prev => [
-        {
-          id: `MEM-${100 + prev.length + 1}`,
-          name: activePersonaName,
-          email: `${activePersonaName.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
-          phone: '0400 000 000',
-          schemeId: newSchemeId,
-          role: assignRole,
-          unitId: activePersonaName === 'Emma Wilson' ? 'Office' : 'Unit 1',
-          lotNumber: activePersonaName === 'Emma Wilson' ? 0 : 1,
-          status: 'Active',
-          joinedAt: new Date().toISOString().split('T')[0],
-        },
-        ...prev
-      ]);
-    }
 
     setShowSetupPopup(false);
   };

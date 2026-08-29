@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { Building, User, Users, ShieldCheck, ArrowRight, Key, Mail, Lock, Plus } from 'lucide-react';
-import { SmartLotLogo } from './core/SmartLotLogo';
+﻿import React, { useState } from "react";
+import { Building, User, Mail, Lock, ArrowRight, ShieldCheck, Users, Briefcase, Eye, EyeOff } from "lucide-react";
+import { SmartLotLogo } from "./core/SmartLotLogo";
+import { CustomSelect, SelectOption } from "./core/CustomSelect";
+import { useSmartLotStore } from "../store/smartLotStore";
+import { PERSONAS } from "../types";
 
 interface ResidentLoginViewProps {
   onLoginSuccess: (
@@ -12,237 +15,287 @@ interface ResidentLoginViewProps {
   onBack: () => void;
 }
 
-export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: ResidentLoginViewProps) {
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const [selectedRole, setSelectedRole] = useState<string>('Lot Owner');
-  const [email, setEmail] = useState('mike@owner.com');
-  const [password, setPassword] = useState('••••••••');
-  const [fullName, setFullName] = useState('Mike Davies');
-  const [unitNo, setUnitNo] = useState('Unit 10');
+const ROLE_OPTIONS: SelectOption[] = [
+  { value: "Lot Owner", label: "Lot Owner", description: "Off-site or resident owner" },
+  { value: "Resident", label: "Resident", description: "Owner-occupier" },
+  { value: "Tenant", label: "Tenant", description: "Renting a lot" },
+  { value: "Committee Member", label: "Committee Member", description: "Elected strata representative" },
+  { value: "Strata Manager", label: "Strata Manager", description: "Agency management" },
+  { value: "Building Manager", label: "Building Manager", description: "On-site facilities management" },
+  { value: "Service Provider", label: "Service Provider", description: "External vendor or contractor" }
+];
 
-  const handleQuickFill = (persona: 'sarah' | 'michael' | 'emma') => {
-    setAuthMode('signup');
-    if (persona === 'sarah') {
-      setFullName('Sarah Jones');
-      setEmail('sarah.jones@duplex.com');
-      setSelectedRole('Lot Owner');
-      setUnitNo('Unit 1');
-    } else if (persona === 'michael') {
-      setFullName('Michael Chen');
-      setEmail('michael.chen@coronation.com');
-      setSelectedRole('Lot Owner');
-      setUnitNo('Unit 3');
-    } else if (persona === 'emma') {
-      setFullName('Emma Wilson');
-      setEmail('emma.wilson@cavaller.com');
-      setSelectedRole('Strata Manager');
-      setUnitNo('Cavaller HQ');
+export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: ResidentLoginViewProps) {
+  const store = useSmartLotStore();
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  
+  // Login State
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Signup State
+  const [fullName, setFullName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("Lot Owner");
+  
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const allPersonas = [...PERSONAS, ...store.customPersonas];
+
+    if (email === "admin@smartlot.com" || email.includes("admin")) {
+       const match = allPersonas.find(p => p.email === email);
+       if (match && match.isSystemAdmin) {
+          onAdminLogin();
+          return;
+       }
+    }
+
+    const match = allPersonas.find(p => p.email?.toLowerCase() === email.toLowerCase());
+    
+    if (match) {
+      const requiredPassword = (match as any).password || "password123";
+      if (password === requiredPassword) {
+        onLoginSuccess(match.role, match.name);
+      } else {
+        setError(`Incorrect password. (Hint: ${requiredPassword === "password123" ? "password123" : "enter your signup password"})`);
+      }
+    } else {
+      setError("User not found. Sign up first or check credentials.");
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (authMode === 'signup') {
-      onLoginSuccess(
-        selectedRole,
-        fullName,
-        { id: '', name: '', lots: 0, unit: unitNo }
-      );
-    } else {
-      // Simulate standard login fills
-      if (email === 'admin@smartlot.com') {
-        onAdminLogin();
-      } else {
-        const loginRole = selectedRole;
-        const loginName = selectedRole === 'Lot Owner' ? 'Mike Davies' : selectedRole === 'Tenant' ? 'John Smith' : 'Lisa Ray';
-        onLoginSuccess(loginRole, loginName);
-      }
+    setError("");
+
+    const allPersonas = [...PERSONAS, ...store.customPersonas];
+    const exists = allPersonas.some(p => p.email?.toLowerCase() === signupEmail.toLowerCase());
+    if (exists) {
+      setError("An account with this email already exists.");
+      return;
     }
+
+    const personaId = fullName.toLowerCase().replace(/\s+/g, "_");
+    const newPersona = {
+      id: personaId,
+      name: fullName,
+      email: signupEmail,
+      role: selectedRole,
+      context: "Unit 1",
+      password: signupPassword,
+      memberships: []
+    };
+
+    store.addCustomPersona(newPersona);
+    onLoginSuccess(selectedRole, fullName, { id: "", name: "", lots: 0, unit: "" });
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#F4F6F9] p-4 font-sans">
-      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[620px] border border-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] p-4 font-sans py-12">
+      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col md:flex-row min-h-[620px] border border-gray-100">
         
         {/* Left Visual Branding Panel */}
-        <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden">
+        <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden rounded-t-3xl md:rounded-tr-none md:rounded-l-3xl">
           <div className="relative z-10 space-y-6">
             <div 
               onClick={onBack}
-              className="cursor-pointer hover:scale-102 transition-all"
+              className="cursor-pointer hover:scale-105 transition-all w-fit"
               title="Back to Landing Page"
             >
               <SmartLotLogo className="h-12" textColor="text-white" />
             </div>
 
             <div>
-              <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+              <p className="text-sm text-gray-400 mt-6 leading-relaxed">
                 Log service requests, manage scheme members, assign role permissions, and vote on community decisions.
               </p>
             </div>
-
-            {/* Quick Simulation Personas Box */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#00D4B2] block">
-                Simulate Foundation Journeys
-              </span>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('sarah')}
-                  className="w-full text-left bg-white/5 hover:bg-white/10 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer"
-                >
-                  Sarah Jones <span className="text-gray-400 font-normal">(Duplex Setup SP101)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('michael')}
-                  className="w-full text-left bg-white/5 hover:bg-white/10 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer"
-                >
-                  Michael Chen <span className="text-gray-400 font-normal">(Coronation Setup SP102)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('emma')}
-                  className="w-full text-left bg-white/5 hover:bg-white/10 px-3 py-2 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer"
-                >
-                  Emma Wilson <span className="text-gray-400 font-normal">(Cavaller Setup SP103)</span>
-                </button>
+          </div>
+          
+          <div className="relative z-10 space-y-6 mt-12 mb-8">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm hover:bg-white/10 transition-all cursor-default">
+              <div className="flex items-center gap-3 text-white font-bold text-sm mb-2">
+                <ShieldCheck className="text-[#00D4B2]" size={20} /> Verified Compliance
               </div>
+              <p className="text-xs text-gray-400 leading-relaxed">Secure role-based matrix strictly enforcing state legislative boundaries between tenants and owners.</p>
             </div>
-          </div>
 
-          <div className="relative z-10 space-y-3 pt-8 border-t border-white/10 text-xs text-gray-400">
-            <div className="flex items-center gap-2 text-white font-semibold">
-              <ShieldCheck size={16} className="text-[#00D4B2]" /> Verified Compliance & Scheme Isolation
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm hover:bg-white/10 transition-all cursor-default">
+              <div className="flex items-center gap-3 text-white font-bold text-sm mb-2">
+                <Briefcase className="text-[#0055FF]" size={20} /> Multi-Site Operations
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed">Switch portfolios dynamically with complete data isolation and instant scheme context updating.</p>
             </div>
-            <div>Secure tenant & strata manager authentication matrix.</div>
           </div>
+          
+          <div className="absolute top-[-20%] right-[-20%] w-[400px] h-[400px] bg-[#00D4B2]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-[-20%] left-[-20%] w-[400px] h-[400px] bg-[#0055FF]/10 rounded-full blur-[100px] pointer-events-none" />
         </div>
 
-        {/* Right Form Panel */}
-        <div className="flex-1 p-10 flex flex-col justify-center max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {authMode === 'signin' ? 'Sign In to SmartLot' : 'Create Account'}
-            </h2>
-
-            <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-bold shrink-0">
-              <button
-                type="button"
-                onClick={() => setAuthMode('signin')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${authMode === 'signin' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMode('signup')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${authMode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
-              >
-                Sign Up
-              </button>
-            </div>
+        {/* Right Auth Panel */}
+        <div className="w-full md:w-7/12 bg-white p-10 md:p-14 flex flex-col justify-center relative rounded-b-3xl md:rounded-bl-none md:rounded-r-3xl">
+          
+          <div className="flex bg-gray-100 p-1 rounded-2xl w-full max-w-[240px] mx-auto mb-10 text-xs font-bold border border-gray-200">
+            <button
+              onClick={() => setAuthMode("signin")}
+              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signin" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => setAuthMode("signup")}
+              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signup" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Sign Up
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* Role Selection Tabs */}
-            <div>
-              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">Select Your Classification</label>
-              <div className="grid grid-cols-3 gap-2">
-                <RoleOption title="Lot Owner" desc="Off-site Owner" selected={selectedRole === 'Lot Owner'} onClick={() => setSelectedRole('Lot Owner')} />
-                <RoleOption title="Strata Manager" desc="Strata Administration" selected={selectedRole === 'Strata Manager'} onClick={() => setSelectedRole('Strata Manager')} />
-                <RoleOption title="Strata Admin" desc="Scheme Owner Admin" selected={selectedRole === 'Strata Admin'} onClick={() => setSelectedRole('Strata Admin')} />
-              </div>
-            </div>
+          <div className="max-w-md mx-auto w-full">
+            <h2 className="text-3xl font-black text-gray-900 mb-2">
+              {authMode === "signin" ? "Welcome back" : "Create account"}
+            </h2>
+            <p className="text-sm text-gray-500 mb-8 font-medium">
+              {authMode === "signin" 
+                ? "Enter your details to access your dashboard." 
+                : "Join your strata community and manage your property."}
+            </p>
 
-            {authMode === 'signup' && (
-              <div className="grid grid-cols-2 gap-3 mb-4 animate-fade-in">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Unit Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={unitNo}
-                    onChange={e => setUnitNo(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
-                  />
-                </div>
+            {error && (
+              <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-100 flex items-center gap-2 mb-4">
+                <ShieldCheck size={14} className="shrink-0" /> {error}
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Email Address</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
-              />
-              {authMode === 'signin' && (
-                <span className="text-[10px] text-gray-400 mt-1 block">
-                  Simulate Web Admin by logging in with <span className="font-bold text-gray-600">admin@smartlot.com</span>
-                </span>
-              )}
-            </div>
+            {authMode === "signin" ? (
+              <form onSubmit={handleSignIn} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-700 ml-1">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      placeholder="e.g. sm1@strata.com"
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Password</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none font-semibold text-gray-900"
-              />
-            </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-xs font-bold text-gray-700">Password</label>
+                    <a href="#" className="text-[11px] font-bold text-[#0055FF] hover:underline">Forgot password?</a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input 
+                      type={showLoginPassword ? "text" : "password"} 
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                    >
+                      {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
 
-            <button
-              type="submit"
-              className="w-full bg-[#0B1121] hover:bg-black text-white rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-[1.02] cursor-pointer mt-4"
-            >
-              <span>{authMode === 'signin' ? `Log In as ${selectedRole}` : `Create ${selectedRole} Account`}</span>
-              <ArrowRight size={18} className="text-[#00D4B2]" />
-            </button>
+                <button 
+                  type="submit"
+                  className="w-full bg-[#0B1121] hover:bg-[#15203A] text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4"
+                >
+                  Sign In <ArrowRight size={18} />
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignUp} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-700 ml-1">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                    <input 
+                      type="text" 
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+                </div>
 
-            <button
-              type="button"
-              onClick={onBack}
-              className="w-full text-gray-500 hover:text-black hover:bg-gray-100 border border-gray-200 shadow-sm py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-3"
-            >
-              ← Back to Home Page
-            </button>
-          </form>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-700 ml-1">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                    <input 
+                      type="email" 
+                      value={signupEmail}
+                      onChange={e => setSignupEmail(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      placeholder="john@example.com"
+                      required
+                    />
+                  </div>
+                </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-700 ml-1">Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                    <input 
+                      type={showSignupPassword ? "text" : "password"} 
+                      value={signupPassword}
+                      onChange={e => setSignupPassword(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignupPassword(!showSignupPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer z-20"
+                    >
+                      {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <CustomSelect
+                    label="Classification / Role"
+                    options={ROLE_OPTIONS}
+                    value={selectedRole}
+                    onChange={setSelectedRole}
+                    direction="down"
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4"
+                >
+                  Create Account <ArrowRight size={18} />
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function RoleOption({ title, desc, selected, onClick }: any) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-        selected ? 'border-[#0B1121] bg-[#0B1121]/5 ring-1 ring-[#0B1121] font-bold text-gray-900' : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
-      }`}
-    >
-      <div className="text-xs font-bold">{title}</div>
-      <div className="text-[10px] text-gray-500 mt-0.5 leading-tight">{desc}</div>
-    </button>
   );
 }

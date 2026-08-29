@@ -34,7 +34,7 @@ export function Sidebar({
 
   return (
     <div 
-      className={`relative flex flex-col h-screen text-white shrink-0 border-r border-gray-900 shadow-2xl z-40 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] bg-[#050505] bg-gradient-to-l from-white/[0.04] to-transparent ${
+      className={`relative flex flex-col h-screen shrink-0 border-r shadow-2xl z-40 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white dark:bg-[#050505] text-gray-900 dark:text-white border-gray-200 dark:border-gray-900 bg-gradient-to-l from-black/[0.01] dark:from-white/[0.04] to-transparent ${
         isCollapsed ? 'w-[80px]' : 'w-[280px]'
       }`}
     >
@@ -46,7 +46,7 @@ export function Sidebar({
           onClick={onLogout}
           title="Back to Landing Page"
         >
-          <SmartLotLogo className="h-8" iconOnly={isCollapsed} textColor="text-white" />
+          <SmartLotLogo className="h-8" iconOnly={isCollapsed} />
         </div>
 
         <button 
@@ -55,7 +55,7 @@ export function Sidebar({
             e.stopPropagation();
             setIsCollapsed(!isCollapsed);
           }} 
-          className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
           title={isCollapsed ? "Expand Sidebar" : "Minimize Sidebar"}
         >
           {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
@@ -78,15 +78,13 @@ export function Sidebar({
               onClick={() => setActiveView('dashboard')}
               isCollapsed={isCollapsed} 
             />
-            {hasPermission('Role & Permission Setup') && (
-              <NavItem 
-                icon={<Users size={18} />} 
-                label="Team Access" 
-                active={activeView === 'user_management'} 
-                onClick={() => setActiveView('user_management')}
-                isCollapsed={isCollapsed} 
-              />
-            )}
+            <NavItem 
+              icon={<Users size={18} />} 
+              label="Team Access" 
+              active={activeView === 'user_management'} 
+              onClick={() => setActiveView('user_management')}
+              isCollapsed={isCollapsed} 
+            />
             <NavItem 
               icon={<Wrench size={18} />} 
               label={activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') ? "Triage Requests" : "My Requests"} 
@@ -115,19 +113,19 @@ export function Sidebar({
       </div>
 
       {/* Footer User Profile */}
-      <div className="p-3 mt-auto border-t border-white/5 space-y-2">
+      <div className="p-3 mt-auto border-t border-gray-100 dark:border-white/5 space-y-2">
         <div className={`flex items-center gap-3 py-3 mt-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}>
-          <img src="https://i.pravatar.cc/150?img=47" className="w-10 h-10 shrink-0 rounded-full object-cover border-2 border-white/10" alt="User" />
+          <img src="https://i.pravatar.cc/150?img=47" className="w-10 h-10 shrink-0 rounded-full object-cover border-2 border-gray-200 dark:border-white/10" alt="User" />
           {!isCollapsed && (
             <div className="whitespace-nowrap flex-1">
-              <div className="text-sm font-semibold text-white truncate max-w-[120px]">{activePersonaName}</div>
-              <div className="text-xs text-gray-500 truncate max-w-[120px]">{activePersonaRole}</div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{activePersonaName}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">{activePersonaRole}</div>
             </div>
           )}
         </div>
         <button
           onClick={onLogout}
-          className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 text-red-400 hover:text-white hover:bg-[#FF4757]/100/20 cursor-pointer ${
+          className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200 dark:border-white/10 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer ${
             isCollapsed ? 'px-0' : 'px-4'
           }`}
         >
@@ -160,8 +158,8 @@ function NavItem({
       onClick={onClick}
       className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-between px-4 py-3'} rounded-2xl transition-all duration-300 ease-out group cursor-pointer ${
         active 
-          ? 'bg-[#0F172A] text-[#00D4B2] shadow-sm border border-[#00D4B2]/20 font-bold' 
-          : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'
+          ? 'bg-gray-100 dark:bg-[#0F172A] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-[#0055FF]/10 dark:border-[#00D4B2]/20 font-bold' 
+          : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5'
       }`}
       title={isCollapsed ? label : undefined}
     >
@@ -177,13 +175,13 @@ function NavItem({
       </div>
       
       {!isCollapsed && badge && (
-        <span className={`transition-all duration-300 ${active ? 'bg-[#0B1121] text-[#00D4B2]' : 'bg-[#FF4757] text-white'} text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0`}>
+        <span className={`transition-all duration-300 ${active ? 'bg-white dark:bg-[#0B1121] text-[#0055FF] dark:text-[#00D4B2]' : 'bg-[#FF4757] text-white'} text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 border border-gray-200 dark:border-transparent`}>
           {badge}
         </span>
       )}
 
       {isCollapsed && badge && (
-        <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#FF6B6B] border-2 border-[#050505]" />
+        <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#FF6B6B] border-2 border-white dark:border-[#050505]" />
       )}
     </button>
   );
