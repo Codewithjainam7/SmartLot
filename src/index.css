@@ -2,6 +2,43 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/* ── 1. Global Multi-Theme Design Tokens ───────────────────── */
+:root {
+  --bg-main: #F4F6F9;
+  --bg-card: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-input: #F1F5F9;
+  --bg-hover: #E2E8F0;
+
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
+
+  --border-color: #E2E8F0;
+  --border-subtle: #F1F5F9;
+
+  --accent-teal: #00D4B2;
+  --accent-blue: #0055FF;
+}
+
+.dark {
+  --bg-main: #0A0A0F;
+  --bg-card: #0D1117;
+  --bg-secondary: #12161F;
+  --bg-input: #1A1D27;
+  --bg-hover: rgba(255, 255, 255, 0.08);
+
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-subtle: #64748B;
+
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+
+  --accent-teal: #00D4B2;
+  --accent-blue: #0055FF;
+}
+
 /* ── Acorn Font Family ───────────────────────────── */
 @font-face {
   font-family: "Acorn";
