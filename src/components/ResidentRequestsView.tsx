@@ -73,35 +73,39 @@ export function ResidentRequestsView({
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#121316] rounded-3xl p-6 shadow-sm border border-gray-100">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0033CC] text-xs font-bold uppercase tracking-wider mb-2">
-            Resident Hub â€¢ Requests Engine
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
+        {/* Subtle glow in dark mode */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-3xl" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#0055FF]/15 text-[#0055FF] dark:text-[#6699ff] border border-[#0055FF]/20 text-xs font-bold uppercase tracking-wider mb-2">
+            Resident Hub • Requests Engine
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">Resident Service & Repair Requests</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Log issues, track status in real-time, and view community requests.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Resident Service & Repair Requests</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Log issues, track status in real-time, and view community requests.</p>
         </div>
 
         {/* Morphing Capsule Button */}
-        <MorphingPopover>
-          <MorphingPopoverTrigger>
-            <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
-              <Plus size={18} className="text-[#00D4B2]" /> 
-              <span>Create New Request</span>
-            </div>
-          </MorphingPopoverTrigger>
+        <div className="relative z-10">
+          <MorphingPopover>
+            <MorphingPopoverTrigger>
+              <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+                <Plus size={18} className="text-[#00D4B2]" /> 
+                <span>Create New Request</span>
+              </div>
+            </MorphingPopoverTrigger>
 
-          <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CreateRequestFormContent 
-              onSubmit={onSubmitRequest}
-              requestorName={activePersonaName}
-            />
-          </MorphingPopoverContent>
-        </MorphingPopover>
+            <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CreateRequestFormContent 
+                onSubmit={onSubmitRequest}
+                requestorName={activePersonaName}
+              />
+            </MorphingPopoverContent>
+          </MorphingPopover>
+        </div>
       </div>
 
       {/* Filter & View Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#121316] p-4 rounded-2xl border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
         
         {/* Status Filter Pills */}
         <div className="flex flex-wrap items-center gap-2">
@@ -114,11 +118,13 @@ export function ResidentRequestsView({
         </div>
 
         {/* View Scope Toggle */}
-        <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+        <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
           <button
             onClick={() => setViewScope('all')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewScope === 'all' ? 'bg-white dark:bg-[#1e1e2e] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              viewScope === 'all' 
+                ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
             }`}
           >
             All Requests
@@ -126,7 +132,9 @@ export function ResidentRequestsView({
           <button
             onClick={() => setViewScope('my')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewScope === 'my' ? 'bg-white dark:bg-[#1e1e2e] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              viewScope === 'my' 
+                ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
             }`}
           >
             My Requests Only
@@ -347,9 +355,12 @@ export function ResidentRequestsView({
 function StatusPill({ label, active, onClick, count }: any) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-        active ? 'bg-[#0B1121] dark:bg-white/10 text-[#00D4B2] border dark:border-[#00D4B2]/30' : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+      className={`relative px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer border ${
+        active 
+          ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/30 shadow-md' 
+          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 border-transparent dark:border-white/5'
       }`}
     >
       {label} {count !== undefined && `(${count})`}

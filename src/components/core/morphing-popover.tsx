@@ -79,7 +79,7 @@ export function MorphingPopoverContent({
           {/* Fluid Container Transform Card */}
           <motion.div
             layoutId={`morphing-popover-container-${uniqueId}`}
-            className={`relative bg-white rounded-3xl p-8 shadow-2xl z-10 overflow-hidden ${className}`}
+            className={`relative bg-white dark:bg-[#0d1117] border dark:border-white/5 rounded-3xl p-8 shadow-2xl z-10 overflow-hidden ${className}`}
             transition={{ 
               type: 'spring', 
               stiffness: 320, 
