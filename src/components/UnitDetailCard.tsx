@@ -147,7 +147,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
         {/* Subtle glow in dark mode */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-[22px]" />
         
-        <div className="absolute top-4 right-4 bg-white/10 dark:bg-white/5 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-transparent dark:border-white/5 relative z-10">
+        <div className="absolute top-4 right-4 bg-white/10 dark:bg-white/5 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-transparent dark:border-white/5 z-10">
           <div className={`w-1.5 h-1.5 rounded-full ${unitMembers.length > 0 ? 'bg-[#6EE7B7] animate-pulse' : 'bg-gray-400'}`}></div>
           {unitMembers.length > 0 ? 'Occupied' : 'Vacant'}
         </div>

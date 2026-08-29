@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { UnitDetailCard } from './UnitDetailCard';
 import { 
@@ -153,7 +153,7 @@ export function Dashboard({ store }: DashboardProps) {
             <button className="text-sm font-semibold text-[#0055FF] hover:text-[#0033CC]">View All</button>
           </div>
           
-          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[15px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-gray-800 before:to-transparent">
+          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[19px] before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-white/10 before:to-transparent">
             
             <FeedItem 
               type="verified"
@@ -488,26 +488,30 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 
   return (
     <div className="relative flex items-start group">
-      <div className="absolute left-0 md:left-1/2 -ml-[5px] md:-ml-1.5 mt-1.5 w-3 h-3 rounded-full bg-white dark:bg-[#1a1d27] border-2 border-gray-300 dark:border-gray-700 group-hover:border-gray-400 transition-colors z-10 shadow-sm"></div>
+      <div className="absolute left-[14px] mt-2 w-2.5 h-2.5 rounded-full bg-white dark:bg-[#1a1d27] border-2 border-gray-300 dark:border-gray-600 group-hover:border-[#00D4B2] transition-colors z-10 shadow-sm" />
       
-      <div className="ml-6 md:ml-0 md:w-1/2 md:pr-8 md:text-right md:group-even:pl-8 md:group-even:text-left md:group-even:ml-auto">
+      <div className="ml-8 w-full">
         <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2 mb-1 justify-start md:justify-end md:group-even:justify-start">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${getBg()}`}>
-              {getIcon()}
+          <div className="flex items-center gap-2 mb-1.5 justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${getBg()}`}>
+                {getIcon()}
+              </div>
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white">{title}</h4>
             </div>
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-500">{time}</span>
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500">{time}</span>
           </div>
-          <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">{title}</h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed pl-8">{desc}</p>
           
           {type === 'alert' && hasAssignPermission && (
-            <button 
-              onClick={() => alert('Plumbing Specialist dispatched. Work Order #WO-105 created.')}
-              className="mt-3 w-full bg-[#0B1121] dark:bg-white dark:text-[#0B1121] hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-[#0B1121] text-[10px] font-extrabold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
-            >
-              <Zap size={11} /> Assign Service Provider
-            </button>
+            <div className="pl-8 pt-2">
+              <button 
+                onClick={() => alert('Plumbing Specialist dispatched. Work Order #WO-105 created.')}
+                className="w-full bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] text-[10px] font-extrabold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
+              >
+                <Zap size={11} /> Assign Service Provider
+              </button>
+            </div>
           )}
         </div>
       </div>
