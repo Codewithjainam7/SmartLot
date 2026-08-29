@@ -47,7 +47,7 @@ export function CustomSelect({
   return (
     <div className={`relative w-full ${className}`} ref={dropdownRef}>
       {label && (
-        <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">
+        <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5 ml-1">
           {label}
         </label>
       )}
@@ -55,7 +55,7 @@ export function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between text-sm font-bold text-gray-900 shadow-sm cursor-pointer active:scale-[0.99]"
+        className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] hover:bg-white dark:hover:bg-[#252836] focus:bg-white dark:focus:bg-[#252836] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between text-sm font-bold text-gray-900 dark:text-white shadow-sm cursor-pointer active:scale-[0.99]"
       >
         <span className="truncate flex items-center gap-2">
           {selectedOption?.icon}
@@ -63,7 +63,7 @@ export function CustomSelect({
         </span>
         <ChevronDown 
           size={16} 
-          className={`text-gray-400 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shrink-0 ${isOpen ? 'rotate-180 text-gray-800' : ''}`} 
+          className={`text-gray-400 dark:text-gray-500 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shrink-0 ${isOpen ? 'rotate-180 text-gray-800 dark:text-white' : ''}`} 
         />
       </button>
 

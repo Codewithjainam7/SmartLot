@@ -21,8 +21,8 @@ export function CustomCheckbox({
         onClick={() => onChange(!checked)}
         className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           checked 
-            ? 'bg-[#0B1121] border-[#0B1121] shadow-sm' 
-            : 'bg-gray-50 border-gray-300 hover:border-gray-400 hover:bg-white'
+            ? 'bg-[#0B1121] dark:bg-white/10 border-[#0B1121] dark:border-white/20 shadow-sm' 
+            : 'bg-gray-50 dark:bg-[#1a1d27] border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#252836]'
         }`}
       >
         {checked && (
@@ -38,7 +38,7 @@ export function CustomCheckbox({
       </div>
 
       {label && (
-        <span className="text-xs font-bold text-gray-700">
+        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
           {label}
         </span>
       )}
