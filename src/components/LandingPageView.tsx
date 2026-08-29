@@ -132,20 +132,6 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
               <span>Get Started Now</span>
               <ArrowRight size={14} className="text-[#00D4B2] dark:text-black" />
             </button>
-            <div className="mt-8 pt-6 border-t border-gray-200/50 dark:border-gray-800/50 w-full max-w-xl">
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Module 1 Foundation — Test Personas</p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <button onClick={() => onSelectPersona('sarah_jones')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 hover:scale-105 transition-transform cursor-pointer">
-                  👤 Sarah (Duplex Admin)
-                </button>
-                <button onClick={() => onSelectPersona('michael_chen')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20 hover:scale-105 transition-transform cursor-pointer">
-                  👤 Michael (Coronation Committee)
-                </button>
-                <button onClick={() => onSelectPersona('emma_wilson')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 hover:scale-105 transition-transform cursor-pointer">
-                  👤 Emma (Multi-Site Manager)
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </section>
