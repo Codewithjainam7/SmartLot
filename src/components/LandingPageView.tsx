@@ -124,7 +124,7 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
           <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
             Take back control of common property. From self-managed duplex structures to multi-lot townhouse committees and apartment complexes.
           </p>
-          <div className="flex items-center justify-center pt-4">
+          <div className="flex flex-col items-center justify-center pt-4 gap-4">
             <button 
               onClick={() => onSelectPersona('guest')}
               className="w-full sm:w-auto bg-[#0B1121] dark:bg-white dark:text-black hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-black px-10 py-4.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#0B1121]/10 dark:shadow-white/5"
@@ -132,6 +132,20 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
               <span>Get Started Now</span>
               <ArrowRight size={14} className="text-[#00D4B2] dark:text-black" />
             </button>
+            <div className="mt-8 pt-6 border-t border-gray-200/50 dark:border-gray-800/50 w-full max-w-xl">
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Module 1 Foundation — Test Personas</p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button onClick={() => onSelectPersona('sarah_jones')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 hover:scale-105 transition-transform cursor-pointer">
+                  👤 Sarah (Duplex Admin)
+                </button>
+                <button onClick={() => onSelectPersona('michael_chen')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20 hover:scale-105 transition-transform cursor-pointer">
+                  👤 Michael (Coronation Committee)
+                </button>
+                <button onClick={() => onSelectPersona('emma_wilson')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 hover:scale-105 transition-transform cursor-pointer">
+                  👤 Emma (Multi-Site Manager)
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

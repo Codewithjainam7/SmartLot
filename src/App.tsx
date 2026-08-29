@@ -71,9 +71,14 @@ export default function App() {
       setPrefillPersona(null);
       setSessionState('login');
     } else {
-      // Simulate/Trigger signup with preset parameters
-      setPrefillPersona(personaId);
-      setSessionState('login');
+      const allPersonas = [...PERSONAS, ...store.customPersonas];
+      const match = allPersonas.find(p => p.id === personaId);
+      if (match) {
+        handleLoginSuccess(match.role, match.name);
+      } else {
+        setPrefillPersona(personaId);
+        setSessionState('login');
+      }
     }
   };
 
