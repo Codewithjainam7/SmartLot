@@ -42,22 +42,22 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
   };
 
   return (
-    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9]">
+    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Clean Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 dark:border-white/5">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B1121]/5 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
             Deterministic Triage Engine
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Maintenance & Triage Inbox</h1>
-          <p className="text-sm text-gray-500">Route incoming issues through 4 standardized Australian strata streams.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Maintenance & Triage Inbox</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Route incoming issues through 4 standardized Australian strata streams.</p>
         </div>
 
         {/* Clean CTA Button */}
         <MorphingPopover>
           <MorphingPopoverTrigger>
-            <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+            <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
               <Plus size={18} className="text-[#00D4B2]" /> 
               <span>Log Issue (4-Stream)</span>
             </div>
@@ -86,21 +86,21 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
         {filteredCases.map((item) => (
           <div 
             key={item.id} 
-            className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[320px]"
+            className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 dark:border-white/5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[320px]"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{item.id} • {item.unit}</span>
+                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{item.id} â€¢ {item.unit}</span>
                 <StatusBadge status={item.status} />
               </div>
 
               <div className="flex items-center gap-2 mb-3">
                 <StreamIcon stream={item.stream} />
-                <span className="text-xs font-semibold text-gray-600 capitalize">{item.stream.replace(/_/g, ' ')}</span>
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize">{item.stream.replace(/_/g, ' ')}</span>
               </div>
 
-              <h3 className="text-lg font-bold text-gray-900 mb-2 leading-snug">{item.title}</h3>
-              <p className="text-xs text-gray-500 leading-relaxed mb-4">{item.description}</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{item.title}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 leading-relaxed mb-4">{item.description}</p>
               
               {item.rejectionReason && (
                 <div className="bg-[#FF4757]/10 border border-[#FF4757]/20 p-3 rounded-xl text-xs text-red-700 font-medium">
@@ -109,8 +109,8 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               )}
             </div>
 
-            <div className="pt-4 border-t border-gray-100 space-y-3 mt-auto">
-              <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-white/5 space-y-3 mt-auto">
+              <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
                 <span>Reported by {item.reportedBy}</span>
                 <span className="flex items-center gap-1"><Clock size={12} /> {item.createdAt}</span>
               </div>
@@ -134,7 +134,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               )}
 
               {item.status === 'approved_pending_vote' && (
-                <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl flex items-center justify-between">
+                <div className="bg-purple-50 dark:bg-purple-950/10 border border-purple-100 dark:border-purple-900/20 p-3 rounded-xl flex items-center justify-between">
                   <div className="text-xs font-bold text-[#0055FF] flex items-center gap-1.5">
                     <Vote size={14} /> Committee Motion Active
                   </div>
@@ -150,12 +150,12 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
       {selectedCaseForRejection && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedCaseForRejection(null)} />
-          <div className="relative bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl z-10">
-            <div className="w-12 h-12 rounded-2xl bg-red-100 text-[#FF6B6B] flex items-center justify-center mb-4">
+          <div className="relative bg-white dark:bg-[#0d1117] w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 border dark:border-white/5">
+            <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/20 text-[#FF6B6B] flex items-center justify-center mb-4">
               <XCircle size={24} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-1">Mandatory Rejection Reason</h3>
-            <p className="text-xs text-gray-500 mb-4">You are rejecting <span className="font-bold">{selectedCaseForRejection.id}</span>. Written rationale is required for resident transparency (Max 50 words).</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Mandatory Rejection Reason</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-4">You are rejecting <span className="font-bold">{selectedCaseForRejection.id}</span>. Written rationale is required for resident transparency (Max 50 words).</p>
 
             <textarea
               required
@@ -164,11 +164,11 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               placeholder="State reason (e.g. Internal unit fixture is the responsibility of the Lot Owner, not Common Area funds)..."
               value={rejectionReasonText}
               onChange={e => setRejectionReasonText(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm outline-none mb-4 focus:ring-2 focus:ring-red-200"
+              className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] dark:bg-[#1a1d27] text-sm outline-none text-gray-900 dark:text-white dark:text-white focus:bg-white dark:focus:bg-[#252836] mb-4 focus:ring-2 focus:ring-red-200"
             />
 
             <div className="flex justify-end gap-3">
-              <button onClick={() => setSelectedCaseForRejection(null)} className="px-4 py-2 text-sm font-semibold text-gray-600 cursor-pointer">Cancel</button>
+              <button onClick={() => setSelectedCaseForRejection(null)} className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 cursor-pointer">Cancel</button>
               <button
                 onClick={handleConfirmReject}
                 disabled={!rejectionReasonText.trim()}
@@ -189,10 +189,10 @@ function FilterPill({ label, active, onClick, count, icon }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+      className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer border ${
         active 
-          ? 'bg-[#0B1121] text-[#00D4B2] shadow-md ring-1 ring-black' 
-          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+          ? 'bg-[#0B1121] dark:bg-white/10 text-[#00D4B2] border-[#00D4B2]/30 shadow-md' 
+          : 'bg-white dark:bg-[#0d1117] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 border-gray-200 dark:border-white/5'
       }`}
     >
       {icon}
@@ -211,7 +211,7 @@ function StatusBadge({ status }: { status: CaseStatus }) {
     case 'approved_pending_vote':
       return <span className="px-3 py-1 rounded-full bg-[#0055FF]/20 text-[#0033CC] text-[10px] font-bold uppercase tracking-wider">Approved - Pending Vote</span>;
     case 'rejected':
-      return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase tracking-wider">Rejected</span>;
+      return <span className="px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/20 text-[#FF6B6B] text-[10px] font-bold uppercase tracking-wider">Rejected</span>;
     case 'resolved':
       return <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">Resolved</span>;
   }
@@ -219,11 +219,12 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 
 function StreamIcon({ stream }: { stream: RequestStream }) {
   switch (stream) {
-    case 'general_inquiry': return <HelpCircle size={16} className="text-gray-500" />;
+    case 'general_inquiry': return <HelpCircle size={16} className="text-gray-500 dark:text-gray-400 dark:text-gray-500" />;
     case 'emergency_repair': return <AlertTriangle size={16} className="text-[#FF6B6B]" />;
     case 'private_lot_repair': return <Home size={16} className="text-[#00A38C]" />;
     case 'common_area_repair': return <Building2 size={16} className="text-[#0055FF]" />;
   }
 }
+
 
 

@@ -11,6 +11,7 @@ interface GlowSubmitButtonProps {
   type?: 'submit' | 'button';
   disabled?: boolean;
   className?: string;
+  isLoading?: boolean;
 }
 
 export function GlowSubmitButton({
@@ -21,19 +22,21 @@ export function GlowSubmitButton({
   type = 'submit',
   disabled = false,
   className = '',
+  isLoading: externalLoading,
 }: GlowSubmitButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading;
 
   const handleClick = (e: React.MouseEvent) => {
     if (disabled || isLoading) return;
-    setIsLoading(true);
+    setInternalLoading(true);
 
     if (onClick) {
       onClick();
     }
 
     setTimeout(() => {
-      setIsLoading(false);
+      setInternalLoading(false);
     }, 1500);
   };
 

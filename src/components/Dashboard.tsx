@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { UnitDetailCard } from './UnitDetailCard';
 import { 
@@ -97,7 +97,7 @@ export function Dashboard({ store }: DashboardProps) {
   };
 
   return (
-    <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0B1121] relative">
+    <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0a0a0f] relative">
       
       {/* Column 1: Metrics & Worklist */}
       <div className="lg:col-span-3 space-y-6">
@@ -110,7 +110,7 @@ export function Dashboard({ store }: DashboardProps) {
         </div>
 
         {/* Worklist */}
-        <div className="bg-white dark:bg-[#121316] rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-850">
+        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-white/5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">Active Directory</h3>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All</span>
@@ -133,14 +133,12 @@ export function Dashboard({ store }: DashboardProps) {
           </div>
 
           {/* Quick Invite CTA inside Directory */}
-          {store.hasPermission('Role & Permission Setup') && (
-            <button
-              onClick={() => store.setActiveView('user_management')}
-              className="w-full mt-4 bg-[#0B1121] dark:bg-white dark:text-[#0B1121] hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-[#0B1121] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
-            >
-              <Plus size={14} /> Invite Occupant / Tenant
-            </button>
-          )}
+          <button
+            onClick={() => store.setActiveView('user_management')}
+            className="w-full mt-4 bg-[#0B1121] dark:bg-white dark:text-[#0B1121] hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-[#0B1121] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
+          >
+            <Plus size={14} /> Invite Occupant / Tenant
+          </button>
         </div>
       </div>
 
@@ -149,7 +147,7 @@ export function Dashboard({ store }: DashboardProps) {
         <UnitDetailCard store={store} />
 
         {/* Feed / Timeline */}
-        <div className="bg-white dark:bg-[#121316] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-850">
+        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Activity Log</h3>
             <button className="text-sm font-semibold text-[#0055FF] hover:text-[#0033CC]">View All</button>
@@ -440,7 +438,7 @@ export function Dashboard({ store }: DashboardProps) {
 function MetricTile({ icon, label, value, highlight }: { icon: React.ReactNode, label: string, value: string, highlight?: boolean }) {
   return (
     <div className={`p-4 rounded-2xl border transition-colors ${
-      highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20' : 'bg-white dark:bg-[#121316] border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
+      highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20' : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-gray-700'
     }`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 ${
         highlight ? 'bg-[#FF6B6B] text-white shadow-[0_0_15px_rgba(255,107,107,0.3)]' : 'bg-[#F2F4F8] dark:bg-white/5 text-gray-600 dark:text-gray-400'
@@ -458,7 +456,7 @@ function WorklistItem({ unit, owner, active, alert }: { unit: string, owner: str
     <button className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
       active 
         ? 'bg-[#00D4B2] text-[#0B1121] ring-1 ring-[#00A38C]' 
-        : 'hover:bg-gray-50 dark:hover:bg-white/5 bg-white dark:bg-[#121316] border border-transparent dark:border-gray-800'
+        : 'hover:bg-gray-50 dark:hover:bg-white/5 bg-white dark:bg-[#0d1117] border border-transparent dark:border-white/5'
     }`}>
       <div className="text-left">
         <div className={`text-sm font-bold ${active ? 'text-[#0B1121]' : 'text-gray-900 dark:text-white'}`}>{unit}</div>
@@ -490,10 +488,10 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 
   return (
     <div className="relative flex items-start group">
-      <div className="absolute left-0 md:left-1/2 -ml-[5px] md:-ml-1.5 mt-1.5 w-3 h-3 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 group-hover:border-gray-400 transition-colors z-10 shadow-sm"></div>
+      <div className="absolute left-0 md:left-1/2 -ml-[5px] md:-ml-1.5 mt-1.5 w-3 h-3 rounded-full bg-white dark:bg-[#1a1d27] border-2 border-gray-300 dark:border-gray-700 group-hover:border-gray-400 transition-colors z-10 shadow-sm"></div>
       
       <div className="ml-6 md:ml-0 md:w-1/2 md:pr-8 md:text-right md:group-even:pl-8 md:group-even:text-left md:group-even:ml-auto">
-        <div className="bg-white dark:bg-[#121316] border border-gray-100 dark:border-gray-800 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2 mb-1 justify-start md:justify-end md:group-even:justify-start">
             <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${getBg()}`}>
               {getIcon()}
@@ -516,3 +514,4 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
     </div>
   );
 }
+

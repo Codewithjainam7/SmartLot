@@ -97,8 +97,8 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] p-4 font-sans py-12">
-      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col md:flex-row min-h-[620px] border border-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] p-4 font-sans py-12">
+      <div className="bg-white dark:bg-[#0d1117] w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col md:flex-row min-h-[620px] border border-gray-100 dark:border-white/5">
         
         {/* Left Visual Branding Panel */}
         <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden rounded-t-3xl md:rounded-tr-none md:rounded-l-3xl">
@@ -112,7 +112,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
             </div>
 
             <div>
-              <p className="text-sm text-gray-400 mt-6 leading-relaxed">
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-6 leading-relaxed">
                 Log service requests, manage scheme members, assign role permissions, and vote on community decisions.
               </p>
             </div>
@@ -123,14 +123,14 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
               <div className="flex items-center gap-3 text-white font-bold text-sm mb-2">
                 <ShieldCheck className="text-[#00D4B2]" size={20} /> Verified Compliance
               </div>
-              <p className="text-xs text-gray-400 leading-relaxed">Secure role-based matrix strictly enforcing state legislative boundaries between tenants and owners.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">Secure role-based matrix strictly enforcing state legislative boundaries between tenants and owners.</p>
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm hover:bg-white/10 transition-all cursor-default">
               <div className="flex items-center gap-3 text-white font-bold text-sm mb-2">
                 <Briefcase className="text-[#0055FF]" size={20} /> Multi-Site Operations
               </div>
-              <p className="text-xs text-gray-400 leading-relaxed">Switch portfolios dynamically with complete data isolation and instant scheme context updating.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">Switch portfolios dynamically with complete data isolation and instant scheme context updating.</p>
             </div>
           </div>
           
@@ -139,35 +139,35 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
         </div>
 
         {/* Right Auth Panel */}
-        <div className="w-full md:w-7/12 bg-white p-10 md:p-14 flex flex-col justify-center relative rounded-b-3xl md:rounded-bl-none md:rounded-r-3xl">
+        <div className="w-full md:w-7/12 bg-white dark:bg-[#0d1117] p-10 md:p-14 flex flex-col justify-center relative rounded-b-3xl md:rounded-bl-none md:rounded-r-3xl">
           
-          <div className="flex bg-gray-100 p-1 rounded-2xl w-full max-w-[240px] mx-auto mb-10 text-xs font-bold border border-gray-200">
+          <div className="flex bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl w-full max-w-[240px] mx-auto mb-10 text-xs font-bold border border-gray-200 dark:border-white/5">
             <button
               onClick={() => setAuthMode("signin")}
-              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signin" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signin" ? "bg-white dark:bg-[#121316] text-gray-900 dark:text-white dark:text-white shadow-sm" : "text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white"}`}
             >
               Sign In
             </button>
             <button
               onClick={() => setAuthMode("signup")}
-              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signup" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              className={`flex-1 py-2.5 rounded-xl transition-all ${authMode === "signup" ? "bg-white dark:bg-[#121316] text-gray-900 dark:text-white dark:text-white shadow-sm" : "text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white"}`}
             >
               Sign Up
             </button>
           </div>
 
           <div className="max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-black text-gray-900 mb-2">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
               {authMode === "signin" ? "Welcome back" : "Create account"}
             </h2>
-            <p className="text-sm text-gray-500 mb-8 font-medium">
+            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-8 font-medium">
               {authMode === "signin" 
                 ? "Enter your details to access your dashboard." 
                 : "Join your strata community and manage your property."}
             </p>
 
             {error && (
-              <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-100 flex items-center gap-2 mb-4">
+              <div className="p-3 bg-red-50 dark:bg-red-950/10 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl border border-red-100 dark:border-red-900/30 flex items-center gap-2 mb-4">
                 <ShieldCheck size={14} className="shrink-0" /> {error}
               </div>
             )}
@@ -177,12 +177,12 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-700 ml-1">Email Address</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
                     <input 
                       type="email" 
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="e.g. sm1@strata.com"
                       required
                     />
@@ -195,19 +195,19 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                     <a href="#" className="text-[11px] font-bold text-[#0055FF] hover:underline">Forgot password?</a>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
                     <input 
                       type={showLoginPassword ? "text" : "password"} 
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="••••••••"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                     >
                       {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -226,12 +226,12 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-700 ml-1">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 z-10 pointer-events-none" />
                     <input 
                       type="text" 
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="John Doe"
                       required
                     />
@@ -241,12 +241,12 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-700 ml-1">Email Address</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 z-10 pointer-events-none" />
                     <input 
                       type="email" 
                       value={signupEmail}
                       onChange={e => setSignupEmail(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="john@example.com"
                       required
                     />
@@ -256,19 +256,19 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-700 ml-1">Password</label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 z-10 pointer-events-none" />
                     <input 
                       type={showSignupPassword ? "text" : "password"} 
                       value={signupPassword}
                       onChange={e => setSignupPassword(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="••••••••"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowSignupPassword(!showSignupPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer z-20"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300 transition-colors cursor-pointer z-20"
                     >
                       {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -299,3 +299,4 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
     </div>
   );
 }
+

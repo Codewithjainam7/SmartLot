@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { 
   Home, 
@@ -44,13 +44,13 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
   if (activeUnits.length === 0 || activeScheme.id === 'NO_SCHEME') {
     return (
-      <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center space-y-4 min-h-[350px]">
-        <div className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center">
+      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-4 min-h-[350px]">
+        <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 flex items-center justify-center">
           <Home size={32} />
         </div>
         <div>
-          <h3 className="text-base font-bold text-gray-900">No Strata Units Registered</h3>
-          <p className="text-xs text-gray-400 max-w-xs mt-1">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">No Strata Units Registered</h3>
+          <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs mt-1">
             Register your strata building scheme to populate and view unit matrix entries.
           </p>
         </div>
@@ -60,7 +60,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
   const currentUnit = activeUnits[selectedUnitIndex] || activeUnits[0];
   const rawUnitMembers = store.members.filter((m: any) => m.schemeId === activeScheme.id && m.unitId === currentUnit.unitId);
-  // Deduplicate by email — if same person appears with multiple roles, keep only one entry
+  // Deduplicate by email â€” if same person appears with multiple roles, keep only one entry
   const seenEmails = new Set<string>();
   const unitMembers = rawUnitMembers.filter((m: any) => {
     const key = (m.email || m.name || '').toLowerCase();
@@ -123,8 +123,8 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       {/* Unit Selector Tabs */}
       {activeUnits.length > 1 && (
         <div className="flex flex-col gap-1.5 px-4 pt-4 mb-2">
-          <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Select Lot / Unit</label>
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-gray-100 dark:border-gray-800">
+          <label className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Select Lot / Unit</label>
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-gray-100 dark:border-white/5">
             {activeUnits.map((u: any, index: number) => (
               <button
                 key={u.unitId}
@@ -132,7 +132,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                 className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors ${
                   selectedUnitIndex === index 
                     ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121]' 
-                    : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
+                    : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10'
                 }`}
               >
                 {u.unitId}
@@ -164,14 +164,14 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                     setEditStatus(currentUnit.status);
                     setShowEditLotModal(true);
                   }}
-                  className="p-1 rounded bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  className="p-1 rounded bg-white/10 hover:bg-white/20 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer"
                   title="Edit Lot Metadata"
                 >
                   <Settings size={14} />
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-3 text-gray-400 text-sm mt-1">
+            <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500 text-sm mt-1">
               <span>Lot {currentUnit.lotNumber}</span>
               <span className="w-1 h-1 rounded-full bg-gray-600"></span>
               <span>Entitlement: {currentUnit.entitlement}</span>
@@ -191,7 +191,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       <div className="p-5 space-y-4">
         
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Access Matrix</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white dark:text-white uppercase tracking-wider">Access Matrix</h3>
           {canManage && (
             <button
               onClick={() => {
@@ -234,8 +234,8 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
             />
           ))
         ) : (
-          <div className="text-center py-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800">
-            <span className="text-xs text-gray-400 font-medium">No occupants linked to this unit lot.</span>
+          <div className="text-center py-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">No occupants linked to this unit lot.</span>
           </div>
         )}
       </div>
@@ -261,7 +261,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               <button 
                 type="button"
                 onClick={() => setShowEditLotModal(false)}
-                className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
+                className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
               >
                 <X size={16} />
               </button>
@@ -275,19 +275,19 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
               <form onSubmit={handleEditLotSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Strata Entitlement %</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Strata Entitlement %</label>
                   <input 
                     type="text"
                     required
                     placeholder="e.g. 50%"
                     value={editEntitlement}
                     onChange={e => setEditEntitlement(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 transition-all"
+                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 dark:text-gray-300 focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Occupancy Status</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Occupancy Status</label>
                   <div className="grid grid-cols-2 gap-2 bg-white/5 p-1 rounded-2xl border border-white/5 text-center">
                     {(['Occupied', 'Vacant'] as const).map(status => {
                       const isActive = editStatus === status;
@@ -297,7 +297,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                           type="button"
                           onClick={() => setEditStatus(status)}
                           className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            isActive ? 'bg-[#00D4B2] text-[#0B1121] shadow' : 'text-gray-400 hover:text-white'
+                            isActive ? 'bg-[#00D4B2] text-[#0B1121] shadow' : 'text-gray-400 dark:text-gray-500 hover:text-white'
                           }`}
                         >
                           {status}
@@ -341,7 +341,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               <button 
                 type="button"
                 onClick={() => setShowAddOccupantModal(false)}
-                className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
+                className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
               >
                 <X size={16} />
               </button>
@@ -355,42 +355,42 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
               <form onSubmit={handleAddOccupantSubmit} className="space-y-3.5">
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Full Name</label>
                   <input 
                     type="text"
                     required
                     placeholder="e.g. John Doe"
                     value={newActorName}
                     onChange={e => setNewActorName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 dark:text-gray-300 focus:border-[#00D4B2] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1">Email Address</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Email Address</label>
                   <input 
                     type="email"
                     required
                     placeholder="john@example.com"
                     value={newActorEmail}
                     onChange={e => setNewActorEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 dark:text-gray-300 focus:border-[#00D4B2] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1">Phone Number</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Phone Number</label>
                   <input 
                     type="text"
                     placeholder="e.g. 0400 123 456"
                     value={newActorPhone}
                     onChange={e => setNewActorPhone(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 dark:text-gray-300 focus:border-[#00D4B2] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1">Classification / Relationship</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Classification / Relationship</label>
                   <div className="grid grid-cols-2 gap-1.5 bg-white/5 p-1 rounded-2xl border border-white/5 text-center">
                     {(['Lot Owner', 'On-Site Resident', 'Tenant', 'Property Agent'] as const).map(role => {
                       const isActive = newActorRole === role;
@@ -400,7 +400,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                           type="button"
                           onClick={() => setNewActorRole(role)}
                           className={`py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all cursor-pointer ${
-                            isActive ? 'bg-[#00D4B2] text-[#0B1121] shadow' : 'text-gray-400 hover:text-white'
+                            isActive ? 'bg-[#00D4B2] text-[#0B1121] shadow' : 'text-gray-400 dark:text-gray-500 hover:text-white'
                           }`}
                         >
                           {role.split(' ')[0]}
@@ -412,14 +412,14 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
                 {newActorRole === 'Property Agent' && (
                   <div>
-                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1">Real Estate Agency Name</label>
+                    <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Real Estate Agency Name</label>
                     <input 
                       type="text"
                       required
                       placeholder="e.g. RayWhite Agency"
                       value={newActorAgency}
                       onChange={e => setNewActorAgency(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 focus:border-[#00D4B2] transition-all"
+                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 dark:text-gray-300 focus:border-[#00D4B2] transition-all"
                     />
                   </div>
                 )}
@@ -447,14 +447,14 @@ function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) 
       <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#00D4B2] group-hover:text-[#0B1121] transition-colors">
         {icon}
       </div>
-      <span className="text-[10px] font-medium text-gray-400 group-hover:text-white transition-colors">{label}</span>
+      <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 group-hover:text-white transition-colors">{label}</span>
     </button>
   );
 }
 
 function ActorSection({ icon, role, name, email, phone, agency, color, permissions, verified, canManage, onOffboard, isSelf }: any) {
   return (
-    <div className="border border-gray-100 dark:border-gray-800 rounded-2xl p-4 hover:border-gray-200 dark:hover:border-gray-700 transition-colors bg-gray-50/30 dark:bg-white/[0.02]">
+    <div className="border border-gray-100 dark:border-white/5 rounded-2xl p-4 hover:border-gray-200 dark:hover:border-gray-700 transition-colors bg-gray-50/30 dark:bg-white/[0.02]">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3">
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${color}`}>
@@ -462,11 +462,11 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{role}</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">{role}</span>
               {verified && <CheckCircle2 size={12} className="text-[#059669]" />}
             </div>
-            <div className="font-bold text-gray-900 dark:text-white mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300">You</span>}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">{email} {phone && `• ${phone}`} {agency && `• Agency: ${agency}`}</div>
+            <div className="font-bold text-gray-900 dark:text-white dark:text-white mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300 dark:text-gray-300">You</span>}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">{email} {phone && `â€¢ ${phone}`} {agency && `â€¢ Agency: ${agency}`}</div>
           </div>
         </div>
 
@@ -481,7 +481,7 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
         )}
       </div>
       
-      <div className="space-y-2 mt-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+      <div className="space-y-2 mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
         {permissions.map((perm: any, idx: number) => (
           <PermissionToggle key={idx} label={perm.label} initialActive={perm.active} locked={perm.locked} />
         ))}
@@ -496,12 +496,12 @@ function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, l
   return (
     <div className="flex items-center justify-between group">
       <div className="flex items-center gap-2">
-        <Key size={12} className={active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-400'} />
-        <span className={`text-xs font-medium ${active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{label}</span>
+        <Key size={12} className={active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-400 dark:text-gray-500'} />
+        <span className={`text-xs font-medium ${active ? 'text-gray-900 dark:text-white dark:text-white' : 'text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500'}`}>{label}</span>
       </div>
       <button 
         onClick={() => !locked && setActive(!active)}
-        className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-300 dark:text-gray-600'}`}
+        className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-300 dark:text-gray-600 dark:text-gray-300'}`}
         disabled={locked}
       >
         {active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
@@ -509,3 +509,4 @@ function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, l
     </div>
   );
 }
+

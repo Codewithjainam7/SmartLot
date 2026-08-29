@@ -68,7 +68,8 @@ export function UserManagementView({
   rolePermissions,
   onTogglePermission,
 }: UserManagementViewProps) {
-  const hasPermission = useSmartLotStore(s => s.hasPermission);
+  const store = useSmartLotStore();
+  const hasPermission = store.hasPermission;
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -90,34 +91,45 @@ export function UserManagementView({
   });
 
   return (
-    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9]">
+    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Morphing Popover Wrapper */}
       <MorphingPopover>
         
         {/* Header Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D4B2]/20 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
+          {/* Subtle glow in dark mode */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-3xl" />
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D4B2]/10 dark:bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/20 text-xs font-bold uppercase tracking-wider mb-2">
               Scheme Administration • Multi-Occupant Onboarding Zone
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">User Management Directory</h1>
-            <p className="text-sm text-gray-500">Manage Lot Owners, On-Site Residents, Tenants, and multiple occupants per physical lot.</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management Directory</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Manage Lot Owners, On-Site Residents, Tenants, and multiple occupants per physical lot.</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex bg-gray-150 p-1 rounded-2xl text-xs font-bold border border-gray-200">
+          <div className="flex items-center gap-3 relative">
+            {/* Tab switcher */}
+            <div className="flex bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl text-xs font-bold border border-gray-200 dark:border-white/5">
               <button
                 type="button"
                 onClick={() => setActiveTab('roster')}
-                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'roster' ? 'bg-[#0B1121] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                  activeTab === 'roster'
+                    ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 text-white dark:text-[#00D4B2] shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                }`}
               >
                 Member Roster
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('permissions')}
-                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === 'permissions' ? 'bg-[#0B1121] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                  activeTab === 'permissions'
+                    ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 text-white dark:text-[#00D4B2] shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                }`}
               >
                 Role Permissions
               </button>
@@ -125,7 +137,7 @@ export function UserManagementView({
 
             {activeTab === 'roster' && hasPermission('MANAGE_USERS') && (
               <MorphingPopoverTrigger>
-                <div className="bg-[#0B1121] hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+                <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
                   <UserPlus size={18} className="text-[#00D4B2]" /> 
                   <span>Add New Member</span>
                 </div>
@@ -156,17 +168,17 @@ export function UserManagementView({
             className="space-y-8"
           >
             {/* Filter & Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
               
               {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-2xl text-xs flex-1 max-w-md">
-                <Search size={16} className="text-gray-400" />
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 px-4 py-2.5 rounded-2xl text-xs flex-1 max-w-md">
+                <Search size={16} className="text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search by name, email, or unit number..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-800 font-semibold"
+                  className="w-full bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 font-semibold"
                 />
               </div>
 
@@ -198,12 +210,12 @@ export function UserManagementView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6"
+            className="bg-white dark:bg-[#121316] rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm space-y-6"
           >
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Scheme Role Permission Matrix</h3>
-              <p className="text-xs text-gray-500 mt-1">Configure access controls for Strata Plan {activeSchemeId}. Checked = permitted. Locked = fixed by system.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Scheme Role Permission Matrix</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Configure access controls for Strata Plan {activeSchemeId}. Checked = permitted. Locked = fixed by system.</p>
             </div>
             <span className="text-[10px] font-black bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20 px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0">
               Module 1 Scope
@@ -214,18 +226,18 @@ export function UserManagementView({
             {Object.keys(rolePermissions || {}).map(role => {
               const perms = rolePermissions[role] || [];
               return (
-                <div key={role} className="bg-gray-50 rounded-2xl p-6 border border-gray-200 space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-                    <span className="font-extrabold text-gray-900 text-sm">{role}</span>
+                <div key={role} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-3">
+                    <span className="font-extrabold text-gray-900 dark:text-white text-sm">{role}</span>
                     <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-250 text-gray-600 border border-gray-300">Role Profile</span>
                   </div>
                   <div className="space-y-4 pt-1 divide-y divide-gray-200/40">
                     {(() => {
                       const categories: Record<string, typeof perms> = {
-                        '📁 1. Request Submission': perms.filter(p =>
+                        'ðŸ“ 1. Request Submission': perms.filter(p =>
                           ['Submit Request', 'Add Comment on Request'].includes(p.label)
                         ),
-                        '✅ 2. Request Review & Approval': perms.filter(p =>
+                        'âœ… 2. Request Review & Approval': perms.filter(p =>
                           ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
                         ),
                       };
@@ -233,11 +245,11 @@ export function UserManagementView({
                       return Object.entries(categories).map(([catName, catPerms]) => {
                         if (catPerms.length === 0) return null;
                         return (
-                          <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 first:border-t-0 space-y-1.5">
-                            <span className="text-[9px] font-black uppercase text-gray-400 tracking-wider block mb-1">{catName}</span>
+                          <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
+                            <span className="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider block mb-1">{catName}</span>
                             {catPerms.map(p => (
                               <div key={p.label} className="flex items-center justify-between py-0.5">
-                                <span className="text-xs font-semibold text-gray-700 leading-tight">{p.label}</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">{p.label}</span>
                                 {p.locked ? (
                                   <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
                                 ) : (
@@ -278,29 +290,29 @@ export function UserManagementView({
               animate={{ x: 0 }}
               exit={{ x: '100%', opacity: 0.5, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="relative bg-white w-full max-w-md h-full shadow-2xl z-10 p-8 overflow-y-auto space-y-6"
+              className="relative bg-white dark:bg-[#121316] w-full max-w-md h-full shadow-2xl z-10 p-8 overflow-y-auto space-y-6"
             >
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
                 <div>
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{selectedMember.id}</span>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedMember.name}</h2>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{selectedMember.id}</span>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedMember.name}</h2>
                 </div>
-                <button onClick={() => setSelectedMember(null)} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 cursor-pointer">
+                <button onClick={() => setSelectedMember(null)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 cursor-pointer">
                   <X size={20} />
                 </button>
               </div>
 
               <div className="flex items-center gap-3">
                 <MemberStatusBadge status={selectedMember.status} />
-                <span className="text-xs font-bold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">{selectedMember.role}</span>
+                <span className="text-xs font-bold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full">{selectedMember.role}</span>
               </div>
 
-              <div className="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100 text-xs">
-                <div className="flex justify-between"><span className="text-gray-400 font-bold">Email:</span> <span className="font-bold text-gray-900">{selectedMember.email}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400 font-bold">Phone:</span> <span className="font-semibold text-gray-700">{selectedMember.phone}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400 font-bold">Unit / Lot:</span> <span className="font-bold text-gray-900">{selectedMember.unitId} (Lot {selectedMember.lotNumber})</span></div>
-                <div className="flex justify-between"><span className="text-gray-400 font-bold">Scheme ID:</span> <span className="font-bold text-[#0055FF]">{selectedMember.schemeId}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400 font-bold">Joined:</span> <span className="text-gray-600">{selectedMember.joinedAt}</span></div>
+              <div className="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 text-xs">
+                <div className="flex justify-between"><span className="text-gray-400 dark:text-gray-500 font-bold">Email:</span> <span className="font-bold text-gray-900 dark:text-white">{selectedMember.email}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400 dark:text-gray-500 font-bold">Phone:</span> <span className="font-semibold text-gray-700">{selectedMember.phone}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400 dark:text-gray-500 font-bold">Unit / Lot:</span> <span className="font-bold text-gray-900 dark:text-white">{selectedMember.unitId} (Lot {selectedMember.lotNumber})</span></div>
+                <div className="flex justify-between"><span className="text-gray-400 dark:text-gray-500 font-bold">Scheme ID:</span> <span className="font-bold text-[#0055FF]">{selectedMember.schemeId}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400 dark:text-gray-500 font-bold">Joined:</span> <span className="text-gray-600">{selectedMember.joinedAt}</span></div>
               </div>
 
               {/* All Additional Mapped Occupants List */}
@@ -312,9 +324,9 @@ export function UserManagementView({
                   
                   <div className="space-y-2">
                     {selectedMember.additionalOccupants.map((occ, i) => (
-                      <div key={i} className="bg-white p-3 rounded-xl border border-purple-100 flex items-center justify-between">
+                      <div key={i} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-purple-100 dark:border-purple-900 flex items-center justify-between">
                         <div>
-                          <div className="font-bold text-gray-900">{occ.name}</div>
+                          <div className="font-bold text-gray-900 dark:text-white">{occ.name}</div>
                           <div className="text-[10px] text-gray-500">{occ.email}</div>
                         </div>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-[#0055FF]">{occ.role}</span>
@@ -324,7 +336,7 @@ export function UserManagementView({
                 </div>
               )}
 
-              <div className="pt-6 border-t border-gray-100 space-y-2">
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-2">
                 <button
                   onClick={() => {
                     onDeleteMember(selectedMember.id);
@@ -345,7 +357,7 @@ export function UserManagementView({
   );
 }
 
-// ─── AG Grid Member Roster ────────────────────────────────────────────────────
+// â”€â”€â”€ AG Grid Member Roster â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface MemberRosterGridProps {
   members: Member[];
@@ -357,69 +369,69 @@ interface MemberRosterGridProps {
 function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateStatus }: MemberRosterGridProps) {
   const roleColors: Record<string, string> = {
     'Lot Owner':        'bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]/20',
-    'Resident':         'bg-[#00D4B2]/10 text-[#00A38C] border-[#00D4B2]/20',
+    'Resident':         'bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/20',
     'Tenant':           'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/20',
-    'Committee Member': 'bg-[#7C3AED]/10 text-[#7C3AED] border-[#7C3AED]/20',
-    'Strata Manager':   'bg-[#00D4B2]/10 text-[#00A38C] border-[#00D4B2]/20',
-    'Building Manager': 'bg-[#0055FF]/10 text-[#0033CC] border-[#0055FF]/20',
-    'Strata Admin':     'bg-[#0B1121]/10 text-[#0B1121] border-gray-300',
+    'Committee Member': 'bg-[#7C3AED]/10 text-[#a78bfa] border-[#7C3AED]/20',
+    'Strata Manager':   'bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/20',
+    'Building Manager': 'bg-[#0055FF]/10 text-[#6699ff] border-[#0055FF]/20',
+    'Strata Admin':     'bg-white/10 text-gray-300 border-gray-600',
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
       {/* Table Header */}
-      <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-gray-100">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+      <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
           Member Roster <span className="text-[#00D4B2] ml-1">({members.length})</span>
         </h3>
       </div>
 
       {members.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-4 border border-gray-100">
-            <UserPlus size={22} className="text-gray-400" />
+          <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4 border border-gray-100">
+            <UserPlus size={22} className="text-gray-400 dark:text-gray-500" />
           </div>
-          <p className="text-sm font-bold text-gray-900">No members found</p>
-          <p className="text-xs text-gray-500 mt-1">Try adjusting your filters or add a new member.</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white">No members found</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Try adjusting your filters or add a new member.</p>
         </div>
       ) : (
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Member Name</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Role</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Unit / Lot</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Contact</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Occupants</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">Status</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 text-right">Actions</th>
+            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
+              <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Member Name</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Role</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Unit / Lot</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Contact</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Occupants</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Status</th>
+              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {members.map((m) => (
-              <tr key={m.id} className="hover:bg-gray-50 transition-colors group">
+              <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors group">
                 <td className="px-6 py-4">
-                  <span className="font-bold text-gray-900 text-sm">{m.name}</span>
+                  <span className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</span>
                 </td>
                 <td className="px-4 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
                     {m.role}
                   </span>
                 </td>
                 <td className="px-4 py-4">
                   <div className="leading-tight">
-                    <div className="font-semibold text-gray-900 text-xs">{m.unitId}</div>
-                    <div className="text-[10px] text-gray-500">Lot {m.lotNumber}</div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-xs">{m.unitId}</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400">Lot {m.lotNumber}</div>
                   </div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="leading-tight">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-                      <Mail size={11} className="text-gray-400 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
+                      <Mail size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
                       <span className="truncate max-w-[160px]">{m.email}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-0.5">
-                      <Phone size={11} className="text-gray-400 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      <Phone size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
                       {m.phone}
                     </div>
                   </div>
@@ -430,7 +442,7 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
                       {m.additionalOccupants.length + 1} Occupants
                     </span>
                   ) : (
-                    <span className="text-[11px] text-gray-500">1 Occupant</span>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400">1 Occupant</span>
                   )}
                 </td>
                 <td className="px-4 py-4">
@@ -440,7 +452,7 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
                   <div className="flex items-center gap-2 justify-end">
                     <button
                       onClick={() => onViewDetails(m)}
-                      className="px-3 py-1.5 rounded-xl border border-gray-200 text-[11px] font-bold text-gray-600 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition-all"
+                      className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white cursor-pointer transition-all"
                     >
                       View
                     </button>
@@ -455,7 +467,7 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
                       ) : (
                         <button
                           onClick={() => onUpdateStatus(m.id, 'Active')}
-                          className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00A38C] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
+                          className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00D4B2] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
                         >
                           Activate
                         </button>
@@ -473,7 +485,7 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Inner Form Content
 function AddMemberFormContent({ 
@@ -557,12 +569,12 @@ function AddMemberFormContent({
   return (
     <div className="space-y-6">
       {/* Modal Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
         <div>
           <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Multi-Occupant Onboarding Zone</span>
-          <h2 className="text-2xl font-bold text-gray-900">Add Member & Lot Occupants</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Member & Lot Occupants</h2>
         </div>
-        <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-pointer">
+        <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
           <X size={20} />
         </button>
       </div>
@@ -579,7 +591,7 @@ function AddMemberFormContent({
               placeholder="e.g. Mike Davies"
               value={formName}
               onChange={e => setFormName(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
             />
           </div>
 
@@ -591,7 +603,7 @@ function AddMemberFormContent({
               placeholder="mike@owner.com"
               value={formEmail}
               onChange={e => setFormEmail(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
             />
           </div>
         </div>
@@ -605,7 +617,7 @@ function AddMemberFormContent({
               placeholder="0411 222 333"
               value={formPhone}
               onChange={e => setFormPhone(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
             />
           </div>
 
@@ -627,7 +639,7 @@ function AddMemberFormContent({
               placeholder="e.g. Unit 10"
               value={formUnit}
               onChange={e => setFormUnit(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
             />
           </div>
 
@@ -638,7 +650,7 @@ function AddMemberFormContent({
               required
               value={formLot}
               onChange={e => setFormLot(Number(e.target.value))}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
             />
           </div>
         </div>
@@ -648,7 +660,7 @@ function AddMemberFormContent({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <span className="text-[10px] font-extrabold uppercase text-[#0055FF] tracking-wider">Multi-Occupant Lot Mapping</span>
-              <h4 className="text-sm font-bold text-gray-900">Additional Lot Residents & Occupants</h4>
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white">Additional Lot Residents & Occupants</h4>
               <p className="text-[11px] text-gray-500">Map multiple co-owners, family members, or tenants living in {formUnit || 'this lot'}.</p>
             </div>
 
@@ -673,14 +685,14 @@ function AddMemberFormContent({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.94, filter: 'blur(2px)' }}
                     transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                    className="p-5 rounded-3xl border border-gray-200 bg-gray-50/80 shadow-sm space-y-3 relative"
+                    className="p-5 rounded-3xl border border-gray-200 dark:border-white/5 bg-gray-50/80 dark:bg-[#1a1d27]/80 shadow-sm space-y-3 relative"
                   >
-                    <div className="flex items-center justify-between border-b border-gray-200/60 pb-2.5">
+                    <div className="flex items-center justify-between border-b border-gray-200/60 dark:border-white/5 pb-2.5">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-[#0055FF]/20 text-[#0033CC] flex items-center justify-center font-bold text-xs">
                           #{idx + 1}
                         </div>
-                        <span className="text-xs font-bold text-gray-900">Occupant Details</span>
+                        <span className="text-xs font-bold text-gray-900 dark:text-white">Occupant Details</span>
                       </div>
 
                       <button
@@ -694,26 +706,26 @@ function AddMemberFormContent({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                       <div>
-                        <label className="block text-[11px] font-bold text-gray-600 mb-1 ml-1">Occupant Full Name</label>
+                        <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1 ml-1">Occupant Full Name</label>
                         <input
                           type="text"
                           required
                           placeholder="e.g. Lisa Ray"
                           value={occ.name}
                           onChange={e => handleOccupantChange(occ.id, 'name', e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-xs outline-none font-bold text-gray-900 shadow-sm focus:border-gray-400"
+                          className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 bg-white dark:bg-[#1a1d27] text-xs outline-none font-bold text-gray-900 dark:text-white shadow-sm focus:border-[#00D4B2]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-gray-600 mb-1 ml-1">Occupant Email</label>
+                        <label className="block text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1 ml-1">Occupant Email</label>
                         <input
                           type="email"
                           required
                           placeholder="lisa@unit10.com"
                           value={occ.email}
                           onChange={e => handleOccupantChange(occ.id, 'email', e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-xs outline-none font-bold text-gray-900 shadow-sm focus:border-gray-400"
+                          className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 bg-white dark:bg-[#1a1d27] text-xs outline-none font-bold text-gray-900 dark:text-white shadow-sm focus:border-[#00D4B2]"
                         />
                       </div>
                     </div>
@@ -736,11 +748,11 @@ function AddMemberFormContent({
         </div>
 
         {/* Form Action Controls */}
-        <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-100">
+        <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-100 dark:border-white/5">
           <button 
             type="button" 
             onClick={() => setIsOpen(false)} 
-            className="px-5 py-3 rounded-2xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 cursor-pointer"
+            className="px-5 py-3 rounded-2xl border border-gray-200 dark:border-white/8 text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer"
           >
             Cancel
           </button>
@@ -763,13 +775,13 @@ function FilterPill({ label, active, onClick, count }: { label: string; active: 
       type="button"
       onClick={onClick}
       className={`relative px-4 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-        active ? 'text-[#00D4B2]' : 'text-gray-600 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200/80'
+        active ? 'text-[#00D4B2]' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200/80 dark:hover:bg-white/10'
       }`}
     >
       {active && (
         <motion.div
           layoutId="active-role-pill-bg"
-          className="absolute inset-0 bg-[#0B1121] rounded-full z-0 shadow-sm overflow-hidden"
+          className="absolute inset-0 bg-[#0B1121] dark:bg-white/10 rounded-full z-0 shadow-sm overflow-hidden border border-[#00D4B2]/20"
           transition={{ type: 'spring', stiffness: 380, damping: 28 }}
         />
       )}
@@ -790,3 +802,5 @@ function MemberStatusBadge({ status }: { status: Member['status'] }) {
       return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-extrabold uppercase">RESTRICTED</span>;
   }
 }
+
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { RequestStream } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
@@ -102,10 +102,10 @@ export function CreateRequestFormContent({
   return (
     <div className="space-y-6">
       {/* Top Stepper Indicator */}
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 dark:border-white/5 pb-4">
         <div>
           <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Step {step} of 5</span>
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {step === 1 && '1. Choose Request Type'}
             {step === 2 && '2. Add Title & Description'}
             {step === 3 && '3. Upload Attachments'}
@@ -113,7 +113,7 @@ export function CreateRequestFormContent({
             {step === 5 && '5. Preview & Verify Request'}
           </h2>
         </div>
-        <button onClick={handleDismiss} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 cursor-pointer">
+        <button onClick={handleDismiss} className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
           <X size={20} />
         </button>
       </div>
@@ -121,7 +121,7 @@ export function CreateRequestFormContent({
       {/* STEP 1: Choose Request Type */}
       {step === 1 && (
         <div className="space-y-3">
-          <p className="text-xs text-gray-500 mb-2">Select the matching Australian Strata category for your request:</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Select the matching Australian Strata category for your request:</p>
           <TypeCard 
             type="maintenance_upgrade" 
             title="1. Maintenance & Upgrade Request" 
@@ -169,26 +169,26 @@ export function CreateRequestFormContent({
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Request Title</label>
+            <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5 ml-1">Request Title</label>
             <input
               type="text"
               required
               placeholder="e.g. Main Entrance Vehicle Gate Repair"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm outline-none font-bold text-gray-900 dark:text-white shadow-sm transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Detailed Description</label>
+            <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5 ml-1">Detailed Description</label>
             <textarea
               required
               rows={4}
               placeholder="Provide location, symptoms, and exact details..."
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm outline-none font-semibold text-gray-800 shadow-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm outline-none font-semibold text-gray-800 shadow-sm transition-all"
             />
           </div>
         </div>
@@ -197,11 +197,11 @@ export function CreateRequestFormContent({
       {/* STEP 3: Upload Attachments */}
       {step === 3 && (
         <div className="space-y-4">
-          <label className="block text-xs font-bold text-gray-600 mb-1 ml-1">Attach Photos or Inspection Docs</label>
-          <div className="border-2 border-dashed border-gray-200 rounded-3xl p-6 flex flex-col items-center justify-center bg-gray-50 text-center hover:bg-gray-100/50 transition-colors cursor-pointer">
+          <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1 ml-1">Attach Photos or Inspection Docs</label>
+          <div className="border-2 border-dashed border-gray-200 dark:border-white/8 dark:border-white/8 rounded-3xl p-6 flex flex-col items-center justify-center bg-gray-50 dark:bg-[#1a1d27] text-center hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
             {attachmentUrl ? (
               <div className="space-y-2 w-full">
-                <img src={attachmentUrl} alt="Attachment Preview" className="w-full h-40 object-cover rounded-2xl border border-gray-200 shadow-sm" />
+                <img src={attachmentUrl} alt="Attachment Preview" className="w-full h-40 object-cover rounded-2xl border border-gray-200 dark:border-white/8 shadow-sm" />
                 <span className="text-xs text-[#00A38C] font-bold flex items-center justify-center gap-1">
                   <CheckCircle2 size={14} /> Photo Attachment Attached
                 </span>
@@ -220,12 +220,12 @@ export function CreateRequestFormContent({
       {/* STEP 4: Requestor Details (Prefilled & Non-Editable) + Priority & Due Date */}
       {step === 4 && (
         <div className="space-y-4">
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2">
+          <div className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 rounded-2xl p-4 space-y-2">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">Prefilled Requestor Details (Non-Editable)</span>
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="flex items-center gap-1.5 font-bold text-gray-800"><User size={14} className="text-[#0055FF]" /> {requestorName}</div>
-              <div className="flex items-center gap-1.5 font-semibold text-gray-600"><Mail size={14} className="text-gray-400" /> {requestorEmail}</div>
-              <div className="flex items-center gap-1.5 font-semibold text-gray-600"><Phone size={14} className="text-gray-400" /> {requestorPhone}</div>
+              <div className="flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300"><Mail size={14} className="text-gray-400" /> {requestorEmail}</div>
+              <div className="flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300"><Phone size={14} className="text-gray-400" /> {requestorPhone}</div>
             </div>
           </div>
 
@@ -238,12 +238,12 @@ export function CreateRequestFormContent({
             />
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Target Due Date (Optional)</label>
+              <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5 ml-1">Target Due Date (Optional)</label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm font-bold text-gray-800 outline-none shadow-sm transition-all"
+                className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] focus:bg-white dark:focus:bg-[#1a1d27] text-sm font-bold text-gray-800 outline-none shadow-sm transition-all"
               />
             </div>
           </div>
@@ -252,27 +252,27 @@ export function CreateRequestFormContent({
 
       {/* STEP 5: Preview & Verify */}
       {step === 5 && (
-        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+        <div className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 rounded-3xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/8 dark:border-white/8 pb-3">
             <span className="text-xs font-extrabold uppercase text-[#0055FF] tracking-wider">Request Preview</span>
             <span className="px-3 py-0.5 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">Status: NEW</span>
           </div>
 
           <div>
             <div className="text-xs font-bold text-gray-400 uppercase">Category</div>
-            <div className="text-sm font-bold text-gray-900 capitalize">{requestType.replace(/_/g, ' ')}</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white capitalize">{requestType.replace(/_/g, ' ')}</div>
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{description}</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">{description}</p>
           </div>
 
           {attachmentUrl && (
-            <img src={attachmentUrl} alt="Attached" className="w-full h-32 object-cover rounded-xl border border-gray-200" />
+            <img src={attachmentUrl} alt="Attached" className="w-full h-32 object-cover rounded-xl border border-gray-200 dark:border-white/8" />
           )}
 
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200 text-xs">
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200 dark:border-white/8 dark:border-white/8 text-xs">
             <div><span className="text-gray-400 font-bold">Requestor:</span> <span className="font-bold text-gray-800">{requestorName}</span></div>
             <div><span className="text-gray-400 font-bold">Priority:</span> <span className="font-bold text-[#FF6B6B]">{priority}</span></div>
             <div><span className="text-gray-400 font-bold">Target Date:</span> <span className="font-semibold text-gray-700">{dueDate || 'Flexible'}</span></div>
@@ -281,11 +281,11 @@ export function CreateRequestFormContent({
       )}
 
       {/* Navigation Control Buttons */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/5 dark:border-white/5">
         {step > 1 ? (
           <button
             onClick={handleBack}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 flex items-center gap-1.5 hover:bg-gray-50 cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/8 text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1.5 hover:bg-gray-50 dark:bg-[#1a1d27] cursor-pointer"
           >
             <ArrowLeft size={16} /> Back
           </button>
@@ -334,7 +334,7 @@ export function CreateRequestModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#0B1121]/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-2xl rounded-3xl p-8 shadow-2xl z-10 space-y-6 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-[#0d1117] w-full max-w-2xl rounded-3xl border border-gray-100 dark:border-white/5 dark:border-white/5 p-8 shadow-2xl z-10 space-y-6 animate-in zoom-in-95 duration-200">
         <CreateRequestFormContent 
           onSubmit={onSubmit}
           requestorName={requestorName}
@@ -353,14 +353,15 @@ function TypeCard({ type, title, desc, icon, selected, onClick }: any) {
       type="button"
       onClick={onClick}
       className={`w-full flex items-start gap-4 p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-        selected ? 'border-[#0055FF] bg-[#0055FF]/10 ring-1 ring-[#0055FF]' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+        selected ? 'border-[#0055FF] bg-[#0055FF]/10 ring-1 ring-[#0055FF]' : 'border-gray-200 dark:border-white/8 dark:border-white/5 bg-gray-50 dark:bg-[#1a1d27] dark:bg-[#1a1d27] hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:bg-[#252836]'
       }`}
     >
-      <div className="p-2 rounded-xl bg-white shadow-sm shrink-0">{icon}</div>
+      <div className="p-2 rounded-xl bg-white dark:bg-[#0d1117] border dark:border-white/5 shadow-sm shrink-0">{icon}</div>
       <div>
-        <div className="font-bold text-sm text-gray-900">{title}</div>
-        <div className="text-xs text-gray-500 mt-0.5">{desc}</div>
+        <div className="font-bold text-sm text-gray-900 dark:text-white">{title}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{desc}</div>
       </div>
     </button>
   );
 }
+

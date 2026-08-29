@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Moon, Sun, Monitor, Shield, Sparkles, Check } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -23,11 +23,11 @@ export function SettingsView({
       </div>
 
       {/* Profile Summary Card */}
-      <div className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-200/60 dark:border-gray-800 shadow-sm flex items-center justify-between">
+      <div className="bg-white dark:bg-[#0d1117] dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200/60 dark:border-gray-800 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
           <img 
             src="https://i.pravatar.cc/150?img=47" 
-            className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 dark:border-gray-800" 
+            className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 dark:border-white/5 dark:border-gray-800" 
             alt="Profile avatar" 
           />
           <div>
@@ -54,7 +54,7 @@ export function SettingsView({
             className={`group p-5 rounded-[28px] border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[160px] ${
               theme === 'light' 
                 ? 'border-indigo-500 bg-white ring-1 ring-indigo-500/50 shadow-md scale-[1.01]' 
-                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#121316] hover:bg-gray-50 dark:hover:bg-[#1C1D21] opacity-75 hover:opacity-100'
+                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0d1117] dark:bg-[#0d1117] hover:bg-gray-50 dark:hover:bg-white/5 opacity-75 hover:opacity-100'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -78,8 +78,8 @@ export function SettingsView({
             onClick={() => setTheme('dark')}
             className={`group p-5 rounded-[28px] border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[160px] ${
               theme === 'dark' 
-                ? 'border-[#00D4B2] bg-[#121316] ring-1 ring-[#00D4B2]/50 shadow-md scale-[1.01]' 
-                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#121316] hover:bg-gray-50 dark:hover:bg-[#1C1D21] opacity-75 hover:opacity-100'
+                ? 'border-[#00D4B2] bg-[#121316] dark:bg-[#0d1117] ring-1 ring-[#00D4B2]/50 shadow-md scale-[1.01]' 
+                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0d1117] dark:bg-[#0d1117] hover:bg-gray-50 dark:hover:bg-white/5 opacity-75 hover:opacity-100'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -101,7 +101,7 @@ export function SettingsView({
       </div>
 
       {/* General Compliance / Audit Section */}
-      <div className="bg-gray-50 dark:bg-[#121316]/50 p-6 rounded-3xl border border-gray-200/60 dark:border-gray-800 space-y-3">
+      <div className="bg-gray-50 dark:bg-[#0d1117] dark:bg-[#0d1117]/50 p-6 rounded-3xl border border-gray-200/60 dark:border-gray-800 space-y-3">
         <h4 className="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
           <Sparkles size={14} className="text-[#00D4B2]" /> Global Scheme Sandbox Preferences
         </h4>
@@ -112,3 +112,4 @@ export function SettingsView({
     </div>
   );
 }
+

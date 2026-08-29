@@ -70,16 +70,16 @@ export function ResidentRequestsView({
   };
 
   return (
-    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9]">
+    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#121316] rounded-3xl p-6 shadow-sm border border-gray-100">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0033CC] text-xs font-bold uppercase tracking-wider mb-2">
-            Resident Hub • Requests Engine
+            Resident Hub â€¢ Requests Engine
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Resident Service & Repair Requests</h1>
-          <p className="text-sm text-gray-500">Log issues, track status in real-time, and view community requests.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">Resident Service & Repair Requests</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Log issues, track status in real-time, and view community requests.</p>
         </div>
 
         {/* Morphing Capsule Button */}
@@ -101,7 +101,7 @@ export function ResidentRequestsView({
       </div>
 
       {/* Filter & View Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#121316] p-4 rounded-2xl border border-gray-100">
         
         {/* Status Filter Pills */}
         <div className="flex flex-wrap items-center gap-2">
@@ -114,11 +114,11 @@ export function ResidentRequestsView({
         </div>
 
         {/* View Scope Toggle */}
-        <div className="flex items-center bg-gray-100 p-1 rounded-xl">
+        <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
           <button
             onClick={() => setViewScope('all')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewScope === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+              viewScope === 'all' ? 'bg-white dark:bg-[#1e1e2e] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
             }`}
           >
             All Requests
@@ -126,7 +126,7 @@ export function ResidentRequestsView({
           <button
             onClick={() => setViewScope('my')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewScope === 'my' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+              viewScope === 'my' ? 'bg-white dark:bg-[#1e1e2e] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
             }`}
           >
             My Requests Only
@@ -147,11 +147,11 @@ export function ResidentRequestsView({
               exit={{ opacity: 0, scale: 0.93, y: 10, filter: 'blur(3px)' }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => setSelectedRequest(req)}
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
+              className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{req.id} • {req.unit}</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{req.id} â€¢ {req.unit}</span>
                   <StatusBadge status={req.status} />
                 </div>
 
@@ -159,18 +159,18 @@ export function ResidentRequestsView({
                   {req.requestType.replace(/_/g, ' ')}
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-2 leading-snug">{req.title}</h3>
-                <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white dark:text-white mb-2 leading-snug">{req.title}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 space-y-3 mt-auto">
+              <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
                 <div className="flex items-center justify-between text-xs text-gray-400">
                   <span>By {req.requestorName}</span>
                   <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-gray-500 flex items-center gap-1 font-semibold">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 flex items-center gap-1 font-semibold">
                     <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
                   </span>
 
@@ -209,34 +209,34 @@ export function ResidentRequestsView({
               animate={{ x: 0 }}
               exit={{ x: '100%', opacity: 0.5, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="relative bg-white w-full max-w-xl h-full shadow-2xl z-10 p-8 overflow-y-auto space-y-6"
+              className="relative bg-white dark:bg-[#121316] w-full max-w-xl h-full shadow-2xl z-10 p-8 overflow-y-auto space-y-6"
             >
               
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
                 <div>
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{activeDetail.id} • {activeDetail.unit}</span>
-                  <h2 className="text-xl font-bold text-gray-900">{activeDetail.title}</h2>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{activeDetail.id} â€¢ {activeDetail.unit}</span>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{activeDetail.title}</h2>
                 </div>
-                <button onClick={() => setSelectedRequest(null)} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 cursor-pointer">
+                <button onClick={() => setSelectedRequest(null)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 cursor-pointer">
                   <X size={20} />
                 </button>
               </div>
 
               <div className="flex items-center gap-3">
                 <StatusBadge status={activeDetail.status} />
-                <span className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full capitalize">
+                <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full text-gray-800 dark:text-gray-200 border dark:border-white/5 capitalize">
                   {activeDetail.requestType.replace(/_/g, ' ')}
                 </span>
               </div>
 
-              <div className="space-y-2 bg-gray-50 p-4 rounded-2xl border border-gray-100 text-xs">
-                <div className="font-bold text-gray-900">Full Description:</div>
-                <p className="text-gray-600 leading-relaxed">{activeDetail.description}</p>
+              <div className="space-y-2 bg-gray-50 dark:bg-[#1a1d27] p-4 rounded-2xl border border-gray-100 dark:border-white/5 text-xs">
+                <div className="font-bold text-gray-900 dark:text-white">Full Description:</div>
+                <p className="text-gray-600 dark:text-gray-350 leading-relaxed">{activeDetail.description}</p>
               </div>
 
               {activeDetail.attachmentUrl && (
                 <div>
-                  <span className="text-xs font-bold text-gray-400 uppercase mb-2 block">Attached Image</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 block">Attached Image</span>
                   <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-48 object-cover rounded-2xl border border-gray-200" />
                 </div>
               )}
@@ -249,17 +249,17 @@ export function ResidentRequestsView({
               )}
 
               {/* Comments Thread */}
-              <div className="space-y-3 pt-4 border-t border-gray-100">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Comments Thread ({activeDetail.comments.length})</h4>
+              <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
+                <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Comments Thread ({activeDetail.comments.length})</h4>
                 
                 <div className="space-y-3">
                   {activeDetail.comments.map(c => (
-                    <div key={c.id} className="bg-gray-50 p-3.5 rounded-2xl border border-gray-100 text-xs space-y-1">
-                      <div className="flex items-center justify-between font-bold text-gray-900">
+                    <div key={c.id} className="bg-gray-50 dark:bg-[#1a1d27] p-3.5 rounded-2xl border border-gray-100 dark:border-white/5 text-xs space-y-1">
+                      <div className="flex items-center justify-between font-bold text-gray-900 dark:text-white">
                         <span>{c.authorName} ({c.authorRole})</span>
                         <span className="text-[10px] text-gray-400 font-normal">{c.createdAt}</span>
                       </div>
-                      <p className="text-gray-600 leading-relaxed">{c.text}</p>
+                      <p className="text-gray-600 dark:text-gray-350 leading-relaxed">{c.text}</p>
                     </div>
                   ))}
                 </div>
@@ -270,7 +270,7 @@ export function ResidentRequestsView({
                     placeholder="Add a comment or response..."
                     value={commentInput}
                     onChange={e => setCommentInput(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs outline-none focus:bg-white"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] text-xs outline-none focus:bg-white dark:focus:bg-[#252836] text-gray-900 dark:text-white"
                   />
                   <button type="submit" className="bg-[#0B1121] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer">
                     <Send size={12} /> Post
@@ -279,7 +279,7 @@ export function ResidentRequestsView({
               </div>
 
               {activeDetail.status !== 'closed' && activeDetail.requestorName === activePersonaName && (
-                <div className="pt-6 border-t border-gray-100">
+                <div className="pt-6 border-t border-gray-100 dark:border-white/5">
                   <button
                     onClick={() => setCloseModalRequest(activeDetail)}
                     className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF4757] border border-[#FF4757]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
@@ -311,10 +311,10 @@ export function ResidentRequestsView({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 12, filter: 'blur(3px)' }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 space-y-4"
+              className="relative bg-white dark:bg-[#0d1117] w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 border dark:border-white/5 space-y-4"
             >
-              <h3 className="text-xl font-bold text-gray-900">Close Request & Notify Manager</h3>
-              <p className="text-xs text-gray-500">State your rationale for closing <span className="font-bold">{closeModalRequest.id}</span> (Required):</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white dark:text-white">Close Request & Notify Manager</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">State your rationale for closing <span className="font-bold">{closeModalRequest.id}</span> (Required):</p>
 
               <textarea
                 required
@@ -322,11 +322,11 @@ export function ResidentRequestsView({
                 placeholder="e.g. Issue resolved independently / duplicate request logged..."
                 value={closeReason}
                 onChange={e => setCloseReason(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-xs outline-none font-semibold text-gray-800"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] text-xs outline-none font-semibold text-gray-800 dark:text-gray-200 focus:bg-white dark:focus:bg-[#252836]"
               />
 
               <div className="flex justify-end gap-3 pt-2">
-                <button onClick={() => setCloseModalRequest(null)} className="px-4 py-2 text-xs font-bold text-gray-600 cursor-pointer">Cancel</button>
+                <button onClick={() => setCloseModalRequest(null)} className="px-4 py-2 text-xs font-bold text-gray-650 dark:text-gray-400 cursor-pointer">Cancel</button>
                 <button
                   onClick={handleConfirmClose}
                   disabled={!closeReason.trim()}
@@ -349,7 +349,7 @@ function StatusPill({ label, active, onClick, count }: any) {
     <button
       onClick={onClick}
       className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-        active ? 'bg-[#0B1121] text-[#00D4B2]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        active ? 'bg-[#0B1121] dark:bg-white/10 text-[#00D4B2] border dark:border-[#00D4B2]/30' : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
       }`}
     >
       {label} {count !== undefined && `(${count})`}
@@ -370,6 +370,8 @@ function StatusBadge({ status }: { status: CaseStatus }) {
     case 'rejected':
       return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase">REJECTED</span>;
     case 'closed':
-      return <span className="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-[10px] font-bold uppercase">CLOSED</span>;
+      return <span className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] font-bold uppercase">CLOSED</span>;
   }
 }
+
+
