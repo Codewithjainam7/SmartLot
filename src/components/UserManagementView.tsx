@@ -341,9 +341,9 @@ export function UserManagementView({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredMembers.map(member => {
-                const perms = rolePermissions[member.role] || [];
-                // Only show members that have a role in the permissions matrix
-                if (!perms.length) return null;
+                const perms = (rolePermissions && rolePermissions[member.role] && rolePermissions[member.role].length > 0)
+                  ? rolePermissions[member.role]
+                  : getDefaultPermissionsForRole(member.role);
                 
                 return (
                   <div key={member.id} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-[#00D4B2]/20 shadow-[0_0_15px_rgba(0,212,178,0.05)] space-y-4">
