@@ -787,18 +787,23 @@ export function useSmartLotStore() {
     // Save member to Supabase database
     const { data: { session: currentSession } } = await supabase.auth.getSession();
     if (currentSession?.user) {
-      const { error } = await supabase.from('members').insert([
-        {
-          scheme_id: targetSchemeId,
-          name: memberData.name,
-          email: memberData.email,
-          phone: memberData.phone,
-          role: memberData.role,
-          unit_id: memberData.unitId,
-          lot_number: memberData.lotNumber,
-          status: 'Active'
-        }
-      ]);
+      const roleStr = memberData.role as string;
+      const validRole = roleStr === 'Strata Admin' ? 'Strata Manager' 
+        : roleStr === 'On-Site Resident' ? 'Resident' 
+        : roleStr;
+
+      const payload: any = {
+        scheme_id: targetSchemeId,
+        user_id: currentSession.user.id,
+        name: memberData.name,
+        email: memberData.email,
+        phone: memberData.phone || '0400 000 000',
+        role: validRole,
+        unit_id: memberData.unitId,
+        status: 'Active'
+      };
+
+      const { error } = await supabase.from('members').insert([payload]);
       if (error) {
         console.error("Error inserting member into Supabase:", error);
       }
