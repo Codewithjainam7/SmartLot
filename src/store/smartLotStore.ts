@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SCHEMES, PERSONAS, Scheme, Persona } from '../types';
+import { supabase } from '../lib/supabase';
 
 export type RequestStream = 
   | 'maintenance_upgrade' 
@@ -143,6 +144,7 @@ export type Member = {
   additionalOccupants?: AdditionalOccupant[];
   status: 'Active' | 'Invited' | 'Restricted';
   joinedAt: string;
+  individualPermissions?: { label: string; active: boolean }[];
 };
 
 export type UnitActor = {
@@ -218,6 +220,20 @@ function usePersistedState<T>(key: string, defaultValue: T | (() => T)): [T, Rea
   });
 
   useEffect(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        setState(JSON.parse(item));
+      } else {
+        setState(defaultValue instanceof Function ? defaultValue() : defaultValue);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  useEffect(() => {
     window.localStorage.setItem(key, JSON.stringify(state));
   }, [key, state]);
 
@@ -225,20 +241,113 @@ function usePersistedState<T>(key: string, defaultValue: T | (() => T)): [T, Rea
 }
 
 export function useSmartLotStore() {
-  const [schemes, setSchemes] = usePersistedState<Scheme[]>('smartlot_schemes_v7', SCHEMES);
-  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>('smartlot_activeScheme_v7',
-    SCHEMES.length > 0 
-      ? SCHEMES[0] 
-      : { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
+  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona_v7', PERSONAS[1]); // We'll keep this temporarily for backward compatibility while refactoring
+  const pId = activePersona?.id || 'default';
+
+  const [session, setSession] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+
+  // Local state initialized to empty for live Supabase fetch
+  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>(`smartlot_${pId}_activeScheme_v7`, 
+    { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
   );
-  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona_v7', PERSONAS[1]); // Default to Strata Manager
-  const [activeRoles, setActiveRoles] = usePersistedState<string[]>('smartlot_activeRoles_v7', ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>('smartlot_activeView_v7', 'dashboard');
-  const [isLoggedIn, setIsLoggedIn] = usePersistedState('smartlot_isLoggedIn_v7', false);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setIsLoggedIn(true);
+        // Sync name/email from Supabase on initial load (fixes "Authenticated User" bug on page refresh)
+        const fullName = session.user.user_metadata?.full_name;
+        const userRole = session.user.user_metadata?.role;
+        if (fullName) {
+          setActivePersona(prev => ({
+            ...prev,
+            id: session.user.id,
+            name: fullName,
+            email: session.user.email || '',
+            role: userRole || prev.role || 'Lot Owner'
+          }));
+        }
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setIsLoggedIn(true);
+        const fullName = session.user.user_metadata?.full_name;
+        const userRole = session.user.user_metadata?.role;
+        setActivePersona(prev => ({
+          ...prev,
+          id: session.user.id,
+          name: fullName || prev.name || 'User',
+          email: session.user.email || '',
+          // Only update role from metadata if persona hasn't been promoted to Strata Admin already
+          role: prev.role === 'Strata Admin' ? 'Strata Admin' : (userRole || prev.role || 'Lot Owner')
+        }));
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch Live Data from Supabase when logged in
+  useEffect(() => {
+    if (!session?.user) return;
+    
+    let isMounted = true;
+    const fetchSupabaseData = async () => {
+      setIsLoading(true);
+      try {
+        const { data: schemesData, error } = await supabase.from('schemes').select('*');
+        if (error) throw error;
+        
+        if (schemesData && isMounted) {
+          const formattedSchemes = schemesData.map(s => ({
+            id: s.id,
+            name: s.name,
+            lots: s.lots,
+            active: s.active
+          }));
+          setSchemes(formattedSchemes);
+          
+          // Auto-select first scheme if none selected or invalid
+          if (formattedSchemes.length > 0) {
+            setActiveScheme(prev => {
+              if (prev.id === 'NO_SCHEME' || !formattedSchemes.find(f => f.id === prev.id)) {
+                return formattedSchemes[0];
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching from Supabase:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    
+    fetchSupabaseData();
+    
+    return () => { isMounted = false; };
+  }, [session?.user]);
+
+  const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v7`, ['Strata Manager']);
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v7`, 'dashboard');
+  const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v7`, false);
   const [theme, setTheme] = usePersistedState<'light' | 'dark'>('smartlot_theme_v7', 'light');
-  const [members, setMembers] = usePersistedState<Member[]>('smartlot_members_v7', INITIAL_MEMBERS);
-  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>('smartlot_residentRequests_v7', INITIAL_RESIDENT_REQUESTS);
-  const [units, setUnits] = usePersistedState<UnitData[]>('smartlot_units_v7', INITIAL_UNITS);
+  const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v7`, INITIAL_MEMBERS);
+  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v7`, INITIAL_RESIDENT_REQUESTS);
+  const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v7`, INITIAL_UNITS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v7', []);
 
   const addCustomPersona = (p: Persona) => {
@@ -288,61 +397,6 @@ export function useSmartLotStore() {
       return;
     }
 
-    // Auto-populate schemes, units, and member roster for the persona's memberships
-    if (activePersona.memberships && activePersona.memberships.length > 0) {
-      activePersona.memberships.forEach(m => {
-        // 1. Ensure scheme is registered - use functional update to read latest state
-        setSchemes(prevSchemes => {
-          if (prevSchemes.some(s => s.id === m.schemeId)) return prevSchemes;
-          
-          let lots = 2;
-          let sName = 'Strata Scheme';
-          if (m.schemeId === 'SP101') { lots = 2; sName = 'Sunset Duplex'; }
-          else if (m.schemeId === 'SP102') { lots = 4; sName = 'Coronation Townhouses'; }
-          else if (m.schemeId === 'SP103') { lots = 32; sName = 'Cavaller Apartments'; }
-          else if (m.schemeId === 'SP10482') { lots = 10; sName = 'SmartLot Complex'; }
-
-          // Also initialize units for this scheme
-          setUnits(prevUnits => {
-            if (prevUnits.some(u => u.schemeId === m.schemeId)) return prevUnits;
-            const newUnits: UnitData[] = Array.from({ length: lots }, (_, i) => ({
-              schemeId: m.schemeId,
-              unitId: `Unit ${i + 1}`,
-              lotNumber: i + 1,
-              entitlement: `${(100 / lots).toFixed(1)}%`,
-              status: 'Vacant' as const,
-              actors: []
-            }));
-            return [...prevUnits, ...newUnits];
-          });
-
-          return [...prevSchemes, { id: m.schemeId, name: `${m.schemeId} - ${sName}`, lots, active: true }];
-        });
-
-        // 2. Ensure member record exists - use email as unique key
-        const memberEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
-        setMembers(prevMembers => {
-          if (prevMembers.some(mb => mb.email === memberEmail && mb.schemeId === m.schemeId)) return prevMembers;
-          const role = m.roles[0] || 'Resident';
-          const unitId = 'Unit 1';
-          const lotNumber = 1;
-          const newMember = {
-            id: `MEM-${Date.now()}-${m.schemeId}`,
-            name: activePersona.name,
-            email: memberEmail,
-            phone: '0400 000 000',
-            schemeId: m.schemeId,
-            role: role as any,
-            unitId,
-            lotNumber,
-            status: 'Active' as const,
-            joinedAt: new Date().toISOString().split('T')[0],
-          };
-          return [...prevMembers, newMember];
-        });
-      });
-    }
-
     // Align activeScheme with the activePersona's memberships if they switch
     const hasMembershipInActiveScheme = activePersona.memberships?.some(m => m.schemeId === activeScheme.id);
     if (!hasMembershipInActiveScheme && activePersona.memberships && activePersona.memberships.length > 0) {
@@ -365,7 +419,7 @@ export function useSmartLotStore() {
 
 
   // Initialize permissions list for all roles in all schemes
-  const [rolePermissions, setRolePermissions] = usePersistedState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>('smartlot_rolePermissions', () => {
+  const [rolePermissions, setRolePermissions] = usePersistedState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>(`smartlot_${pId}_rolePermissions`, () => {
     const initialPerms: Record<string, { label: string; active: boolean; locked?: boolean }[]> = {};
     ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'].forEach(role => {
       initialPerms[role] = getDefaultPermissionsForRole(role);
@@ -381,9 +435,36 @@ export function useSmartLotStore() {
     return result;
   });
 
-  const addScheme = (id: string, name: string, lots: number) => {
+  const addScheme = async (id: string, name: string, lots: number) => {
     const newScheme = { id, name, lots, active: true };
     setSchemes(prev => [...prev, newScheme]);
+    
+    // Save to Supabase
+    if (session?.user) {
+      // 1. Insert Scheme
+      const { error: schemeError } = await supabase.from('schemes').insert([
+        { id, name, lots, active: true }
+      ]);
+      if (schemeError) {
+        console.error("Error inserting scheme into Supabase:", schemeError);
+      }
+
+      // 2. Insert creator as Strata Manager in members so they can see the scheme (RLS)
+      const { error: memberError } = await supabase.from('members').insert([
+        { 
+          scheme_id: id,
+          user_id: session.user.id,
+          name: session.user.user_metadata?.full_name || 'Admin',
+          email: session.user.email,
+          role: 'Strata Manager',
+          unit_id: 'Admin',
+          status: 'Active'
+        }
+      ]);
+      if (memberError) {
+        console.error("Error inserting member into Supabase:", memberError);
+      }
+    }
     
     // Auto-initialize permissions for the new scheme
     const schemePerms: Record<string, { label: string; active: boolean; locked?: boolean }[]> = {};
@@ -413,7 +494,7 @@ export function useSmartLotStore() {
     return newScheme;
   };
 
-  const deleteScheme = (id: string) => {
+  const deleteScheme = async (id: string) => {
     setSchemes(prev => prev.filter(s => s.id !== id));
   };
 
@@ -434,10 +515,55 @@ export function useSmartLotStore() {
     });
   };
 
+  const toggleIndividualPermission = (memberId: string, permissionLabel: string) => {
+    setMembers(prev => prev.map(m => {
+      if (m.id !== memberId) return m;
+      
+      const currentOverrides = m.individualPermissions || [];
+      const existingOverrideIndex = currentOverrides.findIndex(p => p.label === permissionLabel);
+      
+      let newOverrides;
+      if (existingOverrideIndex >= 0) {
+        // Toggle existing override
+        newOverrides = [...currentOverrides];
+        newOverrides[existingOverrideIndex] = {
+          ...newOverrides[existingOverrideIndex],
+          active: !newOverrides[existingOverrideIndex].active
+        };
+      } else {
+        // Look up default to know what we are overriding from
+        let isCurrentlyActive = false;
+        const schemeRoles = rolePermissions[m.schemeId];
+        if (schemeRoles) {
+          const rolePerms = schemeRoles[m.role] || [];
+          const permObj = rolePerms.find(p => p.label === permissionLabel);
+          if (permObj) isCurrentlyActive = permObj.active;
+        }
+
+        newOverrides = [
+          ...currentOverrides,
+          { label: permissionLabel, active: !isCurrentlyActive }
+        ];
+      }
+      return { ...m, individualPermissions: newOverrides };
+    }));
+  };
+
   const hasPermission = (permissionLabel: string) => {
     // Platform super admins always bypass
     if (activePersona.isSystemAdmin || activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator') {
       return true;
+    }
+
+    // Check individual overrides first
+    const memberEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
+    const currentUserMember = members.find(m => m.email === memberEmail && m.schemeId === activeScheme.id);
+    
+    if (currentUserMember && currentUserMember.individualPermissions) {
+      const override = currentUserMember.individualPermissions.find(p => p.label === permissionLabel);
+      if (override) {
+        return override.active;
+      }
     }
 
     // Fetch the permissions configuration for the active scheme
@@ -661,6 +787,8 @@ export function useSmartLotStore() {
     schemes,
     activeScheme,
     setActiveScheme,
+    user,
+    session,
     activePersona,
     setActivePersona: setActivePersonaWithSync,
     activeView,
@@ -692,6 +820,7 @@ export function useSmartLotStore() {
     addScheme,
     deleteScheme,
     togglePermission,
+    toggleIndividualPermission,
     hasPermission,
     rolePermissions,
     activeRoles,

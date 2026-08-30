@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Building, User, Mail, Lock, ArrowRight, ArrowLeft, ShieldCheck, Users, Briefcase, Eye, EyeOff } from "lucide-react";
 import { SmartLotLogo } from "./core/SmartLotLogo";
 import { CustomSelect, SelectOption } from "./core/CustomSelect";
-import { useSmartLotStore } from "../store/smartLotStore";
-import { PERSONAS } from "../types";
+import { supabase } from "../lib/supabase";
 
 interface ResidentLoginViewProps {
   onLoginSuccess: (
@@ -16,18 +15,21 @@ interface ResidentLoginViewProps {
 }
 
 const ROLE_OPTIONS: SelectOption[] = [
-  { value: "Lot Owner", label: "Lot Owner", description: "Off-site or resident owner" },
-  { value: "Resident", label: "Resident", description: "Owner-occupier" },
-  { value: "Tenant", label: "Tenant", description: "Renting a lot" },
-  { value: "Committee Member", label: "Committee Member", description: "Elected strata representative" },
-  { value: "Strata Manager", label: "Strata Manager", description: "Agency management" },
-  { value: "Building Manager", label: "Building Manager", description: "On-site facilities management" },
-  { value: "Service Provider", label: "Service Provider", description: "External vendor or contractor" }
+  { 
+    value: "Strata Manager", 
+    label: "Strata Manager", 
+    description: "I professionally manage strata schemes" 
+  },
+  { 
+    value: "Committee Member", 
+    label: "Committee Member", 
+    description: "I'm an elected strata committee representative" 
+  }
 ];
 
 export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: ResidentLoginViewProps) {
-  const store = useSmartLotStore();
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [isLoading, setIsLoading] = useState(false);
   
   // Login State
   const [email, setEmail] = useState("");
@@ -40,60 +42,64 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string>("Lot Owner");
+  const [selectedRole, setSelectedRole] = useState<string>("Strata Manager");
   
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    const allPersonas = [...PERSONAS, ...store.customPersonas];
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (email === "admin@smartlot.com" || email.includes("admin")) {
-       const match = allPersonas.find(p => p.email === email);
-       if (match && match.isSystemAdmin) {
-          onAdminLogin();
-          return;
-       }
-    }
-
-    const match = allPersonas.find(p => p.email?.toLowerCase() === email.toLowerCase());
-    
-    if (match) {
-      const requiredPassword = (match as any).password || "password123";
-      if (password === requiredPassword) {
-        onLoginSuccess(match.role, match.name);
-      } else {
-        setError(`Incorrect password. (Hint: ${requiredPassword === "password123" ? "password123" : "enter your signup password"})`);
-      }
-    } else {
-      setError("User not found. Sign up first or check credentials.");
+      if (signInError) throw signInError;
+      
+      // Successfully logged in via Supabase!
+      // In a real app, we'd fetch their profile and memberships here
+      // For now, we simulate passing them through to the main app which will handle loading
+      onLoginSuccess("Resident", "Authenticated User"); // This will be handled by the store listener now
+      
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in. Check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    const allPersonas = [...PERSONAS, ...store.customPersonas];
-    const exists = allPersonas.some(p => p.email?.toLowerCase() === signupEmail.toLowerCase());
-    if (exists) {
-      setError("An account with this email already exists.");
-      return;
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+        options: {
+          data: {
+            full_name: fullName,
+            role: selectedRole
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
+      
+      // On success, they either need to verify email or they are logged in automatically
+      if (data.session) {
+        onLoginSuccess(selectedRole, fullName);
+      } else {
+        setError("Account created! Please check your email for the confirmation link.");
+      }
+      
+    } catch (err: any) {
+      setError(err.message || "Failed to create account.");
+    } finally {
+      setIsLoading(false);
     }
-
-    const personaId = fullName.toLowerCase().replace(/\s+/g, "_");
-    const newPersona = {
-      id: personaId,
-      name: fullName,
-      email: signupEmail,
-      role: selectedRole,
-      context: "Unit 1",
-      password: signupPassword,
-      memberships: []
-    };
-
-    store.addCustomPersona(newPersona);
-    onLoginSuccess(selectedRole, fullName, { id: "", name: "", lots: 0, unit: "" });
   };
 
   return (
@@ -238,9 +244,10 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
                 <button 
                   type="submit"
-                  className="w-full bg-[#0B1121] hover:bg-[#15203A] text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4"
+                  disabled={isLoading}
+                  className="w-full bg-[#0B1121] hover:bg-[#15203A] text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4 disabled:opacity-70"
                 >
-                  Sign In <ArrowRight size={18} />
+                  {isLoading ? "Signing In..." : "Sign In"} {!isLoading && <ArrowRight size={18} />}
                 </button>
               </form>
             ) : (
@@ -309,9 +316,10 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
                 <button 
                   type="submit"
-                  className="w-full bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4"
+                  disabled={isLoading}
+                  className="w-full bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4 disabled:opacity-70"
                 >
-                  Create Account <ArrowRight size={18} />
+                  {isLoading ? "Creating Account..." : "Create Account"} {!isLoading && <ArrowRight size={18} />}
                 </button>
               </form>
             )}
@@ -321,4 +329,5 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
     </div>
   );
 }
+
 

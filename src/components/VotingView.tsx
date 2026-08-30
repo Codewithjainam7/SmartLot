@@ -49,7 +49,7 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-white/5 pb-6">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{motion.id} â€¢ Linked Case {motion.caseId}</span>
+                    <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{motion.id} • Linked Case {motion.caseId}</span>
                     {motion.status === 'passed' && (
                       <span className="px-3 py-1 rounded-full bg-emerald-100 text-[#10B981] text-xs font-extrabold uppercase">
                         MOTION PASSED
@@ -189,4 +189,5 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
     </div>
   );
 }
+
 

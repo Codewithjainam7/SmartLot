@@ -39,8 +39,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
   const [newActorName, setNewActorName] = useState('');
   const [newActorEmail, setNewActorEmail] = useState('');
   const [newActorPhone, setNewActorPhone] = useState('');
-  const [newActorRole, setNewActorRole] = useState<'Lot Owner' | 'On-Site Resident' | 'Tenant' | 'Property Agent'>('On-Site Resident');
-  const [newActorAgency, setNewActorAgency] = useState('');
+  const [newActorRole, setNewActorRole] = useState<'Lot Owner' | 'On-Site Resident' | 'Tenant'>('On-Site Resident');
 
   if (activeUnits.length === 0 || activeScheme.id === 'NO_SCHEME') {
     return (
@@ -82,15 +81,24 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
   const handleAddOccupantSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (store.addResidentToUnit) {
-      store.addResidentToUnit(
-        activeScheme.id,
-        currentUnit.unitId,
+    if (store.onboardActor) {
+      store.onboardActor(
+        activeScheme.id, 
+        currentUnit.unitId, 
         newActorName,
         newActorEmail,
         newActorRole,
-        newActorPhone,
-        newActorRole === 'Property Agent' ? newActorAgency : undefined
+        newActorPhone
+      );
+    } else if (store.addResidentToUnit) {
+      // Fallback for older method if onboardActor doesn't exist
+      store.addResidentToUnit(
+        activeScheme.id, 
+        currentUnit.unitId, 
+        newActorName,
+        newActorEmail,
+        newActorRole,
+        newActorPhone
       );
     }
 
@@ -99,7 +107,6 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
     setNewActorEmail('');
     setNewActorPhone('');
     setNewActorRole('On-Site Resident');
-    setNewActorAgency('');
     setShowAddOccupantModal(false);
   };
 
@@ -231,9 +238,22 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               canManage={canManage}
               isSelf={member.name === store.activePersona.name}
               onOffboard={() => handleOffboard(member.name, member.email)}
-              permissions={(store.rolePermissions[activeScheme.id]?.[member.role] || []).filter((p: any) => 
-                ['Submit Request', 'Cast Vote', 'Add Comment on Request', 'View Final Vote Results'].includes(p.label)
-              )}
+              permissions={(store.rolePermissions[activeScheme.id]?.[member.role] || [])
+                .filter((p: any) => ['Submit Request', 'Cast Vote', 'Add Comment on Request', 'View Final Vote Results'].includes(p.label))
+                .map((p: any) => {
+                  const override = member.individualPermissions?.find((op: any) => op.label === p.label);
+                  return {
+                    label: p.label,
+                    locked: p.locked,
+                    active: override ? override.active : p.active
+                  };
+                })
+              }
+              onTogglePermission={(label: string) => {
+                if (store.toggleIndividualPermission) {
+                  store.toggleIndividualPermission(member.id, label);
+                }
+              }}
             />
           ))
         ) : (
@@ -394,8 +414,8 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
                 <div>
                   <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Classification / Relationship</label>
-                  <div className="grid grid-cols-2 gap-1.5 bg-white/5 p-1 rounded-2xl border border-white/5 text-center">
-                    {(['Lot Owner', 'On-Site Resident', 'Tenant', 'Property Agent'] as const).map(role => {
+                  <div className="grid grid-cols-3 gap-1.5 bg-white/5 p-1 rounded-2xl border border-white/5 text-center">
+                    {(['Lot Owner', 'On-Site Resident', 'Tenant'] as const).map(role => {
                       const isActive = newActorRole === role;
                       return (
                         <button
@@ -413,19 +433,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                   </div>
                 </div>
 
-                {newActorRole === 'Property Agent' && (
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Real Estate Agency Name</label>
-                    <input 
-                      type="text"
-                      required
-                      placeholder="e.g. RayWhite Agency"
-                      value={newActorAgency}
-                      onChange={e => setNewActorAgency(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-xs outline-none font-bold placeholder:text-gray-600 dark:text-gray-300 focus:border-[#00D4B2] transition-all"
-                    />
-                  </div>
-                )}
+                {/* Property Agent classification removed */}
 
                 <button
                   type="submit"
@@ -455,7 +463,7 @@ function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) 
   );
 }
 
-function ActorSection({ icon, role, name, email, phone, agency, color, permissions, verified, canManage, onOffboard, isSelf }: any) {
+function ActorSection({ icon, role, name, email, phone, agency, color, permissions, verified, canManage, onOffboard, isSelf, onTogglePermission }: any) {
   return (
     <div className="border border-gray-100 dark:border-white/5 rounded-2xl p-4 hover:border-gray-200 dark:hover:border-gray-700 transition-colors bg-gray-50/30 dark:bg-white/[0.02]">
       <div className="flex items-start justify-between mb-4">
@@ -469,7 +477,7 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
               {verified && <CheckCircle2 size={12} className="text-[#059669]" />}
             </div>
             <div className="font-bold text-gray-900 dark:text-white dark:text-white mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300 dark:text-gray-300">You</span>}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">{email} {phone && `â€¢ ${phone}`} {agency && `â€¢ Agency: ${agency}`}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">{email} {phone && `• ${phone}`} {agency && `• Agency: ${agency}`}</div>
           </div>
         </div>
 
@@ -486,16 +494,22 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
       
       <div className="space-y-2 mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
         {permissions.map((perm: any, idx: number) => (
-          <PermissionToggle key={idx} label={perm.label} initialActive={perm.active} locked={perm.locked} />
+          <PermissionToggle 
+            key={idx} 
+            label={perm.label} 
+            active={perm.active} 
+            locked={perm.locked} 
+            onToggle={() => {
+              if (onTogglePermission) onTogglePermission(perm.label);
+            }} 
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, label: string, initialActive: boolean, locked?: boolean }) {
-  const [active, setActive] = useState(initialActive);
-  
+function PermissionToggle({ label, active, locked, onToggle }: { key?: React.Key, label: string, active: boolean, locked?: boolean, onToggle?: () => void }) {
   return (
     <div className="flex items-center justify-between group">
       <div className="flex items-center gap-2">
@@ -503,7 +517,7 @@ function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, l
         <span className={`text-xs font-medium ${active ? 'text-gray-900 dark:text-white dark:text-white' : 'text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500'}`}>{label}</span>
       </div>
       <button 
-        onClick={() => !locked && setActive(!active)}
+        onClick={() => !locked && onToggle && onToggle()}
         className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-300 dark:text-gray-600 dark:text-gray-300'}`}
         disabled={locked}
       >
@@ -512,4 +526,3 @@ function PermissionToggle({ label, initialActive, locked }: { key?: React.Key, l
     </div>
   );
 }
-

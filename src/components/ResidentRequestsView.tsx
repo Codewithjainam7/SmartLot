@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ResidentRequest, CaseStatus } from '../store/smartLotStore';
 import { 
@@ -159,7 +159,7 @@ export function ResidentRequestsView({
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{req.id} â€¢ {req.unit}</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{req.id} Ã¢â‚¬Â¢ {req.unit}</span>
                   <StatusBadge status={req.status} />
                 </div>
 
@@ -222,7 +222,7 @@ export function ResidentRequestsView({
               
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
                 <div>
-                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{activeDetail.id} â€¢ {activeDetail.unit}</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{activeDetail.id} Ã¢â‚¬Â¢ {activeDetail.unit}</span>
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">{activeDetail.title}</h2>
                 </div>
                 <button onClick={() => setSelectedRequest(null)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 cursor-pointer">
@@ -384,5 +384,6 @@ function StatusBadge({ status }: { status: CaseStatus }) {
       return <span className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] font-bold uppercase">CLOSED</span>;
   }
 }
+
 
 

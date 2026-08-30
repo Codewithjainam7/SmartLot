@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+﻿import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
@@ -40,6 +40,7 @@ interface UserManagementViewProps {
   activePersonaName: string;
   rolePermissions: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
   onTogglePermission: (role: string, permissionLabel: string) => void;
+  onToggleIndividualPermission?: (memberId: string, permissionLabel: string) => void;
 }
 
 const ROLE_OPTIONS: SelectOption[] = [
@@ -67,9 +68,11 @@ export function UserManagementView({
   activePersonaName,
   rolePermissions,
   onTogglePermission,
+  onToggleIndividualPermission,
 }: UserManagementViewProps) {
 
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
+  const [permTab, setPermTab] = useState<'default' | 'individual'>('default');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -209,7 +212,6 @@ export function UserManagementView({
             />
           </motion.div>
         ) : (
-          /* Role Permissions Matrix Section */
           <motion.div 
             key="permissions"
             initial={{ opacity: 0, y: 10 }}
@@ -223,58 +225,147 @@ export function UserManagementView({
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Scheme Role Permission Matrix</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Configure access controls for Strata Plan {activeSchemeId}. Checked = permitted. Locked = fixed by system.</p>
             </div>
-            <span className="text-[10px] font-black bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20 px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0">
-              Module 1 Scope
-            </span>
+            
+            <div className="flex items-center gap-4">
+              {/* Permission Mode Tabs */}
+              <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
+                <button 
+                  onClick={() => setPermTab('default')}
+                  className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${permTab === 'default' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                >
+                  Default Permissions
+                </button>
+                <button 
+                  onClick={() => setPermTab('individual')}
+                  className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${permTab === 'individual' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                >
+                  Individual Overrides
+                </button>
+              </div>
+
+              <span className="text-[10px] font-black bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20 px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0">
+                Module 1 Scope
+              </span>
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Object.keys(rolePermissions || {}).map(role => {
-              const perms = rolePermissions[role] || [];
-              return (
-                <div key={role} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-3">
-                    <span className="font-extrabold text-gray-900 dark:text-white text-sm">{role}</span>
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-250 text-gray-600 border border-gray-300">Role Profile</span>
-                  </div>
-                  <div className="space-y-4 pt-1 divide-y divide-gray-200/40">
-                    {(() => {
-                      const categories: Record<string, typeof perms> = {
-                        'ðŸ“ 1. Request Submission': perms.filter(p =>
-                          ['Submit Request', 'Add Comment on Request'].includes(p.label)
-                        ),
-                        'âœ… 2. Request Review & Approval': perms.filter(p =>
-                          ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
-                        ),
-                      };
+          {permTab === 'default' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.keys(rolePermissions || {}).map(role => {
+                const perms = rolePermissions[role] || [];
+                return (
+                  <div key={role} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
+                    <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-3">
+                      <span className="font-extrabold text-gray-900 dark:text-white text-sm">{role}</span>
+                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/5 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-white/10">Role Profile</span>
+                    </div>
+                    <div className="space-y-4 pt-1 divide-y divide-gray-200/40 dark:divide-white/5">
+                      {(() => {
+                        const categories: Record<string, typeof perms> = {
+                          '📝 1. Request Submission': perms.filter(p =>
+                            ['Submit Request', 'Add Comment on Request'].includes(p.label)
+                          ),
+                          '✅ 2. Request Review & Approval': perms.filter(p =>
+                            ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
+                          ),
+                        };
 
-                      return Object.entries(categories).map(([catName, catPerms]) => {
-                        if (catPerms.length === 0) return null;
-                        return (
-                          <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
-                            <span className="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider block mb-1">{catName}</span>
-                            {catPerms.map(p => (
-                              <div key={p.label} className="flex items-center justify-between py-0.5">
-                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">{p.label}</span>
-                                {p.locked ? (
-                                  <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
-                                ) : (
-                                  <CustomCheckbox
-                                    checked={p.active}
-                                    onChange={() => onTogglePermission(role, p.label)}
-                                  />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      });
-                    })()}
+                        return Object.entries(categories).map(([catName, catPerms]) => {
+                          if (catPerms.length === 0) return null;
+                          return (
+                            <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
+                              <span className="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider block mb-1">{catName}</span>
+                              {catPerms.map(p => (
+                                <div key={p.label} className="flex items-center justify-between py-0.5">
+                                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">{p.label}</span>
+                                  {p.locked ? (
+                                    <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
+                                  ) : (
+                                    <CustomCheckbox
+                                      checked={p.active}
+                                      onChange={() => onTogglePermission(role, p.label)}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredMembers.map(member => {
+                const perms = rolePermissions[member.role] || [];
+                // Only show members that have a role in the permissions matrix
+                if (!perms.length) return null;
+                
+                return (
+                  <div key={member.id} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-[#00D4B2]/20 shadow-[0_0_15px_rgba(0,212,178,0.05)] space-y-4">
+                    <div className="flex flex-col border-b border-gray-200 dark:border-gray-700 pb-3 gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-gray-900 dark:text-white text-sm">{member.name}</span>
+                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/20">Individual</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{member.role}</span>
+                    </div>
+                    
+                    <div className="space-y-4 pt-1 divide-y divide-gray-200/40 dark:divide-white/5">
+                      {(() => {
+                        const categories: Record<string, typeof perms> = {
+                          '📝 1. Request Submission': perms.filter(p =>
+                            ['Submit Request', 'Add Comment on Request'].includes(p.label)
+                          ),
+                          '✅ 2. Request Review & Approval': perms.filter(p =>
+                            ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
+                          ),
+                        };
+
+                        return Object.entries(categories).map(([catName, catPerms]) => {
+                          if (catPerms.length === 0) return null;
+                          return (
+                            <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
+                              <span className="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider block mb-1">{catName}</span>
+                              {catPerms.map(p => {
+                                const override = member.individualPermissions?.find(op => op.label === p.label);
+                                const isChecked = override ? override.active : p.active;
+                                const isModified = !!override;
+                                
+                                return (
+                                  <div key={p.label} className="flex items-center justify-between py-0.5 group">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`text-xs font-semibold leading-tight transition-colors ${isModified ? 'text-[#00D4B2]' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {p.label}
+                                      </span>
+                                      {isModified && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#00D4B2] shadow-[0_0_5px_#00D4B2]" title="Overridden from default" />
+                                      )}
+                                    </div>
+                                    {p.locked ? (
+                                      <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
+                                    ) : (
+                                      <CustomCheckbox
+                                        checked={isChecked}
+                                        onChange={() => onToggleIndividualPermission?.(member.id, p.label)}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
         )}
       </AnimatePresence>
@@ -363,7 +454,7 @@ export function UserManagementView({
   );
 }
 
-// â”€â”€â”€ AG Grid Member Roster â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ AG Grid Member Roster Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 interface MemberRosterGridProps {
   members: Member[];
@@ -491,7 +582,7 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
 }
 
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 // Inner Form Content
 function AddMemberFormContent({ 
@@ -808,5 +899,6 @@ function MemberStatusBadge({ status }: { status: Member['status'] }) {
       return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-extrabold uppercase">RESTRICTED</span>;
   }
 }
+
 
 

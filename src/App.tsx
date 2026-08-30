@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
 import { PERSONAS, Persona } from './types';
+import { supabase } from './lib/supabase';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { Dashboard } from './components/Dashboard';
@@ -64,6 +65,12 @@ export default function App() {
 
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
+  useEffect(() => {
+    if (store.isLoggedIn && sessionState === 'landing') {
+      setSessionState('dashboard');
+    }
+  }, [store.isLoggedIn, sessionState]);
+
   const handleSelectPersona = (personaId: string) => {
     if (personaId === 'web_admin') {
       window.location.hash = '#/admin';
@@ -82,7 +89,7 @@ export default function App() {
     }
   };
 
-  const handleLoginSuccess = (
+  const handleLoginSuccess = async (
     role: string, 
     name: string, 
     siteInfo?: { id: string; name: string; lots: number }
@@ -94,7 +101,7 @@ export default function App() {
       if (existing) {
         scheme = existing;
       } else {
-        scheme = store.addScheme(siteInfo.id, `${siteInfo.id} - ${siteInfo.name}`, siteInfo.lots);
+        scheme = await store.addScheme(siteInfo.id, `${siteInfo.id} - ${siteInfo.name}`, siteInfo.lots);
       }
       store.setActiveScheme(scheme);
     }
@@ -151,7 +158,8 @@ export default function App() {
     });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     store.setIsLoggedIn(false);
     setSessionState('landing');
   };
@@ -249,6 +257,7 @@ export default function App() {
                 activeSchemeId={store.activeScheme.id}
                 rolePermissions={store.rolePermissions[store.activeScheme.id] || {}}
                 onTogglePermission={(role, perm) => store.togglePermission(store.activeScheme.id, role, perm)}
+                onToggleIndividualPermission={store.toggleIndividualPermission}
               />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-500 h-full">

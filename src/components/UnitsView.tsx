@@ -76,7 +76,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                   <div className="text-left">
                     <div className="text-base font-bold">{u.unitId} (Lot {u.lotNumber})</div>
                     <div className={`text-xs mt-0.5 ${currentUnit.unitId === u.unitId ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400 dark:text-gray-500'}`}>
-                      Entitlement: {u.entitlement} â€¢ {u.actors.length} Mapped Actors
+                      Entitlement: {u.entitlement} • {u.actors.length} Mapped Actors
                     </div>
                   </div>
                   <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
@@ -95,7 +95,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
           <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 dark:border-white/5 pb-4">
             <div>
               <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Active Unit Profile</span>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{currentUnit.unitId} â€¢ Lot {currentUnit.lotNumber}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{currentUnit.unitId} • Lot {currentUnit.lotNumber}</h2>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -129,7 +129,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                         {actor.verified && <CheckCircle2 size={14} className="text-[#10B981]" />}
                       </div>
                       <h4 className="text-lg font-bold text-gray-900 dark:text-white">{actor.name}</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{actor.email} {actor.agency && `â€¢ ${actor.agency}`}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{actor.email} {actor.agency && `• ${actor.agency}`}</p>
                     </div>
                   </div>
 
@@ -215,4 +215,5 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
     </div>
   );
 }
+
 

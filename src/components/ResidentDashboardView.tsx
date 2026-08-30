@@ -132,7 +132,7 @@ export function ResidentDashboardView({
       <div className="bg-gradient-to-r from-[#0B1121] to-[#1E2026] text-white rounded-3xl p-8 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] text-xs font-extrabold uppercase tracking-wider">
-            <ShieldCheck size={14} /> SP10482 â€¢ Unit 10 Active
+            <ShieldCheck size={14} /> SP10482 • Unit 10 Active
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Welcome, {activePersonaName}</h1>
           <p className="text-sm text-gray-300">
@@ -234,7 +234,7 @@ export function ResidentDashboardView({
             <div key={req.id} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1a1d27]/50 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="font-bold text-gray-400 dark:text-gray-500">{req.id} â€¢ {req.unit}</span>
+                  <span className="font-bold text-gray-400 dark:text-gray-500">{req.id} • {req.unit}</span>
                   <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">{req.status}</span>
                 </div>
                 <h4 className="font-bold text-sm text-gray-900 dark:text-white mt-0.5">{req.title}</h4>
@@ -420,4 +420,5 @@ export function ResidentDashboardView({
     </div>
   );
 }
+
 

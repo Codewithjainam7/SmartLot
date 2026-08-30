@@ -62,38 +62,47 @@ export function Dashboard({ store }: DashboardProps) {
     handleBuildingTypeChange('custom');
   }, [store.activePersona?.name]);
 
-  // Trigger popup after 5 seconds of mounting if memberships array is empty
+  // Trigger popup after 5 seconds of mounting if there are no schemes
   useEffect(() => {
-    const hasNoMemberships = !store.activePersona?.memberships || store.activePersona.memberships.length === 0;
-    if (hasNoMemberships) {
+    const hasSeenPopup = localStorage.getItem('smartlot_hasSeenSetupPopup');
+    if (store.schemes.length === 0 && !hasSeenPopup) {
       const timer = setTimeout(() => {
         setShowSetupPopup(true);
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [store.activePersona?.name, store.activePersona?.memberships]);
+  }, [store.schemes.length]);
 
-  const handleCreateSchemeSubmit = (e: React.FormEvent) => {
+  const handleCreateSchemeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const createdScheme = store.addScheme(newSchemeId, newSchemeName, newLotsCount);
+    const createdScheme = await store.addScheme(newSchemeId, newSchemeName, newLotsCount);
     store.setActiveScheme(createdScheme);
 
-    const assignRole = store.activePersona.name === 'Emma Wilson' ? 'Strata Manager' : 'Strata Admin';
+    // Mark popup as seen so it never comes back
+    localStorage.setItem('smartlot_hasSeenSetupPopup', 'true');
+
+    // Anyone who creates a site always becomes Strata Admin for that site
+    // They can assign themselves Strata Manager and other roles from Team Access later
     const memberships = [
       {
         schemeId: newSchemeId,
-        roles: [assignRole as any]
+        roles: ['Strata Admin' as any]
       }
     ];
 
     store.setActivePersona((prev: any) => ({
       ...prev,
-      role: assignRole,
+      role: 'Strata Admin',
       memberships: memberships,
-      context: store.activePersona.name === 'Emma Wilson' ? 'Cavaller HQ' : `Unit 1 (${newSchemeName})`
+      context: `Unit 1 (${newSchemeName})`
     }));
 
     setShowSetupPopup(false);
+  };
+
+  const handleDismissPopup = () => {
+    setShowSetupPopup(false);
+    localStorage.setItem('smartlot_hasSeenSetupPopup', 'true');
   };
 
   return (
@@ -153,27 +162,10 @@ export function Dashboard({ store }: DashboardProps) {
             <button className="text-sm font-semibold text-[#0055FF] hover:text-[#0033CC]">View All</button>
           </div>
           
-          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[19px] before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-white/10 before:to-transparent">
-            
-            <FeedItem 
-              type="verified"
-              title="Lease Agreement Verified"
-              desc="RayWhite Agent uploaded new lease for Lisa Ray."
-              time="2 hours ago"
-            />
-            <FeedItem 
-              type="alert"
-              title="Maintenance Request"
-              desc="Lisa Ray reported a leaking tap in the kitchen."
-              time="Yesterday"
-              hasAssignPermission={store.hasPermission('Assign Selected Vendor')}
-            />
-            <FeedItem 
-              type="system"
-              title="Levy Notice Issued"
-              desc="Q3 Levies generated and sent to Mike Davies."
-              time="3 days ago"
-            />
+          <div className="space-y-6">
+            <div className="flex flex-col items-center justify-center py-8 text-gray-400 dark:text-gray-500">
+              <span className="text-xs font-semibold">No recent activity</span>
+            </div>
           </div>
         </div>
       </div>
@@ -181,40 +173,7 @@ export function Dashboard({ store }: DashboardProps) {
       {/* Column 3: Right Action Column */}
       <div className="lg:col-span-3 space-y-6">
         
-        {/* Lavender Card - Scheme Summary (Financial Health) - Gated */}
-        {store.hasPermission('View & Compare Quotes') && (
-          <div className="bg-gradient-to-br from-[#0F172A] to-[#1E3A8A] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-20">
-              <ShieldCheck size={64} />
-            </div>
-            <div className="relative z-10">
-              <div className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Financial Health</div>
-              <h3 className="text-2xl font-bold mb-4">$42,500</h3>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-white/90">Admin Fund</span>
-                  <span className="font-semibold">$12,000</span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-1.5">
-                  <div className="bg-white h-1.5 rounded-full" style={{ width: '40%' }}></div>
-                </div>
-                
-                <div className="flex justify-between items-center text-sm pt-2">
-                  <span className="text-white/90">Capital Works</span>
-                  <span className="font-semibold">$30,500</span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-1.5">
-                  <div className="bg-white h-1.5 rounded-full" style={{ width: '70%' }}></div>
-                </div>
-              </div>
-              
-              <button className="w-full mt-6 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
-                View Reports
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Financial Health demo card removed */}
 
         {/* Electric Lime Card - Quick Action */}
         {vacantCount > 0 && (

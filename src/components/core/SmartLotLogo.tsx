@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 interface LogoProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
@@ -95,3 +95,4 @@ export function SmartLotLogoIcon({ className = "w-10 h-10", ...props }: React.SV
     </svg>
   );
 }
+

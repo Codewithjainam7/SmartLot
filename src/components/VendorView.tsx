@@ -80,7 +80,7 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-gray-200 dark:border-white/8 dark:border-white/8 pb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{wo.id} â€¢ Linked Case {wo.caseId}</span>
+                    <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{wo.id} • Linked Case {wo.caseId}</span>
                     <WorkOrderStatusBadge status={wo.status} />
                   </div>
                   <h4 className="text-lg font-bold text-gray-900 dark:text-white">{wo.scopeOfWork}</h4>
@@ -170,4 +170,5 @@ function WorkOrderStatusBadge({ status }: { status: WorkOrder['status'] }) {
       return <span className="px-3 py-0.5 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase">Completed & Paid</span>;
   }
 }
+
 
