@@ -571,7 +571,9 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  {m.additionalOccupants && m.additionalOccupants.length > 0 ? (
+                  {m.role && (m.role.includes('Manager') || m.role.includes('Admin')) ? (
+                    <span className="text-[11px] text-gray-400 dark:text-gray-500">-</span>
+                  ) : m.additionalOccupants && m.additionalOccupants.length > 0 ? (
                     <span className="text-[10px] font-bold text-[#0055FF] bg-[#0055FF]/10 px-2 py-0.5 rounded-full border border-[#0055FF]/20">
                       {m.additionalOccupants.length + 1} Occupants
                     </span>
