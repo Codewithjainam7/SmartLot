@@ -385,15 +385,27 @@ export function useSmartLotStore() {
             });
           }
 
-          // Ensure every loaded scheme has unit entries generated if missing
+          // Ensure every loaded scheme has unit entries generated & auto-inserted into Supabase if missing
           if (schemesData) {
-            schemesData.forEach(s => {
+            for (const s of schemesData) {
               const hasUnits = allUnits.some(u => u.schemeId === s.id);
               if (!hasUnits) {
-                const generated: UnitData[] = Array.from({ length: s.lots }, (_, i) => {
-                  const uId = `Unit ${i + 1}`;
+                const unitsToInsert = Array.from({ length: s.lots }, (_, i) => ({
+                  scheme_id: s.id,
+                  unit_id: `Unit ${i + 1}`,
+                  lot_number: i + 1,
+                  entitlement: parseFloat((100 / s.lots).toFixed(2)),
+                  status: 'Vacant'
+                }));
+
+                // Auto-sync missing unit rows into Supabase public.units table
+                supabase.from('units').insert(unitsToInsert).then(({ error }) => {
+                  if (error) console.error("Error auto-inserting missing units into Supabase:", error);
+                });
+
+                const generated: UnitData[] = unitsToInsert.map(u => {
                   const unitActors: UnitActor[] = (formattedMembers || [])
-                    .filter(m => m.schemeId === s.id && m.unitId === uId && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
+                    .filter(m => m.schemeId === s.id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
                     .map(m => ({
                       id: m.id,
                       role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
@@ -409,16 +421,16 @@ export function useSmartLotStore() {
 
                   return {
                     schemeId: s.id,
-                    unitId: uId,
-                    lotNumber: i + 1,
-                    entitlement: `${(100 / s.lots).toFixed(1)}%`,
+                    unitId: u.unit_id,
+                    lotNumber: u.lot_number,
+                    entitlement: `${u.entitlement}%`,
                     status: unitActors.length > 0 ? 'Occupied' : 'Vacant',
                     actors: unitActors
                   };
                 });
                 allUnits.push(...generated);
               }
-            });
+            }
           }
 
           setUnits(allUnits);
