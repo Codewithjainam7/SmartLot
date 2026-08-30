@@ -30,10 +30,6 @@ export default function App() {
   const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_console' | 'dashboard'>(
     () => {
       if (window.location.hash === '#/admin') return 'admin_console';
-      try {
-        const raw = localStorage.getItem('smartlot_isLoggedIn_v7');
-        if (raw && JSON.parse(raw) === true) return 'dashboard';
-      } catch (_) {}
       return 'landing';
     }
   );
@@ -89,8 +85,14 @@ export default function App() {
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
   useEffect(() => {
-    if (store.isLoggedIn && sessionState === 'landing') {
-      setSessionState('dashboard');
+    if (store.isLoggedIn) {
+      if (sessionState === 'landing' || sessionState === 'login') {
+        setSessionState('dashboard');
+      }
+    } else {
+      if (sessionState === 'dashboard') {
+        setSessionState('landing');
+      }
     }
   }, [store.isLoggedIn, sessionState]);
 
