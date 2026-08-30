@@ -351,6 +351,42 @@ export function useSmartLotStore() {
           });
           setMembers(formattedMembers);
         }
+
+        // Fetch units for active schemes
+        const { data: unitsData } = await supabase.from('units').select('*');
+        if (isMounted) {
+          let allUnits: UnitData[] = [];
+          if (unitsData && unitsData.length > 0) {
+            allUnits = unitsData.map(u => ({
+              schemeId: u.scheme_id,
+              unitId: u.unit_id,
+              lotNumber: u.lot_number,
+              entitlement: `${u.entitlement}%`,
+              status: u.status || 'Vacant',
+              actors: []
+            }));
+          }
+
+          // Ensure every loaded scheme has unit entries generated if missing
+          if (schemesData) {
+            schemesData.forEach(s => {
+              const hasUnits = allUnits.some(u => u.schemeId === s.id);
+              if (!hasUnits) {
+                const generated: UnitData[] = Array.from({ length: s.lots }, (_, i) => ({
+                  schemeId: s.id,
+                  unitId: `Unit ${i + 1}`,
+                  lotNumber: i + 1,
+                  entitlement: `${(100 / s.lots).toFixed(1)}%`,
+                  status: 'Vacant',
+                  actors: []
+                }));
+                allUnits.push(...generated);
+              }
+            });
+          }
+
+          setUnits(allUnits);
+        }
       } catch (err) {
         console.error("Error fetching from Supabase:", err);
       } finally {
@@ -500,8 +536,18 @@ export function useSmartLotStore() {
           status: 'Active'
         }
       ]);
-      if (memberError) {
-        console.error("Error inserting member into Supabase:", memberError);
+      // 3. Insert units into public.units table so the database matrix is populated
+      const unitsToInsert = Array.from({ length: lots }, (_, i) => ({
+        scheme_id: id,
+        unit_id: `Unit ${i + 1}`,
+        lot_number: i + 1,
+        entitlement: parseFloat((100 / lots).toFixed(2)),
+        status: 'Vacant'
+      }));
+
+      const { error: unitsError } = await supabase.from('units').insert(unitsToInsert);
+      if (unitsError) {
+        console.error("Error inserting units into Supabase:", unitsError);
       }
     } else {
       console.error("Cannot insert scheme: No authenticated Supabase user found!");

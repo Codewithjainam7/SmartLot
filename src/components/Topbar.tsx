@@ -23,15 +23,7 @@ export function Topbar({
   onAddSchemeClick,
   onLogout
 }: TopbarProps) {
-  // Filter schemes based on memberships (unless Web Administrator/Super Admin)
-  let visibleSchemes = (activePersona.isSystemAdmin || activePersona.role === "Super Admin" || activePersona.role === "Website Administrator")
-    ? schemes
-    : schemes.filter(s => activePersona.memberships?.some(m => m.schemeId === s.id));
-
-  // Fallback to activeScheme if no memberships matched to prevent blank state
-  if (visibleSchemes.length === 0 && activeScheme) {
-    visibleSchemes = [activeScheme];
-  }
+  const visibleSchemes = schemes.length > 0 ? schemes : (activeScheme ? [activeScheme] : []);
 
   return (
     <div className="h-20 bg-white/50 dark:bg-[#0B1121]/50 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-8 sticky top-0 z-20 font-sans">
