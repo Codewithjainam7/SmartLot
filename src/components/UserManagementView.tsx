@@ -11,7 +11,7 @@ import {
   useMorphingPopover
 } from './core/morphing-popover';
 import { 
-  UserPlus, 
+  UserPlus, FileEdit, CheckCircle2, 
   Search, 
   Mail, 
   Phone, 
@@ -262,10 +262,10 @@ export function UserManagementView({
                     <div className="space-y-4 pt-1 divide-y divide-gray-200/40 dark:divide-white/5">
                       {(() => {
                         const categories: Record<string, typeof perms> = {
-                          '📝 1. Request Submission': perms.filter(p =>
+                          'REQUEST SUBMISSION': perms.filter(p =>
                             ['Submit Request', 'Add Comment on Request'].includes(p.label)
                           ),
-                          '✅ 2. Request Review & Approval': perms.filter(p =>
+                          'REQUEST REVIEW & APPROVAL': perms.filter(p =>
                             ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
                           ),
                         };
@@ -274,7 +274,7 @@ export function UserManagementView({
                           if (catPerms.length === 0) return null;
                           return (
                             <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
-                              <span className="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider block mb-1">{catName}</span>
+                              <div className="flex items-center gap-1.5 mb-1.5 text-gray-400 dark:text-gray-500">{catName === 'REQUEST SUBMISSION' ? <FileEdit size={12} /> : <CheckCircle2 size={12} />}<span className="text-[9px] font-black uppercase tracking-wider">{catName === 'REQUEST SUBMISSION' ? '1. REQUEST SUBMISSION' : '2. REQUEST REVIEW & APPROVAL'}</span></div>
                               {catPerms.map(p => (
                                 <div key={p.label} className="flex items-center justify-between py-0.5">
                                   <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">{p.label}</span>
@@ -317,10 +317,10 @@ export function UserManagementView({
                     <div className="space-y-4 pt-1 divide-y divide-gray-200/40 dark:divide-white/5">
                       {(() => {
                         const categories: Record<string, typeof perms> = {
-                          '📝 1. Request Submission': perms.filter(p =>
+                          'REQUEST SUBMISSION': perms.filter(p =>
                             ['Submit Request', 'Add Comment on Request'].includes(p.label)
                           ),
-                          '✅ 2. Request Review & Approval': perms.filter(p =>
+                          'REQUEST REVIEW & APPROVAL': perms.filter(p =>
                             ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
                           ),
                         };
@@ -329,7 +329,7 @@ export function UserManagementView({
                           if (catPerms.length === 0) return null;
                           return (
                             <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
-                              <span className="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider block mb-1">{catName}</span>
+                              <div className="flex items-center gap-1.5 mb-1.5 text-gray-400 dark:text-gray-500">{catName === 'REQUEST SUBMISSION' ? <FileEdit size={12} /> : <CheckCircle2 size={12} />}<span className="text-[9px] font-black uppercase tracking-wider">{catName === 'REQUEST SUBMISSION' ? '1. REQUEST SUBMISSION' : '2. REQUEST REVIEW & APPROVAL'}</span></div>
                               {catPerms.map(p => {
                                 const override = member.individualPermissions?.find(op => op.label === p.label);
                                 const isChecked = override ? override.active : p.active;
@@ -899,6 +899,9 @@ function MemberStatusBadge({ status }: { status: Member['status'] }) {
       return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-extrabold uppercase">RESTRICTED</span>;
   }
 }
+
+
+
 
 
 
