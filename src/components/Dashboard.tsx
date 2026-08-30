@@ -64,22 +64,26 @@ export function Dashboard({ store }: DashboardProps) {
 
   // Trigger popup after 5 seconds of mounting if there are no schemes
   useEffect(() => {
-    const hasSeenPopup = localStorage.getItem('smartlot_hasSeenSetupPopup');
+    // Tie the popup strictly to the specific user's ID so it shows up for new accounts!
+    const userId = store.activePersona?.id || 'unknown';
+    const hasSeenPopup = localStorage.getItem(`smartlot_hasSeenSetupPopup_${userId}`);
+    
     if (store.schemes.length === 0 && !hasSeenPopup) {
+      // Trigger almost immediately on account creation instead of making them wait 5 seconds
       const timer = setTimeout(() => {
         setShowSetupPopup(true);
-      }, 5000);
+      }, 500);
       return () => clearTimeout(timer);
     }
-  }, [store.schemes.length]);
+  }, [store.schemes.length, store.activePersona?.id]);
 
   const handleCreateSchemeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const createdScheme = await store.addScheme(newSchemeId, newSchemeName, newLotsCount);
     store.setActiveScheme(createdScheme);
 
-    // Mark popup as seen so it never comes back
-    localStorage.setItem('smartlot_hasSeenSetupPopup', 'true');
+    const userId = store.activePersona?.id || 'unknown';
+    localStorage.setItem(`smartlot_hasSeenSetupPopup_${userId}`, 'true');
 
     // Anyone who creates a site always becomes Strata Admin for that site
     // They can assign themselves Strata Manager and other roles from Team Access later
@@ -102,7 +106,8 @@ export function Dashboard({ store }: DashboardProps) {
 
   const handleDismissPopup = () => {
     setShowSetupPopup(false);
-    localStorage.setItem('smartlot_hasSeenSetupPopup', 'true');
+    const userId = store.activePersona?.id || 'unknown';
+    localStorage.setItem(`smartlot_hasSeenSetupPopup_${userId}`, 'true');
   };
 
   return (
