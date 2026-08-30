@@ -19,6 +19,8 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+import { getDefaultPermissionsForRole } from '../store/smartLotStore';
+
 interface UnitDetailCardProps {
   store: any;
 }
@@ -246,7 +248,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               canManage={canManage}
               isSelf={member.name === store.activePersona.name}
               onOffboard={() => handleOffboard(member.name, member.email)}
-              permissions={(store.rolePermissions[activeScheme.id]?.[member.role] || store.getDefaultPermissionsForRole(member.role))
+              permissions={(store.rolePermissions[activeScheme.id]?.[member.role] || getDefaultPermissionsForRole(member.role))
                 .filter((p: any) => ['Submit Request', 'Cast Vote', 'Add Comment on Request', 'View Final Vote Results'].includes(p.label))
                 .map((p: any) => {
                   const override = member.individualPermissions?.find((op: any) => op.label === p.label);
