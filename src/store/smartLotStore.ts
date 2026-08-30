@@ -298,10 +298,14 @@ export function useSmartLotStore() {
 
   // Fetch Live Data from Supabase when logged in
   useEffect(() => {
-    if (!session?.user) return;
-    
     let isMounted = true;
     const fetchSupabaseData = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.user) {
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
         const { data: schemesData, error } = await supabase.from('schemes').select('*');
@@ -357,7 +361,7 @@ export function useSmartLotStore() {
     fetchSupabaseData();
     
     return () => { isMounted = false; };
-  }, [session?.user]);
+  }, [user?.id]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v7`, ['Strata Manager']);
   const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v7`, 'dashboard');
@@ -471,7 +475,10 @@ export function useSmartLotStore() {
     setSchemes(prev => [...prev, newScheme]);
     
     // Save to Supabase
-    if (session?.user) {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const activeUser = currentSession?.user || user || session?.user;
+
+    if (activeUser) {
       // 1. Insert Scheme
       const { error: schemeError } = await supabase.from('schemes').insert([
         { id, name, lots, active: true }
@@ -484,9 +491,9 @@ export function useSmartLotStore() {
       const { error: memberError } = await supabase.from('members').insert([
         { 
           scheme_id: id,
-          user_id: session.user.id,
-          name: session.user.user_metadata?.full_name || 'Admin',
-          email: session.user.email,
+          user_id: activeUser.id,
+          name: activeUser.user_metadata?.full_name || 'Admin',
+          email: activeUser.email,
           role: 'Strata Manager',
           unit_id: 'HQ / Management',
           lot_number: 0,
@@ -496,6 +503,8 @@ export function useSmartLotStore() {
       if (memberError) {
         console.error("Error inserting member into Supabase:", memberError);
       }
+    } else {
+      console.error("Cannot insert scheme: No authenticated Supabase user found!");
     }
     
     // Auto-initialize permissions for the new scheme

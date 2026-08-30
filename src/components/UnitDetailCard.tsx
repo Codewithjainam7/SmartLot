@@ -58,7 +58,11 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
   }
 
   const currentUnit = activeUnits[selectedUnitIndex] || activeUnits[0];
-  const rawUnitMembers = store.members.filter((m: any) => m.schemeId === activeScheme.id && m.unitId === currentUnit.unitId);
+  const rawUnitMembers = store.members.filter((m: any) => 
+    m.schemeId === activeScheme.id && 
+    currentUnit && m.unitId === currentUnit.unitId &&
+    !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role)
+  );
   // Deduplicate by email â€” if same person appears with multiple roles, keep only one entry
   const seenEmails = new Set<string>();
   const unitMembers = rawUnitMembers.filter((m: any) => {
