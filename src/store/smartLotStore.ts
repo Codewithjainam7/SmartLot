@@ -256,27 +256,46 @@ export function useSmartLotStore() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Verify against the database that this user hasn't been deleted
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          console.warn("User deleted from DB, clearing stale browser session.");
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setIsLoggedIn(false);
+          return;
+        }
+
+        setSession(session);
+        setUser(user);
         setIsLoggedIn(true);
-        // Sync name/email from Supabase on initial load (fixes "Authenticated User" bug on page refresh)
-        const fullName = session.user.user_metadata?.full_name;
-        const userRole = session.user.user_metadata?.role;
+        
+        // Sync name/email from Supabase on initial load
+        const fullName = user.user_metadata?.full_name;
+        const userRole = user.user_metadata?.role;
         if (fullName) {
           setActivePersona(prev => ({
             ...prev,
-            id: session.user.id,
+            id: user.id,
             name: fullName,
-            email: session.user.email || '',
+            email: user.email || '',
             role: userRole || prev.role || 'Lot Owner'
           }));
         }
+      } else {
+        setIsLoggedIn(false);
       }
-    });
+    };
+    
+    checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
