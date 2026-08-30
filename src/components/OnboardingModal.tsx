@@ -13,36 +13,38 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
   // Dynamic Site Creation fields
   const [siteType, setSiteType] = useState<string>('duplex');
   const [schemeName, setSchemeName] = useState('Sunset Duplex');
-  const [schemeId, setSchemeId] = useState('SP101');
+  const [schemeId, setSchemeId] = useState(() => `SP${Math.floor(100 + Math.random() * 900)}`);
   const [lotsCount, setLotsCount] = useState(2);
 
   const handleTypeChange = (type: string) => {
     setSiteType(type);
+    const rand = Math.floor(100 + Math.random() * 900);
     if (type === 'duplex') {
       setSchemeName('Sunset Duplex');
-      setSchemeId('SP101');
+      setSchemeId(`SP${rand}`);
       setLotsCount(2);
     } else if (type === 'coronation') {
       setSchemeName('Coronation Townhouses');
-      setSchemeId('SP102');
+      setSchemeId(`SP${rand}`);
       setLotsCount(4);
     } else if (type === 'cavaller') {
       setSchemeName('Cavaller Apartments');
-      setSchemeId('SP103');
+      setSchemeId(`SP${rand}`);
       setLotsCount(32);
     } else {
       setSchemeName('');
-      setSchemeId('');
+      setSchemeId(`SP${rand}`);
       setLotsCount(1);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const existing = store.schemes.find(s => s.id === schemeId);
+    const finalSchemeId = schemeId || `SP${Math.floor(100 + Math.random() * 900)}`;
+    const existing = store.schemes.find((s: any) => s.id === finalSchemeId);
     let scheme = existing;
     if (!existing) {
-      scheme = store.addScheme(schemeId, `${schemeId} - ${schemeName}`, lotsCount);
+      scheme = await store.addScheme(finalSchemeId, `${finalSchemeId} - ${schemeName}`, lotsCount);
     }
     
     // Assign Strata Admin role to the creator of the scheme
@@ -50,18 +52,18 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
     
     // Add scheme membership to activePersona
     const currentMemberships = store.activePersona.memberships || [];
-    const hasMembership = currentMemberships.some(m => m.schemeId === schemeId);
+    const hasMembership = currentMemberships.some((m: any) => m.schemeId === finalSchemeId);
     
     if (!hasMembership) {
       const updatedMemberships = [
         ...currentMemberships,
         {
-          schemeId: schemeId,
+          schemeId: finalSchemeId,
           roles: [assignRole]
         }
       ];
       
-      store.setActivePersona(prev => ({
+      store.setActivePersona((prev: any) => ({
         ...prev,
         role: assignRole,
         memberships: updatedMemberships,
@@ -69,13 +71,13 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
       }));
       
       // Add member to the roster
-      store.setMembers(prev => [
+      store.setMembers((prev: any) => [
         {
           id: `MEM-${100 + prev.length + 1}`,
           name: store.activePersona.name,
           email: store.activePersona.email || `${store.activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
           phone: '0400 000 000',
-          schemeId: schemeId,
+          schemeId: finalSchemeId,
           role: assignRole,
           unitId: store.activePersona.name === 'Emma Wilson' ? 'Office' : 'Unit 1',
           lotNumber: store.activePersona.name === 'Emma Wilson' ? 0 : 1,
@@ -86,7 +88,9 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
       ]);
     }
 
-    store.setActiveScheme(scheme);
+    if (scheme) {
+      store.setActiveScheme(scheme);
+    }
     onClose();
   };
 

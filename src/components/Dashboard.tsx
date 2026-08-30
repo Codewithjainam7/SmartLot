@@ -62,20 +62,20 @@ export function Dashboard({ store }: DashboardProps) {
     handleBuildingTypeChange('custom');
   }, [store.activePersona?.name]);
 
-  // Trigger popup after 5 seconds of mounting if there are no schemes
+  // Trigger popup after 5 seconds of mounting if there are no schemes and loading is finished
   useEffect(() => {
     // Tie the popup strictly to the specific user's ID so it shows up for new accounts!
     const userId = store.activePersona?.id || 'unknown';
     const hasSeenPopup = localStorage.getItem(`smartlot_hasSeenSetupPopup_${userId}`);
     
-    if (store.schemes.length === 0 && !hasSeenPopup) {
+    if (!store.isLoading && store.schemes.length === 0 && !hasSeenPopup) {
       // Trigger almost immediately on account creation instead of making them wait 5 seconds
       const timer = setTimeout(() => {
         setShowSetupPopup(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [store.schemes.length, store.activePersona?.id]);
+  }, [store.isLoading, store.schemes.length, store.activePersona?.id]);
 
   const handleCreateSchemeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
