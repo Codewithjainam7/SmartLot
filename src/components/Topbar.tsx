@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Building2, ChevronDown, CheckCircle2, Plus } from "lucide-react";
 import { Persona, Scheme } from "../types";
 
@@ -42,8 +42,8 @@ export function Topbar({
           <div className="relative group">
             <button className="flex items-center gap-2 bg-white dark:bg-[#121316] border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm px-4 py-2 rounded-xl transition-all cursor-pointer">
               <Building2 size={18} className="text-gray-500" />
-              <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Scheme: {activeScheme.id}</span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">- {activeScheme.name.split("-")[1]?.trim() || activeScheme.name}</span>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Scheme: {activeScheme?.id || 'NO_SCHEME'}</span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">- {(activeScheme?.name || "").split("-")[1]?.trim() || activeScheme?.name || "Unnamed Scheme"}</span>
               <ChevronDown size={16} className="text-gray-400 ml-2" />
             </button>
             
@@ -59,7 +59,7 @@ export function Topbar({
                     }`}
                   >
                     <div className="font-semibold">{scheme.id}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{scheme.lots} Lots - {scheme.name.split("-")[1]?.trim() || scheme.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{scheme.lots} Lots - {(scheme?.name || "").split("-")[1]?.trim() || scheme?.name || "Unnamed Scheme"}</div>
                   </button>
                 ))}
 
