@@ -120,7 +120,7 @@ export function Dashboard({ store }: DashboardProps) {
           <MetricTile icon={<Users size={16} />} label="Residents" value={members.length.toString()} />
           <MetricTile icon={<AlertTriangle size={16} />} label="Issues" value={pendingRequests.length.toString()} highlight={pendingRequests.length > 0} />
           <MetricTile icon={<Vote size={16} />} label="Votes" value="0" />
-          <MetricTile icon={<ClipboardList size={16} />} label="Lots" value={activeScheme.lots.toString()} />
+          <MetricTile icon={<ClipboardList size={16} />} label="Lots" value={activeScheme?.lots?.toString() || "0"} />
         </div>
 
         {/* Worklist */}
