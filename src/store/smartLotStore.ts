@@ -332,9 +332,10 @@ export function useSmartLotStore() {
         }
 
         // Fetch members for active user
+        let formattedMembers: Member[] = [];
         const { data: membersData } = await supabase.from('members').select('*');
         if (membersData && isMounted) {
-          const formattedMembers: Member[] = membersData.map(m => {
+          formattedMembers = membersData.map(m => {
             const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
             return {
               id: m.id,
@@ -357,14 +358,31 @@ export function useSmartLotStore() {
         if (isMounted) {
           let allUnits: UnitData[] = [];
           if (unitsData && unitsData.length > 0) {
-            allUnits = unitsData.map(u => ({
-              schemeId: u.scheme_id,
-              unitId: u.unit_id,
-              lotNumber: u.lot_number,
-              entitlement: `${u.entitlement}%`,
-              status: u.status || 'Vacant',
-              actors: []
-            }));
+            allUnits = unitsData.map(u => {
+              const unitActors: UnitActor[] = (formattedMembers || [])
+                .filter(m => m.schemeId === u.scheme_id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
+                .map(m => ({
+                  id: m.id,
+                  role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
+                  name: m.name,
+                  email: m.email,
+                  phone: m.phone,
+                  verified: true,
+                  permissions: [
+                    { label: 'Noticeboard Access', active: true },
+                    { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
+                  ]
+                }));
+
+              return {
+                schemeId: u.scheme_id,
+                unitId: u.unit_id,
+                lotNumber: u.lot_number,
+                entitlement: `${u.entitlement}%`,
+                status: unitActors.length > 0 ? 'Occupied' : (u.status || 'Vacant'),
+                actors: unitActors
+              };
+            });
           }
 
           // Ensure every loaded scheme has unit entries generated if missing
@@ -372,14 +390,32 @@ export function useSmartLotStore() {
             schemesData.forEach(s => {
               const hasUnits = allUnits.some(u => u.schemeId === s.id);
               if (!hasUnits) {
-                const generated: UnitData[] = Array.from({ length: s.lots }, (_, i) => ({
-                  schemeId: s.id,
-                  unitId: `Unit ${i + 1}`,
-                  lotNumber: i + 1,
-                  entitlement: `${(100 / s.lots).toFixed(1)}%`,
-                  status: 'Vacant',
-                  actors: []
-                }));
+                const generated: UnitData[] = Array.from({ length: s.lots }, (_, i) => {
+                  const uId = `Unit ${i + 1}`;
+                  const unitActors: UnitActor[] = (formattedMembers || [])
+                    .filter(m => m.schemeId === s.id && m.unitId === uId && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
+                    .map(m => ({
+                      id: m.id,
+                      role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
+                      name: m.name,
+                      email: m.email,
+                      phone: m.phone,
+                      verified: true,
+                      permissions: [
+                        { label: 'Noticeboard Access', active: true },
+                        { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
+                      ]
+                    }));
+
+                  return {
+                    schemeId: s.id,
+                    unitId: uId,
+                    lotNumber: i + 1,
+                    entitlement: `${(100 / s.lots).toFixed(1)}%`,
+                    status: unitActors.length > 0 ? 'Occupied' : 'Vacant',
+                    actors: unitActors
+                  };
+                });
                 allUnits.push(...generated);
               }
             });
@@ -674,16 +710,18 @@ export function useSmartLotStore() {
     role: MemberRole;
     unitId: string;
     lotNumber: number;
+    schemeId?: string;
     hasCoOwner?: boolean;
     coOwnerName?: string;
     coOwnerEmail?: string;
     additionalOccupants?: AdditionalOccupant[];
   }) => {
+    const targetSchemeId = memberData.schemeId || activeScheme.id;
     const id = `MEM-${Date.now()}`;
     const newMember: Member = {
       ...memberData,
       id,
-      schemeId: activeScheme.id,
+      schemeId: targetSchemeId,
       status: 'Active',
       joinedAt: new Date().toISOString().split('T')[0],
     };
@@ -694,7 +732,7 @@ export function useSmartLotStore() {
     if (currentSession?.user) {
       const { error } = await supabase.from('members').insert([
         {
-          scheme_id: activeScheme.id,
+          scheme_id: targetSchemeId,
           name: memberData.name,
           email: memberData.email,
           phone: memberData.phone,
