@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
+import { Member, MemberRole, AdditionalOccupant, getDefaultPermissionsForRole } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { CustomCheckbox } from './core/CustomCheckbox';
 import { GlowSubmitButton } from './core/GlowSubmitButton';
@@ -280,9 +280,20 @@ export function UserManagementView({
           
           {permTab === 'default' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.keys(rolePermissions || {}).map(role => {
-                const perms = rolePermissions[role] || [];
-                return (
+              {(() => {
+                const activePerms = (rolePermissions && Object.keys(rolePermissions).length > 0)
+                  ? rolePermissions
+                  : (() => {
+                      const m: Record<string, any> = {};
+                      ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'].forEach(r => {
+                        m[r] = getDefaultPermissionsForRole(r);
+                      });
+                      return m;
+                    })();
+
+                return Object.keys(activePerms).map(role => {
+                  const perms = activePerms[role] || [];
+                  return (
                   <div key={role} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-3">
                       <span className="font-extrabold text-gray-900 dark:text-white text-sm">{role}</span>
@@ -324,7 +335,8 @@ export function UserManagementView({
                     </div>
                   </div>
                 );
-              })}
+              });
+            })()}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

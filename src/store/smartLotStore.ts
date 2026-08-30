@@ -609,13 +609,23 @@ export function useSmartLotStore() {
     setSchemes(prev => prev.filter(s => s.id !== id));
   };
 
-  const togglePermission = (schemeId: string, role: string, permissionLabel: string) => {
+  const togglePermission = async (schemeId: string, role: string, permissionLabel: string) => {
+    let newActiveValue = false;
+    let wasLocked = false;
+
     setRolePermissions(prev => {
       const schemeRoles = prev[schemeId] || {};
-      const rolePerms = schemeRoles[role] || [];
-      const updatedPerms = rolePerms.map(p => 
-        p.label === permissionLabel && !p.locked ? { ...p, active: !p.active } : p
-      );
+      const rolePerms = schemeRoles[role] || getDefaultPermissionsForRole(role);
+      const updatedPerms = rolePerms.map(p => {
+        if (p.label === permissionLabel && !p.locked) {
+          newActiveValue = !p.active;
+          return { ...p, active: newActiveValue };
+        }
+        if (p.label === permissionLabel && p.locked) {
+          wasLocked = true;
+        }
+        return p;
+      });
       return {
         ...prev,
         [schemeId]: {
@@ -624,9 +634,27 @@ export function useSmartLotStore() {
         }
       };
     });
+
+    if (!wasLocked) {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession?.user) {
+        const { error } = await supabase.from('role_permissions').upsert([
+          {
+            scheme_id: schemeId,
+            role,
+            permission_label: permissionLabel,
+            active: newActiveValue
+          }
+        ]);
+        if (error) {
+          console.error("Error updating role permission in Supabase:", error);
+        }
+      }
+    }
   };
 
-  const toggleIndividualPermission = (memberId: string, permissionLabel: string) => {
+  const toggleIndividualPermission = async (memberId: string, permissionLabel: string) => {
+    let targetActive = false;
     setMembers(prev => prev.map(m => {
       if (m.id !== memberId) return m;
       
@@ -635,14 +663,13 @@ export function useSmartLotStore() {
       
       let newOverrides;
       if (existingOverrideIndex >= 0) {
-        // Toggle existing override
         newOverrides = [...currentOverrides];
+        targetActive = !newOverrides[existingOverrideIndex].active;
         newOverrides[existingOverrideIndex] = {
           ...newOverrides[existingOverrideIndex],
-          active: !newOverrides[existingOverrideIndex].active
+          active: targetActive
         };
       } else {
-        // Look up default to know what we are overriding from
         let isCurrentlyActive = false;
         const schemeRoles = rolePermissions[m.schemeId];
         if (schemeRoles) {
@@ -650,14 +677,32 @@ export function useSmartLotStore() {
           const permObj = rolePerms.find(p => p.label === permissionLabel);
           if (permObj) isCurrentlyActive = permObj.active;
         }
-
+        targetActive = !isCurrentlyActive;
         newOverrides = [
           ...currentOverrides,
-          { label: permissionLabel, active: !isCurrentlyActive }
+          { label: permissionLabel, active: targetActive }
         ];
       }
-      return { ...m, individualPermissions: newOverrides };
+
+      return {
+        ...m,
+        individualPermissions: newOverrides
+      };
     }));
+
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('individual_permissions').upsert([
+        {
+          member_id: memberId,
+          permission_label: permissionLabel,
+          active: targetActive
+        }
+      ]);
+      if (error) {
+        console.error("Error updating individual permission in Supabase:", error);
+      }
+    }
   };
 
   const hasPermission = (permissionLabel: string) => {
