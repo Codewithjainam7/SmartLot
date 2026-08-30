@@ -859,26 +859,23 @@ export function useSmartLotStore() {
       return { ...u, status: 'Occupied', actors: [...u.actors, newActor] };
     }));
 
-    // 2. Add to members state to sync roster
+    // 2. Add to members state & Supabase database
     const memberRole = (role === 'On-Site Resident' ? 'Resident' : role) as MemberRole;
     const lotNo = parseInt(unitId.replace(/\D/g, '')) || 1;
-    setMembers(prev => {
-      if (prev.some(m => m.email === email && m.schemeId === schemeId)) return prev;
-      return [
-        {
-          id: `MEM-${100 + prev.length + 1}`,
-          name,
-          email,
-          phone: phone || '0400 000 000',
-          schemeId,
-          role: memberRole,
-          unitId,
-          lotNumber: lotNo,
-          status: 'Active',
-          joinedAt: new Date().toISOString().split('T')[0],
-        },
-        ...prev
-      ];
+    addMember({
+      name,
+      email,
+      phone: phone || '0400 000 000',
+      role: memberRole,
+      unitId,
+      lotNumber: lotNo
+    });
+
+    // 3. Update unit status in Supabase database
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (s?.user) {
+        supabase.from('units').update({ status: 'Occupied' }).eq('scheme_id', schemeId).eq('unit_id', unitId);
+      }
     });
   };
 
@@ -892,6 +889,15 @@ export function useSmartLotStore() {
       
       const newActors = u.actors.filter(a => a.id !== actorId);
       const newStatus = newActors.length === 0 ? 'Vacant' : u.status;
+
+      if (newStatus === 'Vacant') {
+        supabase.auth.getSession().then(({ data: { session: s } }) => {
+          if (s?.user) {
+            supabase.from('units').update({ status: 'Vacant' }).eq('scheme_id', schemeId).eq('unit_id', unitId);
+          }
+        });
+      }
+
       return {
         ...u,
         status: newStatus,
@@ -900,7 +906,7 @@ export function useSmartLotStore() {
     }));
 
     if (emailToOffboard) {
-      setMembers(prev => prev.filter(m => !(m.email === emailToOffboard && m.schemeId === schemeId)));
+      deleteMember(emailToOffboard);
     }
   };
 
