@@ -19,6 +19,7 @@ import { ResidentRequestsView } from './components/ResidentRequestsView';
 import { LandingPageView } from './components/LandingPageView';
 import { AdminView } from './components/AdminView';
 import { SettingsView } from './components/SettingsView';
+import { JoinSchemeView } from './components/JoinSchemeView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -39,6 +40,28 @@ export default function App() {
 
   // Pre-fill parameters when redirecting from landing page simulating a persona
   const [prefillPersona, setPrefillPersona] = useState<string | null>(null);
+  const [joinSchemeId, setJoinSchemeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const parseUrl = () => {
+      const hashMatch = window.location.hash.match(/^#\/join\/([A-Za-z0-9_-]+)/);
+      const pathMatch = window.location.pathname.match(/^\/join\/([A-Za-z0-9_-]+)/);
+      const schemeId = hashMatch ? hashMatch[1] : (pathMatch ? pathMatch[1] : null);
+
+      if (schemeId) {
+        setJoinSchemeId(schemeId);
+      } else {
+        setJoinSchemeId(null);
+      }
+    };
+    parseUrl();
+    window.addEventListener('hashchange', parseUrl);
+    window.addEventListener('popstate', parseUrl);
+    return () => {
+      window.removeEventListener('hashchange', parseUrl);
+      window.removeEventListener('popstate', parseUrl);
+    };
+  }, []);
 
   // Separate Admin console hash router trigger
   useEffect(() => {
@@ -165,6 +188,30 @@ export default function App() {
   };
 
   // Render unauthenticated screens
+  if (joinSchemeId) {
+    return (
+      <JoinSchemeView 
+        schemeId={joinSchemeId}
+        onJoinSuccess={async (role, name, siteInfo) => {
+          window.location.hash = '';
+          if (window.history.pushState) {
+            window.history.pushState('', '', '/');
+          }
+          setJoinSchemeId(null);
+          await handleLoginSuccess(role, name, siteInfo);
+        }}
+        onBackToLanding={() => {
+          window.location.hash = '';
+          if (window.history.pushState) {
+            window.history.pushState('', '', '/');
+          }
+          setJoinSchemeId(null);
+          setSessionState('landing');
+        }}
+      />
+    );
+  }
+
   if (sessionState === 'landing') {
     return (
       <LandingPageView 

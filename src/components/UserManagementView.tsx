@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant } from '../store/smartLotStore';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
@@ -17,7 +17,9 @@ import {
   Phone, 
   X, 
   Trash2,
-  Plus
+  Plus,
+  Link2,
+  Check
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -76,6 +78,14 @@ export function UserManagementView({
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyInviteLink = () => {
+    const joinLink = `${window.location.origin}/#/join/${activeSchemeId}`;
+    navigator.clipboard.writeText(joinLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Find the active user's role in the current scheme
   const activeUser = members.find(m => m.name === activePersonaName);
@@ -145,12 +155,31 @@ export function UserManagementView({
             </div>
 
             {activeTab === 'roster' && canManageUsers && (
-              <MorphingPopoverTrigger>
-                <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
-                  <UserPlus size={18} className="text-[#00D4B2]" /> 
-                  <span>Add New Member</span>
-                </div>
-              </MorphingPopoverTrigger>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyInviteLink}
+                  className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-800 dark:text-white px-5 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-105 cursor-pointer"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={18} className="text-[#059669]" />
+                      <span>Copied Invite Link!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Link2 size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                      <span>Copy Invite Link</span>
+                    </>
+                  )}
+                </button>
+                <MorphingPopoverTrigger>
+                  <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+                    <UserPlus size={18} className="text-[#00D4B2]" /> 
+                    <span>Add New Member</span>
+                  </div>
+                </MorphingPopoverTrigger>
+              </div>
             )}
           </div>
         </div>
