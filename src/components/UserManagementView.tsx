@@ -546,8 +546,16 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
                 </td>
                 <td className="px-4 py-4">
                   <div className="leading-tight">
-                    <div className="font-semibold text-gray-900 dark:text-white text-xs">{m.unitId}</div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">Lot {m.lotNumber}</div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                      {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                        ? (m.unitId && !m.unitId.startsWith('Unit 1') ? m.unitId : 'HQ / Management')
+                        : m.unitId}
+                    </div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                        ? 'Staff / Admin'
+                        : (m.lotNumber ? `Lot ${m.lotNumber}` : 'No Lot Assigned')}
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-4">

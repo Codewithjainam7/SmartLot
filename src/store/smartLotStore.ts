@@ -326,6 +326,27 @@ export function useSmartLotStore() {
             });
           }
         }
+
+        // Fetch members for active user
+        const { data: membersData } = await supabase.from('members').select('*');
+        if (membersData && isMounted) {
+          const formattedMembers: Member[] = membersData.map(m => {
+            const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
+            return {
+              id: m.id,
+              name: m.name,
+              email: m.email,
+              phone: m.phone || '0400 000 000',
+              schemeId: m.scheme_id,
+              role: m.role as any,
+              unitId: isMgmt || m.unit_id === 'Admin' ? 'HQ / Management' : (m.unit_id || 'Unit 1'),
+              lotNumber: isMgmt ? 0 : (m.lot_number || 1),
+              status: m.status || 'Active',
+              joinedAt: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+            };
+          });
+          setMembers(formattedMembers);
+        }
       } catch (err) {
         console.error("Error fetching from Supabase:", err);
       } finally {
@@ -467,7 +488,8 @@ export function useSmartLotStore() {
           name: session.user.user_metadata?.full_name || 'Admin',
           email: session.user.email,
           role: 'Strata Manager',
-          unit_id: 'Admin',
+          unit_id: 'HQ / Management',
+          lot_number: 0,
           status: 'Active'
         }
       ]);

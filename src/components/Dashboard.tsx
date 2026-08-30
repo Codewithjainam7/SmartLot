@@ -98,7 +98,7 @@ export function Dashboard({ store }: DashboardProps) {
       ...prev,
       role: 'Strata Admin',
       memberships: memberships,
-      context: `Unit 1 (${newSchemeName})`
+      context: `HQ / Management (${newSchemeName})`
     }));
 
     setShowSetupPopup(false);
