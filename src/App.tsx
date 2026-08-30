@@ -126,7 +126,7 @@ export default function App() {
       if (existing) {
         scheme = existing;
       } else {
-        scheme = await store.addScheme(siteInfo.id, `${siteInfo.id} - ${siteInfo.name}`, siteInfo.lots);
+        scheme = await store.addScheme(siteInfo.id, siteInfo.name, siteInfo.lots);
       }
       store.setActiveScheme(scheme);
     }

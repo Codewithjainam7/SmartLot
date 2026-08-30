@@ -481,7 +481,7 @@ export function useSmartLotStore() {
     if (activeUser) {
       // 1. Insert Scheme
       const { error: schemeError } = await supabase.from('schemes').insert([
-        { id, name, lots, active: true }
+        { id, name, lots, active: true, created_by: activeUser.id }
       ]);
       if (schemeError) {
         console.error("Error inserting scheme into Supabase:", schemeError);
@@ -633,7 +633,7 @@ export function useSmartLotStore() {
     });
   };
 
-  const addMember = (memberData: {
+  const addMember = async (memberData: {
     name: string;
     email: string;
     phone: string;
@@ -645,24 +645,61 @@ export function useSmartLotStore() {
     coOwnerEmail?: string;
     additionalOccupants?: AdditionalOccupant[];
   }) => {
-    const id = `MEM-${100 + members.length + 1}`;
+    const id = `MEM-${Date.now()}`;
     const newMember: Member = {
       ...memberData,
       id,
       schemeId: activeScheme.id,
-      status: 'Invited',
+      status: 'Active',
       joinedAt: new Date().toISOString().split('T')[0],
     };
     setMembers(prev => [newMember, ...prev]);
+
+    // Save member to Supabase database
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('members').insert([
+        {
+          scheme_id: activeScheme.id,
+          name: memberData.name,
+          email: memberData.email,
+          phone: memberData.phone,
+          role: memberData.role,
+          unit_id: memberData.unitId,
+          lot_number: memberData.lotNumber,
+          status: 'Active'
+        }
+      ]);
+      if (error) {
+        console.error("Error inserting member into Supabase:", error);
+      }
+    }
+
     return id;
   };
 
-  const updateMemberStatus = (memberId: string, status: 'Active' | 'Invited' | 'Restricted') => {
+  const updateMemberStatus = async (memberId: string, status: 'Active' | 'Invited' | 'Restricted') => {
     setMembers(prev => prev.map(m => m.id === memberId ? { ...m, status } : m));
+
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('members').update({ status }).eq('id', memberId);
+      if (error) {
+        console.error("Error updating member status in Supabase:", error);
+      }
+    }
   };
 
-  const deleteMember = (memberId: string) => {
+  const deleteMember = async (memberId: string) => {
     setMembers(prev => prev.filter(m => m.id !== memberId));
+
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('members').delete().eq('id', memberId);
+      if (error) {
+        console.error("Error deleting member from Supabase:", error);
+      }
+    }
   };
 
   const submitResidentRequest = (newReq: {

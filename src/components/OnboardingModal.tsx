@@ -44,7 +44,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
     const existing = store.schemes.find((s: any) => s.id === finalSchemeId);
     let scheme = existing;
     if (!existing) {
-      scheme = await store.addScheme(finalSchemeId, `${finalSchemeId} - ${schemeName}`, lotsCount);
+      scheme = await store.addScheme(finalSchemeId, schemeName, lotsCount);
     }
     
     // Assign Strata Admin role to the creator of the scheme
