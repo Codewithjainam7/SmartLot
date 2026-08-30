@@ -72,8 +72,12 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
     return true;
   });
 
-  // Permissions gate
-  const canManage = store.hasPermission('Role & Permission Setup') || store.hasPermission('Review & Edit Request Fields');
+  // Permissions gate — Strata Managers / Admins ALWAYS have management access
+  const isManagerOrAdmin = (store.activeRoles || []).some((r: string) => ['Strata Manager', 'Strata Admin', 'Strata Plan Admin', 'Building Manager', 'Super Admin'].includes(r)) || 
+    ['Strata Manager', 'Strata Admin', 'Super Admin'].includes(store.activePersona?.role) || 
+    store.activePersona?.isSystemAdmin;
+
+  const canManage = isManagerOrAdmin || store.hasPermission('Role & Permission Setup') || store.hasPermission('Review & Edit Request Fields');
 
   const handleEditLotSubmit = (e: React.FormEvent) => {
     e.preventDefault();

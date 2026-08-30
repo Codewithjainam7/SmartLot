@@ -625,8 +625,8 @@ export function useSmartLotStore() {
   };
 
   const hasPermission = (permissionLabel: string) => {
-    // Platform super admins always bypass
-    if (activePersona.isSystemAdmin || activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator') {
+    // Management & Admin roles always bypass permission checks
+    if (activePersona.isSystemAdmin || activePersona.role === 'Super Admin' || activePersona.role === 'Website Administrator' || activePersona.role === 'Strata Admin' || activePersona.role === 'Strata Manager' || activeRoles.includes('Strata Admin') || activeRoles.includes('Strata Manager')) {
       return true;
     }
 
