@@ -468,18 +468,6 @@ export function useSmartLotStore() {
       return;
     }
 
-    // Align activeScheme with the activePersona's memberships if they switch
-    const hasMembershipInActiveScheme = activePersona.memberships?.some(m => m.schemeId === activeScheme.id);
-    if (!hasMembershipInActiveScheme && activePersona.memberships && activePersona.memberships.length > 0) {
-      const firstMembershipSchemeId = activePersona.memberships[0].schemeId;
-      setSchemes(prevSchemes => {
-        const targetScheme = prevSchemes.find(s => s.id === firstMembershipSchemeId);
-        if (targetScheme) setActiveScheme(targetScheme);
-        return prevSchemes;
-      });
-      return;
-    }
-
     const membership = activePersona.memberships?.find(m => m.schemeId === activeScheme.id);
     const newRoles = membership ? membership.roles : [];
     const newRolesStr = newRoles.join(', ');
@@ -827,11 +815,20 @@ export function useSmartLotStore() {
     }));
   };
 
-  const updateUnitMetadata = (schemeId: string, unitId: string, entitlement: string, status: 'Occupied' | 'Vacant') => {
+  const updateUnitMetadata = async (schemeId: string, unitId: string, entitlement: string, status: 'Occupied' | 'Vacant') => {
     setUnits(prev => prev.map(u => {
       if (u.schemeId !== schemeId || u.unitId !== unitId) return u;
       return { ...u, entitlement, status };
     }));
+
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const entitlementNum = parseFloat(entitlement.replace('%', '')) || 0;
+      const { error } = await supabase.from('units').update({ entitlement: entitlementNum, status }).eq('scheme_id', schemeId).eq('unit_id', unitId);
+      if (error) {
+        console.error("Error updating unit metadata in Supabase:", error);
+      }
+    }
   };
 
   const addResidentToUnit = (
