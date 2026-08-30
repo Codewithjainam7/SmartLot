@@ -32,7 +32,7 @@ export function Dashboard({ store }: DashboardProps) {
   // Setup Popup states
   const [showSetupPopup, setShowSetupPopup] = useState(false);
   const [buildingType, setBuildingType] = useState<'duplex' | 'townhouse' | 'apartment' | 'custom'>('duplex');
-  const [newSchemeId, setNewSchemeId] = useState('SP101');
+  const [newSchemeId, setNewSchemeId] = useState(`SP${Math.floor(100 + Math.random() * 900)}`);
   const [newSchemeName, setNewSchemeName] = useState('Sunset Duplex');
   const [newLotsCount, setNewLotsCount] = useState(2);
 
@@ -102,12 +102,14 @@ export function Dashboard({ store }: DashboardProps) {
     }));
 
     setShowSetupPopup(false);
+    setNewSchemeId(`SP${Math.floor(100 + Math.random() * 900)}`);
   };
 
   const handleDismissPopup = () => {
     setShowSetupPopup(false);
     const userId = store.activePersona?.id || 'unknown';
     localStorage.setItem(`smartlot_hasSeenSetupPopup_${userId}`, 'true');
+    setNewSchemeId(`SP${Math.floor(100 + Math.random() * 900)}`);
   };
 
   return (
