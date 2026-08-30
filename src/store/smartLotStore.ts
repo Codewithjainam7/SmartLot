@@ -208,35 +208,13 @@ export const getDefaultPermissionsForRole = (role: string): { label: string; act
   ];
 };
 
-function usePersistedState<T>(key: string, defaultValue: T | (() => T)): [T, React.Dispatch<React.SetStateAction<T>>] {
+// usePersistedState REMOVED - all state now comes from Supabase, not localStorage.
+// This wrapper keeps the same API signature so we don't have to refactor every call site,
+// but it no longer reads/writes localStorage at all.
+function usePersistedState<T>(_key: string, defaultValue: T | (() => T)): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      if (item) return JSON.parse(item);
-    } catch (error) {
-      console.error(error);
-    }
     return defaultValue instanceof Function ? defaultValue() : defaultValue;
   });
-
-  useEffect(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      if (item) {
-        setState(JSON.parse(item));
-      } else {
-        setState(defaultValue instanceof Function ? defaultValue() : defaultValue);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-
-  useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(state));
-  }, [key, state]);
-
   return [state, setState];
 }
 
@@ -363,7 +341,20 @@ export function useSmartLotStore() {
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v7`, ['Strata Manager']);
   const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v7`, 'dashboard');
   const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v7`, false);
-  const [theme, setTheme] = usePersistedState<'light' | 'dark'>('smartlot_theme_v7', 'light');
+  const [theme, setThemeRaw] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = window.localStorage.getItem('smartlot_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+    } catch {}
+    return 'light';
+  });
+  const setTheme = (t: React.SetStateAction<'light' | 'dark'>) => {
+    setThemeRaw(prev => {
+      const next = typeof t === 'function' ? t(prev) : t;
+      try { window.localStorage.setItem('smartlot_theme', next); } catch {}
+      return next;
+    });
+  };
   const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v7`, INITIAL_MEMBERS);
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v7`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v7`, INITIAL_UNITS);
