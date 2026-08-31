@@ -18,6 +18,7 @@ import { ResidentRequestsView } from './components/ResidentRequestsView';
 // Module 1 New Views
 import { LandingPageView } from './components/LandingPageView';
 import { AdminView } from './components/AdminView';
+import { SuperAdminLoginView } from './components/SuperAdminLoginView';
 import { SettingsView } from './components/SettingsView';
 import { JoinSchemeView } from './components/JoinSchemeView';
 
@@ -27,9 +28,9 @@ export default function App() {
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
 
   // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
-  const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_console' | 'dashboard'>(
+  const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_login' | 'admin_console' | 'dashboard'>(
     () => {
-      if (window.location.hash === '#/admin') return 'admin_console';
+      if (window.location.hash === '#/admin') return 'admin_login';
       return 'landing';
     }
   );
@@ -62,10 +63,12 @@ export default function App() {
   // Separate Admin console hash router trigger
   useEffect(() => {
     const checkHash = () => {
-      if (window.location.hash === '#/admin') {
-        setSessionState('admin_console');
-      } else if (sessionState === 'admin_console') {
-        setSessionState('landing');
+      if (window.location.hash === '#/admin' && sessionState !== 'admin_console') {
+        setSessionState('admin_login');
+      } else if (sessionState === 'admin_login' || sessionState === 'admin_console') {
+        if (window.location.hash !== '#/admin') {
+          setSessionState('landing');
+        }
       }
     };
     checkHash();
@@ -224,6 +227,18 @@ export default function App() {
     );
   }
 
+  if (sessionState === 'admin_login') {
+    return (
+      <SuperAdminLoginView 
+        onLoginSuccess={() => setSessionState('admin_console')}
+        onBack={() => {
+          window.location.hash = '';
+          setSessionState('landing');
+        }}
+      />
+    );
+  }
+
   if (sessionState === 'admin_console') {
     return (
       <AdminView 
@@ -235,6 +250,8 @@ export default function App() {
         }}
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
+        globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
+        onToggleGlobalPermission={(role, perm) => store.togglePermission('GLOBAL', role, perm)}
       />
     );
   }
@@ -305,6 +322,7 @@ export default function App() {
                 onDeleteMember={store.deleteMember}
                 activeSchemeId={store.activeScheme.id}
                 rolePermissions={store.rolePermissions[store.activeScheme.id] || {}}
+                globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
                 onTogglePermission={(role, perm) => store.togglePermission(store.activeScheme.id, role, perm)}
                 onToggleIndividualPermission={store.toggleIndividualPermission}
               />
