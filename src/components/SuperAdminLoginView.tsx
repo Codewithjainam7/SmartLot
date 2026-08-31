@@ -50,7 +50,7 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
           </div>
           <SmartLotLogo className="h-8 mx-auto" textColor="text-gray-900 dark:text-white" />
           <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Super Admin Portal</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Restricted access. Authorized personnel only.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Restricted portal. Authorized personnel only.</p>
         </div>
 
         <div className="bg-white/80 dark:bg-[#121316]/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 p-8 rounded-3xl shadow-xl dark:shadow-2xl">
