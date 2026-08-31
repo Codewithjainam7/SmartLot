@@ -72,7 +72,7 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
                   className="w-full bg-gray-50 dark:bg-[#0a0a0f] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:border-[#FF4757]/50 focus:ring-1 focus:ring-[#FF4757]/50 transition-all font-medium"
-                  placeholder="Enter your Admin ID"
+                  placeholder="Enter System Admin ID"
                   required
                 />
               </div>
