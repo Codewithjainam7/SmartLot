@@ -118,3 +118,5 @@ export function SettingsView({
   );
 }
 
+
+// End SettingsView
