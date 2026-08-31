@@ -64,3 +64,5 @@ export const PERSONAS: Persona[] = [
     ] 
   }
 ];
+
+// Export types
