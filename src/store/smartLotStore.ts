@@ -238,7 +238,7 @@ function usePersistedState<T>(_key: string, defaultValue: T | (() => T)): [T, Re
 }
 
 export function useSmartLotStore() {
-  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona_v7', PERSONAS[1]); // We'll keep this temporarily for backward compatibility while refactoring
+  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona_v8', PERSONAS[1]); // We'll keep this temporarily for backward compatibility while refactoring
   const pId = activePersona?.id || 'default';
 
   const [session, setSession] = useState<any>(null);
@@ -246,7 +246,7 @@ export function useSmartLotStore() {
 
   // Local state initialized to empty for live Supabase fetch
   const [schemes, setSchemes] = useState<Scheme[]>([]);
-  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>(`smartlot_${pId}_activeScheme_v7`, 
+  const [activeScheme, setActiveScheme] = usePersistedState<Scheme>(`smartlot_${pId}_activeScheme_v8`, 
     { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
   );
 
@@ -501,9 +501,9 @@ export function useSmartLotStore() {
     return () => { isMounted = false; };
   }, [user?.id]);
 
-  const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v7`, ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v7`, 'dashboard');
-  const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v7`, false);
+  const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v8`, ['Strata Manager']);
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
+  const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v8`, false);
   const [theme, setThemeRaw] = useState<'light' | 'dark'>(() => {
     try {
       const saved = window.localStorage.getItem('smartlot_theme');
@@ -518,10 +518,10 @@ export function useSmartLotStore() {
       return next;
     });
   };
-  const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v7`, INITIAL_MEMBERS);
-  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v7`, INITIAL_RESIDENT_REQUESTS);
-  const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v7`, INITIAL_UNITS);
-  const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v7', []);
+  const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v8`, INITIAL_MEMBERS);
+  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
+  const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
+  const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 
   const addCustomPersona = (p: Persona) => {
     setCustomPersonas(prev => {
@@ -580,7 +580,7 @@ export function useSmartLotStore() {
 
 
   // Initialize permissions list for all roles in all schemes
-  const [rolePermissions, setRolePermissions] = usePersistedState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>(`smartlot_${pId}_rolePermissions`, () => {
+  const [rolePermissions, setRolePermissions] = usePersistedState<Record<string, Record<string, { label: string; active: boolean; locked?: boolean }[]>>>(`smartlot_${pId}_rolePermissions_v8`, () => {
     const initialPerms: Record<string, { label: string; active: boolean; locked?: boolean }[]> = {};
     ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'].forEach(role => {
       initialPerms[role] = getDefaultPermissionsForRole(role);

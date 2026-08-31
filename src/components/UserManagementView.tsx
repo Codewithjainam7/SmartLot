@@ -92,6 +92,18 @@ export function UserManagementView({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [prefillLotData, setPrefillLotData] = useState<Member | null>(null);
+
+  // Global handler for the Add Occupant button
+  React.useEffect(() => {
+    (window as any).handleOpenLotInvite = (m: Member) => {
+      setPrefillLotData(m);
+    };
+    return () => {
+      delete (window as any).handleOpenLotInvite;
+    };
+  }, []);
+
   // Find the active user's role in the current scheme
   const activeUser = members.find(m => m.name === activePersonaName);
   const activeUserRole = activeUser?.role || 'Resident';
@@ -179,7 +191,10 @@ export function UserManagementView({
                   )}
                 </button>
                 <MorphingPopoverTrigger>
-                  <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+                  <div 
+                    onClick={() => setPrefillLotData(null)}
+                    className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer"
+                  >
                     <UserPlus size={18} className="text-[#00D4B2]" /> 
                     <span>Add New Member</span>
                   </div>
@@ -191,7 +206,7 @@ export function UserManagementView({
 
         {/* Morphing Popover Content (Form Modal) */}
         <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <AddMemberFormContent 
+          <PopoverAddMemberWrapper 
             onAddMember={onAddMember} 
             activePersonaName={activePersonaName}
             activeSchemeId={activeSchemeId}
@@ -510,6 +525,23 @@ export function UserManagementView({
                 </div>
               )}
 
+              {/* Add Occupant Action */}
+              {['Lot Owner', 'Strata Manager', 'Building Manager'].includes(selectedMember.role) && (
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      if ((window as any).handleOpenLotInvite) {
+                        (window as any).handleOpenLotInvite(selectedMember);
+                      }
+                      setSelectedMember(null); // Close the drawer
+                    }}
+                    className="w-full bg-[#0055FF] hover:bg-[#0044cc] text-white py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all hover:scale-[1.02]"
+                  >
+                    <UserPlus size={18} /> Invite Occupant to Lot {selectedMember.lotNumber}
+                  </button>
+                </div>
+              )}
+
               <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-2">
                 <button
                   onClick={() => {
@@ -522,6 +554,47 @@ export function UserManagementView({
                 </button>
               </div>
 
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Standalone Add Occupant Modal (Synced with Lot) */}
+      <AnimatePresence>
+        {prefillLotData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setPrefillLotData(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#0d1117] rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 p-6"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-4">
+                <div>
+                  <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Lot-Synced Onboarding</span>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add Occupant to Lot {prefillLotData.lotNumber}</h2>
+                </div>
+                <button onClick={() => setPrefillLotData(null)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+                  <X size={20} />
+                </button>
+              </div>
+              <AddMemberFormContent 
+                onAddMember={(data: any) => {
+                  onAddMember(data);
+                  setPrefillLotData(null);
+                }} 
+                activePersonaName={activePersonaName}
+                activeSchemeId={activeSchemeId}
+                prefillUnit={prefillLotData.unitId}
+                prefillLotNumber={prefillLotData.lotNumber}
+              />
             </motion.div>
           </div>
         )}
@@ -671,24 +744,54 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-// Inner Form Content
-function AddMemberFormContent({ 
-  onAddMember, 
+// Wrapper for the global popover that has access to useMorphingPopover
+function PopoverAddMemberWrapper({
+  onAddMember,
   activePersonaName,
   activeSchemeId
-}: { 
+}: {
   onAddMember: any;
   activePersonaName: string;
   activeSchemeId: string;
 }) {
   const { setIsOpen } = useMorphingPopover();
+  return (
+    <AddMemberFormContent
+      onAddMember={onAddMember}
+      activePersonaName={activePersonaName}
+      activeSchemeId={activeSchemeId}
+      onClose={() => setIsOpen(false)}
+    />
+  );
+}
+
+// Inner Form Content
+function AddMemberFormContent({ 
+  onAddMember, 
+  activePersonaName,
+  activeSchemeId,
+  prefillUnit,
+  prefillLotNumber,
+  onClose
+}: { 
+  onAddMember: any;
+  activePersonaName: string;
+  activeSchemeId: string;
+  prefillUnit?: string;
+  prefillLotNumber?: number;
+  onClose?: () => void;
+}) {
+  // If we are inside the MorphingPopover without an onClose prop, try getting setIsOpen, 
+  // but we can't conditionally call hooks. So we will rely on the parent closing the popover,
+  // or we'll pass onClose explicitly from the parent. 
+  // We removed useMorphingPopover here to avoid hook violations.
 
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
-  const [formRole, setFormRole] = useState<MemberRole>('Resident');
-  const [formUnit, setFormUnit] = useState('Unit 10');
-  const [formLot, setFormLot] = useState(10);
+  const [formRole, setFormRole] = useState<MemberRole>(prefillUnit ? 'Resident' : 'Lot Owner');
+  const [formUnit, setFormUnit] = useState(prefillUnit || 'Unit 10');
+  const [formLot, setFormLot] = useState<number | string>(prefillLotNumber || 10);
   const [additionalOccupants, setAdditionalOccupants] = useState<{ id: string; name: string; email: string; role: 'Resident' | 'Tenant' | 'Family Member' | 'Co-Owner' }[]>([]);
 
   const handleAddOccupantRow = () => {
@@ -747,7 +850,7 @@ function AddMemberFormContent({
     });
     
     setIsSubmitting(false);
-    setIsOpen(false);
+    if (onClose) onClose();
   };
 
   return (
@@ -758,7 +861,7 @@ function AddMemberFormContent({
           <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Multi-Occupant Onboarding Zone</span>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Member & Lot Occupants</h2>
         </div>
-        <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+        <button onClick={() => onClose && onClose()} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
           <X size={20} />
         </button>
       </div>
