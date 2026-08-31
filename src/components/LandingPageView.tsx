@@ -313,3 +313,5 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
     </div>
   );
 }
+
+// End LandingPageView
