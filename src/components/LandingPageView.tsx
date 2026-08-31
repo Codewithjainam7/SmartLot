@@ -13,7 +13,8 @@ import {
   Globe, 
   Scale,
   Sun,
-  Moon
+  Moon,
+  ShieldAlert
 } from 'lucide-react';
 import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
@@ -100,6 +101,13 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
             title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} />}
+          </button>
+
+          <button 
+            onClick={() => window.location.hash = '#/admin'}
+            className="hidden lg:flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <ShieldAlert size={14} /> System Admin
           </button>
 
           <button 
