@@ -62,7 +62,7 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
           <div className="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{schemes.length}</div>
         </div>
         <div className="bg-white dark:bg-[#0d1117] p-6 rounded-3xl border border-gray-100 dark:border-white/5 dark:border-white/5 shadow-sm">
-          <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Total Registered Accounts</div>
+          <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Total Active User Accounts</div>
           <div className="text-3xl font-extrabold text-[#0055FF] mt-2">{members.length}</div>
         </div>
         <div className="bg-white dark:bg-[#0d1117] p-6 rounded-3xl border border-gray-100 dark:border-white/5 dark:border-white/5 shadow-sm">
