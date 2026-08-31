@@ -218,7 +218,7 @@ export function UserManagementView({
                 <Search size={16} className="text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
-                  placeholder="Search by name, email, or unit number..."
+                  placeholder="Search users by name, email, or unit number..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 font-semibold"
