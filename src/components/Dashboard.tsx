@@ -132,20 +132,23 @@ export function Dashboard({ store }: DashboardProps) {
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All</span>
           </div>
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            {members.length > 0 ? (
-              members.map(member => (
-                <div key={member.id}>
-                  <WorklistItem 
-                    unit={member.unitId || `Lot ${member.lotNumber}`} 
-                    owner={member.name} 
-                  />
+            {(() => {
+              const occupantMembers = members.filter(m => !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role));
+              return occupantMembers.length > 0 ? (
+                occupantMembers.map(member => (
+                  <div key={member.id}>
+                    <WorklistItem 
+                      unit={member.unitId || `Lot ${member.lotNumber}`} 
+                      owner={member.name} 
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-[10px] text-gray-400 text-center py-6">
+                  No registered occupants yet.
                 </div>
-              ))
-            ) : (
-              <div className="text-[10px] text-gray-400 text-center py-6">
-                No registered occupants yet.
-              </div>
-            )}
+              );
+            })()}
           </div>
 
           {/* Quick Invite CTA inside Directory */}
