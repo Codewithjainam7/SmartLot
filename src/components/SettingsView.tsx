@@ -29,7 +29,7 @@ export function SettingsView({
         </div>
       </div>
 
-      {/* Profile Summary Card */}
+      {/* Account Profile Summary Card */}
       <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 shrink-0 rounded-2xl bg-[#00D4B2]/10 dark:bg-white/5 border border-[#00D4B2]/30 dark:border-white/10 text-[#00D4B2] font-black text-xl flex items-center justify-center select-none shadow-sm">
