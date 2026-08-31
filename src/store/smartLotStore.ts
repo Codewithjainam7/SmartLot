@@ -176,35 +176,54 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [];
 const INITIAL_UNITS: UnitData[] = [];
 
 export const getDefaultPermissionsForRole = (role: string): { label: string; active: boolean; locked?: boolean }[] => {
-  const isManagerOrAdmin = role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager';
-  
+  const isSM = role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin';
+  const isBM = role === 'Building Manager';
+  const isCM = role === 'Committee Member';
+  const isRES = role === 'Lot Owner' || role === 'Resident' || role === 'Tenant';
+  const isVEN = role === 'Service Provider';
+
   return [
-    // 1. Service Requests
-    { label: 'Submit Request', active: role !== 'Service Provider', locked: isManagerOrAdmin },
-    { label: 'Add Comment on Request', active: true, locked: isManagerOrAdmin },
-    { label: 'View Requests', active: true, locked: isManagerOrAdmin },
-    { label: 'Review & Edit Request Fields', active: isManagerOrAdmin, locked: isManagerOrAdmin },
-    { label: 'Approve / Reject Requests', active: isManagerOrAdmin, locked: isManagerOrAdmin },
-    
-    // 2. Voting & Governance
-    { label: 'Create & Publish Motion', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin', locked: isManagerOrAdmin && role !== 'Building Manager' },
-    { label: 'Cast Vote', active: role === 'Committee Member' || role === 'Lot Owner' || role === 'Strata Admin', locked: role === 'Tenant' || role === 'Service Provider' },
-    { label: 'View Final Vote Results', active: role !== 'Service Provider' && role !== 'Tenant', locked: isManagerOrAdmin },
-    
-    // 3. Vendors & Quotes
-    { label: 'Request Quotes from Vendors', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager', locked: isManagerOrAdmin },
-    { label: 'Submit Quote', active: role === 'Service Provider', locked: role === 'Service Provider' },
-    { label: 'View & Compare Quotes', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager' || role === 'Committee Member', locked: isManagerOrAdmin },
-    { label: 'Assign Selected Vendor', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager', locked: isManagerOrAdmin },
-    
-    // 4. Work Orders
-    { label: 'Upload PO / Begin Task', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager', locked: isManagerOrAdmin },
-    { label: 'Upload Completion Evidence', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager' || role === 'Service Provider', locked: isManagerOrAdmin },
-    { label: 'Mark Task Completed', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' || role === 'Building Manager' || role === 'Service Provider', locked: isManagerOrAdmin },
-    
-    // 5. System Settings
-    { label: 'Role & Permission Setup', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin', locked: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' },
-    { label: 'Module Access Control', active: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin', locked: role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin' }
+    // 1. Request Submission
+    { label: 'Submit Request', active: isSM || isBM || isCM || isRES },
+    { label: 'Add Comment on request', active: isSM || isBM || isCM || isRES },
+
+    // 2. Request Review & Approval
+    { label: 'View Requests', active: isSM || isBM || isCM || isRES || isVEN },
+    { label: 'Filter & Sort Requests', active: isSM || isBM || isCM || isRES },
+    { label: 'Review & Edit Request Fields', active: isSM },
+    { label: 'Approve / Reject Requests', active: isSM },
+
+    // 3. Voting Management
+    { label: 'Create Voting/Motion', active: isSM },
+    { label: 'Publish Motion', active: isSM },
+    { label: 'Cast Vote', active: isCM },
+    { label: 'View Voting Dashboard', active: isSM || isBM || isCM || isRES },
+    { label: 'View Voting Comment/Discussion', active: isSM || isBM || isCM || isRES },
+    { label: 'Add Voting Comment', active: isSM || isBM || isCM || isRES },
+    { label: 'View Final Vote Result', active: isSM || isBM || isCM || isRES },
+
+    // 4. Vendor Management & Selection
+    { label: 'Request Quotes from Vendors', active: isSM },
+    { label: 'Submit Quote', active: isVEN },
+    { label: 'View & Compare Quotes', active: isSM },
+    { label: 'Raise Quote Poll', active: isSM },
+    { label: 'Vote in Quote Poll', active: isCM },
+    { label: 'Assign Selected Vendor', active: isSM },
+
+    // 5. Work order Execution
+    { label: 'Upload PO Document', active: isSM },
+    { label: 'Begin / Progress Task', active: isSM },
+    { label: 'Upload Completion Evidence', active: isSM },
+    { label: 'Mark Task as Completed', active: isSM },
+    { label: 'Task Archive / Review', active: isSM },
+
+    // 6. Emergency Requests
+    { label: 'Create and Submit Emergency Request', active: isSM || isBM || isCM || isRES },
+    { label: 'Fast-track to Task Execution', active: isSM },
+
+    // 7. System / Admin Functions
+    { label: 'Role & Permission Setup', active: isSM },
+    { label: 'Module Level Access Management', active: isSM }
   ];
 };
 
@@ -435,6 +454,41 @@ export function useSmartLotStore() {
 
           setUnits(allUnits);
         }
+
+        // Fetch role permissions from Supabase
+        const { data: rolePermsData } = await supabase.from('role_permissions').select('*');
+        if (rolePermsData && isMounted) {
+          const formattedRolePerms: Record<string, any> = {};
+          rolePermsData.forEach(rp => {
+            if (!formattedRolePerms[rp.scheme_id]) formattedRolePerms[rp.scheme_id] = {};
+            if (!formattedRolePerms[rp.scheme_id][rp.role]) {
+              formattedRolePerms[rp.scheme_id][rp.role] = getDefaultPermissionsForRole(rp.role);
+            }
+            const permIndex = formattedRolePerms[rp.scheme_id][rp.role].findIndex((p: any) => p.label === rp.permission_label);
+            if (permIndex >= 0) {
+              formattedRolePerms[rp.scheme_id][rp.role][permIndex].active = rp.active;
+            }
+          });
+          setRolePermissions(prev => {
+             return { ...prev, ...formattedRolePerms };
+          });
+        }
+
+        // Fetch individual permissions from Supabase
+        const { data: individualPermsData } = await supabase.from('individual_permissions').select('*');
+        if (individualPermsData && isMounted) {
+          setMembers(prev => prev.map(m => {
+            const memberOverrides = individualPermsData.filter(ip => ip.member_id === m.id).map(ip => ({
+              label: ip.permission_label,
+              active: ip.active
+            }));
+            if (memberOverrides.length > 0) {
+              return { ...m, individualPermissions: memberOverrides };
+            }
+            return m;
+          }));
+        }
+
       } catch (err) {
         console.error("Error fetching from Supabase:", err);
       } finally {
@@ -627,7 +681,10 @@ export function useSmartLotStore() {
 
     setRolePermissions(prev => {
       const schemeRoles = prev[schemeId] || {};
-      const rolePerms = schemeRoles[role] || getDefaultPermissionsForRole(role);
+      const globalRoles = prev['GLOBAL'] || {};
+      const globalPerms = globalRoles[role] || getDefaultPermissionsForRole(role);
+      const rolePerms = schemeRoles[role] || globalPerms.map(p => ({ ...p }));
+      
       const updatedPerms = rolePerms.map(p => {
         if (p.label === permissionLabel && !p.locked) {
           newActiveValue = !p.active;
@@ -649,7 +706,7 @@ export function useSmartLotStore() {
 
     if (!wasLocked) {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (currentSession?.user) {
+      setTimeout(async () => {
         const { error } = await supabase.from('role_permissions').upsert([
           {
             scheme_id: schemeId,
@@ -657,11 +714,9 @@ export function useSmartLotStore() {
             permission_label: permissionLabel,
             active: newActiveValue
           }
-        ]);
-        if (error) {
-          console.error("Error updating role permission in Supabase:", error);
-        }
-      }
+        ], { onConflict: 'scheme_id,role,permission_label' });
+        if (error) console.error("Error saving role permission to Supabase:", error);
+      }, 0);
     }
   };
 
@@ -684,11 +739,17 @@ export function useSmartLotStore() {
       } else {
         let isCurrentlyActive = false;
         const schemeRoles = rolePermissions[m.schemeId];
-        if (schemeRoles) {
-          const rolePerms = schemeRoles[m.role] || [];
-          const permObj = rolePerms.find(p => p.label === permissionLabel);
+        const globalRoles = rolePermissions['GLOBAL'] || {};
+        const globalPerms = globalRoles[m.role] || getDefaultPermissionsForRole(m.role);
+        
+        if (schemeRoles && schemeRoles[m.role]) {
+          const permObj = schemeRoles[m.role].find(p => p.label === permissionLabel);
           if (permObj) isCurrentlyActive = permObj.active;
+        } else {
+          const globalPermObj = globalPerms.find(p => p.label === permissionLabel);
+          if (globalPermObj) isCurrentlyActive = globalPermObj.active;
         }
+        
         targetActive = !isCurrentlyActive;
         newOverrides = [
           ...currentOverrides,
@@ -704,16 +765,16 @@ export function useSmartLotStore() {
 
     const { data: { session: currentSession } } = await supabase.auth.getSession();
     if (currentSession?.user) {
-      const { error } = await supabase.from('individual_permissions').upsert([
-        {
-          member_id: memberId,
-          permission_label: permissionLabel,
-          active: targetActive
-        }
-      ]);
-      if (error) {
-        console.error("Error updating individual permission in Supabase:", error);
-      }
+      setTimeout(async () => {
+        const { error } = await supabase.from('individual_permissions').upsert([
+          {
+            member_id: memberId,
+            permission_label: permissionLabel,
+            active: targetActive
+          }
+        ], { onConflict: 'member_id,permission_label' });
+        if (error) console.error("Error updating individual permission in Supabase:", error);
+      }, 0);
     }
   };
 
