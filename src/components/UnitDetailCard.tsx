@@ -249,7 +249,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               isSelf={member.name === store.activePersona.name}
               onOffboard={() => handleOffboard(member.name, member.email)}
               permissions={(store.rolePermissions[activeScheme.id]?.[member.role] || getDefaultPermissionsForRole(member.role))
-                .filter((p: any) => ['Submit Request', 'Cast Vote', 'Add Comment on Request', 'View Final Vote Results'].includes(p.label))
+                .filter((p: any) => ['Submit Request', 'Cast Vote', 'Add Comment on request', 'View Final Vote Result'].includes(p.label))
                 .map((p: any) => {
                   const override = member.individualPermissions?.find((op: any) => op.label === p.label);
                   return {
