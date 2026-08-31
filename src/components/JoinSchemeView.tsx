@@ -337,3 +337,5 @@ export function JoinSchemeView({ schemeId, onJoinSuccess, onBackToLanding }: Joi
     </div>
   );
 }
+
+// End JoinSchemeView
