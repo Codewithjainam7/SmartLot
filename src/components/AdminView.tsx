@@ -213,8 +213,8 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
                   <tbody>
                     {CATEGORY_MAP.map(cat => (
                       <React.Fragment key={cat.name}>
-                        <tr className="bg-blue-50/30 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
-                          <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-5 font-black text-[#0055FF] dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-blue-50/50 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
+                        <tr className="bg-gray-50 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
+                          <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-5 font-black text-gray-800 dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-gray-100 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
                             {cat.name}
                           </td>
                         </tr>
