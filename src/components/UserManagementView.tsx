@@ -19,7 +19,10 @@ import {
   Trash2,
   Plus,
   Link2,
-  Check
+  Check,
+  Shield,
+  Lock,
+  User
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -41,6 +44,7 @@ interface UserManagementViewProps {
   activeSchemeId: string;
   activePersonaName: string;
   rolePermissions: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
+  globalRolePermissions?: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
   onTogglePermission: (role: string, permissionLabel: string) => void;
   onToggleIndividualPermission?: (memberId: string, permissionLabel: string) => void;
 }
@@ -69,6 +73,7 @@ export function UserManagementView({
   activeSchemeId,
   activePersonaName,
   rolePermissions,
+  globalRolePermissions = {},
   onTogglePermission,
   onToggleIndividualPermission,
 }: UserManagementViewProps) {
@@ -279,115 +284,146 @@ export function UserManagementView({
           </div>
           
           {permTab === 'default' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="overflow-x-auto rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
               {(() => {
-                const activePerms = (rolePermissions && Object.keys(rolePermissions).length > 0)
-                  ? rolePermissions
-                  : (() => {
-                      const m: Record<string, any> = {};
-                      ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'].forEach(r => {
-                        m[r] = getDefaultPermissionsForRole(r);
-                      });
-                      return m;
-                    })();
+                const ROLES_ORDER = ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'];
+                const CATEGORY_MAP = [
+                  { name: '1. Request Submission', perms: ['Submit Request', 'Add Comment on request'] },
+                  { name: '2. Request Review & Approval', perms: ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'] },
+                  { name: '3. Voting Management', perms: ['Create Voting/Motion', 'Publish Motion', 'Cast Vote', 'View Voting Dashboard', 'View Voting Comment/Discussion', 'Add Voting Comment', 'View Final Vote Result'] },
+                  { name: '4. Vendor Management & Selection', perms: ['Request Quotes from Vendors', 'Submit Quote', 'View & Compare Quotes', 'Raise Quote Poll', 'Vote in Quote Poll', 'Assign Selected Vendor'] },
+                  { name: '5. Work order Execution', perms: ['Upload PO Document', 'Begin / Progress Task', 'Upload Completion Evidence', 'Mark Task as Completed', 'Task Archive / Review'] },
+                  { name: '6. Emergency Requests', perms: ['Create and Submit Emergency Request', 'Fast-track to Task Execution'] },
+                  { name: '7. System / Admin Functions', perms: ['Role & Permission Setup', 'Module Level Access Management'] }
+                ];
+                
+                const activePerms = (() => {
+                  const m: Record<string, any> = {};
+                  ROLES_ORDER.forEach(r => {
+                    const defaultPerms = getDefaultPermissionsForRole(r);
+                    const globalPerms = globalRolePermissions[r] || defaultPerms;
+                    // rolePermissions[r] overrides globalPerms
+                    const schemePerms = (rolePermissions && rolePermissions[r]) ? rolePermissions[r] : [];
+                    
+                    if (schemePerms.length > 0) {
+                      m[r] = schemePerms;
+                    } else {
+                      m[r] = globalPerms.map(p => ({ ...p }));
+                    }
+                  });
+                  return m;
+                })();
 
-                return Object.keys(activePerms).map(role => {
-                  const perms = activePerms[role] || [];
-                  return (
-                  <div key={role} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-3">
-                      <span className="font-extrabold text-gray-900 dark:text-white text-sm">{role}</span>
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/5 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-white/10">Role Profile</span>
-                    </div>
-                    <div className="space-y-4 pt-1 divide-y divide-gray-200/40 dark:divide-white/5">
-                      {(() => {
-                        const categories: Record<string, typeof perms> = {
-                          'REQUEST SUBMISSION': perms.filter(p =>
-                            ['Submit Request', 'Add Comment on Request'].includes(p.label)
-                          ),
-                          'REQUEST REVIEW & APPROVAL': perms.filter(p =>
-                            ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
-                          ),
-                        };
-
-                        return Object.entries(categories).map(([catName, catPerms]) => {
-                          if (catPerms.length === 0) return null;
-                          return (
-                            <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
-                              <div className="flex items-center gap-1.5 mb-1.5 text-gray-400 dark:text-gray-500">{catName === 'REQUEST SUBMISSION' ? <FileEdit size={12} /> : <CheckCircle2 size={12} />}<span className="text-[9px] font-black uppercase tracking-wider">{catName === 'REQUEST SUBMISSION' ? '1. REQUEST SUBMISSION' : '2. REQUEST REVIEW & APPROVAL'}</span></div>
-                              {catPerms.map(p => (
-                                <div key={p.label} className="flex items-center justify-between py-0.5">
-                                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight">{p.label}</span>
-                                  {p.locked ? (
-                                    <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
-                                  ) : (
-                                    <CustomCheckbox
-                                      checked={p.active}
-                                      onChange={() => onTogglePermission(role, p.label)}
-                                    />
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
-                  </div>
+                return (
+                  <table className="w-full text-left border-collapse text-sm min-w-max">
+                    <thead>
+                      <tr className="bg-gray-50/80 dark:bg-[#1a1d27]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
+                        <th className="p-5 font-black text-[11px] uppercase tracking-widest text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-[#1a1d27] z-20 w-72 border-r border-gray-200 dark:border-white/5">Feature / Role Access</th>
+                        {ROLES_ORDER.map(role => (
+                          <th key={role} className="p-5 font-bold text-gray-900 dark:text-white text-center min-w-[140px] whitespace-nowrap">
+                            {role}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {CATEGORY_MAP.map(cat => (
+                        <React.Fragment key={cat.name}>
+                          <tr className="bg-blue-50/30 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
+                            <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-5 font-black text-[#0055FF] dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-blue-50/50 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
+                              {cat.name}
+                            </td>
+                          </tr>
+                          {cat.perms.map(permName => (
+                            <tr key={permName} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
+                              <td className="p-3.5 px-5 text-gray-700 dark:text-gray-300 text-xs font-semibold sticky left-0 bg-white dark:bg-[#0d1117] group-hover:bg-gray-50 dark:group-hover:bg-[#141820] z-10 border-r border-gray-100 dark:border-white/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_10px_-2px_rgba(0,0,0,0.2)] transition-colors">
+                                {permName}
+                              </td>
+                              {ROLES_ORDER.map(role => {
+                                const rolePerms = activePerms[role] || [];
+                                const permObj = rolePerms.find(p => p.label === permName);
+                                if (!permObj) return <td key={role} className="p-3.5 text-center text-gray-300 dark:text-gray-600 border-r border-gray-50 dark:border-white/[0.02] last:border-0">-</td>;
+                                return (
+                                  <td key={role} className="p-3.5 text-center border-r border-gray-50 dark:border-white/[0.02] last:border-0">
+                                    <div className="flex justify-center">
+                                      {permObj.locked ? (
+                                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md">Locked</span>
+                                      ) : (
+                                        <CustomCheckbox
+                                          checked={permObj.active}
+                                          onChange={() => onTogglePermission(role, permName)}
+                                        />
+                                      )}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
                 );
-              });
-            })()}
+              })()}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredMembers.map(member => {
                 const perms = (rolePermissions && rolePermissions[member.role] && rolePermissions[member.role].length > 0)
                   ? rolePermissions[member.role]
-                  : getDefaultPermissionsForRole(member.role);
+                  : (globalRolePermissions && globalRolePermissions[member.role] && globalRolePermissions[member.role].length > 0)
+                    ? globalRolePermissions[member.role]
+                    : getDefaultPermissionsForRole(member.role);
                 
                 return (
-                  <div key={member.id} className="bg-gray-50 dark:bg-[#1a1a2e] rounded-2xl p-6 border border-[#00D4B2]/20 shadow-[0_0_15px_rgba(0,212,178,0.05)] space-y-4">
-                    <div className="flex flex-col border-b border-gray-200 dark:border-gray-700 pb-3 gap-1">
+                  <div key={member.id} className="bg-white dark:bg-[#0d1117] rounded-3xl p-7 border border-[#00D4B2]/20 dark:border-[#00D4B2]/15 shadow-xl dark:shadow-[0_8px_30px_rgba(0,212,178,0.06)] space-y-5 transition-all hover:shadow-[0_12px_40px_rgba(0,212,178,0.12)] hover:-translate-y-1">
+                    <div className="flex flex-col border-b border-gray-100 dark:border-white/5 pb-4 gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-gray-900 dark:text-white text-sm">{member.name}</span>
-                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/20">Individual</span>
+                        <span className="font-extrabold text-gray-900 dark:text-white text-base">{member.name}</span>
+                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-[#00D4B2]/10 dark:bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/20 shadow-[0_0_10px_rgba(0,212,178,0.1)]">Individual</span>
                       </div>
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{member.role}</span>
+                      <span className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 self-start">{member.role}</span>
                     </div>
                     
-                    <div className="space-y-4 pt-1 divide-y divide-gray-200/40 dark:divide-white/5">
+                    <div className="space-y-5 pt-1">
                       {(() => {
-                        const categories: Record<string, typeof perms> = {
-                          'REQUEST SUBMISSION': perms.filter(p =>
-                            ['Submit Request', 'Add Comment on Request'].includes(p.label)
-                          ),
-                          'REQUEST REVIEW & APPROVAL': perms.filter(p =>
-                            ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'].includes(p.label)
-                          ),
-                        };
+                        const CATEGORY_MAP = [
+                          { name: '1. Request Submission', icon: <FileEdit size={12} />, perms: ['Submit Request', 'Add Comment on request'] },
+                          { name: '2. Request Review & Approval', icon: <CheckCircle2 size={12} />, perms: ['View Requests', 'Filter & Sort Requests', 'Review & Edit Request Fields', 'Approve / Reject Requests'] },
+                          { name: '3. Voting Management', icon: <CheckCircle2 size={12} />, perms: ['Create Voting/Motion', 'Publish Motion', 'Cast Vote', 'View Voting Dashboard', 'View Voting Comment/Discussion', 'Add Voting Comment', 'View Final Vote Result'] },
+                          { name: '4. Vendor Management & Selection', icon: <CheckCircle2 size={12} />, perms: ['Request Quotes from Vendors', 'Submit Quote', 'View & Compare Quotes', 'Raise Quote Poll', 'Vote in Quote Poll', 'Assign Selected Vendor'] },
+                          { name: '5. Work order Execution', icon: <CheckCircle2 size={12} />, perms: ['Upload PO Document', 'Begin / Progress Task', 'Upload Completion Evidence', 'Mark Task as Completed', 'Task Archive / Review'] },
+                          { name: '6. Emergency Requests', icon: <CheckCircle2 size={12} />, perms: ['Create and Submit Emergency Request', 'Fast-track to Task Execution'] },
+                          { name: '7. System / Admin Functions', icon: <CheckCircle2 size={12} />, perms: ['Role & Permission Setup', 'Module Level Access Management'] }
+                        ];
 
-                        return Object.entries(categories).map(([catName, catPerms]) => {
+                        return CATEGORY_MAP.map(cat => {
+                          const catPerms = perms.filter(p => cat.perms.includes(p.label));
                           if (catPerms.length === 0) return null;
                           return (
-                            <div key={catName} className="pt-3 first:pt-0 border-t border-gray-100 dark:border-gray-800 first:border-t-0 space-y-1.5">
-                              <div className="flex items-center gap-1.5 mb-1.5 text-gray-400 dark:text-gray-500">{catName === 'REQUEST SUBMISSION' ? <FileEdit size={12} /> : <CheckCircle2 size={12} />}<span className="text-[9px] font-black uppercase tracking-wider">{catName === 'REQUEST SUBMISSION' ? '1. REQUEST SUBMISSION' : '2. REQUEST REVIEW & APPROVAL'}</span></div>
+                            <div key={cat.name} className="pt-4 first:pt-0 border-t border-gray-100 dark:border-white/5 first:border-t-0 space-y-2.5">
+                              <div className="flex items-center gap-2 mb-3 text-[#00D4B2] dark:text-[#00D4B2] opacity-90">
+                                {cat.icon}
+                                <span className="text-[10px] font-black uppercase tracking-widest">{cat.name}</span>
+                              </div>
                               {catPerms.map(p => {
                                 const override = member.individualPermissions?.find(op => op.label === p.label);
                                 const isChecked = override ? override.active : p.active;
                                 const isModified = !!override;
                                 
                                 return (
-                                  <div key={p.label} className="flex items-center justify-between py-0.5 group">
-                                    <div className="flex items-center gap-1.5">
+                                  <div key={p.label} className="flex items-center justify-between py-1 group">
+                                    <div className="flex items-center gap-2">
                                       <span className={`text-xs font-semibold leading-tight transition-colors ${isModified ? 'text-[#00D4B2]' : 'text-gray-700 dark:text-gray-300'}`}>
                                         {p.label}
                                       </span>
                                       {isModified && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#00D4B2] shadow-[0_0_5px_#00D4B2]" title="Overridden from default" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#00D4B2] shadow-[0_0_6px_#00D4B2]" title="Overridden from default" />
                                       )}
                                     </div>
                                     {p.locked ? (
-                                      <span className="text-[8px] font-extrabold bg-gray-200 text-gray-400 px-1.5 py-0.5 rounded uppercase">Locked</span>
+                                      <span className="text-[9px] font-extrabold bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 px-2 py-1 rounded-md uppercase tracking-widest">Locked</span>
                                     ) : (
                                       <CustomCheckbox
                                         checked={isChecked}
