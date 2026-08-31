@@ -78,3 +78,5 @@ export default defineConfig(() => {
     },
   };
 });
+
+// Vite config
