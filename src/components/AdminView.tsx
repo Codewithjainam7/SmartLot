@@ -29,7 +29,7 @@ export function AdminView({ members, schemes, onBackToLanding, onDeleteMember, o
           </button>
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF4757]/10 text-[#FF4757] text-xs font-bold uppercase tracking-wider mb-2 border border-[#FF4757]/20">
-              <ShieldAlert size={12} /> System Admin Directory
+              <ShieldAlert size={12} /> System Administrator Directory
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Website Administrator Console</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Cross-scheme analytics, user directories, and system-level strata operations.</p>
