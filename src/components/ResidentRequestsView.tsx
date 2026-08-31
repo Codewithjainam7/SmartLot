@@ -387,3 +387,5 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 
 
 
+
+// End ResidentRequestsView
