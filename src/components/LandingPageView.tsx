@@ -107,7 +107,7 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
             onClick={() => window.location.hash = '#/admin'}
             className="hidden lg:flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
           >
-            <ShieldAlert size={14} /> System Admin
+            <ShieldAlert size={14} /> System Console
           </button>
 
           <button 
