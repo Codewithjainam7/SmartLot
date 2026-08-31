@@ -1120,3 +1120,5 @@ export function useSmartLotStore() {
     verifyWorkOrder: () => {},
   };
 }
+
+// End of SmartLot store hook
