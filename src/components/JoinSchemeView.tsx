@@ -251,7 +251,7 @@ export function JoinSchemeView({ schemeId, onJoinSuccess, onBackToLanding }: Joi
               <input
                 type="email"
                 required
-                placeholder="you@example.com"
+                placeholder="your.email@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-900 dark:text-white text-sm outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10 transition-all font-bold"
