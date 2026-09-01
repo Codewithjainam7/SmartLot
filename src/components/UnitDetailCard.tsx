@@ -536,3 +536,5 @@ function PermissionToggle({ label, active, locked, onToggle }: { key?: React.Key
     </div>
   );
 }
+
+// Subcomponent: Unit Details & Occupant Roster
