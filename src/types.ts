@@ -80,3 +80,4 @@ export const PERSONAS: Persona[] = [
 // UI: Tab Animation Key Definitions
 // UI: Theme Transition Palette Definitions
 // UI: Card Elevation and Shadow Specifications
+// UI: Modal Overlay and Backdrop Blur Config
