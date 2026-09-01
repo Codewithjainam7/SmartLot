@@ -124,3 +124,5 @@ export function CustomSelect({
     </div>
   );
 }
+
+// Animation: Dropdown Menu Popover Animation
