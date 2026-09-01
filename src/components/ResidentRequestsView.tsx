@@ -393,3 +393,4 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 // Subcomponent: Requests Filter Bar
 // Subcomponent: Request Details Drawer
 // Requests: Request Status Timeline and Badges
+// Animation: Request Timeline Step Indicator
