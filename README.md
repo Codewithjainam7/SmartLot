@@ -9,3 +9,4 @@
 <!-- Section: Architecture Overview -->
 <!-- Section: Authentication Modules -->
 <!-- Section: Permission Cascading Hierarchy -->
+<!-- Section: Supabase Integration -->
