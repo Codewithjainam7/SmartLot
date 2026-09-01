@@ -1197,3 +1197,4 @@ export function useSmartLotStore() {
 // Module: Member & Occupancy Operations
 // Module: Request & Triage Operations
 // Module: Permissions Matrix Handlers
+// Helper: Permissions evaluation engine
