@@ -96,3 +96,4 @@ export const PERSONAS: Persona[] = [
 // UI: Modal Overlay and Backdrop Blur Config
 // UI: End of UI Interface Tokens
 // Revision Step 1: Refactor: Enhance role validation and persona typing definitions in types.ts
+// Revision Step 2: Docs: Add architectural notes on strata multi-scheme governance
