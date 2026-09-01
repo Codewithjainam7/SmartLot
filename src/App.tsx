@@ -260,14 +260,6 @@ export default function App() {
         onAddComment={store.addCommentToRequest}
         globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
         onToggleGlobalPermission={(role, perm) => store.togglePermission('GLOBAL', role, perm)}
-        onSwitchToScheme={(schemeId) => {
-          const target = store.schemes.find(s => s.id === schemeId);
-          if (target) {
-            store.setActiveScheme(target);
-            window.location.hash = '';
-            setSessionState('dashboard');
-          }
-        }}
       />
     );
   }

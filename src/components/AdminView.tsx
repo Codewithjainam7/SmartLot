@@ -3,12 +3,11 @@ import {
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
-  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3
+  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, DoorOpen, Wrench
 } from 'lucide-react';
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus } from '../store/smartLotStore';
 import { Scheme } from '../types';
 import { CustomCheckbox } from './core/CustomCheckbox';
-import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface AdminViewProps {
   members: Member[];
@@ -26,7 +25,6 @@ interface AdminViewProps {
   onAddComment?: (id: string, text: string) => void;
   globalRolePermissions?: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
   onToggleGlobalPermission?: (role: string, permissionLabel: string) => void;
-  onSwitchToScheme?: (schemeId: string) => void;
 }
 
 export function AdminView({ 
@@ -44,8 +42,7 @@ export function AdminView({
   onCloseRequest,
   onAddComment,
   globalRolePermissions = {}, 
-  onToggleGlobalPermission,
-  onSwitchToScheme
+  onToggleGlobalPermission
 }: AdminViewProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'schemes' | 'users' | 'permissions'>('overview');
   
@@ -63,6 +60,7 @@ export function AdminView({
   const [isSubmittingScheme, setIsSubmittingScheme] = useState(false);
 
   const [selectedRequest, setSelectedRequest] = useState<ResidentRequest | null>(null);
+  const [selectedSchemeForAudit, setSelectedSchemeForAudit] = useState<Scheme | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
 
   // Stats Calculations
@@ -175,10 +173,10 @@ export function AdminView({
       })();
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#07090e] text-gray-900 dark:text-white font-sans transition-colors duration-300 flex flex-col">
+    <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#07090e] text-gray-900 dark:text-white font-sans transition-colors duration-300 flex flex-col overflow-x-hidden">
       
       {/* Top Super Admin Navbar */}
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#0d1117]/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           
           <div className="flex items-center gap-4">
@@ -198,11 +196,11 @@ export function AdminView({
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-black tracking-tight uppercase">Super Admin Console</h1>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20">
-                    Live System
+                    Master Mode
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  Cross-scheme master control, unified operations, and global security policies.
+                  Cross-scheme administration, master triage, and global security policies.
                 </p>
               </div>
             </div>
@@ -232,7 +230,7 @@ export function AdminView({
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Container - strictly bound within max-w-7xl without horizontal overflow */}
       <main className="max-w-7xl mx-auto w-full p-6 space-y-6 flex-1">
         
         {/* Navigation Tabs */}
@@ -299,7 +297,7 @@ export function AdminView({
             }`}
           >
             <Shield size={16} />
-            <span>Global Permission Matrix</span>
+            <span>Global Permissions Matrix</span>
           </button>
         </div>
 
@@ -450,7 +448,7 @@ export function AdminView({
                   <span className="text-xs font-bold text-gray-400">Active</span>
                 </div>
                 <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                  Direct dispatch & triage required
+                  Direct dispatch & master triage
                 </div>
               </div>
 
@@ -466,11 +464,11 @@ export function AdminView({
                     <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
                       Live Platform Requests Activity
                     </h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Latest tickets logged by owners, residents, and managers.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Latest tickets logged across all strata schemes.</p>
                   </div>
                   <button
                     onClick={() => setActiveTab('requests')}
-                    className="text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline flex items-center gap-1"
+                    className="text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     View All <ChevronRight size={14} />
                   </button>
@@ -530,13 +528,13 @@ export function AdminView({
                 )}
               </div>
 
-              {/* Right Col: Quick Schemes Switcher & Shortcuts */}
+              {/* Right Col: Schemes Audit & Shortcuts */}
               <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200 dark:border-white/5 shadow-sm space-y-4">
                 <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
-                  Quick Scheme Jump
+                  Scheme Quick Audit
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Instantly open any registered strata scheme context.
+                  Inspect building lots, assigned staff, and open tickets securely.
                 </p>
 
                 <div className="space-y-2">
@@ -549,15 +547,14 @@ export function AdminView({
                         <div className="text-xs font-bold text-gray-900 dark:text-white">{s.name}</div>
                         <div className="text-[10px] text-gray-500 font-mono">{s.id} • {s.lots} Lots</div>
                       </div>
-                      {onSwitchToScheme && (
-                        <button
-                          onClick={() => onSwitchToScheme(s.id)}
-                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>Open</span>
-                          <ArrowUpRight size={12} />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setSelectedSchemeForAudit(s)}
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                        title="Audit Scheme Details"
+                      >
+                        <Eye size={12} />
+                        <span>Inspect</span>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -568,7 +565,7 @@ export function AdminView({
                     className="w-full py-2.5 rounded-xl bg-[#0055FF]/10 hover:bg-[#0055FF]/20 text-[#0055FF] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Shield size={14} />
-                    <span>Configure Global Permission Matrix</span>
+                    <span>Configure Global Permissions Matrix</span>
                   </button>
                 </div>
               </div>
@@ -774,15 +771,13 @@ export function AdminView({
                     </div>
 
                     <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between gap-2">
-                      {onSwitchToScheme && (
-                        <button
-                          onClick={() => onSwitchToScheme(s.id)}
-                          className="flex-1 py-2 rounded-xl bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] text-xs font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                        >
-                          <span>Open Dashboard</span>
-                          <ArrowUpRight size={14} />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setSelectedSchemeForAudit(s)}
+                        className="flex-1 py-2 rounded-xl bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] text-xs font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <Eye size={14} />
+                        <span>Inspect Scheme</span>
+                      </button>
 
                       <button
                         onClick={() => {
@@ -877,13 +872,13 @@ export function AdminView({
           </div>
         )}
 
-        {/* TAB 5: GLOBAL DEFAULT PERMISSIONS MATRIX */}
+        {/* TAB 5: GLOBAL DEFAULT PERMISSIONS MATRIX - Clean, responsive, vertical-only scroll without text cutoffs */}
         {activeTab === 'permissions' && (
           <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                  Global Role Default Permissions
+                  Global Role Default Permissions Matrix
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-2xl">
                   Configure the master permission presets applied to newly created strata schemes across Australia. 
@@ -898,39 +893,39 @@ export function AdminView({
               </div>
             </div>
             
-            <div className="overflow-x-auto rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl">
-              <table className="w-full text-left border-collapse text-sm min-w-max">
+            <div className="rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-gray-50/80 dark:bg-[#1a1d27]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
-                    <th className="p-4 px-5 font-black text-[11px] uppercase tracking-widest text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-[#1a1d27] z-20 w-72 border-r border-gray-200 dark:border-white/5">
+                  <tr className="bg-gray-50 dark:bg-[#1a1d27] border-b border-gray-200 dark:border-white/5">
+                    <th className="p-4 px-5 font-black uppercase tracking-wider text-gray-900 dark:text-white w-64">
                       Module / Role Access
                     </th>
                     {ROLES_ORDER.map(role => (
-                      <th key={role} className="p-4 font-bold text-gray-900 dark:text-white text-center min-w-[130px] whitespace-nowrap text-xs">
+                      <th key={role} className="p-4 font-bold text-gray-900 dark:text-white text-center whitespace-nowrap text-[11px]">
                         {role}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                   {CATEGORY_MAP.map(cat => (
                     <React.Fragment key={cat.name}>
-                      <tr className="bg-gray-100/70 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
-                        <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-5 font-black text-gray-800 dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-gray-100 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
+                      <tr className="bg-gray-100/80 dark:bg-[#0B1121] border-t-2 border-b border-gray-200 dark:border-white/10">
+                        <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-5 font-black text-[#0055FF] dark:text-[#00D4B2] text-[11px] uppercase tracking-wider">
                           {cat.name}
                         </td>
                       </tr>
                       {cat.perms.map(permName => (
-                        <tr key={permName} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
-                          <td className="p-3.5 px-5 text-gray-700 dark:text-gray-300 text-xs font-semibold sticky left-0 bg-white dark:bg-[#0d1117] group-hover:bg-gray-50 dark:group-hover:bg-[#141820] z-10 border-r border-gray-100 dark:border-white/5 transition-colors">
+                        <tr key={permName} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                          <td className="p-3 px-5 text-gray-700 dark:text-gray-300 font-semibold border-r border-gray-100 dark:border-white/5">
                             {permName}
                           </td>
                           {ROLES_ORDER.map(role => {
                             const rolePerms = activePerms[role] || [];
                             const permObj = rolePerms.find(p => p.label === permName);
-                            if (!permObj) return <td key={role} className="p-3 text-center text-gray-300 dark:text-gray-600 border-r border-gray-100 dark:border-white/5">-</td>;
+                            if (!permObj) return <td key={role} className="p-3 text-center text-gray-300 dark:text-gray-600 border-r border-gray-100 dark:border-white/5 last:border-0">-</td>;
                             return (
-                              <td key={role} className="p-3 text-center border-r border-gray-100 dark:border-white/5">
+                              <td key={role} className="p-3 text-center border-r border-gray-100 dark:border-white/5 last:border-0">
                                 <div className="flex justify-center">
                                   {permObj.locked ? (
                                     <span className="text-[9px] font-extrabold uppercase tracking-widest text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md">
@@ -964,7 +959,7 @@ export function AdminView({
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsAddSchemeOpen(false)}
-              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white"
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
             >
               <X size={18} />
             </button>
@@ -1137,6 +1132,96 @@ export function AdminView({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: SCHEME MASTER AUDIT MODAL (STRICTLY WITHIN ADMIN SECURITY BOUNDS) */}
+      {selectedSchemeForAudit && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-3xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
+            <button
+              onClick={() => setSelectedSchemeForAudit(null)}
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00A38C] text-xs font-bold">
+                  <Building2 size={14} /> Scheme Audit
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white">{selectedSchemeForAudit.name}</h3>
+                <p className="text-xs font-mono text-gray-400">Scheme ID: {selectedSchemeForAudit.id} • {selectedSchemeForAudit.lots} Lots</p>
+              </div>
+            </div>
+
+            {/* Scheme Summary Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-100 dark:border-white/5">
+                <div className="text-[10px] font-bold text-gray-400 uppercase">Assigned Users</div>
+                <div className="text-xl font-black text-gray-900 dark:text-white mt-1">
+                  {members.filter(m => m.schemeId === selectedSchemeForAudit.id).length}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-100 dark:border-white/5">
+                <div className="text-[10px] font-bold text-gray-400 uppercase">Total Tickets</div>
+                <div className="text-xl font-black text-[#0055FF] mt-1">
+                  {requests.filter(r => r.schemeId === selectedSchemeForAudit.id).length}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-100 dark:border-white/5">
+                <div className="text-[10px] font-bold text-gray-400 uppercase">Open Requests</div>
+                <div className="text-xl font-black text-amber-500 mt-1">
+                  {requests.filter(r => r.schemeId === selectedSchemeForAudit.id && r.status !== 'resolved').length}
+                </div>
+              </div>
+            </div>
+
+            {/* Members in this Scheme */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">Registered Residents & Staff</h4>
+              <div className="max-h-48 overflow-y-auto divide-y divide-gray-100 dark:divide-white/5 bg-gray-50/50 dark:bg-[#1a1d27]/40 rounded-2xl p-3 border border-gray-100 dark:border-white/5">
+                {members.filter(m => m.schemeId === selectedSchemeForAudit.id).length === 0 ? (
+                  <div className="text-xs text-gray-400 py-3 text-center">No members assigned to this building yet.</div>
+                ) : (
+                  members.filter(m => m.schemeId === selectedSchemeForAudit.id).map(m => (
+                    <div key={m.id} className="py-2.5 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-gray-900 dark:text-white">{m.name}</span>
+                        <span className="text-gray-400 ml-2">({m.email})</span>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">
+                        {m.role} • {m.unitId}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Master Actions */}
+            <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+              <button
+                onClick={() => {
+                  if (confirm(`De-register and delete ${selectedSchemeForAudit.name}?`)) {
+                    onDeleteScheme(selectedSchemeForAudit.id);
+                    setSelectedSchemeForAudit(null);
+                  }
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                Delete Scheme
+              </button>
+
+              <button
+                onClick={() => setSelectedSchemeForAudit(null)}
+                className="px-5 py-2.5 rounded-2xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all cursor-pointer"
+              >
+                Close Audit
+              </button>
+            </div>
           </div>
         </div>
       )}
