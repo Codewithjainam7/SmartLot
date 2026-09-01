@@ -14,3 +14,4 @@ export const supabase = createClient(
 
 // Supabase Client Config Marker
 // Security: Connection Health and Session Sync
+// UI: Session State Recovery Handlers
