@@ -107,3 +107,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 10: Feat: Add granular role permission checks for Committee Members
 // Revision Step 11: Refactor: Align Strata Manager unit roster pagination and filtering
 // Revision Step 12: Docs: Document Supabase RLS policies and invite trigger workflows
+// Revision Step 13: Style: Polish dark mode surface contrasts in UserManagementView
