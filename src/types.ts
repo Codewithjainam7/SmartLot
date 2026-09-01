@@ -143,3 +143,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 46: Style: Polish voting modal progress bars and vote tally chips
 // Revision Step 47: Refactor: Optimize store listener cleanup on component unmount
 // Revision Step 48: Docs: Add architecture diagram for cross-scheme request lifecycle
+// Revision Step 49: Style: Standardize font weight tokens across all dashboard card titles
