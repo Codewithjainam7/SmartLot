@@ -103,3 +103,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 6: Style: Standardize action button hover transitions in AdminView
 // Revision Step 7: Fix: Prevent modal close button overlapping in master audit dialogs
 // Revision Step 8: Refactor: Enhance null-safe filter logic in resident requests store
+// Revision Step 9: Style: Apply glowing status indicators to pending triage badges
