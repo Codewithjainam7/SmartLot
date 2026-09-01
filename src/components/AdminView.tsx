@@ -95,6 +95,7 @@ export function AdminView({
   
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<string>('ALL');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState<string>('ALL');
 
@@ -454,7 +455,12 @@ export function AdminView({
           </button>
 
           <button
-            onClick={() => setActiveTab('requests')}
+            onClick={() => {
+              setActiveTab('requests');
+              if (selectedSchemeFilter === 'ALL') {
+                setSelectedSchemeFilter(schemes[0]?.id || '');
+              }
+            }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 relative ${
               activeTab === 'requests'
                 ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
@@ -485,7 +491,10 @@ export function AdminView({
           </button>
 
           <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => {
+              setActiveTab('users');
+              setSelectedSchemeFilter('ALL');
+            }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'users'
                 ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
@@ -524,6 +533,21 @@ export function AdminView({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 px-2">
+                <Filter size={14} /> Filter:
+              </div>
+
+              {/* Scheme Filter */}
+              <select
+                value={selectedSchemeFilter}
+                onChange={e => setSelectedSchemeFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
+              >
+                {activeTab === 'users' && <option value="ALL">All Schemes</option>}
+                {schemes.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
+                ))}
+              </select>
               {/* Status Filter for Requests */}
               {activeTab === 'requests' && (
                 <>
@@ -555,10 +579,11 @@ export function AdminView({
                 </>
               )}
 
-              {(searchQuery || selectedStatusFilter !== 'ALL' || selectedPriorityFilter !== 'ALL') && (
+              {(searchQuery || selectedSchemeFilter !== (activeTab === 'users' ? 'ALL' : schemes[0]?.id) || selectedStatusFilter !== 'ALL' || selectedPriorityFilter !== 'ALL') && (
                 <button
                   onClick={() => {
                     setSearchQuery('');
+                    setSelectedSchemeFilter(activeTab === 'users' ? 'ALL' : (schemes[0]?.id || ''));
                     setSelectedStatusFilter('ALL');
                     setSelectedPriorityFilter('ALL');
                   }}
@@ -1029,12 +1054,23 @@ export function AdminView({
                   Global building portfolios. Master admins can register, directly edit scheme metadata, audit lots, or remove schemes.
                 </p>
               </div>
-              <button
-                onClick={() => setIsAddSchemeOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus size={16} /> Register Scheme
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setNewMemberSchemeId(schemes[0]?.id || '');
+                    setIsAddMemberOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <UserPlus size={16} /> Assign / Add User
+                </button>
+                <button
+                  onClick={() => setIsAddSchemeOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus size={16} /> Register Scheme
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1053,6 +1089,16 @@ export function AdminView({
                           <Building2 size={22} />
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => {
+                              setNewMemberSchemeId(s.id);
+                              setIsAddMemberOpen(true);
+                            }}
+                            className="p-1.5 rounded-xl text-gray-400 hover:text-[#0055FF] hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+                            title="Add User to Scheme"
+                          >
+                            <UserPlus size={14} />
+                          </button>
                           <button
                             onClick={() => {
                               setEditingScheme(s);
@@ -1127,15 +1173,23 @@ export function AdminView({
                   Directory of all active accounts. Master admins can assign new users to schemes, modify existing roles, and configure individual permission overrides.
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  setNewMemberSchemeId(schemes[0]?.id || '');
-                  setIsAddMemberOpen(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <UserPlus size={16} /> Assign / Add User
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsAddSchemeOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus size={16} /> Register Scheme
+                </button>
+                <button
+                  onClick={() => {
+                    setNewMemberSchemeId(schemes[0]?.id || '');
+                    setIsAddMemberOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <UserPlus size={16} /> Assign / Add User
+                </button>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
