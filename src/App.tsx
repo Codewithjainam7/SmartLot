@@ -244,14 +244,30 @@ export default function App() {
       <AdminView 
         members={store.members}
         schemes={store.schemes}
+        requests={store.residentRequests}
+        units={store.units}
+        theme={store.theme}
+        setTheme={store.setTheme}
         onBackToLanding={() => {
           window.location.hash = '';
           setSessionState('landing');
         }}
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
+        onAddScheme={store.addScheme}
+        onTriageRequest={store.triageRequest}
+        onCloseRequest={store.closeResidentRequest}
+        onAddComment={store.addCommentToRequest}
         globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
         onToggleGlobalPermission={(role, perm) => store.togglePermission('GLOBAL', role, perm)}
+        onSwitchToScheme={(schemeId) => {
+          const target = store.schemes.find(s => s.id === schemeId);
+          if (target) {
+            store.setActiveScheme(target);
+            window.location.hash = '';
+            setSessionState('dashboard');
+          }
+        }}
       />
     );
   }
