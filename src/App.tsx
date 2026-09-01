@@ -255,6 +255,8 @@ export default function App() {
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
         onAddScheme={store.addScheme}
+        onAddMember={store.addMember}
+        onAddResidentRequest={store.createMasterRequest}
         onUpdateScheme={store.updateScheme}
         onUpdateMember={store.updateMember}
         onUpdateResidentRequest={store.updateResidentRequest}

@@ -927,6 +927,40 @@ export function useSmartLotStore() {
     }
   };
 
+  const createMasterRequest = (reqData: {
+    schemeId: string;
+    unit: string;
+    title: string;
+    description: string;
+    priority: 'Low' | 'Medium' | 'High' | 'Emergency';
+    requestorName?: string;
+    requestorEmail?: string;
+    requestorRole?: 'Lot Owner' | 'Resident' | 'Tenant' | 'Strata Manager';
+    requestType?: RequestStream;
+  }) => {
+    const id = `REQ-${100 + residentRequests.length + 1}`;
+    const req: ResidentRequest = {
+      id,
+      schemeId: reqData.schemeId,
+      unit: reqData.unit,
+      title: reqData.title,
+      description: reqData.description,
+      requestType: reqData.requestType || 'maintenance_upgrade',
+      stream: reqData.priority === 'Emergency' ? 'emergency_repair' : 'common_area_repair',
+      priority: reqData.priority,
+      status: 'pending_triage',
+      createdAt: new Date().toISOString(),
+      requestorName: reqData.requestorName || 'Super Admin',
+      reportedBy: reqData.requestorName || 'Super Admin',
+      requestorEmail: reqData.requestorEmail || 'admin@smartlot.com',
+      requestorPhone: '0400 000 000',
+      requestorRole: reqData.requestorRole || 'Strata Manager',
+      comments: []
+    };
+    setResidentRequests(prev => [req, ...prev]);
+    return id;
+  };
+
   const submitResidentRequest = (newReq: {
     requestType: RequestStream;
     title: string;
@@ -1129,6 +1163,7 @@ export function useSmartLotStore() {
     updateMemberStatus,
     deleteMember,
     submitResidentRequest,
+    createMasterRequest,
     triageRequest,
     closeResidentRequest,
     addCommentToRequest,

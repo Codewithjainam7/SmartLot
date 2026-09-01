@@ -3,7 +3,7 @@ import {
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
-  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key
+  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus
 } from 'lucide-react';
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';
 import { Scheme } from '../types';
@@ -20,6 +20,26 @@ interface AdminViewProps {
   onDeleteMember: (id: string) => void;
   onDeleteScheme: (id: string) => void;
   onAddScheme?: (id: string, name: string, lots: number) => Promise<any>;
+  onAddMember?: (memberData: {
+    name: string;
+    email: string;
+    phone: string;
+    role: MemberRole;
+    unitId: string;
+    lotNumber: number;
+    schemeId?: string;
+  }) => Promise<any>;
+  onAddResidentRequest?: (reqData: {
+    schemeId: string;
+    unit: string;
+    title: string;
+    description: string;
+    priority: 'Low' | 'Medium' | 'High' | 'Emergency';
+    requestorName?: string;
+    requestorEmail?: string;
+    requestorRole?: 'Lot Owner' | 'Resident' | 'Tenant' | 'Strata Manager';
+    requestType?: RequestStream;
+  }) => Promise<any> | string;
   onUpdateScheme?: (id: string, updates: { name?: string; lots?: number }) => Promise<any>;
   onUpdateMember?: (id: string, updates: Partial<Member>) => Promise<any>;
   onUpdateResidentRequest?: (id: string, updates: Partial<ResidentRequest>) => Promise<any>;
@@ -42,6 +62,8 @@ export function AdminView({
   onDeleteMember, 
   onDeleteScheme, 
   onAddScheme,
+  onAddMember,
+  onAddResidentRequest,
   onUpdateScheme,
   onUpdateMember,
   onUpdateResidentRequest,
@@ -71,7 +93,16 @@ export function AdminView({
   const [editSchemeName, setEditSchemeName] = useState('');
   const [editSchemeLots, setEditSchemeLots] = useState(10);
 
-  // Modals - Member Editing & Permissions
+  // Modals - Member Creation, Editing & Permissions
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [newMemberSchemeId, setNewMemberSchemeId] = useState(schemes[0]?.id || '');
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberPhone, setNewMemberPhone] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<MemberRole>('Strata Manager');
+  const [newMemberUnit, setNewMemberUnit] = useState('HQ / Management');
+  const [isSubmittingMember, setIsSubmittingMember] = useState(false);
+
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [editMemberName, setEditMemberName] = useState('');
   const [editMemberEmail, setEditMemberEmail] = useState('');
@@ -81,7 +112,18 @@ export function AdminView({
   const [editMemberStatus, setEditMemberStatus] = useState<'Active' | 'Invited' | 'Restricted'>('Active');
   const [memberPermissionsAudit, setMemberPermissionsAudit] = useState<Member | null>(null);
 
-  // Modals - Request Inspection & Editing
+  // Modals - Request Creation, Inspection & Editing
+  const [isCreateRequestOpen, setIsCreateRequestOpen] = useState(false);
+  const [newReqSchemeId, setNewReqSchemeId] = useState(schemes[0]?.id || '');
+  const [newReqTitle, setNewReqTitle] = useState('');
+  const [newReqDescription, setNewReqDescription] = useState('');
+  const [newReqUnit, setNewReqUnit] = useState('Unit 1');
+  const [newReqPriority, setNewReqPriority] = useState<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
+  const [newReqType, setNewReqType] = useState<RequestStream>('maintenance_upgrade');
+  const [newReqRequesterName, setNewReqRequesterName] = useState('Super Admin');
+  const [newReqRequesterRole, setNewReqRequesterRole] = useState<'Strata Manager' | 'Lot Owner' | 'Resident' | 'Tenant'>('Strata Manager');
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+
   const [selectedRequest, setSelectedRequest] = useState<ResidentRequest | null>(null);
   const [isEditingRequest, setIsEditingRequest] = useState(false);
   const [editReqTitle, setEditReqTitle] = useState('');
@@ -171,6 +213,63 @@ export function AdminView({
       console.error("Error creating scheme:", err);
     } finally {
       setIsSubmittingScheme(false);
+    }
+  };
+
+  const handleCreateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberName || !newMemberEmail || !newMemberSchemeId) return;
+    setIsSubmittingMember(true);
+    try {
+      if (onAddMember) {
+        const lotNum = parseInt(newMemberUnit.replace(/\D/g, '')) || 0;
+        await onAddMember({
+          name: newMemberName.trim(),
+          email: newMemberEmail.trim(),
+          phone: newMemberPhone.trim() || '0400 000 000',
+          role: newMemberRole,
+          unitId: newMemberUnit.trim(),
+          lotNumber: lotNum,
+          schemeId: newMemberSchemeId
+        });
+      }
+      setIsAddMemberOpen(false);
+      setNewMemberName('');
+      setNewMemberEmail('');
+      setNewMemberPhone('');
+      setNewMemberUnit('Unit 1');
+    } catch (err) {
+      console.error("Error creating member:", err);
+    } finally {
+      setIsSubmittingMember(false);
+    }
+  };
+
+  const handleCreateRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReqTitle || !newReqDescription || !newReqSchemeId) return;
+    setIsSubmittingRequest(true);
+    try {
+      if (onAddResidentRequest) {
+        await onAddResidentRequest({
+          schemeId: newReqSchemeId,
+          unit: newReqUnit,
+          title: newReqTitle.trim(),
+          description: newReqDescription.trim(),
+          priority: newReqPriority,
+          requestType: newReqType,
+          requestorName: newReqRequesterName.trim() || 'Super Admin',
+          requestorRole: newReqRequesterRole
+        });
+      }
+      setIsCreateRequestOpen(false);
+      setNewReqTitle('');
+      setNewReqDescription('');
+      setNewReqUnit('Unit 1');
+    } catch (err) {
+      console.error("Error creating request:", err);
+    } finally {
+      setIsSubmittingRequest(false);
     }
   };
 
@@ -273,7 +372,7 @@ export function AdminView({
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  Direct master editing for all schemes, users, tickets, and platform security.
+                  Full CRUD master controls for Schemes, Users, Role Assignments, and Tickets.
                 </p>
               </div>
             </div>
@@ -293,17 +392,25 @@ export function AdminView({
             )}
 
             <button
+              onClick={() => setIsAddMemberOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+            >
+              <UserPlus size={16} />
+              <span>Assign / Add User</span>
+            </button>
+
+            <button
               onClick={() => setIsAddSchemeOpen(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md shadow-[#00D4B2]/20 transition-all cursor-pointer"
             >
               <Plus size={16} />
-              <span>Register New Scheme</span>
+              <span>Register Scheme</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container - strictly bound within max-w-7xl without horizontal overflow */}
+      {/* Main Container */}
       <main className="max-w-7xl mx-auto w-full p-6 space-y-6 flex-1">
         
         {/* Navigation Tabs */}
@@ -358,7 +465,7 @@ export function AdminView({
             }`}
           >
             <Users size={16} />
-            <span>Global Users ({members.length})</span>
+            <span>Global Users & Roles ({members.length})</span>
           </button>
 
           <button
@@ -670,9 +777,18 @@ export function AdminView({
                   All Requests & Maintenance Tickets ({filteredRequests.length})
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Global operational oversight. Super Administrators have master control to review, edit fields, triage, approve, reject, or assign tickets.
+                  Global operational oversight. Master Admins can create, review, edit fields, triage, approve, reject, or assign tickets across all schemes.
                 </p>
               </div>
+              <button
+                onClick={() => {
+                  setNewReqSchemeId(schemes[0]?.id || '');
+                  setIsCreateRequestOpen(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
+              >
+                <Plus size={16} /> Create Master Request
+              </button>
             </div>
 
             {filteredRequests.length === 0 ? (
@@ -903,13 +1019,24 @@ export function AdminView({
         {/* TAB 4: GLOBAL USERS & PERMISSIONS */}
         {activeTab === 'users' && (
           <div className="space-y-4">
-            <div>
-              <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                Global Platform Users Registry ({filteredMembers.length})
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Directory of all active accounts. Master admins can directly edit member names, roles, units, and custom permissions.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                  Global Platform Users & Role Assignments ({filteredMembers.length})
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Directory of all active accounts. Master admins can assign new users to schemes, modify existing roles, and configure individual permission overrides.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setNewMemberSchemeId(schemes[0]?.id || '');
+                  setIsAddMemberOpen(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+              >
+                <UserPlus size={16} /> Assign / Add User
+              </button>
             </div>
 
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
@@ -1154,7 +1281,214 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 2: EDIT SCHEME DETAILS */}
+      {/* MODAL 2: ASSIGN / ADD USER TO SCHEME */}
+      {isAddMemberOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setIsAddMemberOpen(false)}
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0055FF] text-xs font-bold">
+                <UserPlus size={14} /> Assign / Add User
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">Assign User to Scheme</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Register a user and grant them designated role access on a specific strata scheme.
+              </p>
+            </div>
+
+            <form onSubmit={handleCreateMember} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Target Scheme</label>
+                <select
+                  value={newMemberSchemeId}
+                  onChange={e => setNewMemberSchemeId(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                >
+                  {schemes.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Johnathan Smith"
+                  value={newMemberName}
+                  onChange={e => setNewMemberName(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="john@example.com"
+                  value={newMemberEmail}
+                  onChange={e => setNewMemberEmail(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Role</label>
+                  <select
+                    value={newMemberRole}
+                    onChange={e => {
+                      const r = e.target.value as MemberRole;
+                      setNewMemberRole(r);
+                      if (r === 'Strata Manager' || r === 'Building Manager') {
+                        setNewMemberUnit('HQ / Management');
+                      } else {
+                        setNewMemberUnit('Unit 1');
+                      }
+                    }}
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="Strata Manager">Strata Manager</option>
+                    <option value="Building Manager">Building Manager</option>
+                    <option value="Committee Member">Committee Member</option>
+                    <option value="Lot Owner">Lot Owner</option>
+                    <option value="Resident">Resident</option>
+                    <option value="Tenant">Tenant</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Unit ID</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMemberUnit}
+                    onChange={e => setNewMemberUnit(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmittingMember}
+                className="w-full py-3.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-black text-xs uppercase tracking-wider transition-all shadow-md mt-4 disabled:opacity-50 cursor-pointer"
+              >
+                {isSubmittingMember ? 'Assigning User...' : 'Assign User to Scheme'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: CREATE MASTER REQUEST / TICKET */}
+      {isCreateRequestOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setIsCreateRequestOpen(false)}
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00A38C] text-xs font-bold">
+                <FileText size={14} /> Master Ticket Creator
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">Create Cross-Scheme Ticket</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Log a maintenance request or emergency ticket directly under any strata building.
+              </p>
+            </div>
+
+            <form onSubmit={handleCreateRequest} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Target Scheme</label>
+                <select
+                  value={newReqSchemeId}
+                  onChange={e => setNewReqSchemeId(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                >
+                  {schemes.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Ticket Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Lift 2 Hydraulic Pressure Fault"
+                  value={newReqTitle}
+                  onChange={e => setNewReqTitle(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Description</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Detailed description of the issue..."
+                  value={newReqDescription}
+                  onChange={e => setNewReqDescription(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-medium focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Priority</label>
+                  <select
+                    value={newReqPriority}
+                    onChange={e => setNewReqPriority(e.target.value as any)}
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Emergency">🚨 Emergency</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Unit / Location</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Common Area / Unit 10"
+                    value={newReqUnit}
+                    onChange={e => setNewReqUnit(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmittingRequest}
+                className="w-full py-3.5 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-black text-xs uppercase tracking-wider transition-all shadow-md mt-4 disabled:opacity-50 cursor-pointer"
+              >
+                {isSubmittingRequest ? 'Logging Ticket...' : 'Create Ticket'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: EDIT SCHEME DETAILS */}
       {editingScheme && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
@@ -1208,7 +1542,7 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 3: EDIT USER PROFILE DIRECTLY */}
+      {/* MODAL 5: EDIT USER PROFILE DIRECTLY */}
       {editingMember && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
@@ -1303,7 +1637,7 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 4: INDIVIDUAL USER PERMISSION OVERRIDES */}
+      {/* MODAL 6: INDIVIDUAL USER PERMISSION OVERRIDES */}
       {memberPermissionsAudit && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
@@ -1381,7 +1715,7 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 5: DETAILED REQUEST INSPECTION & MASTER EDITING */}
+      {/* MODAL 7: DETAILED REQUEST INSPECTION & MASTER EDITING */}
       {selectedRequest && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
@@ -1579,7 +1913,7 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 6: SCHEME MASTER AUDIT MODAL (STRICTLY WITHIN ADMIN SECURITY BOUNDS) */}
+      {/* MODAL 8: SCHEME MASTER AUDIT MODAL (STRICTLY WITHIN ADMIN SECURITY BOUNDS) */}
       {selectedSchemeForAudit && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-3xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
@@ -1599,18 +1933,30 @@ export function AdminView({
                 <p className="text-xs font-mono text-gray-400">Scheme ID: {selectedSchemeForAudit.id} • {selectedSchemeForAudit.lots} Lots</p>
               </div>
 
-              <button
-                onClick={() => {
-                  setEditingScheme(selectedSchemeForAudit);
-                  setEditSchemeName(selectedSchemeForAudit.name);
-                  setEditSchemeLots(selectedSchemeForAudit.lots);
-                  setSelectedSchemeForAudit(null);
-                }}
-                className="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <Edit3 size={14} />
-                <span>Edit Scheme Details</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setNewMemberSchemeId(selectedSchemeForAudit.id);
+                    setIsAddMemberOpen(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                >
+                  <UserPlus size={14} />
+                  <span>Assign User</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingScheme(selectedSchemeForAudit);
+                    setEditSchemeName(selectedSchemeForAudit.name);
+                    setEditSchemeLots(selectedSchemeForAudit.lots);
+                    setSelectedSchemeForAudit(null);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Edit3 size={14} />
+                  <span>Edit Scheme</span>
+                </button>
+              </div>
             </div>
 
             {/* Scheme Summary Stats */}
@@ -1687,10 +2033,3 @@ export function AdminView({
 }
 
 // End AdminView
-
-// Subcomponent: Executive KPI Overview
-// Subcomponent: Cross-Scheme Triage Hub
-// Subcomponent: Strata Schemes Portfolio
-// Subcomponent: Global Users Registry
-// Subcomponent: Global Permissions Matrix
-// Subcomponent: Master Modals Container
