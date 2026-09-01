@@ -108,3 +108,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 11: Refactor: Align Strata Manager unit roster pagination and filtering
 // Revision Step 12: Docs: Document Supabase RLS policies and invite trigger workflows
 // Revision Step 13: Style: Polish dark mode surface contrasts in UserManagementView
+// Revision Step 14: Refactor: Optimize memoized request metrics calculation in smartLotStore
