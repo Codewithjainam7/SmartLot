@@ -1690,3 +1690,4 @@ export function AdminView({
 
 // Subcomponent: Executive KPI Overview
 // Subcomponent: Cross-Scheme Triage Hub
+// Subcomponent: Strata Schemes Portfolio
