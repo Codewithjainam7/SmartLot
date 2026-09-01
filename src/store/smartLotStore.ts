@@ -1205,3 +1205,4 @@ export function useSmartLotStore() {
 // UI: Active Tab Persistence Logic
 // UI: Theme Switcher Synchronizer
 // UI: Ticket Priority Glow Badges
+// UI: Real-time Member Audit Trail
