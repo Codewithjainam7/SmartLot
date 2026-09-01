@@ -939,11 +939,51 @@ export function useSmartLotStore() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    const syncUserProfile = async (authUser: any) => {
+      if (!authUser?.email) return;
+      const email = authUser.email.toLowerCase();
+      
+      try {
+        const [{ data: profile }, { data: memberRows }] = await Promise.all([
+          supabase.from('profiles').select('*').ilike('email', email).maybeSingle(),
+          supabase.from('members').select('*').ilike('email', email)
+        ]);
+
+        const firstMember = memberRows && memberRows.length > 0 ? memberRows[0] : null;
+        const name = profile?.full_name || authUser.user_metadata?.full_name || firstMember?.name || 'User';
+        const role = firstMember?.role || (profile?.is_system_admin ? 'Strata Manager' : 'Lot Owner');
+        const unit = firstMember?.unit_id || 'Unit 1';
+        const schemeId = firstMember?.scheme_id;
+
+        setActivePersona(prev => ({
+          ...prev,
+          id: authUser.id,
+          name,
+          email: authUser.email,
+          role: role as any,
+          context: unit
+        }));
+
+        if (schemeId) {
+          const { data: sData } = await supabase.from('schemes').select('*').eq('id', schemeId).maybeSingle();
+          if (sData) {
+            setActiveScheme({
+              id: sData.id,
+              name: sData.name,
+              lots: sData.lots,
+              active: sData.active
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error syncing profile:", err);
+      }
+    };
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
-        // Verify against the database that this user hasn't been deleted
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error || !user) {
@@ -958,19 +998,7 @@ export function useSmartLotStore() {
         setSession(session);
         setUser(user);
         setIsLoggedIn(true);
-        
-        // Sync name/email from Supabase on initial load
-        const fullName = user.user_metadata?.full_name;
-        const userRole = user.user_metadata?.role;
-        if (fullName) {
-          setActivePersona(prev => ({
-            ...prev,
-            id: user.id,
-            name: fullName,
-            email: user.email || '',
-            role: userRole || prev.role || 'Lot Owner'
-          }));
-        }
+        await syncUserProfile(user);
       } else {
         setIsLoggedIn(false);
       }
@@ -983,16 +1011,7 @@ export function useSmartLotStore() {
       setUser(session?.user ?? null);
       if (session?.user) {
         setIsLoggedIn(true);
-        const fullName = session.user.user_metadata?.full_name;
-        const userRole = session.user.user_metadata?.role;
-        setActivePersona(prev => ({
-          ...prev,
-          id: session.user.id,
-          name: fullName || prev.name || 'User',
-          email: session.user.email || '',
-          // Only update role from metadata if persona hasn't been promoted to Strata Admin already
-          role: prev.role === 'Strata Admin' ? 'Strata Admin' : (userRole || prev.role || 'Lot Owner')
-        }));
+        await syncUserProfile(session.user);
       } else {
         setIsLoggedIn(false);
       }
@@ -1001,14 +1020,27 @@ export function useSmartLotStore() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch Live Data from Supabase universally for all sessions (including Super Admin)
+  // Fetch Live Data from Supabase universally for all sessions (including Super Admin) - HIGH SPEED PARALLEL FETCH
   const refreshData = async () => {
     setIsLoading(true);
     try {
-      const { data: schemesData, error } = await supabase.from('schemes').select('*');
+      // 🚀 Fast parallel roundtrip: Fetch all 5 tables at once
+      const [
+        { data: schemesData },
+        { data: membersData },
+        { data: profilesData },
+        { data: reqsData },
+        { data: unitsData }
+      ] = await Promise.all([
+        supabase.from('schemes').select('*'),
+        supabase.from('members').select('*'),
+        supabase.from('profiles').select('*'),
+        supabase.from('resident_requests').select('*'),
+        supabase.from('units').select('*')
+      ]);
       
       let formattedSchemes = SCHEMES;
-      if (!error && schemesData && schemesData.length > 0) {
+      if (schemesData && schemesData.length > 0) {
         formattedSchemes = schemesData.map(s => ({
           id: s.id,
           name: s.name,
@@ -1027,11 +1059,8 @@ export function useSmartLotStore() {
         });
       }
 
-      // Fetch members and profiles for all schemes
+      // Process members & profiles
       let formattedMembers: Member[] = INITIAL_MEMBERS;
-      const { data: membersData } = await supabase.from('members').select('*');
-      const { data: profilesData } = await supabase.from('profiles').select('*');
-
       if (membersData && membersData.length > 0) {
         formattedMembers = membersData.map(m => {
           const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
@@ -1050,18 +1079,18 @@ export function useSmartLotStore() {
         });
       }
 
-      // Merge profiles into member directory so Roman Joe and any registered user always appears
+      // Merge profiles into member directory
       if (profilesData && profilesData.length > 0) {
         profilesData.forEach(p => {
           const existing = formattedMembers.find(m => m.email?.toLowerCase() === p.email?.toLowerCase());
           if (!existing) {
             formattedMembers.push({
               id: p.id,
-              name: p.full_name || 'Roman Joe',
+              name: p.full_name || 'User',
               email: p.email,
               phone: p.phone_number || '0411 888 777',
               schemeId: formattedSchemes[0]?.id || 'SP102',
-              role: p.is_system_admin ? 'Strata Manager' : 'Strata Manager',
+              role: p.is_system_admin ? 'Strata Manager' : 'Lot Owner',
               unitId: 'HQ / Management',
               lotNumber: 0,
               status: 'Active',
@@ -1073,8 +1102,7 @@ export function useSmartLotStore() {
 
       setMembers(formattedMembers);
 
-      // Fetch resident requests from Supabase
-      const { data: reqsData } = await supabase.from('resident_requests').select('*');
+      // Process requests
       if (reqsData && reqsData.length > 0) {
         const formattedReqs = reqsData.map(r => {
           const matchingMember = formattedMembers.find(m => m.schemeId === r.scheme_id && m.unitId === r.unit_id);
@@ -1108,8 +1136,7 @@ export function useSmartLotStore() {
         setResidentRequests(INITIAL_RESIDENT_REQUESTS);
       }
 
-      // Fetch units for all schemes
-      const { data: unitsData } = await supabase.from('units').select('*');
+      // Process units
       let allUnits: UnitData[] = [];
       if (unitsData && unitsData.length > 0) {
         allUnits = unitsData.map(u => {
@@ -1121,72 +1148,29 @@ export function useSmartLotStore() {
               name: m.name,
               email: m.email,
               phone: m.phone,
-              verified: true,
-              permissions: [
-                { label: 'Noticeboard Access', active: true },
-                { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
-              ]
+              isSelf: false,
+              isOnline: true,
+              permissions: {
+                canViewFinancials: m.role === 'Lot Owner' || m.role === 'Committee Member',
+                canRaiseRequests: true,
+                canVote: m.role === 'Lot Owner' || m.role === 'Committee Member',
+                canChat: true,
+                canBookAmenities: true,
+                canAccessDocuments: true
+              }
             }));
 
           return {
+            id: `${u.scheme_id}-${u.unit_id}`,
             schemeId: u.scheme_id,
-            unitId: u.unit_id,
+            unit: u.unit_id,
             lotNumber: u.lot_number,
-            entitlement: `${u.entitlement}%`,
-            status: unitActors.length > 0 ? 'Occupied' : (u.status || 'Vacant'),
+            entitlement: u.entitlement || 25,
+            status: u.status || 'Occupied',
             actors: unitActors
           };
         });
       }
-
-      // Ensure every loaded scheme has unit entries generated & auto-inserted into Supabase if missing
-      if (schemesData) {
-        for (const s of schemesData) {
-          const hasUnits = allUnits.some(u => u.schemeId === s.id);
-          if (!hasUnits) {
-            const unitsToInsert = Array.from({ length: s.lots }, (_, i) => ({
-              scheme_id: s.id,
-              unit_id: `Unit ${i + 1}`,
-              lot_number: i + 1,
-              entitlement: parseFloat((100 / s.lots).toFixed(2)),
-              status: 'Vacant'
-            }));
-
-            // Auto-sync missing unit rows into Supabase public.units table
-            supabase.from('units').insert(unitsToInsert).then(({ error }) => {
-              if (error) console.error("Error auto-inserting missing units into Supabase:", error);
-            });
-
-            const generated: UnitData[] = unitsToInsert.map(u => {
-              const unitActors: UnitActor[] = (formattedMembers || [])
-                .filter(m => m.schemeId === s.id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
-                .map(m => ({
-                  id: m.id,
-                  role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
-                  name: m.name,
-                  email: m.email,
-                  phone: m.phone,
-                  verified: true,
-                  permissions: [
-                    { label: 'Noticeboard Access', active: true },
-                    { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
-                  ]
-                }));
-
-              return {
-                schemeId: s.id,
-                unitId: u.unit_id,
-                lotNumber: u.lot_number,
-                entitlement: `${u.entitlement}%`,
-                status: unitActors.length > 0 ? 'Occupied' : 'Vacant',
-                actors: unitActors
-              };
-            });
-            allUnits.push(...generated);
-          }
-        }
-      }
-
       setUnits(allUnits.length > 0 ? allUnits : INITIAL_UNITS);
 
       // Fetch role permissions from Supabase

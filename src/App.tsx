@@ -21,6 +21,7 @@ import { AdminView } from './components/AdminView';
 import { SuperAdminLoginView } from './components/SuperAdminLoginView';
 import { SettingsView } from './components/SettingsView';
 import { JoinSchemeView } from './components/JoinSchemeView';
+import { DashboardSkeleton } from './components/core/DashboardSkeleton';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -321,10 +322,15 @@ export default function App() {
         {/* Dynamic View Rendering */}
         <div className="flex-1 overflow-hidden relative">
           
-           {/* Dashboard View */}
-          {store.activeView === 'dashboard' && (
-            <Dashboard store={store} />
-          )}
+          {/* Shimmer Skeleton during async data fetching */}
+          {store.isLoading ? (
+            <DashboardSkeleton />
+          ) : (
+            <>
+              {/* Dashboard View */}
+              {store.activeView === 'dashboard' && (
+                <Dashboard store={store} />
+              )}
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
           {store.activeView === 'user_management' && (
@@ -379,6 +385,8 @@ export default function App() {
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
             />
+          )}
+          </>
           )}
 
         </div>

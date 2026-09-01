@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Building, User, Mail, Lock, ArrowRight, ArrowLeft, ShieldCheck, Users, Briefcase, Eye, EyeOff } from "lucide-react";
 import { SmartLotLogo } from "./core/SmartLotLogo";
 import { CustomSelect, SelectOption } from "./core/CustomSelect";
@@ -51,17 +51,33 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (signInError) throw signInError;
       
-      // Successfully logged in via Supabase!
-      // In a real app, we'd fetch their profile and memberships here
-      // For now, we simulate passing them through to the main app which will handle loading
-      onLoginSuccess("Resident", "Authenticated User"); // This will be handled by the store listener now
+      // Fetch user profile and member records in parallel
+      const userEmail = email.trim().toLowerCase();
+      const [{ data: profile }, { data: memberRows }] = await Promise.all([
+        supabase.from('profiles').select('*').ilike('email', userEmail).maybeSingle(),
+        supabase.from('members').select('*').ilike('email', userEmail)
+      ]);
+
+      const firstMember = memberRows && memberRows.length > 0 ? memberRows[0] : null;
+      const realName = profile?.full_name || data.user.user_metadata?.full_name || firstMember?.name || userEmail.split('@')[0];
+      const realRole = firstMember?.role || (profile?.is_system_admin ? 'Strata Manager' : 'Lot Owner');
+      const unit = firstMember?.unit_id || 'Unit 1';
       
+      let siteInfo: { id: string; name: string; lots: number; unit?: string } | undefined;
+      if (firstMember?.scheme_id) {
+        const { data: sData } = await supabase.from('schemes').select('*').eq('id', firstMember.scheme_id).maybeSingle();
+        if (sData) {
+          siteInfo = { id: sData.id, name: sData.name, lots: sData.lots, unit };
+        }
+      }
+
+      onLoginSuccess(realRole, realName, siteInfo);
     } catch (err: any) {
       setError(err.message || "Failed to sign in. Check your credentials.");
     } finally {
