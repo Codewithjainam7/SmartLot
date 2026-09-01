@@ -33,3 +33,27 @@ SmartLot is an enterprise-grade, multi-tenant Strata Management & Community Oper
 - **Live Supabase Integration**: Real-time Postgres subscriptions, robust RLS policies, and automated invite linking triggers.
 - **High-Speed UI with Shimmer Loading**: Sub-second parallel data fetching with `Promise.all` and graceful skeleton loaders.
 - **Linear/Stripe-Inspired Design Language**: Dark & Light mode support, glowing status badges, and polished micro-interactions.
+
+
+## 🛠️ Local Development Setup
+
+### Prerequisites
+- Node.js >= 18.0.0
+- npm >= 9.0.0
+
+### Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/Codewithjainam7/SmartLot.git
+cd SmartLot
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run TypeScript compilation check
+npx tsc --noEmit
+```
