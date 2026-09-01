@@ -74,3 +74,4 @@ export const PERSONAS: Persona[] = [
 // End of Type Registry
 // Interface: Strata Management Models
 // Interface: Building Roster and Lot Entitlements
+// Interface: Triage and Approval Status Types
