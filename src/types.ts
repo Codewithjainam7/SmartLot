@@ -133,3 +133,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 36: Docs: Update API key handling and security guidelines in Supabase docs
 // Revision Step 37: Style: Refine emergency priority badge color tokens and pulse animations
 // Revision Step 38: Refactor: Clean up redundant state hooks in CreateRequestModal
+// Revision Step 39: Feat: Add helper for formatting currency and levy entitlement values
