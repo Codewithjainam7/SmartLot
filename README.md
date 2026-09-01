@@ -79,3 +79,8 @@ Login to the platform using any of the pre-configured test personas:
 | **Michael Chen** | Committee Member | Coronation (`SP102`) | `michael.chen@coronation.com` | `SmartLot2026!` |
 | **Emma Wilson** | Strata Manager | Cavaller (`SP103`) & Coronation (`SP102`) | `emma.wilson@agency.com` | `SmartLot2026!` |
 | **Roman Joe** | Strata Manager | Spear Empire (`SP823`) | `romanjoe@gmail.com` | `SmartLot2026!` |
+
+
+## 📄 License & Attribution
+
+Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Author: Jainam Jain <jainjainam412@gmail.com>.
