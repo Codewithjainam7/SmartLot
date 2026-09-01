@@ -78,3 +78,4 @@ export const PERSONAS: Persona[] = [
 // Interface: Super Admin Operational Payloads
 // Interface: Permission Matrix Rules
 // UI: Tab Animation Key Definitions
+// UI: Theme Transition Palette Definitions
