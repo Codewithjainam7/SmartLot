@@ -112,3 +112,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 15: Feat: Add direct quick-triage status actions to master inspection modal
 // Revision Step 16: Style: Improve comment audit trail bubble spacing and author tags
 // Revision Step 17: Refactor: Unify member email lookup in Supabase sync handler
+// Revision Step 18: Docs: Add schema definitions for public.members and public.profiles
