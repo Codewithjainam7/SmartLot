@@ -5,3 +5,5 @@
 
 
 <!-- End of Readme -->
+
+<!-- Section: Architecture Overview -->
