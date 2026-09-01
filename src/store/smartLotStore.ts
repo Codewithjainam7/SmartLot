@@ -1200,3 +1200,4 @@ export function useSmartLotStore() {
 // Helper: Permissions evaluation engine
 // Helper: Active scheme context switcher
 // Helper: Real-time DB subscription handlers
+// Helper: Master triage action handlers
