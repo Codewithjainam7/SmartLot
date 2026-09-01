@@ -95,3 +95,4 @@ export const PERSONAS: Persona[] = [
 // UI: Card Elevation and Shadow Specifications
 // UI: Modal Overlay and Backdrop Blur Config
 // UI: End of UI Interface Tokens
+// Revision Step 1: Refactor: Enhance role validation and persona typing definitions in types.ts
