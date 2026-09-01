@@ -115,3 +115,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 18: Docs: Add schema definitions for public.members and public.profiles
 // Revision Step 19: Style: Refine sidebar navigation icons and active indicator bar
 // Revision Step 20: Refactor: Standardize scheme ID uppercase formatting on creation
+// Revision Step 21: Feat: Add role badge indicators to resident request cards
