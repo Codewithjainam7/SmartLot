@@ -1202,3 +1202,4 @@ export function useSmartLotStore() {
 // Helper: Real-time DB subscription handlers
 // Helper: Master triage action handlers
 // Helper: Cross-scheme request dispatch
+// UI: Active Tab Persistence Logic
