@@ -137,3 +137,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 40: Style: Optimize table row hover highlights across all admin tabs
 // Revision Step 41: Refactor: Ensure consistent scheme ID validation on member creation
 // Revision Step 42: Docs: Document role permissions matrix for Lot Owners vs Residents
+// Revision Step 43: Style: Improve button hit-target padding on mobile viewport breakpoints
