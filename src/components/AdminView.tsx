@@ -413,32 +413,34 @@ export function AdminView({
       {/* Main Container */}
       <main className="max-w-7xl mx-auto w-full p-6 space-y-6 flex-1">
         
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {/* Navigation Tabs with Smooth Animated Pill Design */}
+        <div className="bg-gray-200/60 dark:bg-[#0d1117]/80 p-1.5 rounded-[22px] border border-gray-300/50 dark:border-white/5 flex items-center gap-1.5 overflow-x-auto scrollbar-none shadow-sm backdrop-blur-md">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'overview'
-                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-lg'
-                : 'bg-white dark:bg-[#0d1117] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
             }`}
           >
-            <Activity size={16} />
+            <Activity size={15} className={activeTab === 'overview' ? 'text-[#00D4B2] dark:text-[#0B1121]' : ''} />
             <span>Overview & KPIs</span>
           </button>
 
           <button
             onClick={() => setActiveTab('requests')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer relative ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 relative ${
               activeTab === 'requests'
-                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-lg'
-                : 'bg-white dark:bg-[#0d1117] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
             }`}
           >
-            <FileText size={16} />
+            <FileText size={15} className={activeTab === 'requests' ? 'text-[#00D4B2] dark:text-[#0B1121]' : ''} />
             <span>Cross-Scheme Requests</span>
             {stats.openRequestsCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#00D4B2] text-[#0B1121]">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black transition-colors ${
+                activeTab === 'requests' ? 'bg-[#00D4B2] text-[#0B1121]' : 'bg-[#00D4B2]/20 text-[#00A38C] dark:text-[#00D4B2]'
+              }`}>
                 {stats.openRequestsCount}
               </span>
             )}
@@ -446,37 +448,37 @@ export function AdminView({
 
           <button
             onClick={() => setActiveTab('schemes')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'schemes'
-                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-lg'
-                : 'bg-white dark:bg-[#0d1117] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
             }`}
           >
-            <Building2 size={16} />
+            <Building2 size={15} className={activeTab === 'schemes' ? 'text-[#00D4B2] dark:text-[#0B1121]' : ''} />
             <span>Strata Schemes ({schemes.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'users'
-                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-lg'
-                : 'bg-white dark:bg-[#0d1117] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
             }`}
           >
-            <Users size={16} />
+            <Users size={15} className={activeTab === 'users' ? 'text-[#00D4B2] dark:text-[#0B1121]' : ''} />
             <span>Global Users & Roles ({members.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('permissions')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-[18px] font-bold text-xs uppercase tracking-wider transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'permissions'
-                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-lg'
-                : 'bg-white dark:bg-[#0d1117] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+                ? 'bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] shadow-md shadow-[#0B1121]/20 dark:shadow-white/10 scale-[1.02]'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
             }`}
           >
-            <Shield size={16} />
+            <Shield size={15} className={activeTab === 'permissions' ? 'text-[#00D4B2] dark:text-[#0B1121]' : ''} />
             <span>Global Permissions Matrix</span>
           </button>
         </div>
@@ -563,7 +565,7 @@ export function AdminView({
 
         {/* TAB 1: OVERVIEW & KPIS */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
+          <div key="overview" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
             
             {/* Stat Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -770,7 +772,7 @@ export function AdminView({
 
         {/* TAB 2: CROSS-SCHEME REQUESTS (MASTER TRIAGE & OPERATIONS) */}
         {activeTab === 'requests' && (
-          <div className="space-y-4">
+          <div key="requests" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
@@ -920,7 +922,7 @@ export function AdminView({
 
         {/* TAB 3: STRATA SCHEMES & LOTS */}
         {activeTab === 'schemes' && (
-          <div className="space-y-4">
+          <div key="schemes" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
@@ -1018,7 +1020,7 @@ export function AdminView({
 
         {/* TAB 4: GLOBAL USERS & PERMISSIONS */}
         {activeTab === 'users' && (
-          <div className="space-y-4">
+          <div key="users" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
@@ -1131,7 +1133,7 @@ export function AdminView({
 
         {/* TAB 5: GLOBAL DEFAULT PERMISSIONS MATRIX */}
         {activeTab === 'permissions' && (
-          <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200 dark:border-white/5 shadow-sm space-y-6">
+          <div key="permissions" className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200 dark:border-white/5 shadow-sm space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">
