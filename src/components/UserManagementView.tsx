@@ -1038,7 +1038,7 @@ function AddMemberFormContent({
         <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-100 dark:border-white/5">
           <button 
             type="button" 
-            onClick={() => setIsOpen(false)} 
+            onClick={onClose} 
             className="px-5 py-3 rounded-2xl border border-gray-200 dark:border-white/8 text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer"
           >
             Cancel
