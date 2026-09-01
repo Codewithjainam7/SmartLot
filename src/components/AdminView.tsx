@@ -2041,3 +2041,4 @@ export function AdminView({
 // View: User Role Assignment Modal Logic
 // View: Master Ticket Creation Workflow
 // Animation: Tab Pill Glowing Indicator
+// Animation: Slide-in and Fade-in Keyframes
