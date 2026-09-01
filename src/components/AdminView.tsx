@@ -52,6 +52,20 @@ interface AdminViewProps {
   onRefreshData?: () => Promise<void>;
 }
 
+const formatTimestamp = (dateStr?: string) => {
+  if (!dateStr) return 'Recent';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+};
+
+const formatCommentTime = (dateStr?: string) => {
+  if (!dateStr) return 'Just now';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+};
+
 export function AdminView({ 
   members, 
   schemes, 
@@ -1817,52 +1831,90 @@ export function AdminView({
       {/* MODAL 7: DETAILED REQUEST INSPECTION & MASTER EDITING */}
       {selectedRequest && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
-            <button
-              onClick={() => {
-                setSelectedRequest(null);
-                setIsEditingRequest(false);
-              }}
-              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                    selectedRequest.priority === 'Emergency' ? 'bg-[#FF4757]/15 text-[#FF4757] border border-[#FF4757]/30' :
-                    'bg-blue-500/10 text-[#0055FF]'
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
+              <div className="space-y-1.5 min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 ${
+                    selectedRequest.priority === 'Emergency' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30' :
+                    selectedRequest.priority === 'High' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30' :
+                    selectedRequest.priority === 'Medium' ? 'bg-blue-500/10 text-[#0055FF] dark:text-blue-400 border border-blue-500/20' :
+                    'bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20'
                   }`}>
-                    {selectedRequest.priority} Priority
+                    {selectedRequest.priority === 'Emergency' && <AlertTriangle size={11} />}
+                    {selectedRequest.priority === 'High' && <Zap size={11} />}
+                    {selectedRequest.priority === 'Medium' && <FileText size={11} />}
+                    {selectedRequest.priority === 'Low' && <Clock size={11} />}
+                    <span>{selectedRequest.priority} Priority</span>
                   </span>
-                  <span className="text-xs font-bold text-gray-400">• Scheme {selectedRequest.schemeId}</span>
+
+                  <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[10px] font-mono font-bold text-gray-700 dark:text-gray-300">
+                    Scheme {selectedRequest.schemeId}
+                  </span>
+
+                  <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 text-[10px] font-bold text-gray-600 dark:text-gray-400">
+                    {selectedRequest.unit}
+                  </span>
                 </div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white">{selectedRequest.title}</h3>
-                <p className="text-xs text-gray-400">
-                  Submitted by <strong>{selectedRequest.requestorName}</strong> ({selectedRequest.requestorRole}, {selectedRequest.unit}) on {new Date(selectedRequest.createdAt).toLocaleString()}
+
+                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white leading-snug">
+                  {selectedRequest.title}
+                </h3>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-1.5">
+                  <span>Submitted by</span>
+                  <strong className="text-gray-800 dark:text-gray-200">{selectedRequest.requestorName}</strong>
+                  <span>({selectedRequest.requestorRole})</span>
+                  <span>•</span>
+                  <span>{formatTimestamp(selectedRequest.createdAt)}</span>
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  setIsEditingRequest(!isEditingRequest);
-                  setEditReqTitle(selectedRequest.title);
-                  setEditReqDescription(selectedRequest.description);
-                  setEditReqPriority(selectedRequest.priority);
-                  setEditReqStatus(selectedRequest.status);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <Edit3 size={13} />
-                <span>{isEditingRequest ? 'Cancel Edit' : 'Edit Request'}</span>
-              </button>
+              {/* Header Action Buttons (Dedicated button group with distinct close button) */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingRequest(!isEditingRequest);
+                    setEditReqTitle(selectedRequest.title);
+                    setEditReqDescription(selectedRequest.description);
+                    setEditReqPriority(selectedRequest.priority);
+                    setEditReqStatus(selectedRequest.status);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                    isEditingRequest 
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' 
+                      : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200'
+                  }`}
+                >
+                  <Edit3 size={13} />
+                  <span>{isEditingRequest ? 'Cancel Edit' : 'Edit Request'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRequest(null);
+                    setIsEditingRequest(false);
+                  }}
+                  className="p-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-all cursor-pointer border border-gray-200 dark:border-white/10"
+                  title="Close Inspector"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
             {/* Master Edit Form if Editing */}
             {isEditingRequest ? (
-              <form onSubmit={handleSaveRequestEdit} className="space-y-4 p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5">
+              <form onSubmit={handleSaveRequestEdit} className="space-y-4 p-5 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 animate-in fade-in duration-150">
+                <div className="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+                  <Edit3 size={13} />
+                  <span>Editing Request Fields</span>
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Ticket Title</label>
                   <input
@@ -1885,7 +1937,7 @@ export function AdminView({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Priority</label>
                     <select
@@ -1920,14 +1972,14 @@ export function AdminView({
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs uppercase tracking-wider cursor-pointer shadow-md"
+                  className="w-full py-2.5 rounded-xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs uppercase tracking-wider cursor-pointer shadow-md transition-all"
                 >
                   Save Ticket Updates
                 </button>
               </form>
             ) : (
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 space-y-2">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Request Description</div>
+              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 space-y-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Request Description</div>
                 <p className="text-xs text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                   {selectedRequest.description}
                 </p>
@@ -1936,18 +1988,28 @@ export function AdminView({
 
             {/* Comments List */}
             <div className="space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-gray-400">Discussion & Audit Trail ({selectedRequest.comments?.length || 0})</div>
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center justify-between">
+                <span>Discussion & Audit Trail ({selectedRequest.comments?.length || 0})</span>
+                <span className="text-[10px] font-normal text-gray-400">Chronological activity</span>
+              </div>
+              <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
                 {(!selectedRequest.comments || selectedRequest.comments.length === 0) ? (
-                  <div className="text-xs text-gray-400 italic">No comments added yet.</div>
+                  <div className="text-xs text-gray-400 italic py-3 text-center bg-gray-50 dark:bg-white/[0.02] rounded-xl border border-dashed border-gray-200 dark:border-white/5">
+                    No comments logged yet.
+                  </div>
                 ) : (
                   selectedRequest.comments.map(c => (
-                    <div key={c.id} className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 text-xs space-y-1">
+                    <div key={c.id} className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-100 dark:border-white/5 text-xs space-y-1">
                       <div className="flex items-center justify-between text-[10px] text-gray-400">
-                        <span className="font-bold text-gray-700 dark:text-gray-300">{c.authorName} ({c.authorRole})</span>
-                        <span>{new Date(c.createdAt).toLocaleTimeString()}</span>
+                        <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF]" />
+                          {c.authorName} ({c.authorRole})
+                        </span>
+                        <span>{formatCommentTime(c.createdAt)}</span>
                       </div>
-                      <p className="text-gray-800 dark:text-gray-200">{c.text}</p>
+                      <p className="text-gray-800 dark:text-gray-200 pl-3 border-l-2 border-gray-200 dark:border-white/10 mt-1">
+                        {c.text}
+                      </p>
                     </div>
                   ))
                 )}
@@ -1965,9 +2027,10 @@ export function AdminView({
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2.5 rounded-2xl bg-[#0055FF] text-white font-bold text-xs hover:bg-blue-600 transition-all flex items-center gap-1 cursor-pointer"
+                    className="px-4 py-2.5 rounded-2xl bg-[#0055FF] text-white font-bold text-xs hover:bg-blue-600 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
                   >
-                    <Send size={14} /> Send
+                    <Send size={13} />
+                    <span>Send</span>
                   </button>
                 </form>
               )}
@@ -1975,35 +2038,53 @@ export function AdminView({
 
             {/* Quick Status Control Buttons */}
             {onTriageRequest && (
-              <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs font-bold text-gray-400">Super Admin Direct Action:</div>
+              <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex flex-wrap items-center justify-between gap-3">
+                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">Super Admin Direct Action:</div>
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => {
                       onTriageRequest(selectedRequest.id, { status: 'approved' });
                       setSelectedRequest(prev => prev ? { ...prev, status: 'approved' } : null);
                     }}
-                    className="px-3 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500 text-[#0055FF] hover:text-white font-bold text-xs transition-all cursor-pointer"
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border ${
+                      selectedRequest.status === 'approved'
+                        ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
+                        : 'bg-blue-500/10 hover:bg-blue-500 text-[#0055FF] hover:text-white border-blue-500/20'
+                    }`}
                   >
-                    Approve
+                    <CheckCircle2 size={13} />
+                    <span>Approve</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       onTriageRequest(selectedRequest.id, { status: 'resolved' });
                       setSelectedRequest(prev => prev ? { ...prev, status: 'resolved' } : null);
                     }}
-                    className="px-3 py-2 rounded-xl bg-[#00D4B2]/10 hover:bg-[#00D4B2] text-[#00A38C] hover:text-[#0B1121] font-bold text-xs transition-all cursor-pointer"
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border ${
+                      selectedRequest.status === 'resolved'
+                        ? 'bg-[#00D4B2] text-[#0B1121] border-[#00D4B2] shadow-sm'
+                        : 'bg-[#00D4B2]/10 hover:bg-[#00D4B2] text-[#00A38C] hover:text-[#0B1121] border-[#00D4B2]/20'
+                    }`}
                   >
-                    Mark Resolved
+                    <Check size={13} />
+                    <span>Mark Resolved</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       onTriageRequest(selectedRequest.id, { status: 'rejected' });
                       setSelectedRequest(prev => prev ? { ...prev, status: 'rejected' } : null);
                     }}
-                    className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold text-xs transition-all cursor-pointer"
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border ${
+                      selectedRequest.status === 'rejected'
+                        ? 'bg-red-500 text-white border-red-500 shadow-sm'
+                        : 'bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border-red-500/20'
+                    }`}
                   >
-                    Reject
+                    <X size={13} />
+                    <span>Reject</span>
                   </button>
                 </div>
               </div>
@@ -2015,15 +2096,8 @@ export function AdminView({
       {/* MODAL 8: SCHEME MASTER AUDIT MODAL (STRICTLY WITHIN ADMIN SECURITY BOUNDS) */}
       {selectedSchemeForAudit && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-3xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
-            <button
-              onClick={() => setSelectedSchemeForAudit(null)}
-              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="flex items-start justify-between">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 max-w-3xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
+            <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00A38C] text-xs font-bold">
                   <Building2 size={14} /> Scheme Audit
@@ -2032,8 +2106,9 @@ export function AdminView({
                 <p className="text-xs font-mono text-gray-400">Scheme ID: {selectedSchemeForAudit.id} • {selectedSchemeForAudit.lots} Lots</p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
+                  type="button"
                   onClick={() => {
                     setNewMemberSchemeId(selectedSchemeForAudit.id);
                     setIsAddMemberOpen(true);
@@ -2044,6 +2119,7 @@ export function AdminView({
                   <span>Assign User</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setEditingScheme(selectedSchemeForAudit);
                     setEditSchemeName(selectedSchemeForAudit.name);
@@ -2054,6 +2130,14 @@ export function AdminView({
                 >
                   <Edit3 size={14} />
                   <span>Edit Scheme</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSchemeForAudit(null)}
+                  className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-all cursor-pointer border border-gray-200 dark:border-white/10"
+                  title="Close Audit"
+                >
+                  <X size={16} />
                 </button>
               </div>
             </div>
