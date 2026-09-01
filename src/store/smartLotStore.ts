@@ -1076,24 +1076,33 @@ export function useSmartLotStore() {
       // Fetch resident requests from Supabase
       const { data: reqsData } = await supabase.from('resident_requests').select('*');
       if (reqsData && reqsData.length > 0) {
-        const formattedReqs = reqsData.map(r => ({
-          id: r.id,
-          schemeId: r.scheme_id,
-          unit: r.unit_id || 'Unit 1',
-          title: r.title,
-          description: r.description || '',
-          requestType: r.request_type || 'maintenance_upgrade',
-          stream: (r.request_type || 'common_area_repair') as any,
-          priority: r.priority || 'Medium',
-          status: r.status || 'new',
-          createdAt: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent',
-          requestorName: r.requestor_name || 'Resident',
-          reportedBy: `${r.requestor_name || 'Resident'} (${r.requestor_role || 'Resident'})`,
-          requestorEmail: r.requestor_email || 'resident@smartlot.com.au',
-          requestorPhone: '0400 000 000',
-          requestorRole: r.requestor_role || 'Resident',
-          comments: []
-        }));
+        const formattedReqs = reqsData.map(r => {
+          const matchingMember = formattedMembers.find(m => m.schemeId === r.scheme_id && m.unitId === r.unit_id);
+          const initialMatchingReq = INITIAL_RESIDENT_REQUESTS.find(ir => ir.title === r.title || ir.id === r.id);
+          
+          const requestorName = r.requestor_name || initialMatchingReq?.requestorName || matchingMember?.name || (r.scheme_id === 'SP101' ? 'Sarah Jones' : r.scheme_id === 'SP102' ? 'Michael Chen' : 'Arthur Pendelton');
+          const requestorEmail = r.requestor_email || initialMatchingReq?.requestorEmail || matchingMember?.email || 'resident@smartlot.com.au';
+          const requestorRole = (r.requestor_role || initialMatchingReq?.requestorRole || matchingMember?.role || 'Lot Owner') as any;
+
+          return {
+            id: r.id,
+            schemeId: r.scheme_id,
+            unit: r.unit_id || 'Unit 1',
+            title: r.title,
+            description: r.description || initialMatchingReq?.description || '',
+            requestType: r.request_type || 'maintenance_upgrade',
+            stream: (r.request_type || 'common_area_repair') as any,
+            priority: r.priority || 'Medium',
+            status: r.status || 'new',
+            createdAt: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent',
+            requestorName,
+            reportedBy: `${requestorName} (${requestorRole})`,
+            requestorEmail,
+            requestorPhone: initialMatchingReq?.requestorPhone || matchingMember?.phone || '0400 000 000',
+            requestorRole,
+            comments: initialMatchingReq?.comments || []
+          };
+        });
         setResidentRequests(formattedReqs);
       } else {
         setResidentRequests(INITIAL_RESIDENT_REQUESTS);

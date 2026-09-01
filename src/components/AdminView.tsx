@@ -708,15 +708,37 @@ export function AdminView({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
-                            req.status === 'resolved' ? 'bg-[#00D4B2]/10 text-[#00A38C]' :
-                            req.status === 'approved' ? 'bg-blue-500/10 text-[#0055FF]' :
-                            req.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
-                            'bg-amber-500/10 text-amber-600'
-                          }`}>
-                            {req.status.replace(/_/g, ' ')}
-                          </span>
+                        <div className="flex items-center gap-2.5">
+                          {req.status === 'pending_triage' && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              <span>Pending Triage</span>
+                            </span>
+                          )}
+                          {req.status === 'approved' && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-[#0055FF] dark:text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF]" />
+                              <span>Approved</span>
+                            </span>
+                          )}
+                          {req.status === 'resolved' && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20 whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#00D4B2]" />
+                              <span>Resolved</span>
+                            </span>
+                          )}
+                          {req.status === 'rejected' && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                              <span>Rejected</span>
+                            </span>
+                          )}
+                          {(req.status === 'new' || req.status === 'in_voting' || !['pending_triage', 'approved', 'resolved', 'rejected'].includes(req.status)) && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 whitespace-nowrap">
+                              <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+                              <span>{req.status.replace(/_/g, ' ')}</span>
+                            </span>
+                          )}
                           <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
@@ -819,115 +841,168 @@ export function AdminView({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-[#1a1d27]/80 text-gray-500 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
-                        <th className="py-4 px-5">Ticket Info</th>
-                        <th className="py-4 px-5">Scheme & Location</th>
-                        <th className="py-4 px-5">Requester</th>
-                        <th className="py-4 px-5">Priority</th>
-                        <th className="py-4 px-5">Status</th>
-                        <th className="py-4 px-5 text-right">Master Actions</th>
+                      <tr className="bg-gray-50/80 dark:bg-[#151926] text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
+                        <th className="py-3.5 px-5">Ticket Info</th>
+                        <th className="py-3.5 px-5">Scheme & Location</th>
+                        <th className="py-3.5 px-5">Requester</th>
+                        <th className="py-3.5 px-5">Priority</th>
+                        <th className="py-3.5 px-5">Status</th>
+                        <th className="py-3.5 px-5 text-right">Master Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
                       {filteredRequests.map(req => (
                         <tr 
                           key={req.id} 
-                          className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
+                          className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors group"
                         >
                           {/* Ticket Info */}
-                          <td className="py-4 px-5">
-                            <div className="font-bold text-gray-900 dark:text-white text-sm">
+                          <td className="py-4 px-5 align-middle">
+                            <div className="font-bold text-gray-900 dark:text-white text-xs group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors">
                               {req.title}
                             </div>
-                            <div className="text-[10px] text-gray-400 line-clamp-1 max-w-xs mt-0.5">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 max-w-sm mt-0.5">
                               {req.description}
                             </div>
-                            <div className="text-[9px] font-mono text-gray-400 mt-1">
-                              ID: {req.id} • {new Date(req.createdAt).toLocaleDateString()}
+                            <div className="text-[9px] font-mono text-gray-400 dark:text-gray-500 flex items-center gap-1.5 mt-1">
+                              <span className="bg-gray-100 dark:bg-white/5 px-1.5 py-0.5 rounded text-[9px] font-mono">
+                                {req.id.length > 12 ? `${req.id.slice(0, 8)}...` : req.id}
+                              </span>
+                              <span>•</span>
+                              <span>{req.createdAt}</span>
                             </div>
                           </td>
 
                           {/* Scheme & Location */}
-                          <td className="py-4 px-5">
-                            <div className="font-black text-gray-800 dark:text-gray-200">
+                          <td className="py-4 px-5 align-middle">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-[11px] font-black text-gray-800 dark:text-gray-200">
                               {req.schemeId}
-                            </div>
-                            <div className="text-[11px] text-gray-500 font-bold mt-0.5">
+                            </span>
+                            <div className="text-[11px] font-semibold text-gray-600 dark:text-gray-400 mt-1">
                               {req.unit}
                             </div>
                           </td>
 
                           {/* Requester */}
-                          <td className="py-4 px-5">
-                            <div className="font-bold text-gray-900 dark:text-white">
-                              {req.requestorName}
-                            </div>
-                            <div className="text-[10px] text-gray-400">
-                              {req.requestorRole} • {req.requestorEmail}
+                          <td className="py-4 px-5 align-middle">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#0055FF]/10 to-[#00D4B2]/20 border border-[#00D4B2]/30 flex items-center justify-center text-[11px] font-black text-[#0055FF] dark:text-[#00D4B2] shrink-0">
+                                {req.requestorName ? req.requestorName.charAt(0).toUpperCase() : 'R'}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-gray-900 dark:text-white text-xs truncate max-w-[140px]">
+                                  {req.requestorName}
+                                </div>
+                                <div className="text-[10px] text-gray-400 dark:text-gray-500 truncate max-w-[150px]">
+                                  {req.requestorRole} • {req.requestorEmail}
+                                </div>
+                              </div>
                             </div>
                           </td>
 
                           {/* Priority */}
-                          <td className="py-4 px-5">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase inline-flex items-center gap-1.5 ${
-                              req.priority === 'Emergency' ? 'bg-[#FF4757]/15 text-[#FF4757] border border-[#FF4757]/30 animate-pulse' :
-                              req.priority === 'High' ? 'bg-amber-500/15 text-amber-600 border border-amber-500/30' :
-                              'bg-blue-500/10 text-[#0055FF] border border-blue-500/20'
-                            }`}>
-                              {req.priority === 'Emergency' ? (
-                                <AlertTriangle size={11} className="text-[#FF4757]" />
-                              ) : req.priority === 'High' ? (
-                                <Zap size={11} className="text-amber-600" />
-                              ) : (
-                                <FileText size={11} className="text-[#0055FF]" />
-                              )}
-                              <span>{req.priority}</span>
-                            </span>
+                          <td className="py-4 px-5 align-middle">
+                            {req.priority === 'Emergency' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                                <AlertTriangle size={11} className="text-rose-500 shrink-0" />
+                                <span>Emergency</span>
+                              </span>
+                            )}
+                            {req.priority === 'High' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                                <Zap size={11} className="text-amber-500 shrink-0" />
+                                <span>High</span>
+                              </span>
+                            )}
+                            {req.priority === 'Medium' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-[#0055FF] dark:text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF] shrink-0" />
+                                <FileText size={11} className="text-[#0055FF] shrink-0" />
+                                <span>Medium</span>
+                              </span>
+                            )}
+                            {req.priority === 'Low' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                                <Clock size={11} className="text-gray-500 shrink-0" />
+                                <span>Low</span>
+                              </span>
+                            )}
                           </td>
 
                           {/* Status */}
-                          <td className="py-4 px-5">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                              req.status === 'resolved' ? 'bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20' :
-                              req.status === 'approved' ? 'bg-blue-500/10 text-[#0055FF] border border-blue-500/20' :
-                              req.status === 'rejected' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                              'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                            }`}>
-                              {req.status.replace(/_/g, ' ')}
-                            </span>
+                          <td className="py-4 px-5 align-middle">
+                            {req.status === 'pending_triage' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                                <span>Pending Triage</span>
+                              </span>
+                            )}
+                            {req.status === 'approved' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-[#0055FF] dark:text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF] shrink-0" />
+                                <span>Approved</span>
+                              </span>
+                            )}
+                            {req.status === 'resolved' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#00D4B2] shrink-0" />
+                                <span>Resolved</span>
+                              </span>
+                            )}
+                            {req.status === 'in_voting' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                                <span>In Voting</span>
+                              </span>
+                            )}
+                            {req.status === 'rejected' && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                                <span>Rejected</span>
+                              </span>
+                            )}
+                            {(req.status === 'new' || !['pending_triage', 'approved', 'resolved', 'in_voting', 'rejected'].includes(req.status)) && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                                <span>{req.status.replace(/_/g, ' ')}</span>
+                              </span>
+                            )}
                           </td>
 
                           {/* Actions */}
-                          <td className="py-4 px-5 text-right">
+                          <td className="py-4 px-5 text-right align-middle">
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => {
                                   setSelectedRequest(req);
                                   setIsEditingRequest(false);
                                 }}
-                                className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                                className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border border-transparent hover:border-[#00D4B2]/30 shadow-xs"
                               >
                                 <Eye size={13} />
-                                <span>Inspect & Edit</span>
+                                <span>Inspect</span>
                               </button>
 
                               {onTriageRequest && req.status !== 'resolved' && (
                                 <button
                                   onClick={() => onTriageRequest(req.id, { status: 'resolved' })}
-                                  className="px-2.5 py-1.5 rounded-xl bg-[#00D4B2]/10 hover:bg-[#00D4B2] text-[#00A38C] hover:text-[#0B1121] text-xs font-bold transition-all cursor-pointer"
+                                  className="p-1.5 rounded-xl bg-[#00D4B2]/10 hover:bg-[#00D4B2] text-[#00A38C] hover:text-[#0B1121] text-xs font-bold transition-all cursor-pointer border border-[#00D4B2]/20"
                                   title="Mark Resolved"
                                 >
-                                  <Check size={13} />
+                                  <Check size={14} />
                                 </button>
                               )}
 
                               {onCloseRequest && req.status !== 'closed' && (
                                 <button
                                   onClick={() => onCloseRequest(req.id, 'Super Admin closed request.')}
-                                  className="p-1.5 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer"
+                                  className="p-1.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer"
                                   title="Close Request"
                                 >
-                                  <Trash2 size={13} />
+                                  <Trash2 size={14} />
                                 </button>
                               )}
                             </div>
