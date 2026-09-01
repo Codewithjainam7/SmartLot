@@ -45,3 +45,5 @@ export function CustomCheckbox({
     </label>
   );
 }
+
+// Component: Animated Custom Checkbox
