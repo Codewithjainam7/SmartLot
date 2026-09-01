@@ -67,3 +67,15 @@ Configure your environment variables in `.env.local`:
 VITE_SUPABASE_URL=https://pieplmpkognbdktezteb.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key_here
 ```
+
+
+## 🧪 Testing Personas
+
+Login to the platform using any of the pre-configured test personas:
+
+| Persona | Role | Scheme | Email | Password |
+| :--- | :--- | :--- | :--- | :--- |
+| **Sarah Jones** | Owner / Resident | Duplex (`SP101`) | `sarah.jones@duplex.com` | `SmartLot2026!` |
+| **Michael Chen** | Committee Member | Coronation (`SP102`) | `michael.chen@coronation.com` | `SmartLot2026!` |
+| **Emma Wilson** | Strata Manager | Cavaller (`SP103`) & Coronation (`SP102`) | `emma.wilson@agency.com` | `SmartLot2026!` |
+| **Roman Joe** | Strata Manager | Spear Empire (`SP823`) | `romanjoe@gmail.com` | `SmartLot2026!` |
