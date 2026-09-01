@@ -140,3 +140,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 43: Style: Improve button hit-target padding on mobile viewport breakpoints
 // Revision Step 44: Refactor: Consolidate Supabase auth error handling in login controllers
 // Revision Step 45: Feat: Add scheme portfolio lot count aggregation in stats cards
+// Revision Step 46: Style: Polish voting modal progress bars and vote tally chips
