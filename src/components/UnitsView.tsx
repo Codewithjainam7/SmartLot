@@ -219,3 +219,4 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
 
 
 // Subcomponent: Units & Lots Grid
+// Animation: Floor Plan Grid Item Zoom
