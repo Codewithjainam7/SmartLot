@@ -77,3 +77,4 @@ export const PERSONAS: Persona[] = [
 // Interface: Triage and Approval Status Types
 // Interface: Super Admin Operational Payloads
 // Interface: Permission Matrix Rules
+// UI: Tab Animation Key Definitions
