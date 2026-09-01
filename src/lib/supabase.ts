@@ -11,3 +11,5 @@ export const supabase = createClient(
   supabaseUrl || '',
   supabaseAnonKey || ''
 );
+
+// Supabase Client Config Marker
