@@ -139,3 +139,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 42: Docs: Document role permissions matrix for Lot Owners vs Residents
 // Revision Step 43: Style: Improve button hit-target padding on mobile viewport breakpoints
 // Revision Step 44: Refactor: Consolidate Supabase auth error handling in login controllers
+// Revision Step 45: Feat: Add scheme portfolio lot count aggregation in stats cards
