@@ -1204,3 +1204,4 @@ export function useSmartLotStore() {
 // Helper: Cross-scheme request dispatch
 // UI: Active Tab Persistence Logic
 // UI: Theme Switcher Synchronizer
+// UI: Ticket Priority Glow Badges
