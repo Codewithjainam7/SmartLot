@@ -555,11 +555,10 @@ export function AdminView({
                 </>
               )}
 
-              {(searchQuery || selectedSchemeFilter !== 'ALL' || selectedStatusFilter !== 'ALL' || selectedPriorityFilter !== 'ALL') && (
+              {(searchQuery || selectedStatusFilter !== 'ALL' || selectedPriorityFilter !== 'ALL') && (
                 <button
                   onClick={() => {
                     setSearchQuery('');
-                    setSelectedSchemeFilter('ALL');
                     setSelectedStatusFilter('ALL');
                     setSelectedPriorityFilter('ALL');
                   }}
