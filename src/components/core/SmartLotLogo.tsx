@@ -96,3 +96,5 @@ export function SmartLotLogoIcon({ className = "w-10 h-10", ...props }: React.SV
   );
 }
 
+
+// Animation: Logo Building Silhouette Glow
