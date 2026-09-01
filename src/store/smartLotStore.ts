@@ -885,6 +885,36 @@ export function useSmartLotStore() {
     }
   };
 
+  const updateScheme = async (schemeId: string, updates: { name?: string; lots?: number }) => {
+    setSchemes(prev => prev.map(s => s.id === schemeId ? { ...s, ...updates } : s));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('schemes').update(updates).eq('id', schemeId);
+      if (error) console.error("Error updating scheme in Supabase:", error);
+    }
+  };
+
+  const updateMember = async (memberId: string, updates: Partial<Member>) => {
+    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, ...updates } : m));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const payload: any = {};
+      if (updates.name) payload.name = updates.name;
+      if (updates.email) payload.email = updates.email;
+      if (updates.phone) payload.phone = updates.phone;
+      if (updates.role) payload.role = updates.role;
+      if (updates.unitId) payload.unit_id = updates.unitId;
+      if (updates.status) payload.status = updates.status;
+      
+      const { error } = await supabase.from('members').update(payload).eq('id', memberId);
+      if (error) console.error("Error updating member in Supabase:", error);
+    }
+  };
+
+  const updateResidentRequest = async (requestId: string, updates: Partial<ResidentRequest>) => {
+    setResidentRequests(prev => prev.map(r => r.id === requestId ? { ...r, ...updates } : r));
+  };
+
   const deleteMember = async (memberId: string) => {
     setMembers(prev => prev.filter(m => m.id !== memberId));
 
@@ -895,6 +925,40 @@ export function useSmartLotStore() {
         console.error("Error deleting member from Supabase:", error);
       }
     }
+  };
+
+  const createMasterRequest = (reqData: {
+    schemeId: string;
+    unit: string;
+    title: string;
+    description: string;
+    priority: 'Low' | 'Medium' | 'High' | 'Emergency';
+    requestorName?: string;
+    requestorEmail?: string;
+    requestorRole?: 'Lot Owner' | 'Resident' | 'Tenant' | 'Strata Manager';
+    requestType?: RequestStream;
+  }) => {
+    const id = `REQ-${100 + residentRequests.length + 1}`;
+    const req: ResidentRequest = {
+      id,
+      schemeId: reqData.schemeId,
+      unit: reqData.unit,
+      title: reqData.title,
+      description: reqData.description,
+      requestType: reqData.requestType || 'maintenance_upgrade',
+      stream: reqData.priority === 'Emergency' ? 'emergency_repair' : 'common_area_repair',
+      priority: reqData.priority,
+      status: 'pending_triage',
+      createdAt: new Date().toISOString(),
+      requestorName: reqData.requestorName || 'Super Admin',
+      reportedBy: reqData.requestorName || 'Super Admin',
+      requestorEmail: reqData.requestorEmail || 'admin@smartlot.com',
+      requestorPhone: '0400 000 000',
+      requestorRole: reqData.requestorRole || 'Strata Manager',
+      comments: []
+    };
+    setResidentRequests(prev => [req, ...prev]);
+    return id;
   };
 
   const submitResidentRequest = (newReq: {
@@ -1099,12 +1163,16 @@ export function useSmartLotStore() {
     updateMemberStatus,
     deleteMember,
     submitResidentRequest,
+    createMasterRequest,
     triageRequest,
     closeResidentRequest,
     addCommentToRequest,
     addResidentToUnit,
     offboardActor,
     updateUnitMetadata,
+    updateScheme,
+    updateMember,
+    updateResidentRequest,
     addScheme,
     deleteScheme,
     togglePermission,
@@ -1122,3 +1190,20 @@ export function useSmartLotStore() {
 }
 
 // End of SmartLot store hook
+
+// Module: Store State Hooks
+// Module: Database Fetch Operations
+// Module: Scheme Level Operations
+// Module: Member & Occupancy Operations
+// Module: Request & Triage Operations
+// Module: Permissions Matrix Handlers
+// Helper: Permissions evaluation engine
+// Helper: Active scheme context switcher
+// Helper: Real-time DB subscription handlers
+// Helper: Master triage action handlers
+// Helper: Cross-scheme request dispatch
+// UI: Active Tab Persistence Logic
+// UI: Theme Switcher Synchronizer
+// UI: Ticket Priority Glow Badges
+// UI: Real-time Member Audit Trail
+// UI: End of Store UI Bindings

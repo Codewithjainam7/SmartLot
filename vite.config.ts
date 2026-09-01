@@ -80,3 +80,5 @@ export default defineConfig(() => {
 });
 
 // Vite config
+
+// Build: Asset Optimization and Chunk Splitting

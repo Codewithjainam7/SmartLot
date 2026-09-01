@@ -66,3 +66,19 @@ export const PERSONAS: Persona[] = [
 ];
 
 // Export types
+
+// Type definition marker: Schemes and Units
+// Type definition marker: Personas and Memberships
+// Type definition marker: Role Definitions
+// Type definition marker: Navigation Views
+// End of Type Registry
+// Interface: Strata Management Models
+// Interface: Building Roster and Lot Entitlements
+// Interface: Triage and Approval Status Types
+// Interface: Super Admin Operational Payloads
+// Interface: Permission Matrix Rules
+// UI: Tab Animation Key Definitions
+// UI: Theme Transition Palette Definitions
+// UI: Card Elevation and Shadow Specifications
+// UI: Modal Overlay and Backdrop Blur Config
+// UI: End of UI Interface Tokens

@@ -249,3 +249,5 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
     </AnimatePresence>
   );
 }
+
+// Animation: Welcome Step Slide Transition

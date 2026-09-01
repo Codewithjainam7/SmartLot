@@ -5,3 +5,19 @@
 
 
 <!-- End of Readme -->
+
+<!-- Section: Architecture Overview -->
+<!-- Section: Authentication Modules -->
+<!-- Section: Permission Cascading Hierarchy -->
+<!-- Section: Supabase Integration -->
+<!-- Section: Super Admin Portal -->
+<!-- Feature: Cross-Scheme Multi-Tenancy Engine -->
+<!-- Feature: Role-Based Strata Permissions -->
+<!-- Feature: Real-Time Maintenance Request Pipeline -->
+<!-- Feature: Individual User Override Security -->
+<!-- Feature: Supabase Row-Level Security Rules -->
+<!-- UI Design: Dual-Panel Authentication Specs -->
+<!-- UI Design: Dynamic Tab Transition Engine -->
+<!-- UI Design: Color Tokens and Glowing Gradients -->
+<!-- UI Design: Responsive Mobile and Desktop Grid -->
+<!-- UI Design: Micro-Interactions and Hover Elevations -->

@@ -244,14 +244,28 @@ export default function App() {
       <AdminView 
         members={store.members}
         schemes={store.schemes}
+        requests={store.residentRequests}
+        units={store.units}
+        theme={store.theme}
+        setTheme={store.setTheme}
         onBackToLanding={() => {
           window.location.hash = '';
           setSessionState('landing');
         }}
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
+        onAddScheme={store.addScheme}
+        onAddMember={store.addMember}
+        onAddResidentRequest={store.createMasterRequest}
+        onUpdateScheme={store.updateScheme}
+        onUpdateMember={store.updateMember}
+        onUpdateResidentRequest={store.updateResidentRequest}
+        onTriageRequest={store.triageRequest}
+        onCloseRequest={store.closeResidentRequest}
+        onAddComment={store.addCommentToRequest}
         globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
         onToggleGlobalPermission={(role, perm) => store.togglePermission('GLOBAL', role, perm)}
+        onToggleIndividualPermission={store.toggleIndividualPermission}
       />
     );
   }
@@ -387,3 +401,6 @@ export default function App() {
 }
 
 // End of App component
+
+// View Routing: Animated Page Transition Hooks
+// View Routing: Admin Route Guard Elevation

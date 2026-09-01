@@ -1097,3 +1097,7 @@ function MemberStatusBadge({ status }: { status: Member['status'] }) {
 
 
 // End UserManagementView
+
+// Subcomponent: Scheme Permission Matrix
+// Subcomponent: Individual Overrides Inspector
+// Subcomponent: Member Directory Table

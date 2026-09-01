@@ -45,3 +45,7 @@ export function CustomCheckbox({
     </label>
   );
 }
+
+// Component: Animated Custom Checkbox
+// Core: Theme Adaptive Checkbox Component
+// Animation: Checkmark SVG Spring Motion

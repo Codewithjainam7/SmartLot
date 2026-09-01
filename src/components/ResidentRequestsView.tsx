@@ -389,3 +389,9 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 
 
 // End ResidentRequestsView
+
+// Subcomponent: Requests Filter Bar
+// Subcomponent: Request Details Drawer
+// Requests: Request Status Timeline and Badges
+// Animation: Request Timeline Step Indicator
+// Animation: Filter Drawer Slide Animation

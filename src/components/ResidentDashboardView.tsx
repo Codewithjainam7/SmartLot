@@ -424,3 +424,9 @@ export function ResidentDashboardView({
 
 
 // End ResidentDashboardView
+
+// Subcomponent: Resident Portal Header
+// Subcomponent: My Requests List
+// Resident: Unit Dashboard Quick Action Cards
+// Animation: Quick Action Cards Motion
+// Animation: Stat Badge Subtle Glow

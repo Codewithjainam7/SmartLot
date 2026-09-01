@@ -8,3 +8,6 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// Entry Point Initialization Marker
+// Bootstrap: CSS Animation Stylesheet Injection

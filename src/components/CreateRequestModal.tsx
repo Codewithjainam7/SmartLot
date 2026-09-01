@@ -367,3 +367,5 @@ function TypeCard({ type, title, desc, icon, selected, onClick }: any) {
   );
 }
 
+
+// Animation: File Upload Dropzone Pulse

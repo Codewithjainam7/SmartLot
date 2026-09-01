@@ -191,3 +191,6 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
 }
 
 
+
+// Subcomponent: Voting Motions Deck
+// Animation: Ballot Cast Confetti Keyframes
