@@ -18,3 +18,4 @@
 <!-- Feature: Supabase Row-Level Security Rules -->
 <!-- UI Design: Dual-Panel Authentication Specs -->
 <!-- UI Design: Dynamic Tab Transition Engine -->
+<!-- UI Design: Color Tokens and Glowing Gradients -->
