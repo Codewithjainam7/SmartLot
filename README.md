@@ -15,3 +15,4 @@
 <!-- Feature: Role-Based Strata Permissions -->
 <!-- Feature: Real-Time Maintenance Request Pipeline -->
 <!-- Feature: Individual User Override Security -->
+<!-- Feature: Supabase Row-Level Security Rules -->
