@@ -1692,3 +1692,4 @@ export function AdminView({
 // Subcomponent: Cross-Scheme Triage Hub
 // Subcomponent: Strata Schemes Portfolio
 // Subcomponent: Global Users Registry
+// Subcomponent: Global Permissions Matrix
