@@ -331,3 +331,5 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 }
 
 
+
+// Subcomponent: Resident Auth Form
