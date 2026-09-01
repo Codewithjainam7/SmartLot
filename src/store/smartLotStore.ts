@@ -168,12 +168,157 @@ export type UnitData = {
 };
 
 // Initial Seed Members with Multiple Occupants in Unit 10
-const INITIAL_MEMBERS: Member[] = [];
+const INITIAL_MEMBERS: Member[] = [
+  {
+    id: 'MEM-101',
+    name: 'Sarah Jenkins',
+    email: 'sarah.j@building.com.au',
+    phone: '0400 111 222',
+    schemeId: 'SP10482',
+    role: 'Committee Member',
+    unitId: 'Unit 2',
+    lotNumber: 2,
+    status: 'Active',
+    joinedAt: '2025-01-15',
+  },
+  {
+    id: 'MEM-102',
+    name: 'Alex Vance',
+    email: 'alex.vance@strata.com.au',
+    phone: '0411 999 888',
+    schemeId: 'SP10482',
+    role: 'Strata Manager',
+    unitId: 'HQ / Management',
+    lotNumber: 0,
+    status: 'Active',
+    joinedAt: '2024-11-01',
+  },
+  {
+    id: 'MEM-103',
+    name: 'Mike Davies',
+    email: 'mike@owner.com',
+    phone: '0411 222 333',
+    schemeId: 'SP10482',
+    role: 'Lot Owner',
+    unitId: 'Unit 10',
+    lotNumber: 10,
+    status: 'Active',
+    joinedAt: '2024-05-10',
+  },
+  {
+    id: 'MEM-104',
+    name: 'Lisa Ray',
+    email: 'lisa@unit10.com',
+    phone: '0412 888 999',
+    schemeId: 'SP10482',
+    role: 'Resident',
+    unitId: 'Unit 10',
+    lotNumber: 10,
+    status: 'Active',
+    joinedAt: '2024-06-01',
+  }
+];
 
-// Initial Seed Requests
-const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [];
+const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
+  {
+    id: 'REQ-101',
+    schemeId: 'SP10482',
+    unit: 'Unit 10',
+    title: 'Shared Vehicle Entrance Gate Repairs',
+    description: 'Automatic vehicle entrance gate motor is grinding and stopping halfway.',
+    requestType: 'maintenance_upgrade',
+    stream: 'common_area_repair',
+    priority: 'High',
+    dueDate: '2026-08-25',
+    attachmentUrl: 'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=500&auto=format&fit=crop',
+    status: 'pending_triage',
+    createdAt: '2 hours ago',
+    requestorName: 'Lisa Ray',
+    reportedBy: 'Lisa Ray (Resident)',
+    requestorEmail: 'lisa@unit10.com',
+    requestorPhone: '0412 888 999',
+    requestorRole: 'Resident',
+    comments: [
+      { id: 'C1', authorName: 'Mike Davies', authorRole: 'Lot Owner', text: 'Agreed, this gate has been failing for two weeks.', createdAt: '1 hour ago' },
+      { id: 'C2', authorName: 'Sarah Jenkins', authorRole: 'Committee Admin', text: 'Inspected on site, needs motor replacement.', createdAt: '30 mins ago' },
+    ],
+  },
+  {
+    id: 'REQ-102',
+    schemeId: 'SP10482',
+    unit: 'Unit 2',
+    title: 'Basement Garage Water Pipe Leak',
+    description: 'High pressure water leak spraying near main electric board in basement B1.',
+    requestType: 'emergency',
+    stream: 'emergency_repair',
+    priority: 'Emergency',
+    dueDate: '2026-08-21',
+    status: 'approved',
+    createdAt: '30 mins ago',
+    requestorName: 'Sarah Jenkins',
+    reportedBy: 'Sarah Jenkins (Committee Admin)',
+    requestorEmail: 'sarah@unit2.com',
+    requestorPhone: '0400 111 222',
+    requestorRole: 'Lot Owner',
+    comments: [],
+  },
+  {
+    id: 'REQ-103',
+    schemeId: 'SP10482',
+    unit: 'Unit 1',
+    title: 'Noise Complaint - Late Night Music',
+    description: 'Loud music from common balcony area past 11 PM on weekends.',
+    requestType: 'complaint',
+    stream: 'general_inquiry',
+    priority: 'Medium',
+    status: 'approved',
+    createdAt: '1 day ago',
+    requestorName: 'Smith Family',
+    reportedBy: 'Smith Family (Lot Owner)',
+    requestorEmail: 'smith@unit1.com',
+    requestorPhone: '0433 222 111',
+    requestorRole: 'Lot Owner',
+    comments: [
+      { id: 'C3', authorName: 'Alex Vance', authorRole: 'Strata Manager', text: 'Formal bylaw notice issued to relevant lot.', createdAt: 'Yesterday' }
+    ],
+  },
+];
 
-const INITIAL_UNITS: UnitData[] = [];
+const INITIAL_UNITS: UnitData[] = [
+  {
+    schemeId: 'SP10482',
+    unitId: 'Unit 10',
+    lotNumber: 10,
+    entitlement: '12.5%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-1',
+        role: 'Lot Owner',
+        name: 'Mike Davies',
+        email: 'mike@owner.com',
+        phone: '0411 222 333',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      },
+      {
+        id: 'ACT-2',
+        role: 'On-Site Resident',
+        name: 'Lisa Ray',
+        email: 'lisa@unit10.com',
+        phone: '0412 888 999',
+        verified: true,
+        permissions: [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+        ],
+      },
+    ],
+  },
+];
 
 export const getDefaultPermissionsForRole = (role: string): { label: string; active: boolean; locked?: boolean }[] => {
   const isSM = role === 'Strata Manager' || role === 'Strata Admin' || role === 'Strata Plan Admin';
@@ -245,7 +390,7 @@ export function useSmartLotStore() {
   const [user, setUser] = useState<any>(null);
 
   // Local state initialized to empty for live Supabase fetch
-  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [schemes, setSchemes] = useState<Scheme[]>(SCHEMES);
   const [activeScheme, setActiveScheme] = usePersistedState<Scheme>(`smartlot_${pId}_activeScheme_v8`, 
     { id: 'NO_SCHEME', name: 'No Registered Schemes', lots: 0, active: false }
   );
@@ -320,32 +465,31 @@ export function useSmartLotStore() {
     setIsLoading(true);
     try {
       const { data: schemesData, error } = await supabase.from('schemes').select('*');
-      if (error) throw error;
       
-      if (schemesData) {
-        const formattedSchemes = schemesData.map(s => ({
+      let formattedSchemes = SCHEMES;
+      if (!error && schemesData && schemesData.length > 0) {
+        formattedSchemes = schemesData.map(s => ({
           id: s.id,
           name: s.name,
           lots: s.lots,
           active: s.active
         }));
-        setSchemes(formattedSchemes);
-        
-        // Auto-select first scheme if none selected or invalid
-        if (formattedSchemes.length > 0) {
-          setActiveScheme(prev => {
-            if (prev.id === 'NO_SCHEME' || !formattedSchemes.find(f => f.id === prev.id)) {
-              return formattedSchemes[0];
-            }
-            return prev;
-          });
-        }
+      }
+      setSchemes(formattedSchemes);
+      
+      if (formattedSchemes.length > 0) {
+        setActiveScheme(prev => {
+          if (prev.id === 'NO_SCHEME' || !formattedSchemes.find(f => f.id === prev.id)) {
+            return formattedSchemes[0];
+          }
+          return prev;
+        });
       }
 
       // Fetch members for all schemes
-      let formattedMembers: Member[] = [];
+      let formattedMembers: Member[] = INITIAL_MEMBERS;
       const { data: membersData } = await supabase.from('members').select('*');
-      if (membersData) {
+      if (membersData && membersData.length > 0) {
         formattedMembers = membersData.map(m => {
           const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
           return {
@@ -443,7 +587,7 @@ export function useSmartLotStore() {
         }
       }
 
-      setUnits(allUnits);
+      setUnits(allUnits.length > 0 ? allUnits : INITIAL_UNITS);
 
       // Fetch role permissions from Supabase
       const { data: rolePermsData } = await supabase.from('role_permissions').select('*');
