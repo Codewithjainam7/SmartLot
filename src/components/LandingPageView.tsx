@@ -315,3 +315,5 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 }
 
 // End LandingPageView
+
+// Subcomponent: Hero Section Container
