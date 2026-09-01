@@ -181,3 +181,4 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
 
 // Component: Split-Panel Auth Container
 // Component: Security Credential Validator
+// Auth: Two-Panel Brand Container
