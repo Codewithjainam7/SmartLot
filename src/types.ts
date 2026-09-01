@@ -132,3 +132,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 35: Refactor: Streamline active scheme switcher event dispatching in Topbar
 // Revision Step 36: Docs: Update API key handling and security guidelines in Supabase docs
 // Revision Step 37: Style: Refine emergency priority badge color tokens and pulse animations
+// Revision Step 38: Refactor: Clean up redundant state hooks in CreateRequestModal
