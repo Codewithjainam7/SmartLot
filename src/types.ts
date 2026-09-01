@@ -127,3 +127,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 30: Docs: Add step-by-step onboarding documentation for new schemes
 // Revision Step 31: Style: Enhance empty state illustration and text contrast in triage view
 // Revision Step 32: Refactor: Ensure strict type checking across custom persona members
+// Revision Step 33: Feat: Add unit occupancy status badge formatting utilities
