@@ -81,7 +81,7 @@ export function AdminView({
   
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<string>('ALL');
+  const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<string>(schemes[0]?.id || '');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState<string>('ALL');
 
@@ -517,7 +517,7 @@ export function AdminView({
                 onChange={e => setSelectedSchemeFilter(e.target.value)}
                 className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
               >
-                <option value="ALL">All Schemes</option>
+
                 {schemes.map(s => (
                   <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
                 ))}
