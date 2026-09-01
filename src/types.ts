@@ -104,3 +104,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 7: Fix: Prevent modal close button overlapping in master audit dialogs
 // Revision Step 8: Refactor: Enhance null-safe filter logic in resident requests store
 // Revision Step 9: Style: Apply glowing status indicators to pending triage badges
+// Revision Step 10: Feat: Add granular role permission checks for Committee Members
