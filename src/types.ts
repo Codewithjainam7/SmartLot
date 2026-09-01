@@ -121,3 +121,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 24: Docs: Add reference guide for multi-site strata manager workflows
 // Revision Step 25: Style: Update card border radius and shadow tokens for consistent UI
 // Revision Step 26: Refactor: Ensure clean separation between Admin and Strata Manager views
+// Revision Step 27: Feat: Add auto-link trigger documentation for Supabase auth signups
