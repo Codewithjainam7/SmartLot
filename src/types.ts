@@ -101,3 +101,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 4: Feat: Add safe date parser helper for relative timestamps across dashboard
 // Revision Step 5: Refactor: Streamline Super Admin global platform user roster sorting
 // Revision Step 6: Style: Standardize action button hover transitions in AdminView
+// Revision Step 7: Fix: Prevent modal close button overlapping in master audit dialogs
