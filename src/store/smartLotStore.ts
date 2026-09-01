@@ -1201,3 +1201,4 @@ export function useSmartLotStore() {
 // Helper: Active scheme context switcher
 // Helper: Real-time DB subscription handlers
 // Helper: Master triage action handlers
+// Helper: Cross-scheme request dispatch
