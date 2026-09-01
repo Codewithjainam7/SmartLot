@@ -57,3 +57,13 @@ npm run dev
 # Run TypeScript compilation check
 npx tsc --noEmit
 ```
+
+
+## 🔐 Supabase Configuration
+
+Configure your environment variables in `.env.local`:
+
+```env
+VITE_SUPABASE_URL=https://pieplmpkognbdktezteb.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key_here
+```
