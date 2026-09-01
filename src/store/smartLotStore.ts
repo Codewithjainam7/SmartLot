@@ -49,7 +49,7 @@ export type ResidentRequest = {
   reportedBy?: string;
   requestorEmail: string;
   requestorPhone: string;
-  requestorRole: 'Lot Owner' | 'Resident' | 'Tenant' | 'Strata Manager';
+  requestorRole: 'Lot Owner' | 'Resident' | 'Tenant' | 'Strata Manager' | 'Committee Member' | 'Building Manager';
   rejectionReason?: string;
   closeReason?: string;
   comments: RequestComment[];
