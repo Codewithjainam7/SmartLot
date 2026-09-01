@@ -1159,3 +1159,4 @@ export function useSmartLotStore() {
 // Module: Store State Hooks
 // Module: Database Fetch Operations
 // Module: Scheme Level Operations
+// Module: Member & Occupancy Operations
