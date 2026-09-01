@@ -2040,3 +2040,4 @@ export function AdminView({
 // View: Scheme Audit and Inspection Suite
 // View: User Role Assignment Modal Logic
 // View: Master Ticket Creation Workflow
+// Animation: Tab Pill Glowing Indicator
