@@ -1203,3 +1203,4 @@ export function useSmartLotStore() {
 // Helper: Master triage action handlers
 // Helper: Cross-scheme request dispatch
 // UI: Active Tab Persistence Logic
+// UI: Theme Switcher Synchronizer
