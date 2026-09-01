@@ -49,6 +49,7 @@ interface AdminViewProps {
   globalRolePermissions?: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
   onToggleGlobalPermission?: (role: string, permissionLabel: string) => void;
   onToggleIndividualPermission?: (memberId: string, permissionLabel: string) => void;
+  onRefreshData?: () => Promise<void>;
 }
 
 export function AdminView({ 
@@ -72,9 +73,11 @@ export function AdminView({
   onAddComment,
   globalRolePermissions = {}, 
   onToggleGlobalPermission,
-  onToggleIndividualPermission
+  onToggleIndividualPermission,
+  onRefreshData
 }: AdminViewProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'schemes' | 'users' | 'permissions'>('overview');
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -380,6 +383,26 @@ export function AdminView({
 
           {/* Top Actions & Theme Switcher */}
           <div className="flex items-center gap-3 self-end md:self-auto">
+            {onRefreshData && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsSyncing(true);
+                  try {
+                    await onRefreshData();
+                  } finally {
+                    setTimeout(() => setIsSyncing(false), 500);
+                  }
+                }}
+                disabled={isSyncing}
+                className="p-2.5 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                title="Sync Database"
+              >
+                <RefreshCw size={16} className={`${isSyncing ? 'animate-spin text-[#00D4B2]' : ''}`} />
+                <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync DB'}</span>
+              </button>
+            )}
+
             {setTheme && (
               <button
                 type="button"

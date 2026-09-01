@@ -315,71 +315,107 @@ export function useSmartLotStore() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch Live Data from Supabase when logged in
-  useEffect(() => {
-    let isMounted = true;
-    const fetchSupabaseData = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.user) {
-        setIsLoading(false);
-        return;
+  // Fetch Live Data from Supabase universally for all sessions (including Super Admin)
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      const { data: schemesData, error } = await supabase.from('schemes').select('*');
+      if (error) throw error;
+      
+      if (schemesData) {
+        const formattedSchemes = schemesData.map(s => ({
+          id: s.id,
+          name: s.name,
+          lots: s.lots,
+          active: s.active
+        }));
+        setSchemes(formattedSchemes);
+        
+        // Auto-select first scheme if none selected or invalid
+        if (formattedSchemes.length > 0) {
+          setActiveScheme(prev => {
+            if (prev.id === 'NO_SCHEME' || !formattedSchemes.find(f => f.id === prev.id)) {
+              return formattedSchemes[0];
+            }
+            return prev;
+          });
+        }
       }
 
-      setIsLoading(true);
-      try {
-        const { data: schemesData, error } = await supabase.from('schemes').select('*');
-        if (error) throw error;
-        
-        if (schemesData && isMounted) {
-          const formattedSchemes = schemesData.map(s => ({
-            id: s.id,
-            name: s.name,
-            lots: s.lots,
-            active: s.active
-          }));
-          setSchemes(formattedSchemes);
-          
-          // Auto-select first scheme if none selected or invalid
-          if (formattedSchemes.length > 0) {
-            setActiveScheme(prev => {
-              if (prev.id === 'NO_SCHEME' || !formattedSchemes.find(f => f.id === prev.id)) {
-                return formattedSchemes[0];
-              }
-              return prev;
-            });
-          }
-        }
+      // Fetch members for all schemes
+      let formattedMembers: Member[] = [];
+      const { data: membersData } = await supabase.from('members').select('*');
+      if (membersData) {
+        formattedMembers = membersData.map(m => {
+          const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
+          return {
+            id: m.id,
+            name: m.name,
+            email: m.email,
+            phone: m.phone || '0400 000 000',
+            schemeId: m.scheme_id,
+            role: m.role as any,
+            unitId: isMgmt || m.unit_id === 'Admin' ? 'HQ / Management' : (m.unit_id || 'Unit 1'),
+            lotNumber: isMgmt ? 0 : (m.lot_number || 1),
+            status: m.status || 'Active',
+            joinedAt: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+          };
+        });
+        setMembers(formattedMembers);
+      }
 
-        // Fetch members for active user
-        let formattedMembers: Member[] = [];
-        const { data: membersData } = await supabase.from('members').select('*');
-        if (membersData && isMounted) {
-          formattedMembers = membersData.map(m => {
-            const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
-            return {
+      // Fetch units for all schemes
+      const { data: unitsData } = await supabase.from('units').select('*');
+      let allUnits: UnitData[] = [];
+      if (unitsData && unitsData.length > 0) {
+        allUnits = unitsData.map(u => {
+          const unitActors: UnitActor[] = (formattedMembers || [])
+            .filter(m => m.schemeId === u.scheme_id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
+            .map(m => ({
               id: m.id,
+              role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
               name: m.name,
               email: m.email,
-              phone: m.phone || '0400 000 000',
-              schemeId: m.scheme_id,
-              role: m.role as any,
-              unitId: isMgmt || m.unit_id === 'Admin' ? 'HQ / Management' : (m.unit_id || 'Unit 1'),
-              lotNumber: isMgmt ? 0 : (m.lot_number || 1),
-              status: m.status || 'Active',
-              joinedAt: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-            };
-          });
-          setMembers(formattedMembers);
-        }
+              phone: m.phone,
+              verified: true,
+              permissions: [
+                { label: 'Noticeboard Access', active: true },
+                { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
+              ]
+            }));
 
-        // Fetch units for active schemes
-        const { data: unitsData } = await supabase.from('units').select('*');
-        if (isMounted) {
-          let allUnits: UnitData[] = [];
-          if (unitsData && unitsData.length > 0) {
-            allUnits = unitsData.map(u => {
+          return {
+            schemeId: u.scheme_id,
+            unitId: u.unit_id,
+            lotNumber: u.lot_number,
+            entitlement: `${u.entitlement}%`,
+            status: unitActors.length > 0 ? 'Occupied' : (u.status || 'Vacant'),
+            actors: unitActors
+          };
+        });
+      }
+
+      // Ensure every loaded scheme has unit entries generated & auto-inserted into Supabase if missing
+      if (schemesData) {
+        for (const s of schemesData) {
+          const hasUnits = allUnits.some(u => u.schemeId === s.id);
+          if (!hasUnits) {
+            const unitsToInsert = Array.from({ length: s.lots }, (_, i) => ({
+              scheme_id: s.id,
+              unit_id: `Unit ${i + 1}`,
+              lot_number: i + 1,
+              entitlement: parseFloat((100 / s.lots).toFixed(2)),
+              status: 'Vacant'
+            }));
+
+            // Auto-sync missing unit rows into Supabase public.units table
+            supabase.from('units').insert(unitsToInsert).then(({ error }) => {
+              if (error) console.error("Error auto-inserting missing units into Supabase:", error);
+            });
+
+            const generated: UnitData[] = unitsToInsert.map(u => {
               const unitActors: UnitActor[] = (formattedMembers || [])
-                .filter(m => m.schemeId === u.scheme_id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
+                .filter(m => m.schemeId === s.id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
                 .map(m => ({
                   id: m.id,
                   role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
@@ -394,112 +430,63 @@ export function useSmartLotStore() {
                 }));
 
               return {
-                schemeId: u.scheme_id,
+                schemeId: s.id,
                 unitId: u.unit_id,
                 lotNumber: u.lot_number,
                 entitlement: `${u.entitlement}%`,
-                status: unitActors.length > 0 ? 'Occupied' : (u.status || 'Vacant'),
+                status: unitActors.length > 0 ? 'Occupied' : 'Vacant',
                 actors: unitActors
               };
             });
+            allUnits.push(...generated);
           }
-
-          // Ensure every loaded scheme has unit entries generated & auto-inserted into Supabase if missing
-          if (schemesData) {
-            for (const s of schemesData) {
-              const hasUnits = allUnits.some(u => u.schemeId === s.id);
-              if (!hasUnits) {
-                const unitsToInsert = Array.from({ length: s.lots }, (_, i) => ({
-                  scheme_id: s.id,
-                  unit_id: `Unit ${i + 1}`,
-                  lot_number: i + 1,
-                  entitlement: parseFloat((100 / s.lots).toFixed(2)),
-                  status: 'Vacant'
-                }));
-
-                // Auto-sync missing unit rows into Supabase public.units table
-                supabase.from('units').insert(unitsToInsert).then(({ error }) => {
-                  if (error) console.error("Error auto-inserting missing units into Supabase:", error);
-                });
-
-                const generated: UnitData[] = unitsToInsert.map(u => {
-                  const unitActors: UnitActor[] = (formattedMembers || [])
-                    .filter(m => m.schemeId === s.id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
-                    .map(m => ({
-                      id: m.id,
-                      role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
-                      name: m.name,
-                      email: m.email,
-                      phone: m.phone,
-                      verified: true,
-                      permissions: [
-                        { label: 'Noticeboard Access', active: true },
-                        { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
-                      ]
-                    }));
-
-                  return {
-                    schemeId: s.id,
-                    unitId: u.unit_id,
-                    lotNumber: u.lot_number,
-                    entitlement: `${u.entitlement}%`,
-                    status: unitActors.length > 0 ? 'Occupied' : 'Vacant',
-                    actors: unitActors
-                  };
-                });
-                allUnits.push(...generated);
-              }
-            }
-          }
-
-          setUnits(allUnits);
         }
-
-        // Fetch role permissions from Supabase
-        const { data: rolePermsData } = await supabase.from('role_permissions').select('*');
-        if (rolePermsData && isMounted) {
-          const formattedRolePerms: Record<string, any> = {};
-          rolePermsData.forEach(rp => {
-            if (!formattedRolePerms[rp.scheme_id]) formattedRolePerms[rp.scheme_id] = {};
-            if (!formattedRolePerms[rp.scheme_id][rp.role]) {
-              formattedRolePerms[rp.scheme_id][rp.role] = getDefaultPermissionsForRole(rp.role);
-            }
-            const permIndex = formattedRolePerms[rp.scheme_id][rp.role].findIndex((p: any) => p.label === rp.permission_label);
-            if (permIndex >= 0) {
-              formattedRolePerms[rp.scheme_id][rp.role][permIndex].active = rp.active;
-            }
-          });
-          setRolePermissions(prev => {
-             return { ...prev, ...formattedRolePerms };
-          });
-        }
-
-        // Fetch individual permissions from Supabase
-        const { data: individualPermsData } = await supabase.from('individual_permissions').select('*');
-        if (individualPermsData && isMounted) {
-          setMembers(prev => prev.map(m => {
-            const memberOverrides = individualPermsData.filter(ip => ip.member_id === m.id).map(ip => ({
-              label: ip.permission_label,
-              active: ip.active
-            }));
-            if (memberOverrides.length > 0) {
-              return { ...m, individualPermissions: memberOverrides };
-            }
-            return m;
-          }));
-        }
-
-      } catch (err) {
-        console.error("Error fetching from Supabase:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
       }
-    };
-    
-    fetchSupabaseData();
-    
-    return () => { isMounted = false; };
-  }, [user?.id]);
+
+      setUnits(allUnits);
+
+      // Fetch role permissions from Supabase
+      const { data: rolePermsData } = await supabase.from('role_permissions').select('*');
+      if (rolePermsData) {
+        const formattedRolePerms: Record<string, any> = {};
+        rolePermsData.forEach(rp => {
+          if (!formattedRolePerms[rp.scheme_id]) formattedRolePerms[rp.scheme_id] = {};
+          if (!formattedRolePerms[rp.scheme_id][rp.role]) {
+            formattedRolePerms[rp.scheme_id][rp.role] = getDefaultPermissionsForRole(rp.role);
+          }
+          const permIndex = formattedRolePerms[rp.scheme_id][rp.role].findIndex((p: any) => p.label === rp.permission_label);
+          if (permIndex >= 0) {
+            formattedRolePerms[rp.scheme_id][rp.role][permIndex].active = rp.active;
+          }
+        });
+        setRolePermissions(prev => ({ ...prev, ...formattedRolePerms }));
+      }
+
+      // Fetch individual permissions from Supabase
+      const { data: individualPermsData } = await supabase.from('individual_permissions').select('*');
+      if (individualPermsData) {
+        setMembers(prev => prev.map(m => {
+          const memberOverrides = individualPermsData.filter(ip => ip.member_id === m.id).map(ip => ({
+            label: ip.permission_label,
+            active: ip.active
+          }));
+          if (memberOverrides.length > 0) {
+            return { ...m, individualPermissions: memberOverrides };
+          }
+          return m;
+        }));
+      }
+
+    } catch (err) {
+      console.error("Error fetching from Supabase:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, [user?.id, session]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v7`, ['Strata Manager']);
   const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v7`, 'dashboard');
@@ -1186,6 +1173,7 @@ export function useSmartLotStore() {
     castBallot: () => {},
     submitGuestWorkOrderCompletion: () => {},
     verifyWorkOrder: () => {},
+    refreshData,
   };
 }
 
