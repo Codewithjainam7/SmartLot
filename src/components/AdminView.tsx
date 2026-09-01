@@ -2034,3 +2034,4 @@ export function AdminView({
 
 // End AdminView
 // View: Real-time KPI Metric Counters
+// View: Emergency Ticket High-Priority Flags
