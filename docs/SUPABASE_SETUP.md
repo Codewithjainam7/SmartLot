@@ -37,3 +37,24 @@
 - `lot_number` (INTEGER NOT NULL)
 - `entitlement` (NUMERIC(5,2) DEFAULT 25.00)
 - `status` (VARCHAR DEFAULT 'Occupied')
+
+
+## 2. Automated Trigger: `tr_link_profile_to_members`
+
+Whenever an invited member accepts their invite and registers their account in `auth.users` / `public.profiles`, the trigger automatically matches their email and links `members.user_id`:
+
+```sql
+CREATE OR REPLACE FUNCTION public.handle_profile_member_link()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE public.members
+  SET user_id = NEW.id
+  WHERE LOWER(email) = LOWER(NEW.email);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER tr_link_profile_to_members
+AFTER INSERT OR UPDATE OF email ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.handle_profile_member_link();
+```
