@@ -135,3 +135,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 38: Refactor: Clean up redundant state hooks in CreateRequestModal
 // Revision Step 39: Feat: Add helper for formatting currency and levy entitlement values
 // Revision Step 40: Style: Optimize table row hover highlights across all admin tabs
+// Revision Step 41: Refactor: Ensure consistent scheme ID validation on member creation
