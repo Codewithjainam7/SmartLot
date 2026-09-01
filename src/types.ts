@@ -117,3 +117,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 20: Refactor: Standardize scheme ID uppercase formatting on creation
 // Revision Step 21: Feat: Add role badge indicators to resident request cards
 // Revision Step 22: Style: Improve modal backdrop blur and animation entry curves
+// Revision Step 23: Refactor: Optimize voting motion entitlement weights calculation
