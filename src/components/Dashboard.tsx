@@ -493,3 +493,4 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 
 // Subcomponent: Quick Stats Summary Cards
 // Subcomponent: Active Request Feed
+// Subcomponent: Scheme Information Bar
