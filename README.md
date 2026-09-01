@@ -11,3 +11,4 @@
 <!-- Section: Permission Cascading Hierarchy -->
 <!-- Section: Supabase Integration -->
 <!-- Section: Super Admin Portal -->
+<!-- Feature: Cross-Scheme Multi-Tenancy Engine -->
