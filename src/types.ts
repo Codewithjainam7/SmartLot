@@ -79,3 +79,4 @@ export const PERSONAS: Persona[] = [
 // Interface: Permission Matrix Rules
 // UI: Tab Animation Key Definitions
 // UI: Theme Transition Palette Definitions
+// UI: Card Elevation and Shadow Specifications
