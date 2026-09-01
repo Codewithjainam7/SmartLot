@@ -75,3 +75,4 @@ export const PERSONAS: Persona[] = [
 // Interface: Strata Management Models
 // Interface: Building Roster and Lot Entitlements
 // Interface: Triage and Approval Status Types
+// Interface: Super Admin Operational Payloads
