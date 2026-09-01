@@ -122,3 +122,4 @@ export function SettingsView({
 // End SettingsView
 
 // Subcomponent: Account Preferences Form
+// Settings: Notification Preferences and Themes
