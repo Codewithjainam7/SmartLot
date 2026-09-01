@@ -994,3 +994,5 @@ function MemberStatusBadge({ status }: { status: Member['status'] }) {
 
 
 // End UserManagementView
+
+// Subcomponent: Scheme Permission Matrix
