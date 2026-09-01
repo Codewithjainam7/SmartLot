@@ -47,3 +47,4 @@ export function CustomCheckbox({
 }
 
 // Component: Animated Custom Checkbox
+// Core: Theme Adaptive Checkbox Component
