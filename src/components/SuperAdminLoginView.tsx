@@ -229,3 +229,4 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
 // End SuperAdminLoginView
 // Animation: Ambient Glow Orbs Physics
 // Animation: Interactive Auto-Fill Pill Action
+// Animation: Form Input Focus Ring Elevation
