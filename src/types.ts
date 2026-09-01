@@ -125,3 +125,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 28: Style: Refine search input focus rings and placeholder opacity
 // Revision Step 29: Refactor: Optimize resident requests filter dependency array in AdminView
 // Revision Step 30: Docs: Add step-by-step onboarding documentation for new schemes
+// Revision Step 31: Style: Enhance empty state illustration and text contrast in triage view
