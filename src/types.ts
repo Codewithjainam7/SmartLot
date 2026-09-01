@@ -68,3 +68,4 @@ export const PERSONAS: Persona[] = [
 // Export types
 
 // Type definition marker: Schemes and Units
+// Type definition marker: Personas and Memberships
