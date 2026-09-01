@@ -10,3 +10,14 @@
 2. **Multi-Site Strata Management**:
    - Seamless topbar scheme switcher for managers handling multiple buildings.
    - Real-time isolation of units, resident rosters, and ticket triage per active building.
+
+
+3. **Super Admin Platform Console**:
+   - Full cross-portfolio governance across all schemes, users, and requests.
+   - Inspection wizard with non-overlapping action buttons and safe date parsers.
+   - Direct status triage actions (Approve, Mark Resolved, Reject).
+
+4. **Performance & UX Overhaul**:
+   - Sub-second parallel data fetching utilizing `Promise.all`.
+   - Shimmer skeleton loaders matching dark and light mode themes.
+   - Linear/Stripe design aesthetic with glowing pills and interactive hover states.
