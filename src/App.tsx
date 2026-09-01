@@ -266,6 +266,7 @@ export default function App() {
         globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
         onToggleGlobalPermission={(role, perm) => store.togglePermission('GLOBAL', role, perm)}
         onToggleIndividualPermission={store.toggleIndividualPermission}
+        onRefreshData={store.refreshData}
       />
     );
   }
@@ -276,7 +277,7 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess} 
         onAdminLogin={() => {
           window.location.hash = '#/admin';
-          setSessionState('admin_console');
+          setSessionState('admin_login');
         }}
         onBack={() => setSessionState('landing')}
       />
@@ -401,6 +402,3 @@ export default function App() {
 }
 
 // End of App component
-
-// View Routing: Animated Page Transition Hooks
-// View Routing: Admin Route Guard Elevation
