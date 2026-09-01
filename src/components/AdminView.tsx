@@ -2042,3 +2042,4 @@ export function AdminView({
 // View: Master Ticket Creation Workflow
 // Animation: Tab Pill Glowing Indicator
 // Animation: Slide-in and Fade-in Keyframes
+// Animation: Card Hover Transform and Scale
