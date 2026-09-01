@@ -10,3 +10,4 @@
 <!-- Section: Authentication Modules -->
 <!-- Section: Permission Cascading Hierarchy -->
 <!-- Section: Supabase Integration -->
+<!-- Section: Super Admin Portal -->
