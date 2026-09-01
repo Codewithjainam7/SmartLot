@@ -319,3 +319,4 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 // Subcomponent: Hero Section Container
 // Subcomponent: Feature Showcase Grid
 // Subcomponent: Certified Compliance Banner
+// Subcomponent: Customer Testimonials
