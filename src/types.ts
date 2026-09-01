@@ -141,3 +141,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 44: Refactor: Consolidate Supabase auth error handling in login controllers
 // Revision Step 45: Feat: Add scheme portfolio lot count aggregation in stats cards
 // Revision Step 46: Style: Polish voting modal progress bars and vote tally chips
+// Revision Step 47: Refactor: Optimize store listener cleanup on component unmount
