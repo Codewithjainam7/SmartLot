@@ -389,3 +389,5 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 
 
 // End ResidentRequestsView
+
+// Subcomponent: Requests Filter Bar
