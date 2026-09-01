@@ -130,3 +130,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 33: Feat: Add unit occupancy status badge formatting utilities
 // Revision Step 34: Style: Polish table header text transform and tracking in admin console
 // Revision Step 35: Refactor: Streamline active scheme switcher event dispatching in Topbar
+// Revision Step 36: Docs: Update API key handling and security guidelines in Supabase docs
