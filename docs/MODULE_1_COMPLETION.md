@@ -21,3 +21,10 @@
    - Sub-second parallel data fetching utilizing `Promise.all`.
    - Shimmer skeleton loaders matching dark and light mode themes.
    - Linear/Stripe design aesthetic with glowing pills and interactive hover states.
+
+
+## 🛣️ Next Sprint Roadmap (Module 2+)
+
+- **Real-Time Maintenance Ticket Lifecycle**: Work order dispatch to licensed contractors.
+- **Vendor Portal**: PIN-protected guest completion flows and invoice attachments.
+- **Financial Levies & Invoicing**: Automated quarterly levy calculation based on unit lot entitlements.
