@@ -1198,3 +1198,4 @@ export function useSmartLotStore() {
 // Module: Request & Triage Operations
 // Module: Permissions Matrix Handlers
 // Helper: Permissions evaluation engine
+// Helper: Active scheme context switcher
