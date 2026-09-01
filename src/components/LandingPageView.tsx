@@ -321,3 +321,4 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 // Subcomponent: Certified Compliance Banner
 // Subcomponent: Customer Testimonials
 // Subcomponent: Footer & Navigation Links
+// Landing: Master Admin Console Quick Access
