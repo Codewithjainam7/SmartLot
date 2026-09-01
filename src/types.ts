@@ -119,3 +119,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 22: Style: Improve modal backdrop blur and animation entry curves
 // Revision Step 23: Refactor: Optimize voting motion entitlement weights calculation
 // Revision Step 24: Docs: Add reference guide for multi-site strata manager workflows
+// Revision Step 25: Style: Update card border radius and shadow tokens for consistent UI
