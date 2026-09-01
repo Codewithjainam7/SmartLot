@@ -13,3 +13,8 @@ SmartLot enforces a hierarchical permission evaluation engine that checks:
 | **Cast Ballot / Vote** | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ |
 | **View Scheme Financials** | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **Add / Edit Occupants** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+
+## Custom Individual Permissions
+
+Strata Managers and Admins can toggle individual permission overrides on any member directly from the **Team Access** directory. Overrides are persisted in the `individual_permissions` table in Supabase and supersede role defaults.
