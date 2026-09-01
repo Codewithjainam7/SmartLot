@@ -1144,29 +1144,23 @@ export function useSmartLotStore() {
             .filter(m => m.schemeId === u.scheme_id && m.unitId === u.unit_id && !['Strata Manager', 'Strata Admin', 'Building Manager'].includes(m.role))
             .map(m => ({
               id: m.id,
-              role: (m.role === 'Resident' ? 'On-Site Resident' : m.role) as any,
+              role: (m.role === 'Resident' ? 'On-Site Resident' : (m.role === 'Tenant' ? 'Tenant' : 'Lot Owner')),
               name: m.name,
               email: m.email,
               phone: m.phone,
-              isSelf: false,
-              isOnline: true,
-              permissions: {
-                canViewFinancials: m.role === 'Lot Owner' || m.role === 'Committee Member',
-                canRaiseRequests: true,
-                canVote: m.role === 'Lot Owner' || m.role === 'Committee Member',
-                canChat: true,
-                canBookAmenities: true,
-                canAccessDocuments: true
-              }
+              verified: true,
+              permissions: [
+                { label: 'Noticeboard Access', active: true },
+                { label: 'Maintenance Logging', active: m.role !== 'Tenant' }
+              ]
             }));
 
           return {
-            id: `${u.scheme_id}-${u.unit_id}`,
             schemeId: u.scheme_id,
-            unit: u.unit_id,
+            unitId: u.unit_id,
             lotNumber: u.lot_number,
-            entitlement: u.entitlement || 25,
-            status: u.status || 'Occupied',
+            entitlement: `${u.entitlement || 25}%`,
+            status: (unitActors.length > 0 ? 'Occupied' : (u.status || 'Vacant')) as any,
             actors: unitActors
           };
         });
@@ -1902,6 +1896,7 @@ export function useSmartLotStore() {
     submitGuestWorkOrderCompletion: () => {},
     verifyWorkOrder: () => {},
     refreshData,
+    isLoading,
   };
 }
 
