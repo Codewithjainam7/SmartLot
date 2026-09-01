@@ -334,3 +334,4 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
 
 // Subcomponent: Resident Auth Form
 // Subcomponent: Verified Compliance Info Card
+// Resident: Single Sign-On / Demo Persona Selector
