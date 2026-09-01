@@ -3,7 +3,7 @@ import {
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
-  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus
+  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap
 } from 'lucide-react';
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';
 import { Scheme } from '../types';
@@ -560,10 +560,10 @@ export function AdminView({
                     className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
                   >
                     <option value="ALL">All Priorities</option>
-                    <option value="Emergency">🚨 Emergency Only</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+                    <option value="Emergency">Emergency Only</option>
+                    <option value="High">High Priority</option>
+                    <option value="Medium">Medium Priority</option>
+                    <option value="Low">Low Priority</option>
                   </select>
                 </>
               )}
@@ -695,12 +695,18 @@ export function AdminView({
                         className="py-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/[0.02] -mx-2 px-2 rounded-xl transition-all cursor-pointer group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-xl text-xs font-bold ${
+                          <div className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center ${
                             req.priority === 'Emergency' ? 'bg-[#FF4757]/10 text-[#FF4757]' :
                             req.priority === 'High' ? 'bg-amber-500/10 text-amber-500' :
                             'bg-blue-500/10 text-[#0055FF]'
                           }`}>
-                            {req.priority === 'Emergency' ? '🚨' : req.priority === 'High' ? '⚡' : '📋'}
+                            {req.priority === 'Emergency' ? (
+                              <AlertTriangle size={14} className="text-[#FF4757]" />
+                            ) : req.priority === 'High' ? (
+                              <Zap size={14} className="text-amber-500" />
+                            ) : (
+                              <FileText size={14} className="text-[#0055FF]" />
+                            )}
                           </div>
                           <div>
                             <div className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors">
@@ -877,12 +883,19 @@ export function AdminView({
 
                           {/* Priority */}
                           <td className="py-4 px-5">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase inline-flex items-center gap-1 ${
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase inline-flex items-center gap-1.5 ${
                               req.priority === 'Emergency' ? 'bg-[#FF4757]/15 text-[#FF4757] border border-[#FF4757]/30 animate-pulse' :
                               req.priority === 'High' ? 'bg-amber-500/15 text-amber-600 border border-amber-500/30' :
                               'bg-blue-500/10 text-[#0055FF] border border-blue-500/20'
                             }`}>
-                              {req.priority === 'Emergency' ? '🚨 Emergency' : req.priority}
+                              {req.priority === 'Emergency' ? (
+                                <AlertTriangle size={11} className="text-[#FF4757]" />
+                              ) : req.priority === 'High' ? (
+                                <Zap size={11} className="text-amber-600" />
+                              ) : (
+                                <FileText size={11} className="text-[#0055FF]" />
+                              )}
+                              <span>{req.priority}</span>
                             </span>
                           </td>
 
@@ -1481,10 +1494,10 @@ export function AdminView({
                     onChange={e => setNewReqPriority(e.target.value as any)}
                     className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
                   >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Emergency">🚨 Emergency</option>
+                    <option value="Low">Low Priority</option>
+                    <option value="Medium">Medium Priority</option>
+                    <option value="High">High Priority</option>
+                    <option value="Emergency">Emergency Priority</option>
                   </select>
                 </div>
 
@@ -1819,10 +1832,10 @@ export function AdminView({
                       onChange={e => setEditReqPriority(e.target.value as any)}
                       className="w-full bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
                     >
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                      <option value="Emergency">🚨 Emergency</option>
+                      <option value="Low">Low Priority</option>
+                      <option value="Medium">Medium Priority</option>
+                      <option value="High">High Priority</option>
+                      <option value="Emergency">Emergency Priority</option>
                     </select>
                   </div>
 
