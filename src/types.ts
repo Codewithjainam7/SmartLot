@@ -72,3 +72,4 @@ export const PERSONAS: Persona[] = [
 // Type definition marker: Role Definitions
 // Type definition marker: Navigation Views
 // End of Type Registry
+// Interface: Strata Management Models
