@@ -341,3 +341,4 @@ export function JoinSchemeView({ schemeId, onJoinSuccess, onBackToLanding }: Joi
 // End JoinSchemeView
 
 // Subcomponent: Join Scheme Wizard
+// Animation: Step Wizard Progress Bar
