@@ -538,3 +538,4 @@ function PermissionToggle({ label, active, locked, onToggle }: { key?: React.Key
 }
 
 // Subcomponent: Unit Details & Occupant Roster
+// Animation: Resident Roster Accordion Expand
