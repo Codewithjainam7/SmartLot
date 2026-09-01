@@ -1199,3 +1199,4 @@ export function useSmartLotStore() {
 // Module: Permissions Matrix Handlers
 // Helper: Permissions evaluation engine
 // Helper: Active scheme context switcher
+// Helper: Real-time DB subscription handlers
