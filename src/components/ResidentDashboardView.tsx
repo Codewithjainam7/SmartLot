@@ -424,3 +424,5 @@ export function ResidentDashboardView({
 
 
 // End ResidentDashboardView
+
+// Subcomponent: Resident Portal Header
