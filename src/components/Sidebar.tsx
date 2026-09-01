@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -78,9 +78,8 @@ export function Sidebar({
               onClick={() => setActiveView('dashboard')}
               isCollapsed={isCollapsed} 
             />
-            {/* Team Access: visible to Strata Admin, Strata Manager, or Website Super Admin.
-                Lot Owner / Resident / Tenant are NOT shown this link. */}
-            {(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager')) && (
+            {/* Team Access: visible to Strata Admin, Strata Manager, Lot Owner, and Committee Member */}
+            {(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Owner') || activePersonaRole?.includes('Committee')) && (
               <NavItem 
                 icon={<Users size={18} />} 
                 label="Team Access" 

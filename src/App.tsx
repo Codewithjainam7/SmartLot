@@ -334,7 +334,7 @@ export default function App() {
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
           {store.activeView === 'user_management' && (
-            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager')) ? (
+            (store.activePersona.role.includes('Admin') || store.activePersona.role.includes('Manager') || store.activePersona.role.includes('Owner') || store.activePersona.role.includes('Committee')) ? (
               <UserManagementView 
                 members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
                 activePersonaName={store.activePersona.name}
