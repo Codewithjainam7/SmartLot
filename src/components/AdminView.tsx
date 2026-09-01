@@ -95,7 +95,6 @@ export function AdminView({
   
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<string>(schemes[0]?.id || '');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState<string>('ALL');
 
@@ -176,41 +175,45 @@ export function AdminView({
   // Filtered Requests
   const filteredRequests = useMemo(() => {
     return requests.filter(req => {
-      const matchesSearch = 
-        req.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.unit.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.requestorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.schemeId.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = (searchQuery || '').toLowerCase().trim();
+      const matchesSearch = !q || (
+        (req.title || '').toLowerCase().includes(q) ||
+        (req.description || '').toLowerCase().includes(q) ||
+        (req.unit || '').toLowerCase().includes(q) ||
+        (req.requestorName || '').toLowerCase().includes(q) ||
+        (req.schemeId || '').toLowerCase().includes(q)
+      );
       
-      const matchesScheme = selectedSchemeFilter === 'ALL' || req.schemeId === selectedSchemeFilter;
       const matchesStatus = selectedStatusFilter === 'ALL' || req.status === selectedStatusFilter;
       const matchesPriority = selectedPriorityFilter === 'ALL' || req.priority === selectedPriorityFilter;
 
-      return matchesSearch && matchesScheme && matchesStatus && matchesPriority;
+      return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [requests, searchQuery, selectedSchemeFilter, selectedStatusFilter, selectedPriorityFilter]);
+  }, [requests, searchQuery, selectedStatusFilter, selectedPriorityFilter]);
 
   // Filtered Users
   const filteredMembers = useMemo(() => {
     return members.filter(m => {
-      const matchesSearch = 
-        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.schemeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.unitId.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = (searchQuery || '').toLowerCase().trim();
+      const matchesSearch = !q || (
+        (m.name || '').toLowerCase().includes(q) ||
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.schemeId || '').toLowerCase().includes(q) ||
+        (m.role || '').toLowerCase().includes(q) ||
+        (m.unitId || '').toLowerCase().includes(q)
+      );
       
-      const matchesScheme = selectedSchemeFilter === 'ALL' || m.schemeId === selectedSchemeFilter;
-      return matchesSearch && matchesScheme;
+      return matchesSearch;
     });
-  }, [members, searchQuery, selectedSchemeFilter]);
+  }, [members, searchQuery]);
 
   // Filtered Schemes
   const filteredSchemes = useMemo(() => {
+    const q = (searchQuery || '').toLowerCase().trim();
     return schemes.filter(s => 
-      s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.name.toLowerCase().includes(searchQuery.toLowerCase())
+      !q ||
+      (s.id || '').toLowerCase().includes(q) ||
+      (s.name || '').toLowerCase().includes(q)
     );
   }, [schemes, searchQuery]);
 
@@ -521,22 +524,6 @@ export function AdminView({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 px-2">
-                <Filter size={14} /> Filter:
-              </div>
-
-              {/* Scheme Filter */}
-              <select
-                value={selectedSchemeFilter}
-                onChange={e => setSelectedSchemeFilter(e.target.value)}
-                className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
-              >
-
-                {schemes.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
-                ))}
-              </select>
-
               {/* Status Filter for Requests */}
               {activeTab === 'requests' && (
                 <>
