@@ -322,3 +322,4 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 // Subcomponent: Customer Testimonials
 // Subcomponent: Footer & Navigation Links
 // Landing: Master Admin Console Quick Access
+// Landing: Compliance and Strata Standard Badges
