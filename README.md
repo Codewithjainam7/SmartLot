@@ -7,3 +7,4 @@
 <!-- End of Readme -->
 
 <!-- Section: Architecture Overview -->
+<!-- Section: Authentication Modules -->
