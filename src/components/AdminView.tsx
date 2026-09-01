@@ -414,21 +414,7 @@ export function AdminView({
               </button>
             )}
 
-            <button
-              onClick={() => setIsAddMemberOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
-            >
-              <UserPlus size={16} />
-              <span>Assign / Add User</span>
-            </button>
 
-            <button
-              onClick={() => setIsAddSchemeOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md shadow-[#00D4B2]/20 transition-all cursor-pointer"
-            >
-              <Plus size={16} />
-              <span>Register Scheme</span>
-            </button>
           </div>
         </div>
       </header>
