@@ -167,157 +167,698 @@ export type UnitData = {
   actors: UnitActor[];
 };
 
-// Initial Seed Members with Multiple Occupants in Unit 10
+// Initial Seed Members across Duplex, Coronation, and Cavalier
 const INITIAL_MEMBERS: Member[] = [
+  // 1. Roman Joe (Global Master Strata Manager & Account Holder)
   {
-    id: 'MEM-101',
-    name: 'Sarah Jenkins',
-    email: 'sarah.j@building.com.au',
-    phone: '0400 111 222',
-    schemeId: 'SP10482',
-    role: 'Committee Member',
-    unitId: 'Unit 2',
-    lotNumber: 2,
-    status: 'Active',
-    joinedAt: '2025-01-15',
-  },
-  {
-    id: 'MEM-102',
-    name: 'Alex Vance',
-    email: 'alex.vance@strata.com.au',
-    phone: '0411 999 888',
-    schemeId: 'SP10482',
+    id: 'MEM-ROMAN-101',
+    name: 'Roman Joe',
+    email: 'romanjoe@gmail.com',
+    phone: '0411 888 777',
+    schemeId: 'SP102', // Coronation Residences primary
     role: 'Strata Manager',
     unitId: 'HQ / Management',
     lotNumber: 0,
     status: 'Active',
-    joinedAt: '2024-11-01',
+    joinedAt: '2024-01-10',
   },
   {
-    id: 'MEM-103',
-    name: 'Mike Davies',
-    email: 'mike@owner.com',
-    phone: '0411 222 333',
-    schemeId: 'SP10482',
-    role: 'Lot Owner',
-    unitId: 'Unit 10',
-    lotNumber: 10,
+    id: 'MEM-ROMAN-102',
+    name: 'Roman Joe',
+    email: 'romanjoe@gmail.com',
+    phone: '0411 888 777',
+    schemeId: 'SP101', // Sunset Duplex
+    role: 'Strata Manager',
+    unitId: 'HQ / Management',
+    lotNumber: 0,
     status: 'Active',
-    joinedAt: '2024-05-10',
+    joinedAt: '2024-01-10',
   },
   {
-    id: 'MEM-104',
-    name: 'Lisa Ray',
-    email: 'lisa@unit10.com',
-    phone: '0412 888 999',
-    schemeId: 'SP10482',
-    role: 'Resident',
-    unitId: 'Unit 10',
-    lotNumber: 10,
+    id: 'MEM-ROMAN-103',
+    name: 'Roman Joe',
+    email: 'romanjoe@gmail.com',
+    phone: '0411 888 777',
+    schemeId: 'SP103', // Cavalier Grand
+    role: 'Strata Manager',
+    unitId: 'HQ / Management',
+    lotNumber: 0,
+    status: 'Active',
+    joinedAt: '2024-01-10',
+  },
+
+  // 2. Sunset Duplex (SP101) Members
+  {
+    id: 'MEM-DUP-1',
+    name: 'Sarah Jones',
+    email: 'sarah.jones@duplex.com',
+    phone: '0400 111 222',
+    schemeId: 'SP101',
+    role: 'Lot Owner',
+    unitId: 'Unit 1',
+    lotNumber: 1,
+    status: 'Active',
+    joinedAt: '2024-03-15',
+  },
+  {
+    id: 'MEM-DUP-2',
+    name: 'David Miller',
+    email: 'david.m@duplex.com',
+    phone: '0412 333 444',
+    schemeId: 'SP101',
+    role: 'Tenant',
+    unitId: 'Unit 2',
+    lotNumber: 2,
     status: 'Active',
     joinedAt: '2024-06-01',
+  },
+
+  // 3. Coronation Residences (SP102) Members
+  {
+    id: 'MEM-COR-1',
+    name: 'Elena Rostov',
+    email: 'elena.r@coronation.com',
+    phone: '0422 100 200',
+    schemeId: 'SP102',
+    role: 'Lot Owner',
+    unitId: 'Unit 1',
+    lotNumber: 1,
+    status: 'Active',
+    joinedAt: '2024-02-20',
+  },
+  {
+    id: 'MEM-COR-2',
+    name: 'Michael Chen',
+    email: 'michael.chen@coronation.com',
+    phone: '0411 222 333',
+    schemeId: 'SP102',
+    role: 'Committee Member',
+    unitId: 'Unit 2',
+    lotNumber: 2,
+    status: 'Active',
+    joinedAt: '2024-04-10',
+  },
+  {
+    id: 'MEM-COR-3',
+    name: 'Marcus Sterling',
+    email: 'marcus.s@coronation.com',
+    phone: '0433 444 555',
+    schemeId: 'SP102',
+    role: 'Committee Member',
+    unitId: 'Unit 3',
+    lotNumber: 3,
+    status: 'Active',
+    joinedAt: '2024-05-01',
+  },
+  {
+    id: 'MEM-COR-4',
+    name: 'Chloe Bennett',
+    email: 'chloe.b@coronation.com',
+    phone: '0444 555 666',
+    schemeId: 'SP102',
+    role: 'Tenant',
+    unitId: 'Unit 4',
+    lotNumber: 4,
+    status: 'Active',
+    joinedAt: '2024-07-15',
+  },
+  {
+    id: 'MEM-COR-5',
+    name: 'Liam Hemsworth',
+    email: 'liam.h@coronation.com',
+    phone: '0455 666 777',
+    schemeId: 'SP102',
+    role: 'Resident',
+    unitId: 'Unit 5',
+    lotNumber: 5,
+    status: 'Active',
+    joinedAt: '2024-08-01',
+  },
+  {
+    id: 'MEM-COR-6',
+    name: 'Rachel Adams',
+    email: 'rachel.a@coronation.com',
+    phone: '0466 777 888',
+    schemeId: 'SP102',
+    role: 'Lot Owner',
+    unitId: 'Unit 6',
+    lotNumber: 6,
+    status: 'Active',
+    joinedAt: '2024-08-15',
+  },
+
+  // 4. Cavalier Grand Residences (SP103) Members
+  {
+    id: 'MEM-CAV-1',
+    name: 'Emma Wilson',
+    email: 'emma.wilson@agency.com',
+    phone: '0499 888 111',
+    schemeId: 'SP103',
+    role: 'Strata Manager',
+    unitId: 'HQ / Management',
+    lotNumber: 0,
+    status: 'Active',
+    joinedAt: '2024-01-05',
+  },
+  {
+    id: 'MEM-CAV-2',
+    name: 'Arthur Pendelton',
+    email: 'arthur.p@cavalier.com',
+    phone: '0477 111 999',
+    schemeId: 'SP103',
+    role: 'Committee Member',
+    unitId: 'Unit 101',
+    lotNumber: 1,
+    status: 'Active',
+    joinedAt: '2024-02-15',
+  },
+  {
+    id: 'MEM-CAV-3',
+    name: 'Sophia Zhang',
+    email: 'sophia.z@cavalier.com',
+    phone: '0488 222 888',
+    schemeId: 'SP103',
+    role: 'Lot Owner',
+    unitId: 'Unit 204',
+    lotNumber: 8,
+    status: 'Active',
+    joinedAt: '2024-03-22',
+  },
+  {
+    id: 'MEM-CAV-4',
+    name: 'Oliver Vance',
+    email: 'oliver.v@cavalier.com',
+    phone: '0499 333 777',
+    schemeId: 'SP103',
+    role: 'Resident',
+    unitId: 'Unit 305',
+    lotNumber: 15,
+    status: 'Active',
+    joinedAt: '2024-05-11',
+  },
+  {
+    id: 'MEM-CAV-5',
+    name: 'Jessica Taylor',
+    email: 'jessica.t@cavalier.com',
+    phone: '0400 444 666',
+    schemeId: 'SP103',
+    role: 'Tenant',
+    unitId: 'Unit 410',
+    lotNumber: 22,
+    status: 'Active',
+    joinedAt: '2024-06-19',
+  },
+  {
+    id: 'MEM-CAV-6',
+    name: 'Brandon Cole',
+    email: 'brandon.c@cavalier.com',
+    phone: '0411 555 555',
+    schemeId: 'SP103',
+    role: 'Lot Owner',
+    unitId: 'Unit 502',
+    lotNumber: 24,
+    status: 'Active',
+    joinedAt: '2024-07-01',
   }
 ];
 
 const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
+  // Duplex (SP101) Requests
   {
-    id: 'REQ-101',
-    schemeId: 'SP10482',
-    unit: 'Unit 10',
-    title: 'Shared Vehicle Entrance Gate Repairs',
-    description: 'Automatic vehicle entrance gate motor is grinding and stopping halfway.',
+    id: 'REQ-DUP-101',
+    schemeId: 'SP101',
+    unit: 'Unit 1',
+    title: 'Shared Driveway Motorized Gate Sensor Glitch',
+    description: 'Vehicle entrance swing gate safety beam is tripping intermittently during sunset, causing gate to stall halfway.',
     requestType: 'maintenance_upgrade',
     stream: 'common_area_repair',
     priority: 'High',
-    dueDate: '2026-08-25',
-    attachmentUrl: 'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=500&auto=format&fit=crop',
+    dueDate: '2026-09-05',
     status: 'pending_triage',
-    createdAt: '2 hours ago',
-    requestorName: 'Lisa Ray',
-    reportedBy: 'Lisa Ray (Resident)',
-    requestorEmail: 'lisa@unit10.com',
-    requestorPhone: '0412 888 999',
-    requestorRole: 'Resident',
+    createdAt: '3 hours ago',
+    requestorName: 'Sarah Jones',
+    reportedBy: 'Sarah Jones (Lot Owner)',
+    requestorEmail: 'sarah.jones@duplex.com',
+    requestorPhone: '0400 111 222',
+    requestorRole: 'Lot Owner',
     comments: [
-      { id: 'C1', authorName: 'Mike Davies', authorRole: 'Lot Owner', text: 'Agreed, this gate has been failing for two weeks.', createdAt: '1 hour ago' },
-      { id: 'C2', authorName: 'Sarah Jenkins', authorRole: 'Committee Admin', text: 'Inspected on site, needs motor replacement.', createdAt: '30 mins ago' },
+      { id: 'C1', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Contacted Automatic Gates NSW for emergency technician dispatch.', createdAt: '1 hour ago' }
     ],
   },
   {
-    id: 'REQ-102',
-    schemeId: 'SP10482',
+    id: 'REQ-DUP-102',
+    schemeId: 'SP101',
     unit: 'Unit 2',
-    title: 'Basement Garage Water Pipe Leak',
-    description: 'High pressure water leak spraying near main electric board in basement B1.',
+    title: 'Roof Guttering & Downpipe Overflow Cleaning',
+    description: 'Heavy rain caused stormwater gutter overflowing along the common boundary fence wall.',
+    requestType: 'maintenance_upgrade',
+    stream: 'common_area_repair',
+    priority: 'Medium',
+    status: 'approved',
+    createdAt: '1 day ago',
+    requestorName: 'David Miller',
+    reportedBy: 'David Miller (Tenant)',
+    requestorEmail: 'david.m@duplex.com',
+    requestorPhone: '0412 333 444',
+    requestorRole: 'Tenant',
+    comments: [],
+  },
+
+  // Coronation (SP102) Requests
+  {
+    id: 'REQ-COR-201',
+    schemeId: 'SP102',
+    unit: 'Unit 2',
+    title: 'Emergency Main Foyer Intercom Power Failure',
+    description: 'Central door release intercom board is unresponsive; delivery couriers and guests unable to ring apartments.',
     requestType: 'emergency',
     stream: 'emergency_repair',
     priority: 'Emergency',
-    dueDate: '2026-08-21',
+    dueDate: '2026-09-02',
     status: 'approved',
-    createdAt: '30 mins ago',
-    requestorName: 'Sarah Jenkins',
-    reportedBy: 'Sarah Jenkins (Committee Admin)',
-    requestorEmail: 'sarah@unit2.com',
-    requestorPhone: '0400 111 222',
+    createdAt: '45 mins ago',
+    requestorName: 'Michael Chen',
+    reportedBy: 'Michael Chen (Committee Member)',
+    requestorEmail: 'michael.chen@coronation.com',
+    requestorPhone: '0411 222 333',
+    requestorRole: 'Committee Member',
+    comments: [
+      { id: 'C2', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Electrician on route with replacement 24V power supply unit.', createdAt: '20 mins ago' }
+    ],
+  },
+  {
+    id: 'REQ-COR-202',
+    schemeId: 'SP102',
+    unit: 'Unit 1',
+    title: 'Central Garden Irrigation Valve Burst',
+    description: 'Irrigation pipe in courtyard garden sprung a pressurized leak flooding the walkway lawn.',
+    requestType: 'maintenance_upgrade',
+    stream: 'common_area_repair',
+    priority: 'High',
+    status: 'pending_triage',
+    createdAt: '2 hours ago',
+    requestorName: 'Elena Rostov',
+    reportedBy: 'Elena Rostov (Lot Owner)',
+    requestorEmail: 'elena.r@coronation.com',
+    requestorPhone: '0422 100 200',
     requestorRole: 'Lot Owner',
     comments: [],
   },
   {
-    id: 'REQ-103',
-    schemeId: 'SP10482',
-    unit: 'Unit 1',
-    title: 'Noise Complaint - Late Night Music',
-    description: 'Loud music from common balcony area past 11 PM on weekends.',
-    requestType: 'complaint',
-    stream: 'general_inquiry',
+    id: 'REQ-COR-203',
+    schemeId: 'SP102',
+    unit: 'Unit 3',
+    title: 'Visitor Car Parking Bay Line Marking Refresh',
+    description: 'Yellow visitor bay line markings have faded in the underground parking bays.',
+    requestType: 'maintenance_upgrade',
+    stream: 'common_area_repair',
+    priority: 'Low',
+    status: 'resolved',
+    createdAt: '3 days ago',
+    requestorName: 'Marcus Sterling',
+    reportedBy: 'Marcus Sterling (Committee Member)',
+    requestorEmail: 'marcus.s@coronation.com',
+    requestorPhone: '0433 444 555',
+    requestorRole: 'Committee Member',
+    comments: [
+      { id: 'C3', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Contractor repainted bays on Aug 30.', createdAt: 'Yesterday' }
+    ],
+  },
+
+  // Cavalier Grand (SP103) Requests
+  {
+    id: 'REQ-CAV-301',
+    schemeId: 'SP103',
+    unit: 'Unit 101',
+    title: 'Elevator 2 Power Inverter Fault - Tower B',
+    description: 'Passenger Lift #2 showing Error Code E-41 on display panel and running at half speed.',
+    requestType: 'emergency',
+    stream: 'emergency_repair',
+    priority: 'Emergency',
+    dueDate: '2026-09-02',
+    status: 'approved',
+    createdAt: '1 hour ago',
+    requestorName: 'Arthur Pendelton',
+    reportedBy: 'Arthur Pendelton (Committee Chairman)',
+    requestorEmail: 'arthur.p@cavalier.com',
+    requestorPhone: '0477 111 999',
+    requestorRole: 'Committee Member',
+    comments: [
+      { id: 'C4', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'KONE Elevator technicians scheduled for 10:00 AM on-site service.', createdAt: '30 mins ago' }
+    ],
+  },
+  {
+    id: 'REQ-CAV-302',
+    schemeId: 'SP103',
+    unit: 'Unit 204',
+    title: 'Basement Level B2 Sump Pump Sensor Alert',
+    description: 'Telemetry monitoring system flagged high water table in lower drainage pit.',
+    requestType: 'emergency',
+    stream: 'emergency_repair',
+    priority: 'Emergency',
+    status: 'pending_triage',
+    createdAt: '2 hours ago',
+    requestorName: 'Sophia Zhang',
+    reportedBy: 'Sophia Zhang (Lot Owner)',
+    requestorEmail: 'sophia.z@cavalier.com',
+    requestorPhone: '0488 222 888',
+    requestorRole: 'Lot Owner',
+    comments: [],
+  },
+  {
+    id: 'REQ-CAV-303',
+    schemeId: 'SP103',
+    unit: 'Unit 305',
+    title: 'Rooftop Solar Array Inverter 3 Communication Dropout',
+    description: 'Smart meter portal is unable to read telemetry data from the commercial inverter bank.',
+    requestType: 'maintenance_upgrade',
+    stream: 'common_area_repair',
     priority: 'Medium',
     status: 'approved',
     createdAt: '1 day ago',
-    requestorName: 'Smith Family',
-    reportedBy: 'Smith Family (Lot Owner)',
-    requestorEmail: 'smith@unit1.com',
-    requestorPhone: '0433 222 111',
-    requestorRole: 'Lot Owner',
-    comments: [
-      { id: 'C3', authorName: 'Alex Vance', authorRole: 'Strata Manager', text: 'Formal bylaw notice issued to relevant lot.', createdAt: 'Yesterday' }
-    ],
+    requestorName: 'Oliver Vance',
+    reportedBy: 'Oliver Vance (Resident)',
+    requestorEmail: 'oliver.v@cavalier.com',
+    requestorPhone: '0499 333 777',
+    requestorRole: 'Resident',
+    comments: [],
   },
+  {
+    id: 'REQ-CAV-304',
+    schemeId: 'SP103',
+    unit: 'Unit 410',
+    title: 'Heated Lap Pool Filtration & Chlorination Servicing',
+    description: 'Pool chlorine readout is low; salt cell chlorinator requires scheduled acid wash.',
+    requestType: 'maintenance_upgrade',
+    stream: 'common_area_repair',
+    priority: 'Medium',
+    status: 'new',
+    createdAt: '4 hours ago',
+    requestorName: 'Jessica Taylor',
+    reportedBy: 'Jessica Taylor (Tenant)',
+    requestorEmail: 'jessica.t@cavalier.com',
+    requestorPhone: '0400 444 666',
+    requestorRole: 'Tenant',
+    comments: [],
+  }
 ];
 
 const INITIAL_UNITS: UnitData[] = [
+  // Duplex (SP101) Units
   {
-    schemeId: 'SP10482',
-    unitId: 'Unit 10',
-    lotNumber: 10,
-    entitlement: '12.5%',
+    schemeId: 'SP101',
+    unitId: 'Unit 1',
+    lotNumber: 1,
+    entitlement: '50.0%',
     status: 'Occupied',
     actors: [
       {
-        id: 'ACT-1',
+        id: 'ACT-D1',
         role: 'Lot Owner',
-        name: 'Mike Davies',
-        email: 'mike@owner.com',
+        name: 'Sarah Jones',
+        email: 'sarah.jones@duplex.com',
+        phone: '0400 111 222',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+          { label: 'Maintenance Logging', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP101',
+    unitId: 'Unit 2',
+    lotNumber: 2,
+    entitlement: '50.0%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-D2',
+        role: 'Tenant',
+        name: 'David Miller',
+        email: 'david.m@duplex.com',
+        phone: '0412 333 444',
+        verified: true,
+        permissions: [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+        ],
+      }
+    ],
+  },
+
+  // Coronation Residences (SP102) Units
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 1',
+    lotNumber: 1,
+    entitlement: '8.33%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-C1',
+        role: 'Lot Owner',
+        name: 'Elena Rostov',
+        email: 'elena.r@coronation.com',
+        phone: '0422 100 200',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 2',
+    lotNumber: 2,
+    entitlement: '8.33%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-C2',
+        role: 'Lot Owner',
+        name: 'Michael Chen',
+        email: 'michael.chen@coronation.com',
         phone: '0411 222 333',
         verified: true,
         permissions: [
           { label: 'Levies & Financials', active: true },
           { label: 'Voting Rights (Ballots)', active: true },
         ],
-      },
+      }
+    ],
+  },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 3',
+    lotNumber: 3,
+    entitlement: '8.33%',
+    status: 'Occupied',
+    actors: [
       {
-        id: 'ACT-2',
-        role: 'On-Site Resident',
-        name: 'Lisa Ray',
-        email: 'lisa@unit10.com',
-        phone: '0412 888 999',
+        id: 'ACT-C3',
+        role: 'Lot Owner',
+        name: 'Marcus Sterling',
+        email: 'marcus.s@coronation.com',
+        phone: '0433 444 555',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 4',
+    lotNumber: 4,
+    entitlement: '8.33%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-C4',
+        role: 'Tenant',
+        name: 'Chloe Bennett',
+        email: 'chloe.b@coronation.com',
+        phone: '0444 555 666',
         verified: true,
         permissions: [
           { label: 'Noticeboard Access', active: true },
           { label: 'Maintenance Logging', active: true },
         ],
-      },
+      }
     ],
   },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 5',
+    lotNumber: 5,
+    entitlement: '8.33%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-C5',
+        role: 'On-Site Resident',
+        name: 'Liam Hemsworth',
+        email: 'liam.h@coronation.com',
+        phone: '0455 666 777',
+        verified: true,
+        permissions: [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 6',
+    lotNumber: 6,
+    entitlement: '8.33%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-C6',
+        role: 'Lot Owner',
+        name: 'Rachel Adams',
+        email: 'rachel.a@coronation.com',
+        phone: '0466 777 888',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 7',
+    lotNumber: 7,
+    entitlement: '8.33%',
+    status: 'Vacant',
+    actors: [],
+  },
+  {
+    schemeId: 'SP102',
+    unitId: 'Unit 8',
+    lotNumber: 8,
+    entitlement: '8.33%',
+    status: 'Vacant',
+    actors: [],
+  },
+
+  // Cavalier Grand Residences (SP103) Units
+  {
+    schemeId: 'SP103',
+    unitId: 'Unit 101',
+    lotNumber: 1,
+    entitlement: '4.16%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-CAV1',
+        role: 'Lot Owner',
+        name: 'Arthur Pendelton',
+        email: 'arthur.p@cavalier.com',
+        phone: '0477 111 999',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP103',
+    unitId: 'Unit 204',
+    lotNumber: 8,
+    entitlement: '4.16%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-CAV2',
+        role: 'Lot Owner',
+        name: 'Sophia Zhang',
+        email: 'sophia.z@cavalier.com',
+        phone: '0488 222 888',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP103',
+    unitId: 'Unit 305',
+    lotNumber: 15,
+    entitlement: '4.16%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-CAV3',
+        role: 'On-Site Resident',
+        name: 'Oliver Vance',
+        email: 'oliver.v@cavalier.com',
+        phone: '0499 333 777',
+        verified: true,
+        permissions: [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP103',
+    unitId: 'Unit 410',
+    lotNumber: 22,
+    entitlement: '4.16%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-CAV4',
+        role: 'Tenant',
+        name: 'Jessica Taylor',
+        email: 'jessica.t@cavalier.com',
+        phone: '0400 444 666',
+        verified: true,
+        permissions: [
+          { label: 'Noticeboard Access', active: true },
+          { label: 'Maintenance Logging', active: true },
+        ],
+      }
+    ],
+  },
+  {
+    schemeId: 'SP103',
+    unitId: 'Unit 502',
+    lotNumber: 24,
+    entitlement: '4.16%',
+    status: 'Occupied',
+    actors: [
+      {
+        id: 'ACT-CAV5',
+        role: 'Lot Owner',
+        name: 'Brandon Cole',
+        email: 'brandon.c@cavalier.com',
+        phone: '0411 555 555',
+        verified: true,
+        permissions: [
+          { label: 'Levies & Financials', active: true },
+          { label: 'Voting Rights (Ballots)', active: true },
+        ],
+      }
+    ],
+  }
 ];
 
 export const getDefaultPermissionsForRole = (role: string): { label: string; active: boolean; locked?: boolean }[] => {
@@ -486,9 +1027,11 @@ export function useSmartLotStore() {
         });
       }
 
-      // Fetch members for all schemes
+      // Fetch members and profiles for all schemes
       let formattedMembers: Member[] = INITIAL_MEMBERS;
       const { data: membersData } = await supabase.from('members').select('*');
+      const { data: profilesData } = await supabase.from('profiles').select('*');
+
       if (membersData && membersData.length > 0) {
         formattedMembers = membersData.map(m => {
           const isMgmt = m.role && (m.role.includes('Manager') || m.role.includes('Admin'));
@@ -505,7 +1048,55 @@ export function useSmartLotStore() {
             joinedAt: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
           };
         });
-        setMembers(formattedMembers);
+      }
+
+      // Merge profiles into member directory so Roman Joe and any registered user always appears
+      if (profilesData && profilesData.length > 0) {
+        profilesData.forEach(p => {
+          const existing = formattedMembers.find(m => m.email?.toLowerCase() === p.email?.toLowerCase());
+          if (!existing) {
+            formattedMembers.push({
+              id: p.id,
+              name: p.full_name || 'Roman Joe',
+              email: p.email,
+              phone: p.phone_number || '0411 888 777',
+              schemeId: formattedSchemes[0]?.id || 'SP102',
+              role: p.is_system_admin ? 'Strata Manager' : 'Strata Manager',
+              unitId: 'HQ / Management',
+              lotNumber: 0,
+              status: 'Active',
+              joinedAt: p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+            });
+          }
+        });
+      }
+
+      setMembers(formattedMembers);
+
+      // Fetch resident requests from Supabase
+      const { data: reqsData } = await supabase.from('resident_requests').select('*');
+      if (reqsData && reqsData.length > 0) {
+        const formattedReqs = reqsData.map(r => ({
+          id: r.id,
+          schemeId: r.scheme_id,
+          unit: r.unit_id || 'Unit 1',
+          title: r.title,
+          description: r.description || '',
+          requestType: r.request_type || 'maintenance_upgrade',
+          stream: (r.request_type || 'common_area_repair') as any,
+          priority: r.priority || 'Medium',
+          status: r.status || 'new',
+          createdAt: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent',
+          requestorName: r.requestor_name || 'Resident',
+          reportedBy: `${r.requestor_name || 'Resident'} (${r.requestor_role || 'Resident'})`,
+          requestorEmail: r.requestor_email || 'resident@smartlot.com.au',
+          requestorPhone: '0400 000 000',
+          requestorRole: r.requestor_role || 'Resident',
+          comments: []
+        }));
+        setResidentRequests(formattedReqs);
+      } else {
+        setResidentRequests(INITIAL_RESIDENT_REQUESTS);
       }
 
       // Fetch units for all schemes

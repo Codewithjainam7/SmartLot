@@ -22,16 +22,29 @@ export type UserSiteMembership = {
 
 export const SCHEMES: Scheme[] = [
   { id: 'SP101', name: 'Sunset Duplex', lots: 2, active: true },
-  { id: 'SP102', name: 'Coronation Townhouses', lots: 4, active: true },
-  { id: 'SP103', name: 'Cavaller Apartments', lots: 32, active: true },
-  { id: 'SP10482', name: 'SmartLot Complex', lots: 10, active: true }
+  { id: 'SP102', name: 'Coronation Residences', lots: 12, active: true },
+  { id: 'SP103', name: 'Cavalier Grand Residences', lots: 24, active: true }
 ];
 
 export const PERSONAS: Persona[] = [
   // 1. System Admins
   { id: 'web_admin', role: 'Website Administrator', name: 'Web Admin', context: 'System', email: 'admin@smartlot.com', isSystemAdmin: true },
   
-  // 2. Sarah Jones (Duplex)
+  // 2. Roman Joe (Master Strata Manager across Duplex, Coronation & Cavalier)
+  { 
+    id: 'roman_joe', 
+    role: 'Strata Manager', 
+    name: 'Roman Joe', 
+    context: 'HQ / Management', 
+    email: 'romanjoe@gmail.com', 
+    memberships: [
+      { schemeId: 'SP101', roles: ['Strata Admin', 'Strata Manager'] },
+      { schemeId: 'SP102', roles: ['Strata Admin', 'Strata Manager'] },
+      { schemeId: 'SP103', roles: ['Strata Admin', 'Strata Manager'] }
+    ] 
+  },
+
+  // 3. Sarah Jones (Duplex)
   { 
     id: 'sarah_jones', 
     role: 'Strata Admin', 
@@ -41,7 +54,7 @@ export const PERSONAS: Persona[] = [
     memberships: [{ schemeId: 'SP101', roles: ['Strata Admin', 'Lot Owner', 'Committee Member'] }] 
   },
   
-  // 3. Michael Chen (Coronation Townhouses)
+  // 4. Michael Chen (Coronation Townhouses)
   { 
     id: 'michael_chen', 
     role: 'Committee Member', 
@@ -51,7 +64,7 @@ export const PERSONAS: Persona[] = [
     memberships: [{ schemeId: 'SP102', roles: ['Strata Admin', 'Committee Member'] }] 
   },
   
-  // 4. Emma Wilson (Cavaller & Coronation)
+  // 5. Emma Wilson (Cavalier & Coronation)
   { 
     id: 'emma_wilson', 
     role: 'Strata Manager', 
