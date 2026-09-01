@@ -109,3 +109,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 12: Docs: Document Supabase RLS policies and invite trigger workflows
 // Revision Step 13: Style: Polish dark mode surface contrasts in UserManagementView
 // Revision Step 14: Refactor: Optimize memoized request metrics calculation in smartLotStore
+// Revision Step 15: Feat: Add direct quick-triage status actions to master inspection modal
