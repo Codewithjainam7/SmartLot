@@ -324,3 +324,4 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 // Landing: Master Admin Console Quick Access
 // Landing: Compliance and Strata Standard Badges
 // Animation: Hero Section Floating Elements
+// Animation: Feature Cards Staggered Animation
