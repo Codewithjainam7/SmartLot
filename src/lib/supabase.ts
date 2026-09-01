@@ -13,3 +13,4 @@ export const supabase = createClient(
 );
 
 // Supabase Client Config Marker
+// Security: Connection Health and Session Sync
