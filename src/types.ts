@@ -138,3 +138,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 41: Refactor: Ensure consistent scheme ID validation on member creation
 // Revision Step 42: Docs: Document role permissions matrix for Lot Owners vs Residents
 // Revision Step 43: Style: Improve button hit-target padding on mobile viewport breakpoints
+// Revision Step 44: Refactor: Consolidate Supabase auth error handling in login controllers
