@@ -124,3 +124,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 27: Feat: Add auto-link trigger documentation for Supabase auth signups
 // Revision Step 28: Style: Refine search input focus rings and placeholder opacity
 // Revision Step 29: Refactor: Optimize resident requests filter dependency array in AdminView
+// Revision Step 30: Docs: Add step-by-step onboarding documentation for new schemes
