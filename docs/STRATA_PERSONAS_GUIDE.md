@@ -33,3 +33,13 @@ This guide outlines the core persona workflows supported in SmartLot Module 1.
   - Manages Cavalier Grand (24 units) and Coronation (12 units) simultaneously.
   - Switches between buildings via the Topbar scheme selector without logging out.
   - Performs triage, approves work orders, and assigns new members.
+
+
+## 4. Persona 4: Roman Joe (Strata Manager)
+- **Email**: `romanjoe@gmail.com`
+- **Password**: `SmartLot2026!`
+- **Scheme**: Spear Empire (`SP823`) & Multi-Scheme Agency
+- **Primary Role**: Strata Manager
+- **Workflow**:
+  - Manages Spear Empire scheme and oversees Unit 1 (occupied by Lot Owner Jainam).
+  - Handles administrative work orders and vendor dispatching.
