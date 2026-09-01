@@ -325,3 +325,4 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 // Landing: Compliance and Strata Standard Badges
 // Animation: Hero Section Floating Elements
 // Animation: Feature Cards Staggered Animation
+// Animation: Navigation Bar Blur Effect
