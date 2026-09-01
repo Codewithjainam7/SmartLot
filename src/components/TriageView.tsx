@@ -232,3 +232,4 @@ function StreamIcon({ stream }: { stream: RequestStream }) {
 // End TriageView
 
 // Subcomponent: Workflow Triage Board
+// Animation: Triage Card Drag and Drop Transition
