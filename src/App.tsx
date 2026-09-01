@@ -255,11 +255,15 @@ export default function App() {
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
         onAddScheme={store.addScheme}
+        onUpdateScheme={store.updateScheme}
+        onUpdateMember={store.updateMember}
+        onUpdateResidentRequest={store.updateResidentRequest}
         onTriageRequest={store.triageRequest}
         onCloseRequest={store.closeResidentRequest}
         onAddComment={store.addCommentToRequest}
         globalRolePermissions={store.rolePermissions['GLOBAL'] || {}}
         onToggleGlobalPermission={(role, perm) => store.togglePermission('GLOBAL', role, perm)}
+        onToggleIndividualPermission={store.toggleIndividualPermission}
       />
     );
   }

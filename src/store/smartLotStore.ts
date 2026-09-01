@@ -885,6 +885,36 @@ export function useSmartLotStore() {
     }
   };
 
+  const updateScheme = async (schemeId: string, updates: { name?: string; lots?: number }) => {
+    setSchemes(prev => prev.map(s => s.id === schemeId ? { ...s, ...updates } : s));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('schemes').update(updates).eq('id', schemeId);
+      if (error) console.error("Error updating scheme in Supabase:", error);
+    }
+  };
+
+  const updateMember = async (memberId: string, updates: Partial<Member>) => {
+    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, ...updates } : m));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const payload: any = {};
+      if (updates.name) payload.name = updates.name;
+      if (updates.email) payload.email = updates.email;
+      if (updates.phone) payload.phone = updates.phone;
+      if (updates.role) payload.role = updates.role;
+      if (updates.unitId) payload.unit_id = updates.unitId;
+      if (updates.status) payload.status = updates.status;
+      
+      const { error } = await supabase.from('members').update(payload).eq('id', memberId);
+      if (error) console.error("Error updating member in Supabase:", error);
+    }
+  };
+
+  const updateResidentRequest = async (requestId: string, updates: Partial<ResidentRequest>) => {
+    setResidentRequests(prev => prev.map(r => r.id === requestId ? { ...r, ...updates } : r));
+  };
+
   const deleteMember = async (memberId: string) => {
     setMembers(prev => prev.filter(m => m.id !== memberId));
 
@@ -1105,6 +1135,9 @@ export function useSmartLotStore() {
     addResidentToUnit,
     offboardActor,
     updateUnitMetadata,
+    updateScheme,
+    updateMember,
+    updateResidentRequest,
     addScheme,
     deleteScheme,
     togglePermission,

@@ -3,9 +3,9 @@ import {
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
-  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, DoorOpen, Wrench
+  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key
 } from 'lucide-react';
-import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus } from '../store/smartLotStore';
+import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';
 import { Scheme } from '../types';
 import { CustomCheckbox } from './core/CustomCheckbox';
 
@@ -20,11 +20,15 @@ interface AdminViewProps {
   onDeleteMember: (id: string) => void;
   onDeleteScheme: (id: string) => void;
   onAddScheme?: (id: string, name: string, lots: number) => Promise<any>;
+  onUpdateScheme?: (id: string, updates: { name?: string; lots?: number }) => Promise<any>;
+  onUpdateMember?: (id: string, updates: Partial<Member>) => Promise<any>;
+  onUpdateResidentRequest?: (id: string, updates: Partial<ResidentRequest>) => Promise<any>;
   onTriageRequest?: (id: string, triageData: any) => void;
   onCloseRequest?: (id: string, reason?: string) => void;
   onAddComment?: (id: string, text: string) => void;
   globalRolePermissions?: Record<string, { label: string; active: boolean; locked?: boolean; comingSoon?: boolean }[]>;
   onToggleGlobalPermission?: (role: string, permissionLabel: string) => void;
+  onToggleIndividualPermission?: (memberId: string, permissionLabel: string) => void;
 }
 
 export function AdminView({ 
@@ -38,11 +42,15 @@ export function AdminView({
   onDeleteMember, 
   onDeleteScheme, 
   onAddScheme,
+  onUpdateScheme,
+  onUpdateMember,
+  onUpdateResidentRequest,
   onTriageRequest,
   onCloseRequest,
   onAddComment,
   globalRolePermissions = {}, 
-  onToggleGlobalPermission
+  onToggleGlobalPermission,
+  onToggleIndividualPermission
 }: AdminViewProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'schemes' | 'users' | 'permissions'>('overview');
   
@@ -52,16 +60,38 @@ export function AdminView({
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState<string>('ALL');
 
-  // Modals
+  // Modals - Scheme Creation & Editing
   const [isAddSchemeOpen, setIsAddSchemeOpen] = useState(false);
   const [newSchemeId, setNewSchemeId] = useState('');
   const [newSchemeName, setNewSchemeName] = useState('');
   const [newSchemeLots, setNewSchemeLots] = useState(10);
   const [isSubmittingScheme, setIsSubmittingScheme] = useState(false);
 
+  const [editingScheme, setEditingScheme] = useState<Scheme | null>(null);
+  const [editSchemeName, setEditSchemeName] = useState('');
+  const [editSchemeLots, setEditSchemeLots] = useState(10);
+
+  // Modals - Member Editing & Permissions
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editMemberName, setEditMemberName] = useState('');
+  const [editMemberEmail, setEditMemberEmail] = useState('');
+  const [editMemberPhone, setEditMemberPhone] = useState('');
+  const [editMemberRole, setEditMemberRole] = useState<MemberRole>('Resident');
+  const [editMemberUnit, setEditMemberUnit] = useState('');
+  const [editMemberStatus, setEditMemberStatus] = useState<'Active' | 'Invited' | 'Restricted'>('Active');
+  const [memberPermissionsAudit, setMemberPermissionsAudit] = useState<Member | null>(null);
+
+  // Modals - Request Inspection & Editing
   const [selectedRequest, setSelectedRequest] = useState<ResidentRequest | null>(null);
-  const [selectedSchemeForAudit, setSelectedSchemeForAudit] = useState<Scheme | null>(null);
+  const [isEditingRequest, setIsEditingRequest] = useState(false);
+  const [editReqTitle, setEditReqTitle] = useState('');
+  const [editReqDescription, setEditReqDescription] = useState('');
+  const [editReqPriority, setEditReqPriority] = useState<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
+  const [editReqStatus, setEditReqStatus] = useState<CaseStatus>('new');
   const [newCommentText, setNewCommentText] = useState('');
+
+  // Scheme Master Audit Modal
+  const [selectedSchemeForAudit, setSelectedSchemeForAudit] = useState<Scheme | null>(null);
 
   // Stats Calculations
   const stats = useMemo(() => {
@@ -144,6 +174,49 @@ export function AdminView({
     }
   };
 
+  const handleSaveSchemeEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingScheme || !onUpdateScheme) return;
+    await onUpdateScheme(editingScheme.id, {
+      name: editSchemeName.trim(),
+      lots: Number(editSchemeLots)
+    });
+    setEditingScheme(null);
+  };
+
+  const handleSaveMemberEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember || !onUpdateMember) return;
+    await onUpdateMember(editingMember.id, {
+      name: editMemberName.trim(),
+      email: editMemberEmail.trim(),
+      phone: editMemberPhone.trim(),
+      role: editMemberRole,
+      unitId: editMemberUnit.trim(),
+      status: editMemberStatus
+    });
+    setEditingMember(null);
+  };
+
+  const handleSaveRequestEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRequest || !onUpdateResidentRequest) return;
+    await onUpdateResidentRequest(selectedRequest.id, {
+      title: editReqTitle.trim(),
+      description: editReqDescription.trim(),
+      priority: editReqPriority,
+      status: editReqStatus
+    });
+    setSelectedRequest(prev => prev ? {
+      ...prev,
+      title: editReqTitle.trim(),
+      description: editReqDescription.trim(),
+      priority: editReqPriority,
+      status: editReqStatus
+    } : null);
+    setIsEditingRequest(false);
+  };
+
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRequest || !newCommentText.trim() || !onAddComment) return;
@@ -200,7 +273,7 @@ export function AdminView({
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  Cross-scheme administration, master triage, and global security policies.
+                  Direct master editing for all schemes, users, tickets, and platform security.
                 </p>
               </div>
             </div>
@@ -301,7 +374,7 @@ export function AdminView({
           </button>
         </div>
 
-        {/* Search & Global Filter Bar (Present in tabs with list views) */}
+        {/* Search & Global Filter Bar */}
         {activeTab !== 'permissions' && activeTab !== 'overview' && (
           <div className="bg-white dark:bg-[#0d1117] p-4 rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="relative w-full md:w-96">
@@ -448,7 +521,7 @@ export function AdminView({
                   <span className="text-xs font-bold text-gray-400">Active</span>
                 </div>
                 <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                  Direct dispatch & master triage
+                  Direct master editing & dispatch
                 </div>
               </div>
 
@@ -547,14 +620,27 @@ export function AdminView({
                         <div className="text-xs font-bold text-gray-900 dark:text-white">{s.name}</div>
                         <div className="text-[10px] text-gray-500 font-mono">{s.id} • {s.lots} Lots</div>
                       </div>
-                      <button
-                        onClick={() => setSelectedSchemeForAudit(s)}
-                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
-                        title="Audit Scheme Details"
-                      >
-                        <Eye size={12} />
-                        <span>Inspect</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setEditingScheme(s);
+                            setEditSchemeName(s.name);
+                            setEditSchemeLots(s.lots);
+                          }}
+                          className="p-1.5 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-all cursor-pointer"
+                          title="Edit Scheme"
+                        >
+                          <Edit3 size={13} />
+                        </button>
+                        <button
+                          onClick={() => setSelectedSchemeForAudit(s)}
+                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                          title="Audit Scheme Details"
+                        >
+                          <Eye size={12} />
+                          <span>Inspect</span>
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -584,7 +670,7 @@ export function AdminView({
                   All Requests & Maintenance Tickets ({filteredRequests.length})
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Global operational oversight. Super Administrators have master control to review, triage, approve, reject, or assign tickets.
+                  Global operational oversight. Super Administrators have master control to review, edit fields, triage, approve, reject, or assign tickets.
                 </p>
               </div>
             </div>
@@ -675,11 +761,14 @@ export function AdminView({
                           <td className="py-4 px-5 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <button
-                                onClick={() => setSelectedRequest(req)}
+                                onClick={() => {
+                                  setSelectedRequest(req);
+                                  setIsEditingRequest(false);
+                                }}
                                 className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
                               >
                                 <Eye size={13} />
-                                <span>Inspect</span>
+                                <span>Inspect & Edit</span>
                               </button>
 
                               {onTriageRequest && req.status !== 'resolved' && (
@@ -722,7 +811,7 @@ export function AdminView({
                   Registered Strata Schemes ({filteredSchemes.length})
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Global building portfolios. Master admins can register, audit, or remove schemes.
+                  Global building portfolios. Master admins can register, directly edit scheme metadata, audit lots, or remove schemes.
                 </p>
               </div>
               <button
@@ -748,9 +837,22 @@ export function AdminView({
                         <div className="p-3 rounded-2xl bg-[#0055FF]/10 text-[#0055FF]">
                           <Building2 size={22} />
                         </div>
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20">
-                          {s.lots} Lots
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => {
+                              setEditingScheme(s);
+                              setEditSchemeName(s.name);
+                              setEditSchemeLots(s.lots);
+                            }}
+                            className="p-1.5 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+                            title="Edit Scheme Details"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20">
+                            {s.lots} Lots
+                          </span>
+                        </div>
                       </div>
 
                       <div>
@@ -806,7 +908,7 @@ export function AdminView({
                 Global Platform Users Registry ({filteredMembers.length})
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Directory of all active accounts across schemes with assigned roles and unit lot associations.
+                Directory of all active accounts. Master admins can directly edit member names, roles, units, and custom permissions.
               </p>
             </div>
 
@@ -820,7 +922,7 @@ export function AdminView({
                       <th className="py-4 px-5">Role & Unit</th>
                       <th className="py-4 px-5">Contact Details</th>
                       <th className="py-4 px-5">Status</th>
-                      <th className="py-4 px-5 text-right">Actions</th>
+                      <th className="py-4 px-5 text-right">Master Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
@@ -851,17 +953,45 @@ export function AdminView({
                           </span>
                         </td>
                         <td className="py-4 px-5 text-right">
-                          <button
-                            onClick={() => {
-                              if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
-                                onDeleteMember(m.id);
-                              }
-                            }}
-                            className="p-2 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
-                            title="Deactivate / Delete User"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => {
+                                setEditingMember(m);
+                                setEditMemberName(m.name);
+                                setEditMemberEmail(m.email);
+                                setEditMemberPhone(m.phone || '');
+                                setEditMemberRole(m.role);
+                                setEditMemberUnit(m.unitId);
+                                setEditMemberStatus(m.status);
+                              }}
+                              className="px-2.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                              title="Edit User Profile"
+                            >
+                              <Edit3 size={13} />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              onClick={() => setMemberPermissionsAudit(m)}
+                              className="px-2.5 py-1.5 rounded-xl bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                              title="View & Edit Individual Overrides"
+                            >
+                              <Key size={13} />
+                              <span>Overrides</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
+                                  onDeleteMember(m.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
+                              title="Delete User"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -872,7 +1002,7 @@ export function AdminView({
           </div>
         )}
 
-        {/* TAB 5: GLOBAL DEFAULT PERMISSIONS MATRIX - Clean, responsive, vertical-only scroll without text cutoffs */}
+        {/* TAB 5: GLOBAL DEFAULT PERMISSIONS MATRIX */}
         {activeTab === 'permissions' && (
           <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-200 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1024,39 +1154,352 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 2: DETAILED REQUEST INSPECTION & MASTER TRIAGE */}
-      {selectedRequest && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
+      {/* MODAL 2: EDIT SCHEME DETAILS */}
+      {editingScheme && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
             <button
-              onClick={() => setSelectedRequest(null)}
+              onClick={() => setEditingScheme(null)}
               className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
             >
               <X size={18} />
             </button>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                  selectedRequest.priority === 'Emergency' ? 'bg-[#FF4757]/15 text-[#FF4757] border border-[#FF4757]/30' :
-                  'bg-blue-500/10 text-[#0055FF]'
-                }`}>
-                  {selectedRequest.priority} Priority
-                </span>
-                <span className="text-xs font-bold text-gray-400">• Scheme {selectedRequest.schemeId}</span>
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0055FF] text-xs font-bold">
+                <Edit3 size={14} /> Edit Scheme
               </div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white">{selectedRequest.title}</h3>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">Modify {editingScheme.id}</h3>
+            </div>
+
+            <form onSubmit={handleSaveSchemeEdit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Scheme Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editSchemeName}
+                  onChange={e => setEditSchemeName(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-3 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Total Registered Lots</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={500}
+                  value={editSchemeLots}
+                  onChange={e => setEditSchemeLots(Number(e.target.value))}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-3 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-black text-xs uppercase tracking-wider transition-all shadow-md mt-4 cursor-pointer"
+              >
+                Save Scheme Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: EDIT USER PROFILE DIRECTLY */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setEditingMember(null)}
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0055FF] text-xs font-bold">
+                <UserCheck size={14} /> Master User Edit
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">{editingMember.name}</h3>
+              <p className="text-xs font-mono text-gray-400">Scheme: {editingMember.schemeId}</p>
+            </div>
+
+            <form onSubmit={handleSaveMemberEdit} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editMemberName}
+                  onChange={e => setEditMemberName(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={editMemberEmail}
+                  onChange={e => setEditMemberEmail(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Role</label>
+                  <select
+                    value={editMemberRole}
+                    onChange={e => setEditMemberRole(e.target.value as MemberRole)}
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="Strata Manager">Strata Manager</option>
+                    <option value="Building Manager">Building Manager</option>
+                    <option value="Committee Member">Committee Member</option>
+                    <option value="Lot Owner">Lot Owner</option>
+                    <option value="Resident">Resident</option>
+                    <option value="Tenant">Tenant</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Unit ID</label>
+                  <input
+                    type="text"
+                    required
+                    value={editMemberUnit}
+                    onChange={e => setEditMemberUnit(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Account Status</label>
+                <select
+                  value={editMemberStatus}
+                  onChange={e => setEditMemberStatus(e.target.value as any)}
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Invited">Invited</option>
+                  <option value="Restricted">Restricted</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-black text-xs uppercase tracking-wider transition-all shadow-md mt-3 cursor-pointer"
+              >
+                Update Member
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: INDIVIDUAL USER PERMISSION OVERRIDES */}
+      {memberPermissionsAudit && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
+            <button
+              onClick={() => setMemberPermissionsAudit(null)}
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0055FF]/10 text-[#0055FF] text-xs font-bold">
+                <Key size={14} /> Individual Permissions Override
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white">{memberPermissionsAudit.name}</h3>
               <p className="text-xs text-gray-400">
-                Submitted by <strong>{selectedRequest.requestorName}</strong> ({selectedRequest.requestorRole}, {selectedRequest.unit}) on {new Date(selectedRequest.createdAt).toLocaleString()}
+                Scheme: <strong>{memberPermissionsAudit.schemeId}</strong> • Base Role: <strong>{memberPermissionsAudit.role}</strong>
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 space-y-2">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Request Description</div>
-              <p className="text-xs text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                {selectedRequest.description}
-              </p>
+            <div className="max-h-96 overflow-y-auto space-y-4 pr-1">
+              {CATEGORY_MAP.map(cat => (
+                <div key={cat.name} className="space-y-2">
+                  <div className="text-[11px] font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
+                    {cat.name}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {cat.perms.map(permName => {
+                      const override = memberPermissionsAudit.individualPermissions?.find(p => p.label === permName);
+                      const basePerms = activePerms[memberPermissionsAudit.role] || [];
+                      const basePermObj = basePerms.find(p => p.label === permName);
+                      const isActive = override ? override.active : (basePermObj ? basePermObj.active : false);
+
+                      return (
+                        <div 
+                          key={permName}
+                          onClick={() => {
+                            if (onToggleIndividualPermission) {
+                              onToggleIndividualPermission(memberPermissionsAudit.id, permName);
+                              setMemberPermissionsAudit(prev => {
+                                if (!prev) return null;
+                                const existing = prev.individualPermissions || [];
+                                const idx = existing.findIndex(p => p.label === permName);
+                                let updated;
+                                if (idx >= 0) {
+                                  updated = existing.map((p, i) => i === idx ? { ...p, active: !p.active } : p);
+                                } else {
+                                  updated = [...existing, { label: permName, active: !isActive }];
+                                }
+                                return { ...prev, individualPermissions: updated };
+                              });
+                            }
+                          }}
+                          className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 flex items-center justify-between cursor-pointer hover:border-[#00D4B2]/40 transition-all"
+                        >
+                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{permName}</span>
+                          <CustomCheckbox checked={isActive} onChange={() => {}} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
+
+            <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex justify-end">
+              <button
+                onClick={() => setMemberPermissionsAudit(null)}
+                className="px-5 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs cursor-pointer shadow-md"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: DETAILED REQUEST INSPECTION & MASTER EDITING */}
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-2xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
+            <button
+              onClick={() => {
+                setSelectedRequest(null);
+                setIsEditingRequest(false);
+              }}
+              className="absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                    selectedRequest.priority === 'Emergency' ? 'bg-[#FF4757]/15 text-[#FF4757] border border-[#FF4757]/30' :
+                    'bg-blue-500/10 text-[#0055FF]'
+                  }`}>
+                    {selectedRequest.priority} Priority
+                  </span>
+                  <span className="text-xs font-bold text-gray-400">• Scheme {selectedRequest.schemeId}</span>
+                </div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white">{selectedRequest.title}</h3>
+                <p className="text-xs text-gray-400">
+                  Submitted by <strong>{selectedRequest.requestorName}</strong> ({selectedRequest.requestorRole}, {selectedRequest.unit}) on {new Date(selectedRequest.createdAt).toLocaleString()}
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsEditingRequest(!isEditingRequest);
+                  setEditReqTitle(selectedRequest.title);
+                  setEditReqDescription(selectedRequest.description);
+                  setEditReqPriority(selectedRequest.priority);
+                  setEditReqStatus(selectedRequest.status);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Edit3 size={13} />
+                <span>{isEditingRequest ? 'Cancel Edit' : 'Edit Request'}</span>
+              </button>
+            </div>
+
+            {/* Master Edit Form if Editing */}
+            {isEditingRequest ? (
+              <form onSubmit={handleSaveRequestEdit} className="space-y-4 p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Ticket Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={editReqTitle}
+                    onChange={e => setEditReqTitle(e.target.value)}
+                    className="w-full bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#00D4B2]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Description</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={editReqDescription}
+                    onChange={e => setEditReqDescription(e.target.value)}
+                    className="w-full bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-xs font-medium focus:outline-none focus:border-[#00D4B2]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Priority</label>
+                    <select
+                      value={editReqPriority}
+                      onChange={e => setEditReqPriority(e.target.value as any)}
+                      className="w-full bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                      <option value="Emergency">🚨 Emergency</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Status</label>
+                    <select
+                      value={editReqStatus}
+                      onChange={e => setEditReqStatus(e.target.value as any)}
+                      className="w-full bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold focus:outline-none cursor-pointer"
+                    >
+                      <option value="new">New</option>
+                      <option value="pending_triage">Pending Triage</option>
+                      <option value="in_voting">In Voting</option>
+                      <option value="approved">Approved</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs uppercase tracking-wider cursor-pointer shadow-md"
+                >
+                  Save Ticket Updates
+                </button>
+              </form>
+            ) : (
+              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 space-y-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Request Description</div>
+                <p className="text-xs text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                  {selectedRequest.description}
+                </p>
+              </div>
+            )}
 
             {/* Comments List */}
             <div className="space-y-3">
@@ -1082,7 +1525,7 @@ export function AdminView({
                 <form onSubmit={handleAddComment} className="flex gap-2 pt-2">
                   <input
                     type="text"
-                    placeholder="Add an administrative comment or instruction..."
+                    placeholder="Add an administrative instruction or note..."
                     value={newCommentText}
                     onChange={e => setNewCommentText(e.target.value)}
                     className="flex-1 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#00D4B2]"
@@ -1136,7 +1579,7 @@ export function AdminView({
         </div>
       )}
 
-      {/* MODAL 3: SCHEME MASTER AUDIT MODAL (STRICTLY WITHIN ADMIN SECURITY BOUNDS) */}
+      {/* MODAL 6: SCHEME MASTER AUDIT MODAL (STRICTLY WITHIN ADMIN SECURITY BOUNDS) */}
       {selectedSchemeForAudit && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-8 max-w-3xl w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200 my-8">
@@ -1155,6 +1598,19 @@ export function AdminView({
                 <h3 className="text-2xl font-black text-gray-900 dark:text-white">{selectedSchemeForAudit.name}</h3>
                 <p className="text-xs font-mono text-gray-400">Scheme ID: {selectedSchemeForAudit.id} • {selectedSchemeForAudit.lots} Lots</p>
               </div>
+
+              <button
+                onClick={() => {
+                  setEditingScheme(selectedSchemeForAudit);
+                  setEditSchemeName(selectedSchemeForAudit.name);
+                  setEditSchemeLots(selectedSchemeForAudit.lots);
+                  setSelectedSchemeForAudit(null);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Edit3 size={14} />
+                <span>Edit Scheme Details</span>
+              </button>
             </div>
 
             {/* Scheme Summary Stats */}
