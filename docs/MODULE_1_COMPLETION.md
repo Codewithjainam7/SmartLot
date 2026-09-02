@@ -28,3 +28,6 @@
 - **Real-Time Maintenance Ticket Lifecycle**: Work order dispatch to licensed contractors.
 - **Vendor Portal**: PIN-protected guest completion flows and invoice attachments.
 - **Financial Levies & Invoicing**: Automated quarterly levy calculation based on unit lot entitlements.
+
+- **Scheme Isolation**: Topbar scheme dropdown strictly limited to user memberships.
+- **Occupant Accuracy**: Residents KPI metric accurately counts on-site unit occupants only.
