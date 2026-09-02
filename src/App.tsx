@@ -22,6 +22,7 @@ import { SuperAdminLoginView } from './components/SuperAdminLoginView';
 import { SettingsView } from './components/SettingsView';
 import { JoinSchemeView } from './components/JoinSchemeView';
 import { DashboardSkeleton } from './components/core/DashboardSkeleton';
+import { ResidentPortalView } from './components/ResidentPortalView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -346,9 +347,16 @@ export default function App() {
             <DashboardSkeleton />
           ) : (
             <>
-              {/* Dashboard View */}
+              {/* Dashboard View: Resident Portal for Residents/Tenants, Management Dashboard for Managers/Admins */}
               {store.activeView === 'dashboard' && (
-                <Dashboard store={store} />
+                (store.activePersona.role === 'Resident' || store.activePersona.role === 'Tenant' || store.activePersona.role === 'On-Site Resident') ? (
+                  <ResidentPortalView 
+                    store={store} 
+                    onOpenCreateRequest={() => setShowCreateRequestModal(true)} 
+                  />
+                ) : (
+                  <Dashboard store={store} />
+                )
               )}
 
           {/* Team Access View (User Management View with active scheme and permissions matrix) */}
