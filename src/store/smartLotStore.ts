@@ -1632,11 +1632,15 @@ export function useSmartLotStore() {
     priority: 'Low' | 'Medium' | 'High' | 'Emergency';
     dueDate?: string;
   }) => {
-    const id = `REQ-${100 + residentRequests.length + 1}`;
+    const id = `REQ-${Date.now()}`;
+    const unit = activePersona.context || 'Unit 1';
+    const requestorEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit.com`;
+    const requestorRole = activePersona.role.includes('Owner') ? 'Lot Owner' : (activePersona.role.includes('Tenant') ? 'Tenant' : (activePersona.role.includes('Committee') ? 'Committee Member' : 'Resident'));
+
     const req: ResidentRequest = {
       id,
       schemeId: activeScheme.id,
-      unit: activePersona.context || 'Unit 10',
+      unit,
       title: newReq.title,
       description: newReq.description,
       requestType: newReq.requestType,
@@ -1648,17 +1652,37 @@ export function useSmartLotStore() {
       createdAt: 'Just now',
       requestorName: activePersona.name,
       reportedBy: `${activePersona.name} (${activePersona.role})`,
-      requestorEmail: `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit10.com`,
+      requestorEmail,
       requestorPhone: '0412 888 999',
-      requestorRole: activePersona.role.includes('Owner') ? 'Lot Owner' : activePersona.role.includes('Tenant') ? 'Tenant' : 'Resident',
+      requestorRole: requestorRole as any,
       comments: [],
     };
 
     setResidentRequests(prev => [req, ...prev]);
+
+    // Persist to Supabase asynchronously
+    supabase.from('resident_requests').insert({
+      scheme_id: activeScheme.id,
+      unit_id: unit,
+      title: newReq.title,
+      description: newReq.description,
+      request_type: req.stream,
+      priority: newReq.priority,
+      status: 'pending_triage',
+      requestor_name: activePersona.name,
+      requestor_email: requestorEmail,
+      requestor_role: requestorRole
+    }).then(({ error }) => {
+      if (error) {
+        console.error("Error creating request in Supabase:", error);
+      }
+    });
+
     return id;
   };
 
   const triageRequest = (requestId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
+    const nextStatus = action === 'reject' ? 'rejected' : 'approved';
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId) return r;
       if (action === 'reject') {
@@ -1673,6 +1697,15 @@ export function useSmartLotStore() {
         status: 'approved',
       };
     }));
+
+    supabase.from('resident_requests').update({
+      status: nextStatus,
+      rejection_reason: action === 'reject' ? (rejectionReason || 'Request rejected per strata guidelines.') : null
+    }).eq('id', requestId).then(({ error }) => {
+      if (error) {
+        console.warn("Updated status in Supabase for request:", requestId);
+      }
+    });
   };
 
   const closeResidentRequest = (requestId: string, closeReason: string) => {
