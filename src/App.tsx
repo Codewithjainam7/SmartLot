@@ -302,6 +302,8 @@ export default function App() {
         onBack={() => setSessionState('landing')}
       />
     );
+  }
+
   // Handle active scheme switcher filters dynamically
   const filteredRequests = store.residentRequests.filter(r => {
     return r.schemeId === store.activeScheme.id;
