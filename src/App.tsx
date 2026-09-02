@@ -285,6 +285,25 @@ export default function App() {
     );
   }
 
+  // Isolate schemes strictly to the logged-in user's memberships
+  const userMemberRows = store.members.filter(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
+  const userSchemeIds = new Set(userMemberRows.map(m => m.schemeId));
+  
+  // If user is website administrator, they can see all schemes; otherwise strictly their own scheme(s)
+  const isWebAdmin = store.activePersona.role === 'Website Administrator' || (store.activePersona as any).isSystemAdmin;
+  const userSchemes = isWebAdmin
+    ? store.schemes 
+    : (userSchemeIds.size > 0 
+        ? store.schemes.filter(s => userSchemeIds.has(s.id))
+        : (store.activeScheme && store.activeScheme.id !== 'NO_SCHEME' ? [store.activeScheme] : store.schemes.filter(s => s.id === 'SP101')));
+
+  // Ensure activeScheme is strictly one of the user's valid schemes
+  useEffect(() => {
+    if (userSchemes.length > 0 && !userSchemes.some(s => s.id === store.activeScheme.id)) {
+      store.setActiveScheme(userSchemes[0]);
+    }
+  }, [userSchemes, store.activeScheme?.id]);
+
   // Handle active scheme switcher filters dynamically
   const filteredRequests = store.residentRequests.filter(r => {
     return r.schemeId === store.activeScheme.id;
@@ -307,7 +326,7 @@ export default function App() {
       {/* Content Area */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
         <Topbar 
-          schemes={store.schemes}
+          schemes={userSchemes}
           activeScheme={store.activeScheme} 
           setActiveScheme={store.setActiveScheme}
           personas={PERSONAS}

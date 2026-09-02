@@ -23,50 +23,57 @@ export function Topbar({
   onAddSchemeClick,
   onLogout
 }: TopbarProps) {
-  const visibleSchemes = schemes.length > 0 ? schemes : (activeScheme ? [activeScheme] : []);
+  const isManagerOrAdmin = activePersona.role.includes('Manager') || activePersona.role.includes('Admin') || (activePersona as any).isSystemAdmin;
+  const hasMultipleSchemes = schemes.length > 1;
 
   return (
     <div className="h-20 bg-white/50 dark:bg-[#0B1121]/50 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-8 sticky top-0 z-20 font-sans">
       
       {/* Scheme Switcher */}
       <div className="flex items-center gap-6">
-        {visibleSchemes.length > 0 ? (
+        {activeScheme && activeScheme.id !== 'NO_SCHEME' ? (
           <div className="relative group">
-            <button className="flex items-center gap-2 bg-white dark:bg-[#121316] border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm px-4 py-2 rounded-xl transition-all cursor-pointer">
-              <Building2 size={18} className="text-gray-500" />
-              <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Scheme: {activeScheme?.id || 'NO_SCHEME'}</span>
+            <button className={`flex items-center gap-2 bg-white dark:bg-[#121316] border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm px-4 py-2 rounded-xl transition-all ${
+              hasMultipleSchemes ? 'cursor-pointer' : 'cursor-default'
+            }`}>
+              <Building2 size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
+              <span className="font-bold text-gray-800 dark:text-gray-200 text-sm">Scheme: {activeScheme.id}</span>
               <span className="text-gray-500 dark:text-gray-400 text-sm">- {(activeScheme?.name || "").split("-")[1]?.trim() || activeScheme?.name || "Unnamed Scheme"}</span>
-              <ChevronDown size={16} className="text-gray-400 ml-2" />
+              {hasMultipleSchemes && <ChevronDown size={16} className="text-gray-400 ml-1" />}
             </button>
             
-            {/* Dropdown Menu */}
-            <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top">
-              <div className="p-2 space-y-1">
-                {visibleSchemes.map(scheme => (
-                  <button
-                    key={scheme.id}
-                    onClick={() => setActiveScheme(scheme)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-sm cursor-pointer ${
-                      activeScheme.id === scheme.id ? "bg-[#F2F4F8] dark:bg-white/5 font-medium text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                    }`}
-                  >
-                    <div className="font-semibold">{scheme.id}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{scheme.lots} Lots - {(scheme?.name || "").split("-")[1]?.trim() || scheme?.name || "Unnamed Scheme"}</div>
-                  </button>
-                ))}
+            {/* Dropdown Menu - ONLY displayed if user has multiple schemes or is manager adding site */}
+            {(hasMultipleSchemes || isManagerOrAdmin) && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top z-30">
+                <div className="p-2 space-y-1">
+                  {schemes.map(scheme => (
+                    <button
+                      key={scheme.id}
+                      onClick={() => setActiveScheme(scheme)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm cursor-pointer ${
+                        activeScheme.id === scheme.id ? "bg-[#F2F4F8] dark:bg-white/5 font-medium text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      <div className="font-semibold">{scheme.id}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{scheme.lots} Lots - {(scheme?.name || "").split("-")[1]?.trim() || scheme?.name || "Unnamed Scheme"}</div>
+                    </button>
+                  ))}
 
-                <div className="border-t border-gray-100 dark:border-gray-800 pt-1.5 mt-1.5">
-                  <button
-                    type="button"
-                    onClick={onAddSchemeClick}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/5 dark:hover:bg-[#00D4B2]/5 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus size={14} />
-                    Add New Strata Site
-                  </button>
+                  {isManagerOrAdmin && (
+                    <div className="border-t border-gray-100 dark:border-gray-800 pt-1.5 mt-1.5">
+                      <button
+                        type="button"
+                        onClick={onAddSchemeClick}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/5 dark:hover:bg-[#00D4B2]/5 flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus size={14} />
+                        Add New Strata Site
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900 px-4 py-2 rounded-xl text-xs font-semibold">
@@ -76,7 +83,7 @@ export function Topbar({
 
         {/* Quick Metrics */}
         <div className="hidden md:flex items-center gap-3">
-          <MetricPill label={`${schemes.length} Active Schemes`} />
+          <MetricPill label={`${schemes.length} Active ${schemes.length === 1 ? 'Scheme' : 'Schemes'}`} />
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#6EE7B7]/20 dark:bg-[#6EE7B7]/10 text-[#059669] dark:text-[#34D399] text-xs font-semibold">
             <CheckCircle2 size={14} />
             Verified Compliance
