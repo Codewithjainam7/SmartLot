@@ -192,3 +192,5 @@ function NavItem({
   );
 }
 
+
+// Navigation: Team Access unlocked for Lot Owners and Committee Members
