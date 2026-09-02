@@ -43,3 +43,8 @@ This guide outlines the core persona workflows supported in SmartLot Module 1.
 - **Workflow**:
   - Manages Spear Empire scheme and oversees Unit 1 (occupied by Lot Owner Jainam).
   - Handles administrative work orders and vendor dispatching.
+
+### Duplex SP101 Roster Notes
+- Unit 1: Sarah Jones (Lot Owner & Strata Admin)
+- Unit 2: David Miller (Tenant)
+- Total Occupants: 2
