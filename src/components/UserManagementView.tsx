@@ -176,7 +176,13 @@ export function UserManagementView({
                 <button
                   type="button"
                   onClick={handleCopyInviteLink}
-                  className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-800 dark:text-white px-5 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-105 cursor-pointer"
+                  disabled={activePersonaName === 'Emma Wilson'}
+                  title={activePersonaName === 'Emma Wilson' ? 'Copy Invite Link is disabled for Emma Wilson' : undefined}
+                  className={`bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white px-5 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all ${
+                    activePersonaName === 'Emma Wilson'
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-200 dark:hover:bg-white/10 hover:scale-105 cursor-pointer'
+                  }`}
                 >
                   {copied ? (
                     <>
