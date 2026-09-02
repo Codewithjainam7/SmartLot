@@ -44,6 +44,20 @@ This guide outlines the core persona workflows supported in SmartLot Module 1.
   - Manages Spear Empire scheme and oversees Unit 1 (occupied by Lot Owner Jainam).
   - Handles administrative work orders and vendor dispatching.
 
+## 5. Resident & Tenant Accounts (Resident Portal)
+
+All resident and tenant accounts are active and provisioned with password **`SmartLot2026!`**.
+
+| Name | Role | Scheme | Unit | Email | Password |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **David Miller** | Tenant | `SP101` (Sunset Duplex) | Unit 2 | `david.m@duplex.com` | `SmartLot2026!` |
+| **Chloe Bennett** | Tenant | `SP102` (Coronation) | Unit 4 | `chloe.b@coronation.com` | `SmartLot2026!` |
+| **Liam Hemsworth** | Resident | `SP102` (Coronation) | Unit 5 | `liam.h@coronation.com` | `SmartLot2026!` |
+| **Jessica Taylor** | Tenant | `SP103` (Cavalier Grand) | Unit 410 | `jessica.t@cavalier.com` | `SmartLot2026!` |
+| **Oliver Vance** | Resident | `SP103` (Cavalier Grand) | Unit 305 | `oliver.v@cavalier.com` | `SmartLot2026!` |
+
+---
+
 ### Duplex SP101 Roster Notes
 - Unit 1: Sarah Jones (Lot Owner & Strata Admin)
 - Unit 2: David Miller (Tenant)
