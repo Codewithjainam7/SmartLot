@@ -26,6 +26,7 @@ interface DashboardProps {
 export function Dashboard({ store }: DashboardProps) {
   const activeScheme = store.activeScheme;
   const members = store.members.filter(m => m.schemeId === activeScheme.id);
+  const residents = members.filter(m => m.unitId !== 'HQ / Management' && !['Strata Manager', 'Building Manager'].includes(m.role));
   const pendingRequests = store.residentRequests.filter(r => r.status === 'pending_triage' && r.schemeId === activeScheme.id);
   const vacantCount = store.units.filter((u: any) => u.status === 'Vacant' && u.schemeId === activeScheme.id).length;
 
@@ -119,7 +120,7 @@ export function Dashboard({ store }: DashboardProps) {
       <div className="lg:col-span-3 space-y-6">
         {/* 2x2 Metrics */}
         <div className="grid grid-cols-2 gap-4">
-          <MetricTile icon={<Users size={16} />} label="Residents" value={members.length.toString()} />
+          <MetricTile icon={<Users size={16} />} label="Residents" value={residents.length.toString()} />
           <MetricTile icon={<AlertTriangle size={16} />} label="Issues" value={pendingRequests.length.toString()} highlight={pendingRequests.length > 0} />
           <MetricTile icon={<Vote size={16} />} label="Votes" value="0" />
           <MetricTile icon={<ClipboardList size={16} />} label="Lots" value={activeScheme?.lots?.toString() || "0"} />

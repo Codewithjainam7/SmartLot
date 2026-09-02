@@ -167,39 +167,15 @@ export type UnitData = {
   actors: UnitActor[];
 };
 
-// Initial Seed Members across Duplex, Coronation, and Cavalier
+// Initial Seed Members across Duplex, Coronation, Cavalier, and Spear Empire
 const INITIAL_MEMBERS: Member[] = [
-  // 1. Roman Joe (Global Master Strata Manager & Account Holder)
+  // 1. Roman Joe (Strata Manager for Spear Empire SP823)
   {
-    id: 'MEM-ROMAN-101',
+    id: 'MEM-ROMAN-823',
     name: 'Roman Joe',
     email: 'romanjoe@gmail.com',
     phone: '0411 888 777',
-    schemeId: 'SP102', // Coronation Residences primary
-    role: 'Strata Manager',
-    unitId: 'HQ / Management',
-    lotNumber: 0,
-    status: 'Active',
-    joinedAt: '2024-01-10',
-  },
-  {
-    id: 'MEM-ROMAN-102',
-    name: 'Roman Joe',
-    email: 'romanjoe@gmail.com',
-    phone: '0411 888 777',
-    schemeId: 'SP101', // Sunset Duplex
-    role: 'Strata Manager',
-    unitId: 'HQ / Management',
-    lotNumber: 0,
-    status: 'Active',
-    joinedAt: '2024-01-10',
-  },
-  {
-    id: 'MEM-ROMAN-103',
-    name: 'Roman Joe',
-    email: 'romanjoe@gmail.com',
-    phone: '0411 888 777',
-    schemeId: 'SP103', // Cavalier Grand
+    schemeId: 'SP823', // Spear Empire
     role: 'Strata Manager',
     unitId: 'HQ / Management',
     lotNumber: 0,
@@ -1078,28 +1054,6 @@ export function useSmartLotStore() {
           };
         });
       }
-
-      // Merge profiles into member directory
-      if (profilesData && profilesData.length > 0) {
-        profilesData.forEach(p => {
-          const existing = formattedMembers.find(m => m.email?.toLowerCase() === p.email?.toLowerCase());
-          if (!existing) {
-            formattedMembers.push({
-              id: p.id,
-              name: p.full_name || 'User',
-              email: p.email,
-              phone: p.phone_number || '0411 888 777',
-              schemeId: formattedSchemes[0]?.id || 'SP102',
-              role: p.is_system_admin ? 'Strata Manager' : 'Lot Owner',
-              unitId: 'HQ / Management',
-              lotNumber: 0,
-              status: 'Active',
-              joinedAt: p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-            });
-          }
-        });
-      }
-
       setMembers(formattedMembers);
 
       // Process requests
