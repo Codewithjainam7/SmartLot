@@ -145,3 +145,5 @@ function MetricPill({ label }: { label: string }) {
     </div>
   );
 }
+
+// UI Optimization: Interactive scheme dropdown with active badge status
