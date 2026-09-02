@@ -1872,3 +1872,4 @@ export function useSmartLotStore() {
 // UI: Ticket Priority Glow Badges
 // UI: Real-time Member Audit Trail
 // UI: End of Store UI Bindings
+// Core Pipeline: Strict membership synchronization from database public.members
