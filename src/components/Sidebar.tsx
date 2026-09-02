@@ -90,10 +90,10 @@ export function Sidebar({
             )}
             <NavItem 
               icon={<Wrench size={18} />} 
-              label={(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Owner')) ? "Triage Requests" : "My Requests"} 
+              label={(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee')) ? "Triage Requests" : "My Requests"} 
               active={activeView === 'requests' || activeView === 'triage'} 
-              onClick={() => setActiveView((activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Owner')) ? 'triage' : 'requests')}
-              badge={(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Owner')) && pendingTriageCount > 0 ? String(pendingTriageCount) : undefined}
+              onClick={() => setActiveView((activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee')) ? 'triage' : 'requests')}
+              badge={(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee')) && pendingTriageCount > 0 ? String(pendingTriageCount) : undefined}
               isCollapsed={isCollapsed} 
             />
             <NavItem 
