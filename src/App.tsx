@@ -158,8 +158,8 @@ export default function App() {
     const personaId = name.toLowerCase().replace(/\s+/g, '_');
     const isFreshSignup = siteInfo && siteInfo.id === '';
     
-    // Anyone creating a new site automatically becomes Strata Admin
-    const userRole = siteInfo ? (isFreshSignup ? role : 'Strata Admin') : role;
+    // Preserve the user's actual role from their profile/member record
+    const userRole = role;
 
     // Look up matching seeded persona to preserve their portfolio memberships
     const seeded = !isFreshSignup ? [...PERSONAS, ...store.customPersonas].find(p => p.name.toLowerCase() === name.toLowerCase() || p.id === personaId) : null;
@@ -170,12 +170,14 @@ export default function App() {
       }
     ]);
 
+    const unitContext = (siteInfo as any)?.unit || (siteInfo ? `Unit 1 (${siteInfo.name})` : 'Unit 1');
+
     const newPersona = {
       ...seeded,
       id: personaId,
       role: userRole,
       name: name,
-      context: siteInfo ? (isFreshSignup ? 'Unit 10' : `Unit 1 (${siteInfo.name})`) : 'Unit 10',
+      context: unitContext,
       email: seeded?.email || `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
       memberships
     };
