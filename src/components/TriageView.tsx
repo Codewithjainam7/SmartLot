@@ -47,11 +47,11 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
       {/* Clean Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 dark:border-white/5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B1121]/5 text-[#0B1121] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-xs font-bold uppercase tracking-wider mb-2">
             Deterministic Triage Engine
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Maintenance & Triage Inbox</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Route incoming issues through 4 standardized Australian strata streams.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Route incoming issues through 4 standardized Australian strata streams.</p>
         </div>
 
         {/* Clean CTA Button */}
@@ -90,7 +90,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{item.id} â€¢ {item.unit}</span>
+                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{item.id} • {item.unit}</span>
                 <StatusBadge status={item.status} />
               </div>
 
