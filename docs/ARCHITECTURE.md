@@ -36,3 +36,7 @@ SmartLot uses a customized Zustand store with local storage synchronization:
 
 - **Parallel Data Fetching**: Reduced initial load time from ~3.2s sequential waterfall to ~480ms via unified `Promise.all`.
 - **Zero-FOUC Shimmer Skeleton**: `DashboardSkeleton` provides immediate visual feedback during cold starts and session validation.
+
+## Scheme Isolation & Privacy
+
+Users only see schemes where they have active roster memberships in `public.members`.
