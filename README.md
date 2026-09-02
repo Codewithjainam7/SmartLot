@@ -84,3 +84,8 @@ Login to the platform using any of the pre-configured test personas:
 ## 📄 License & Attribution
 
 Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Author: Jainam Jain <jainjainam412@gmail.com>.
+
+### Latest Updates (v1.2.0)
+- Strict scheme privacy: Users only see schemes they belong to.
+- Interactive Topbar: Dropdown with "+ Add New Strata Site" quick action.
+- Clean member rosters: Management staff properly segregated from unit occupants.
