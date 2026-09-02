@@ -18,3 +18,7 @@ SmartLot enforces a hierarchical permission evaluation engine that checks:
 ## Custom Individual Permissions
 
 Strata Managers and Admins can toggle individual permission overrides on any member directly from the **Team Access** directory. Overrides are persisted in the `individual_permissions` table in Supabase and supersede role defaults.
+
+### Staff vs Resident Role Distinctions
+- Management Staff (`Strata Manager`, `Building Manager`): Assigned to `HQ / Management`, not counted as on-site unit occupants.
+- Residents (`Lot Owner`, `Resident`, `Tenant`): Assigned to specific building units (e.g. Unit 1, Unit 2).
