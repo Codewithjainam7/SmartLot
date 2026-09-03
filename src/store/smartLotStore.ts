@@ -1,3 +1,4 @@
+// JSDoc: Active user persona profile for authentication simulation
 // JSDoc: Granular role permission matrices mapped by scheme ID
 // JSDoc: Realtime resident request queue and maintenance records
 // JSDoc: Global member directory across all authorized schemes
