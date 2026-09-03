@@ -1,3 +1,4 @@
+// @smartlot/core
 import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
 import { PERSONAS, Persona } from './types';
