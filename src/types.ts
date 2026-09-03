@@ -179,3 +179,5 @@ export interface VendorQuoteComparison { quoteId: string; vendorName: string; am
 export interface MaintenanceSlaRule { priority: PriorityLevel; responseTimeHours: number; resolveTimeHours: number; }
 
 export interface PermissionAuditLog { memberId: string; changedBy: string; timestamp: string; diff: string; }
+
+export interface SchemeFeatureToggles { enableVoting: boolean; enableAmenities: boolean; enableVisitorParking: boolean; }
