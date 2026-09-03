@@ -368,6 +368,7 @@ export default function App() {
                 members={store.members.filter(m => m.schemeId === store.activeScheme.id)}
                 activePersonaName={store.activePersona.name}
                 onAddMember={store.addMember}
+                onUpdateMember={store.updateMember}
                 onUpdateStatus={store.updateMemberStatus}
                 onDeleteMember={store.deleteMember}
                 activeSchemeId={store.activeScheme.id}

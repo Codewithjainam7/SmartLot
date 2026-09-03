@@ -22,7 +22,11 @@ import {
   Check,
   Shield,
   Lock,
-  User
+  User,
+  Edit3,
+  Save,
+  Home,
+  Activity
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -39,6 +43,7 @@ interface UserManagementViewProps {
     coOwnerEmail?: string;
     additionalOccupants?: AdditionalOccupant[];
   }) => void;
+  onUpdateMember?: (memberId: string, updates: Partial<Member>) => void;
   onUpdateStatus: (memberId: string, status: 'Active' | 'Invited' | 'Restricted') => void;
   onDeleteMember: (memberId: string) => void;
   activeSchemeId: string;
@@ -68,6 +73,7 @@ const OCCUPANT_ROLE_OPTIONS: SelectOption[] = [
 export function UserManagementView({
   members,
   onAddMember,
+  onUpdateMember,
   onUpdateStatus,
   onDeleteMember,
   activeSchemeId,
@@ -84,6 +90,52 @@ export function UserManagementView({
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Edit Member Modal State
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editRole, setEditRole] = useState<MemberRole>('Resident');
+  const [editUnitId, setEditUnitId] = useState('');
+  const [editLotNumber, setEditLotNumber] = useState(1);
+  const [editStatus, setEditStatus] = useState<'Active' | 'Invited' | 'Restricted'>('Active');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  const handleOpenEdit = (m: Member) => {
+    setEditingMember(m);
+    setEditName(m.name || '');
+    setEditEmail(m.email || '');
+    setEditPhone(m.phone || '');
+    setEditRole(m.role || 'Resident');
+    setEditUnitId(m.unitId || '');
+    setEditLotNumber(m.lotNumber || 1);
+    setEditStatus(m.status || 'Active');
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    setIsSavingEdit(true);
+    try {
+      if (onUpdateMember) {
+        await onUpdateMember(editingMember.id, {
+          name: editName.trim(),
+          email: editEmail.trim(),
+          phone: editPhone.trim(),
+          role: editRole,
+          unitId: editUnitId.trim(),
+          lotNumber: Number(editLotNumber) || 1,
+          status: editStatus,
+        });
+      }
+      setEditingMember(null);
+    } catch (err) {
+      console.error('Failed to update member:', err);
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const handleCopyInviteLink = () => {
     const joinLink = `${window.location.origin}/#/join/${activeSchemeId}`;
@@ -263,6 +315,7 @@ export function UserManagementView({
               members={filteredMembers}
               activePersonaName={activePersonaName}
               onViewDetails={setSelectedMember}
+              onEditMember={handleOpenEdit}
               onUpdateStatus={onUpdateStatus}
             />
           </motion.div>
@@ -559,7 +612,6 @@ export function UserManagementView({
                   <Trash2 size={16} /> Delete Member Account
                 </button>
               </div>
-
             </motion.div>
           </div>
         )}
@@ -606,20 +658,189 @@ export function UserManagementView({
         )}
       </AnimatePresence>
 
+      {/* Standalone Edit Member Modal */}
+      <AnimatePresence>
+        {editingMember && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !isSavingEdit && setEditingMember(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 p-6 overflow-hidden z-10"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center">
+                    <Edit3 size={18} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-black text-gray-900 dark:text-white">Edit Member Details</h2>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Modify email, phone, role, unit, and account status</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setEditingMember(null)} 
+                  disabled={isSavingEdit}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                    <User size={13} className="text-gray-400" /> Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                      <Mail size={13} className="text-gray-400" /> Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={editEmail}
+                      onChange={e => setEditEmail(e.target.value)}
+                      placeholder="e.g. user@strata.com"
+                      className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                      <Phone size={13} className="text-gray-400" /> Phone Number
+                    </label>
+                    <input
+                      type="text"
+                      value={editPhone}
+                      onChange={e => setEditPhone(e.target.value)}
+                      placeholder="e.g. 0400 123 456"
+                      className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                      <Shield size={13} className="text-gray-400" /> Scheme Role
+                    </label>
+                    <select
+                      value={editRole}
+                      onChange={e => setEditRole(e.target.value as MemberRole)}
+                      className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] cursor-pointer"
+                    >
+                      <option value="Lot Owner">Lot Owner</option>
+                      <option value="Resident">Resident (Owner-Occupier)</option>
+                      <option value="Tenant">Tenant (Renter)</option>
+                      <option value="Committee Member">Committee Member</option>
+                      <option value="Strata Manager">Strata Manager</option>
+                      <option value="Building Manager">Building Manager</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                      <Activity size={13} className="text-gray-400" /> Status
+                    </label>
+                    <select
+                      value={editStatus}
+                      onChange={e => setEditStatus(e.target.value as any)}
+                      className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] cursor-pointer"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Invited">Invited</option>
+                      <option value="Restricted">Restricted</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                      <Home size={13} className="text-gray-400" /> Unit
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editUnitId}
+                      onChange={e => setEditUnitId(e.target.value)}
+                      placeholder="e.g. Unit 1"
+                      className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
+                      <Home size={13} className="text-gray-400" /> Lot Number
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={editLotNumber}
+                      onChange={e => setEditLotNumber(parseInt(e.target.value) || 1)}
+                      className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-gray-100 dark:border-gray-800">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMember(null)}
+                    disabled={isSavingEdit}
+                    className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingEdit}
+                    className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer transition-all hover:scale-[1.02]"
+                  >
+                    <Save size={14} />
+                    <span>{isSavingEdit ? 'Saving...' : 'Save Changes'}</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ AG Grid Member Roster Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// ──────────────── AG Grid Member Roster ───────────────────────────────────────────────
 
 interface MemberRosterGridProps {
   members: Member[];
   activePersonaName: string;
   onViewDetails: (m: Member) => void;
+  onEditMember: (m: Member) => void;
   onUpdateStatus: (id: string, status: 'Active' | 'Invited' | 'Restricted') => void;
 }
 
-function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateStatus }: MemberRosterGridProps) {
+function MemberRosterGrid({ members, activePersonaName, onViewDetails, onEditMember, onUpdateStatus }: MemberRosterGridProps) {
   const roleColors: Record<string, string> = {
     'Lot Owner':        'bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]/20',
     'Resident':         'bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/20',
@@ -714,10 +935,12 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-2 justify-end">
                     <button
-                      onClick={() => onViewDetails(m)}
-                      className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white cursor-pointer transition-all"
+                      onClick={() => onEditMember(m)}
+                      className="px-3 py-1.5 rounded-xl border border-[#0055FF]/30 dark:border-[#00D4B2]/30 bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF] hover:text-white dark:hover:bg-[#00D4B2] dark:hover:text-[#0B1121] cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105"
+                      title="Edit Member (Email, Phone, Role, Unit)"
                     >
-                      View
+                      <Edit3 size={12} />
+                      <span>Edit</span>
                     </button>
                     {m.name !== activePersonaName && (
                       m.status === 'Active' ? (
@@ -746,9 +969,6 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onUpdateS
     </div>
   );
 }
-
-
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 // Wrapper for the global popover that has access to useMorphingPopover
 function PopoverAddMemberWrapper({
