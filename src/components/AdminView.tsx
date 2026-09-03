@@ -1,3 +1,4 @@
+// @smartlot/component
 import React, { useState, useMemo } from 'react';
 import { 
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
