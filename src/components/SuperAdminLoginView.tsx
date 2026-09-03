@@ -1,3 +1,4 @@
+// @smartlot/component
 import React, { useState } from 'react';
 import { ShieldAlert, ArrowLeft, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, KeyRound, Sparkles, Server, Zap, CheckCircle2 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
