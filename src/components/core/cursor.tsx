@@ -1,3 +1,4 @@
+// @smartlot/core
 import { motion, SpringOptions, Transition } from 'motion/react';
 import React, { useEffect, useState } from 'react';
 
