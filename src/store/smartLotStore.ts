@@ -1,3 +1,4 @@
+// JSDoc: Creates new member profile with role and lot allocation
 // JSDoc: Updates scheme configuration metadata and unit counts
 // JSDoc: Registers a new strata scheme with initial lot configuration
 // JSDoc: Updates active persona role and recalculates view permissions
