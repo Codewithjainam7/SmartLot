@@ -1,3 +1,4 @@
+// @smartlot/component
 ﻿import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ResidentRequest } from '../store/smartLotStore';
