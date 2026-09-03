@@ -157,3 +157,5 @@ export type FilterOperator = "equals" | "contains" | "startsWith" | "in";
 export type NotificationChannel = "email" | "sms" | "in_app" | "push";
 
 export type ResolutionType = "ordinary" | "special" | "unanimous";
+
+export type AuditActionType = "create" | "update" | "delete" | "login" | "override";
