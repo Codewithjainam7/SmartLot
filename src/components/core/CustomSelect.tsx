@@ -1,3 +1,4 @@
+// @smartlot/core
 import React, { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ChevronDown, Check } from 'lucide-react';
