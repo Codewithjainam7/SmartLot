@@ -1,3 +1,4 @@
+// @smartlot/core
 import React from 'react';
 import { motion } from 'motion/react';
 import { Check } from 'lucide-react';
