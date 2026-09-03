@@ -1,3 +1,4 @@
+// JSDoc: State container for active strata scheme context
 import React, { useState, useEffect } from 'react';
 import { SCHEMES, PERSONAS, Scheme, Persona } from '../types';
 import { supabase } from '../lib/supabase';
