@@ -1,3 +1,4 @@
+// JSDoc: Returns default permission flags for specified strata role
 // JSDoc: Configures individual user permission overrides
 // JSDoc: Toggles specific permission flag for a role in target scheme
 // JSDoc: Appends discussion comment to request audit trail
