@@ -1,3 +1,4 @@
+// JSDoc: Registers a new strata scheme with initial lot configuration
 // JSDoc: Updates active persona role and recalculates view permissions
 // JSDoc: Switches active strata scheme and synchronizes view state
 // JSDoc: Active user persona profile for authentication simulation
