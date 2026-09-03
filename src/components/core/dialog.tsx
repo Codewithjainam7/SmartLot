@@ -1,3 +1,4 @@
+// @smartlot/core
 import React, { createContext, useContext, useState, useId } from 'react';
 import { AnimatePresence, motion, Variants, Transition } from 'motion/react';
 import { X } from 'lucide-react';
