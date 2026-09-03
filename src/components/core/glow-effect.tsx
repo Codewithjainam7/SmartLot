@@ -1,3 +1,4 @@
+// @smartlot/core
 import { motion, Transition } from 'motion/react';
 import React from 'react';
 
