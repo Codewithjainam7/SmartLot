@@ -1,3 +1,4 @@
+// @smartlot/core
 import React from 'react';
 
 export function DashboardSkeleton() {
