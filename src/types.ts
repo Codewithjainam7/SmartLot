@@ -165,3 +165,5 @@ export interface SchemeSummaryStats { totalLots: number; activeMembers: number; 
 export interface PaginationState { page: number; pageSize: number; totalItems: number; }
 
 export interface ColumnSortConfig { field: string; direction: SortDirection; }
+
+export interface TableFilterState { [columnId: string]: string; }
