@@ -1,3 +1,4 @@
+// JSDoc: Removes member from scheme roster with cascading permission cleanup
 // JSDoc: Updates member account status (Active, Invited, Restricted)
 // JSDoc: Updates member profile fields (email, phone, role, unit, status)
 // JSDoc: Creates new member profile with role and lot allocation
