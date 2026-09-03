@@ -167,3 +167,5 @@ export interface PaginationState { page: number; pageSize: number; totalItems: n
 export interface ColumnSortConfig { field: string; direction: SortDirection; }
 
 export interface TableFilterState { [columnId: string]: string; }
+
+export interface MemberContactInfo { email: string; phone?: string; preferredChannel?: NotificationChannel; }
