@@ -146,3 +146,4 @@ export const PERSONAS: Persona[] = [
 // Revision Step 49: Style: Standardize font weight tokens across all dashboard card titles
 // Revision Step 50: Feat: Complete phase 1 Super Admin and multi-site Strata Manager consolidation
 // Policy: Residents KPI counts actual unit lot occupants, excluding off-site staff
+export type SchemeStatus = "active" | "archived" | "onboarding";
