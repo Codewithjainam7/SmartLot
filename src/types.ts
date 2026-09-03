@@ -177,3 +177,5 @@ export interface QuorumConfig { requiredPercentage: number; minimumVoters: numbe
 export interface VendorQuoteComparison { quoteId: string; vendorName: string; amount: number; isSelected: boolean; }
 
 export interface MaintenanceSlaRule { priority: PriorityLevel; responseTimeHours: number; resolveTimeHours: number; }
+
+export interface PermissionAuditLog { memberId: string; changedBy: string; timestamp: string; diff: string; }
