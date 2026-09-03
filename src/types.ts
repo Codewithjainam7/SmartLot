@@ -153,3 +153,5 @@ export type PriorityLevel = "Low" | "Medium" | "High" | "Emergency";
 export type SortDirection = "asc" | "desc";
 
 export type FilterOperator = "equals" | "contains" | "startsWith" | "in";
+
+export type NotificationChannel = "email" | "sms" | "in_app" | "push";
