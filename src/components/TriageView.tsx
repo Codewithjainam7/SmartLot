@@ -1,3 +1,4 @@
+// @smartlot/component
 import React, { useState } from 'react';
 import { MaintenanceCase, RequestStream, CaseStatus } from '../store/smartLotStore';
 import { 
