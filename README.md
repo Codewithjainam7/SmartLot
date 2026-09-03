@@ -89,3 +89,5 @@ Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Aut
 - Strict scheme privacy: Users only see schemes they belong to.
 - Interactive Topbar: Dropdown with "+ Add New Strata Site" quick action.
 - Clean member rosters: Management staff properly segregated from unit occupants.
+
+<!-- SmartLot 2026 Production Ready -->
