@@ -3,7 +3,8 @@ import {
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
-  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap
+  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap,
+  ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, SlidersHorizontal
 } from 'lucide-react';
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';
 import { Scheme } from '../types';
@@ -99,6 +100,16 @@ export function AdminView({
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState<string>('ALL');
 
+  // Global Users Table Column-Specific Search & Filter States
+  const [userColSearchName, setUserColSearchName] = useState('');
+  const [userColFilterScheme, setUserColFilterScheme] = useState('ALL');
+  const [userColFilterRole, setUserColFilterRole] = useState('ALL');
+  const [userColSearchUnit, setUserColSearchUnit] = useState('');
+  const [userColSearchContact, setUserColSearchContact] = useState('');
+  const [userColFilterStatus, setUserColFilterStatus] = useState('ALL');
+  const [userSortField, setUserSortField] = useState<'name' | 'schemeId' | 'role' | 'status' | null>(null);
+  const [userSortDirection, setUserSortDirection] = useState<'asc' | 'desc'>('asc');
+
   // Modals - Scheme Creation & Editing
   const [isAddSchemeOpen, setIsAddSchemeOpen] = useState(false);
   const [newSchemeId, setNewSchemeId] = useState('');
@@ -192,21 +203,128 @@ export function AdminView({
     });
   }, [requests, searchQuery, selectedStatusFilter, selectedPriorityFilter]);
 
-  // Filtered Users
+  // Active column filters count for Users table
+  const activeUserFiltersCount = useMemo(() => {
+    let count = 0;
+    if (userColSearchName.trim()) count++;
+    if (userColFilterScheme !== 'ALL') count++;
+    if (userColFilterRole !== 'ALL') count++;
+    if (userColSearchUnit.trim()) count++;
+    if (userColSearchContact.trim()) count++;
+    if (userColFilterStatus !== 'ALL') count++;
+    return count;
+  }, [userColSearchName, userColFilterScheme, userColFilterRole, userColSearchUnit, userColSearchContact, userColFilterStatus]);
+
+  const handleResetUserFilters = () => {
+    setUserColSearchName('');
+    setUserColFilterScheme('ALL');
+    setUserColFilterRole('ALL');
+    setUserColSearchUnit('');
+    setUserColSearchContact('');
+    setUserColFilterStatus('ALL');
+    setUserSortField(null);
+    setUserSortDirection('asc');
+  };
+
+  const handleUserSort = (field: 'name' | 'schemeId' | 'role' | 'status') => {
+    if (userSortField === field) {
+      if (userSortDirection === 'asc') {
+        setUserSortDirection('desc');
+      } else {
+        setUserSortField(null);
+        setUserSortDirection('asc');
+      }
+    } else {
+      setUserSortField(field);
+      setUserSortDirection('asc');
+    }
+  };
+
+  // Filtered Users (supports global search + per-column filters + column sorting)
   const filteredMembers = useMemo(() => {
-    return members.filter(m => {
-      const q = (searchQuery || '').toLowerCase().trim();
-      const matchesSearch = !q || (
-        (m.name || '').toLowerCase().includes(q) ||
-        (m.email || '').toLowerCase().includes(q) ||
-        (m.schemeId || '').toLowerCase().includes(q) ||
-        (m.role || '').toLowerCase().includes(q) ||
-        (m.unitId || '').toLowerCase().includes(q)
-      );
-      
-      return matchesSearch;
-    });
-  }, [members, searchQuery]);
+    return members
+      .filter(m => {
+        // Global search query if present
+        const q = (searchQuery || '').toLowerCase().trim();
+        if (q) {
+          const matchesGlobal = (
+            (m.name || '').toLowerCase().includes(q) ||
+            (m.id || '').toLowerCase().includes(q) ||
+            (m.email || '').toLowerCase().includes(q) ||
+            (m.phone || '').toLowerCase().includes(q) ||
+            (m.schemeId || '').toLowerCase().includes(q) ||
+            (m.role || '').toLowerCase().includes(q) ||
+            (m.unitId || '').toLowerCase().includes(q) ||
+            (m.status || '').toLowerCase().includes(q)
+          );
+          if (!matchesGlobal) return false;
+        }
+
+        // Column 1: User Name or User ID
+        if (userColSearchName.trim()) {
+          const nameQ = userColSearchName.toLowerCase().trim();
+          const matchesNameOrId = (
+            (m.name || '').toLowerCase().includes(nameQ) ||
+            (m.id || '').toLowerCase().includes(nameQ)
+          );
+          if (!matchesNameOrId) return false;
+        }
+
+        // Column 2: Scheme Filter
+        if (userColFilterScheme !== 'ALL') {
+          if (m.schemeId !== userColFilterScheme) return false;
+        }
+
+        // Column 3: Role Filter & Unit Search
+        if (userColFilterRole !== 'ALL') {
+          if (m.role !== userColFilterRole) return false;
+        }
+        if (userColSearchUnit.trim()) {
+          const unitQ = userColSearchUnit.toLowerCase().trim();
+          const matchesUnit = (
+            (m.unitId || '').toLowerCase().includes(unitQ) ||
+            String(m.lotNumber ?? '').includes(unitQ)
+          );
+          if (!matchesUnit) return false;
+        }
+
+        // Column 4: Contact (Email or Phone)
+        if (userColSearchContact.trim()) {
+          const contactQ = userColSearchContact.toLowerCase().trim();
+          const matchesContact = (
+            (m.email || '').toLowerCase().includes(contactQ) ||
+            (m.phone || '').toLowerCase().includes(contactQ)
+          );
+          if (!matchesContact) return false;
+        }
+
+        // Column 5: Status Filter
+        if (userColFilterStatus !== 'ALL') {
+          if (m.status !== userColFilterStatus) return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (!userSortField) return 0;
+        const valA = (a[userSortField] || '').toString().toLowerCase();
+        const valB = (b[userSortField] || '').toString().toLowerCase();
+        if (valA < valB) return userSortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return userSortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [
+    members, 
+    searchQuery, 
+    userColSearchName, 
+    userColFilterScheme, 
+    userColFilterRole, 
+    userColSearchUnit, 
+    userColSearchContact, 
+    userColFilterStatus, 
+    userSortField, 
+    userSortDirection
+  ]);
 
   // Filtered Schemes
   const filteredSchemes = useMemo(() => {
@@ -1192,89 +1310,390 @@ export function AdminView({
               </div>
             </div>
 
+            {/* Active Filters Summary Bar */}
+            {activeUserFiltersCount > 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[#0055FF]/5 dark:bg-[#00D4B2]/5 border border-[#0055FF]/15 dark:border-[#00D4B2]/15 rounded-2xl text-xs">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Filter size={13} className="text-[#0055FF] dark:text-[#00D4B2]" /> Active Filters ({activeUserFiltersCount}):
+                  </span>
+                  {userColSearchName && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
+                      Name: <span className="font-bold">"{userColSearchName}"</span>
+                      <button onClick={() => setUserColSearchName('')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
+                    </span>
+                  )}
+                  {userColFilterScheme !== 'ALL' && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
+                      Scheme: <span className="font-bold">{userColFilterScheme}</span>
+                      <button onClick={() => setUserColFilterScheme('ALL')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
+                    </span>
+                  )}
+                  {userColFilterRole !== 'ALL' && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
+                      Role: <span className="font-bold">{userColFilterRole}</span>
+                      <button onClick={() => setUserColFilterRole('ALL')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
+                    </span>
+                  )}
+                  {userColSearchUnit && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
+                      Unit: <span className="font-bold">"{userColSearchUnit}"</span>
+                      <button onClick={() => setUserColSearchUnit('')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
+                    </span>
+                  )}
+                  {userColSearchContact && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
+                      Contact: <span className="font-bold">"{userColSearchContact}"</span>
+                      <button onClick={() => setUserColSearchContact('')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
+                    </span>
+                  )}
+                  {userColFilterStatus !== 'ALL' && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
+                      Status: <span className="font-bold">{userColFilterStatus}</span>
+                      <button onClick={() => setUserColFilterStatus('ALL')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={handleResetUserFilters}
+                  className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  <RotateCcw size={12} /> Clear All Filters
+                </button>
+              </div>
+            )}
+
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-[#1a1d27]/80 text-gray-500 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
-                      <th className="py-4 px-5">User Details</th>
-                      <th className="py-4 px-5">Assigned Scheme</th>
-                      <th className="py-4 px-5">Role & Unit</th>
-                      <th className="py-4 px-5">Contact Details</th>
-                      <th className="py-4 px-5">Status</th>
-                      <th className="py-4 px-5 text-right">Master Actions</th>
+                    {/* Primary Column Header Row with Sort Buttons */}
+                    <tr className="bg-gray-100/90 dark:bg-[#151926] text-gray-700 dark:text-gray-300 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5 select-none">
+                      <th className="py-3 px-4 min-w-[200px]">
+                        <div 
+                          onClick={() => handleUserSort('name')}
+                          className="flex items-center justify-between gap-1.5 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                          title="Click to sort by Name"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Users size={12} className="text-gray-400" /> User Details
+                          </span>
+                          <span className="text-gray-400">
+                            {userSortField === 'name' ? (
+                              userSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                            ) : (
+                              <ArrowUpDown size={11} className="opacity-40" />
+                            )}
+                          </span>
+                        </div>
+                      </th>
+
+                      <th className="py-3 px-4 min-w-[150px]">
+                        <div 
+                          onClick={() => handleUserSort('schemeId')}
+                          className="flex items-center justify-between gap-1.5 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                          title="Click to sort by Scheme"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Building2 size={12} className="text-gray-400" /> Assigned Scheme
+                          </span>
+                          <span className="text-gray-400">
+                            {userSortField === 'schemeId' ? (
+                              userSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                            ) : (
+                              <ArrowUpDown size={11} className="opacity-40" />
+                            )}
+                          </span>
+                        </div>
+                      </th>
+
+                      <th className="py-3 px-4 min-w-[190px]">
+                        <div 
+                          onClick={() => handleUserSort('role')}
+                          className="flex items-center justify-between gap-1.5 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                          title="Click to sort by Role"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Shield size={12} className="text-gray-400" /> Role & Unit
+                          </span>
+                          <span className="text-gray-400">
+                            {userSortField === 'role' ? (
+                              userSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                            ) : (
+                              <ArrowUpDown size={11} className="opacity-40" />
+                            )}
+                          </span>
+                        </div>
+                      </th>
+
+                      <th className="py-3 px-4 min-w-[210px]">
+                        <div className="flex items-center gap-1.5">
+                          <Mail size={12} className="text-gray-400" /> Contact Details
+                        </div>
+                      </th>
+
+                      <th className="py-3 px-4 min-w-[130px]">
+                        <div 
+                          onClick={() => handleUserSort('status')}
+                          className="flex items-center justify-between gap-1.5 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                          title="Click to sort by Status"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Activity size={12} className="text-gray-400" /> Status
+                          </span>
+                          <span className="text-gray-400">
+                            {userSortField === 'status' ? (
+                              userSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                            ) : (
+                              <ArrowUpDown size={11} className="opacity-40" />
+                            )}
+                          </span>
+                        </div>
+                      </th>
+
+                      <th className="py-3 px-4 text-right min-w-[160px]">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span>Master Actions</span>
+                        </div>
+                      </th>
+                    </tr>
+
+                    {/* AG-Grid Style Filter & Search Row Beneath Every Column Header */}
+                    <tr className="bg-gray-50/95 dark:bg-[#1a1d27]/90 border-b border-gray-200 dark:border-white/10">
+                      {/* Column 1: User Details Filter */}
+                      <th className="py-2.5 px-3">
+                        <div className="relative flex items-center">
+                          <Search size={12} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+                          <input
+                            type="text"
+                            placeholder="Filter by name/ID..."
+                            value={userColSearchName}
+                            onChange={e => setUserColSearchName(e.target.value)}
+                            className="w-full pl-7 pr-6 py-1.5 rounded-lg bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors font-normal"
+                          />
+                          {userColSearchName && (
+                            <button
+                              onClick={() => setUserColSearchName('')}
+                              className="absolute right-2 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                            >
+                              <X size={11} />
+                            </button>
+                          )}
+                        </div>
+                      </th>
+
+                      {/* Column 2: Assigned Scheme Filter */}
+                      <th className="py-2.5 px-3">
+                        <div className="relative flex items-center">
+                          <Building2 size={12} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+                          <select
+                            value={userColFilterScheme}
+                            onChange={e => setUserColFilterScheme(e.target.value)}
+                            className="w-full pl-7 pr-3 py-1.5 rounded-lg bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors font-semibold cursor-pointer"
+                          >
+                            <option value="ALL">All Schemes ({schemes.length})</option>
+                            {schemes.map(s => (
+                              <option key={s.id} value={s.id}>
+                                {s.id}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </th>
+
+                      {/* Column 3: Role & Unit Filter */}
+                      <th className="py-2.5 px-3">
+                        <div className="space-y-1.5">
+                          <div className="relative flex items-center">
+                            <Shield size={12} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+                            <select
+                              value={userColFilterRole}
+                              onChange={e => setUserColFilterRole(e.target.value)}
+                              className="w-full pl-7 pr-3 py-1.5 rounded-lg bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors font-semibold cursor-pointer"
+                            >
+                              <option value="ALL">All Roles</option>
+                              <option value="Strata Admin">Strata Admin</option>
+                              <option value="Strata Manager">Strata Manager</option>
+                              <option value="Committee Member">Committee Member</option>
+                              <option value="Lot Owner">Lot Owner</option>
+                              <option value="Resident">Resident</option>
+                              <option value="Tenant">Tenant</option>
+                              <option value="Property Agent">Property Agent</option>
+                            </select>
+                          </div>
+                          <div className="relative flex items-center">
+                            <Home size={11} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+                            <input
+                              type="text"
+                              placeholder="Filter unit / lot..."
+                              value={userColSearchUnit}
+                              onChange={e => setUserColSearchUnit(e.target.value)}
+                              className="w-full pl-7 pr-6 py-1 rounded-md bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors font-normal"
+                            />
+                            {userColSearchUnit && (
+                              <button
+                                onClick={() => setUserColSearchUnit('')}
+                                className="absolute right-2 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                              >
+                                <X size={10} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </th>
+
+                      {/* Column 4: Contact Details Filter */}
+                      <th className="py-2.5 px-3">
+                        <div className="relative flex items-center">
+                          <Mail size={12} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+                          <input
+                            type="text"
+                            placeholder="Filter email or phone..."
+                            value={userColSearchContact}
+                            onChange={e => setUserColSearchContact(e.target.value)}
+                            className="w-full pl-7 pr-6 py-1.5 rounded-lg bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors font-normal"
+                          />
+                          {userColSearchContact && (
+                            <button
+                              onClick={() => setUserColSearchContact('')}
+                              className="absolute right-2 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                            >
+                              <X size={11} />
+                            </button>
+                          )}
+                        </div>
+                      </th>
+
+                      {/* Column 5: Status Filter */}
+                      <th className="py-2.5 px-3">
+                        <div className="relative flex items-center">
+                          <Activity size={12} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+                          <select
+                            value={userColFilterStatus}
+                            onChange={e => setUserColFilterStatus(e.target.value)}
+                            className="w-full pl-7 pr-3 py-1.5 rounded-lg bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors font-semibold cursor-pointer"
+                          >
+                            <option value="ALL">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Invited">Invited</option>
+                            <option value="Restricted">Restricted</option>
+                          </select>
+                        </div>
+                      </th>
+
+                      {/* Column 6: Master Actions / Reset Filters */}
+                      <th className="py-2.5 px-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {activeUserFiltersCount > 0 ? (
+                            <button
+                              onClick={handleResetUserFilters}
+                              className="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border border-red-500/20 shadow-xs"
+                              title="Reset all column filters"
+                            >
+                              <RotateCcw size={11} />
+                              <span>Reset</span>
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 font-semibold px-2">
+                              {filteredMembers.length} {filteredMembers.length === 1 ? 'user' : 'users'}
+                            </span>
+                          )}
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
-                    {filteredMembers.map(m => (
-                      <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-                        <td className="py-4 px-5">
-                          <div className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</div>
-                          <div className="text-[10px] font-mono text-gray-400">ID: {m.id}</div>
-                        </td>
-                        <td className="py-4 px-5 font-bold text-gray-800 dark:text-gray-200">
-                          {m.schemeId}
-                        </td>
-                        <td className="py-4 px-5">
-                          <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-[#1a1d27] text-gray-800 dark:text-gray-200">
-                            {m.role}
-                          </span>
-                          <div className="text-[10px] text-gray-400 mt-1 font-semibold">{m.unitId} (Lot {m.lotNumber})</div>
-                        </td>
-                        <td className="py-4 px-5 space-y-0.5 text-gray-600 dark:text-gray-300 text-[11px]">
-                          <div className="flex items-center gap-1.5"><Mail size={12} className="text-gray-400" /> {m.email}</div>
-                          {m.phone && <div className="flex items-center gap-1.5"><Phone size={12} className="text-gray-400" /> {m.phone}</div>}
-                        </td>
-                        <td className="py-4 px-5">
-                          <span className={`text-[9px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
-                            m.status === 'Active' ? 'bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20' : 'bg-amber-50 text-amber-700 border border-amber-100'
-                          }`}>
-                            {m.status}
-                          </span>
-                        </td>
-                        <td className="py-4 px-5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
+                    {filteredMembers.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-16 px-4 text-center">
+                          <div className="space-y-3 max-w-sm mx-auto">
+                            <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 flex items-center justify-center mx-auto">
+                              <Users size={24} />
+                            </div>
+                            <div className="font-bold text-gray-900 dark:text-white text-sm">No users match your column filters</div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Try clearing some column filters or search terms to broaden your results.
+                            </p>
                             <button
-                              onClick={() => {
-                                setEditingMember(m);
-                                setEditMemberName(m.name);
-                                setEditMemberEmail(m.email);
-                                setEditMemberPhone(m.phone || '');
-                                setEditMemberRole(m.role);
-                                setEditMemberUnit(m.unitId);
-                                setEditMemberStatus(m.status);
-                              }}
-                              className="px-2.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-                              title="Edit User Profile"
+                              onClick={handleResetUserFilters}
+                              className="mt-2 px-3.5 py-2 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] font-bold text-xs inline-flex items-center gap-1.5 hover:bg-[#0055FF]/20 transition-colors cursor-pointer border border-[#0055FF]/20 dark:border-[#00D4B2]/20"
                             >
-                              <Edit3 size={13} />
-                              <span>Edit</span>
-                            </button>
-
-                            <button
-                              onClick={() => setMemberPermissionsAudit(m)}
-                              className="px-2.5 py-1.5 rounded-xl bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-                              title="View & Edit Individual Overrides"
-                            >
-                              <Key size={13} />
-                              <span>Overrides</span>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
-                                  onDeleteMember(m.id);
-                                }
-                              }}
-                              className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
-                              title="Delete User"
-                            >
-                              <Trash2 size={14} />
+                              <RotateCcw size={13} /> Reset Column Filters
                             </button>
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredMembers.map(m => (
+                        <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                          <td className="py-4 px-5">
+                            <div className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</div>
+                            <div className="text-[10px] font-mono text-gray-400">ID: {m.id}</div>
+                          </td>
+                          <td className="py-4 px-5 font-bold text-gray-800 dark:text-gray-200">
+                            {m.schemeId}
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-[#1a1d27] text-gray-800 dark:text-gray-200">
+                              {m.role}
+                            </span>
+                            <div className="text-[10px] text-gray-400 mt-1 font-semibold">{m.unitId} (Lot {m.lotNumber})</div>
+                          </td>
+                          <td className="py-4 px-5 space-y-0.5 text-gray-600 dark:text-gray-300 text-[11px]">
+                            <div className="flex items-center gap-1.5"><Mail size={12} className="text-gray-400" /> {m.email}</div>
+                            {m.phone && <div className="flex items-center gap-1.5"><Phone size={12} className="text-gray-400" /> {m.phone}</div>}
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className={`text-[9px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                              m.status === 'Active' ? 'bg-[#00D4B2]/10 text-[#00A38C] border border-[#00D4B2]/20' : 'bg-amber-50 text-amber-700 border border-amber-100'
+                            }`}>
+                              {m.status}
+                            </span>
+                          </td>
+                          <td className="py-4 px-5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setEditingMember(m);
+                                  setEditMemberName(m.name);
+                                  setEditMemberEmail(m.email);
+                                  setEditMemberPhone(m.phone || '');
+                                  setEditMemberRole(m.role);
+                                  setEditMemberUnit(m.unitId);
+                                  setEditMemberStatus(m.status);
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                                title="Edit User Profile"
+                              >
+                                <Edit3 size={13} />
+                                <span>Edit</span>
+                              </button>
+
+                              <button
+                                onClick={() => setMemberPermissionsAudit(m)}
+                                className="px-2.5 py-1.5 rounded-xl bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                                title="View & Edit Individual Overrides"
+                              >
+                                <Key size={13} />
+                                <span>Overrides</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
+                                    onDeleteMember(m.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
+                                title="Delete User"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
