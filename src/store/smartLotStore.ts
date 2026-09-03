@@ -1,3 +1,4 @@
+// JSDoc: List of registered schemes in user accessible portfolio
 // JSDoc: State container for active strata scheme context
 import React, { useState, useEffect } from 'react';
 import { SCHEMES, PERSONAS, Scheme, Persona } from '../types';
