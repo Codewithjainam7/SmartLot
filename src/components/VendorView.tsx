@@ -1,3 +1,4 @@
+// @smartlot/component
 ﻿import React from 'react';
 import { Vendor, WorkOrder } from '../store/smartLotStore';
 import { 
