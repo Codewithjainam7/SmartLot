@@ -1,3 +1,4 @@
+// @smartlot/component
 import React from 'react';
 import { Moon, Sun, Monitor, Shield, Sparkles, Check } from 'lucide-react';
 
