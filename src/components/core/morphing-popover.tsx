@@ -1,3 +1,4 @@
+// @smartlot/core
 import React, { createContext, useContext, useState, useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 
