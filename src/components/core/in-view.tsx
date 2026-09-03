@@ -1,3 +1,4 @@
+// @smartlot/core
 import { motion, useInView, Variants, Transition } from 'motion/react';
 import React, { useRef } from 'react';
 
