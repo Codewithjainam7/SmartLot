@@ -149,3 +149,5 @@ export const PERSONAS: Persona[] = [
 export type SchemeStatus = "active" | "archived" | "onboarding";
 
 export type PriorityLevel = "Low" | "Medium" | "High" | "Emergency";
+
+export type SortDirection = "asc" | "desc";
