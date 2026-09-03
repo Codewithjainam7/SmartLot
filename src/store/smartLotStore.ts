@@ -1,3 +1,4 @@
+// JSDoc: Realtime resident request queue and maintenance records
 // JSDoc: Global member directory across all authorized schemes
 // JSDoc: List of registered schemes in user accessible portfolio
 // JSDoc: State container for active strata scheme context
