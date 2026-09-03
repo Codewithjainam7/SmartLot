@@ -1,3 +1,4 @@
+// @smartlot/core
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { TextMorph } from './text-morph';
