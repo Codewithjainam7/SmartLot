@@ -1,3 +1,4 @@
+// @smartlot/component
 import React from "react";
 import { Building2, ChevronDown, CheckCircle2, Plus } from "lucide-react";
 import { Persona, Scheme } from "../types";
