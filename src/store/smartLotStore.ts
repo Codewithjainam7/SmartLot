@@ -1,3 +1,4 @@
+// JSDoc: Switches active strata scheme and synchronizes view state
 // JSDoc: Active user persona profile for authentication simulation
 // JSDoc: Granular role permission matrices mapped by scheme ID
 // JSDoc: Realtime resident request queue and maintenance records
