@@ -1284,100 +1284,121 @@ export function AdminView({
         {/* TAB 4: GLOBAL USERS & PERMISSIONS */}
         {activeTab === 'users' && (
           <div key="users" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
-            <div className="flex items-center justify-between">
+            {/* Header with Title, Stats & Action Buttons */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-5 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
               <div>
-                <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                  Global Platform Users & Role Assignments ({filteredMembers.length})
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Directory of all active accounts. Master admins can assign new users to schemes, modify existing roles, and configure individual permission overrides.
-                </p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <Users size={18} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                        Global Platform Directory
+                      </h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[11px] font-extrabold font-mono">
+                        {filteredMembers.length} of {members.length} Users
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      Master directory of all registered scheme accounts, credentials, and role assignments.
+                    </p>
+                  </div>
+                </div>
               </div>
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsAddSchemeOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  <Plus size={16} /> Register Scheme
+                  <Plus size={15} /> Register Scheme
                 </button>
                 <button
                   onClick={() => {
                     setNewMemberSchemeId(schemes[0]?.id || '');
                     setIsAddMemberOpen(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  <UserPlus size={16} /> Assign / Add User
+                  <UserPlus size={15} /> Assign / Add User
                 </button>
               </div>
             </div>
 
-            {/* Active Filters Summary Bar */}
-            {activeUserFiltersCount > 0 && (
-              <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[#0055FF]/5 dark:bg-[#00D4B2]/5 border border-[#0055FF]/15 dark:border-[#00D4B2]/15 rounded-2xl text-xs">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                    <Filter size={13} className="text-[#0055FF] dark:text-[#00D4B2]" /> Active Filters ({activeUserFiltersCount}):
-                  </span>
-                  {userColSearchName && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
-                      Name: <span className="font-bold">"{userColSearchName}"</span>
-                      <button onClick={() => setUserColSearchName('')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
-                    </span>
-                  )}
-                  {userColFilterScheme !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
-                      Scheme: <span className="font-bold">{userColFilterScheme}</span>
-                      <button onClick={() => setUserColFilterScheme('ALL')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
-                    </span>
-                  )}
-                  {userColFilterRole !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
-                      Role: <span className="font-bold">{userColFilterRole}</span>
-                      <button onClick={() => setUserColFilterRole('ALL')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
-                    </span>
-                  )}
-                  {userColSearchContact && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
-                      Contact: <span className="font-bold">"{userColSearchContact}"</span>
-                      <button onClick={() => setUserColSearchContact('')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
-                    </span>
-                  )}
-                  {userColFilterStatus !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-medium">
-                      Status: <span className="font-bold">{userColFilterStatus}</span>
-                      <button onClick={() => setUserColFilterStatus('ALL')} className="hover:text-red-500 cursor-pointer ml-0.5"><X size={11} /></button>
-                    </span>
-                  )}
-                </div>
+            {/* Quick Role Filter Preset Pills */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
+                {[
+                  { label: 'All Roles', value: 'ALL', count: members.length },
+                  { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager').length },
+                  { label: 'Admins', value: 'Strata Admin', count: members.filter(m => m.role === 'Strata Admin').length },
+                  { label: 'Committee', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
+                  { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
+                  { label: 'Residents & Tenants', value: 'Resident', count: members.filter(m => m.role === 'Resident' || m.role === 'Tenant').length },
+                ].map(tab => {
+                  const isActive = tab.value === 'Resident' 
+                    ? (userColFilterRole === 'Resident' || userColFilterRole === 'Tenant')
+                    : userColFilterRole === tab.value;
+                  return (
+                    <button
+                      key={tab.label}
+                      onClick={() => {
+                        if (tab.value === 'Resident') {
+                          setUserColFilterRole(userColFilterRole === 'Resident' ? 'Tenant' : (userColFilterRole === 'Tenant' ? 'ALL' : 'Resident'));
+                        } else {
+                          setUserColFilterRole(tab.value);
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isActive
+                          ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                        isActive 
+                          ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]' 
+                          : 'bg-gray-200/70 dark:bg-white/5 text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {activeUserFiltersCount > 0 && (
                 <button
                   onClick={handleResetUserFilters}
-                  className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold flex items-center gap-1 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-red-500/20 shadow-xs"
                 >
-                  <RotateCcw size={12} /> Clear All Filters
+                  <RotateCcw size={12} /> Clear Filters ({activeUserFiltersCount})
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
-            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden w-full">
+            {/* Main Enterprise Data Table */}
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
               <table className="w-full text-left text-xs border-collapse font-sans table-auto">
                 <thead>
                   {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
-                  <tr className="bg-gray-100 dark:bg-[#131826] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                  <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
                     {/* Col 0: Index */}
-                    <th className="py-3 px-2 w-8 text-center border-r border-gray-200 dark:border-white/10 text-gray-400">
+                    <th className="py-3.5 px-2.5 w-10 text-center border-r border-gray-200 dark:border-white/10 text-gray-400">
                       #
                     </th>
 
                     {/* Col 1: Name & User ID */}
-                    <th className="py-3 px-3 w-[20%] border-r border-gray-200 dark:border-white/10">
+                    <th className="py-3.5 px-3.5 w-[22%] border-r border-gray-200 dark:border-white/10">
                       <div 
                         onClick={() => handleUserSort('name')}
                         className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
                         title="Click to sort by Name"
                       >
                         <span className="flex items-center gap-1.5">
-                          <Users size={12} className="text-gray-400" /> Name & ID
+                          <Users size={13} className="text-gray-400" /> User Details
                         </span>
                         <span className="text-gray-400">
                           {userSortField === 'name' ? (
@@ -1390,14 +1411,14 @@ export function AdminView({
                     </th>
 
                     {/* Col 2: Scheme ID */}
-                    <th className="py-3 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                    <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
                       <div 
                         onClick={() => handleUserSort('schemeId')}
                         className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
                         title="Click to sort by Scheme"
                       >
                         <span className="flex items-center gap-1.5">
-                          <Building2 size={12} className="text-gray-400" /> Scheme
+                          <Building2 size={13} className="text-gray-400" /> Scheme
                         </span>
                         <span className="text-gray-400">
                           {userSortField === 'schemeId' ? (
@@ -1410,14 +1431,14 @@ export function AdminView({
                     </th>
 
                     {/* Col 3: Role */}
-                    <th className="py-3 px-3 w-[13%] border-r border-gray-200 dark:border-white/10">
+                    <th className="py-3.5 px-3.5 w-[14%] border-r border-gray-200 dark:border-white/10">
                       <div 
                         onClick={() => handleUserSort('role')}
                         className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
                         title="Click to sort by Role"
                       >
                         <span className="flex items-center gap-1.5">
-                          <Shield size={12} className="text-gray-400" /> Role
+                          <Shield size={13} className="text-gray-400" /> Role
                         </span>
                         <span className="text-gray-400">
                           {userSortField === 'role' ? (
@@ -1430,14 +1451,14 @@ export function AdminView({
                     </th>
 
                     {/* Col 4: Unit / Lot */}
-                    <th className="py-3 px-3 w-[11%] border-r border-gray-200 dark:border-white/10">
+                    <th className="py-3.5 px-3 w-[11%] border-r border-gray-200 dark:border-white/10">
                       <div 
                         onClick={() => handleUserSort('unitId')}
                         className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
                         title="Click to sort by Unit"
                       >
                         <span className="flex items-center gap-1.5">
-                          <Home size={12} className="text-gray-400" /> Unit / Lot
+                          <Home size={13} className="text-gray-400" /> Unit / Lot
                         </span>
                         <span className="text-gray-400">
                           {userSortField === 'unitId' ? (
@@ -1450,21 +1471,21 @@ export function AdminView({
                     </th>
 
                     {/* Col 5: Contact Details (Email + Phone) */}
-                    <th className="py-3 px-3 w-[24%] border-r border-gray-200 dark:border-white/10">
+                    <th className="py-3.5 px-3.5 w-[22%] border-r border-gray-200 dark:border-white/10">
                       <div className="flex items-center gap-1.5">
-                        <Mail size={12} className="text-gray-400" /> Contact Details
+                        <Mail size={13} className="text-gray-400" /> Contact Details
                       </div>
                     </th>
 
                     {/* Col 6: Status */}
-                    <th className="py-3 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                    <th className="py-3.5 px-3 w-[9%] border-r border-gray-200 dark:border-white/10">
                       <div 
                         onClick={() => handleUserSort('status')}
                         className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
                         title="Click to sort by Status"
                       >
                         <span className="flex items-center gap-1.5">
-                          <Activity size={12} className="text-gray-400" /> Status
+                          <Activity size={13} className="text-gray-400" /> Status
                         </span>
                         <span className="text-gray-400">
                           {userSortField === 'status' ? (
@@ -1477,13 +1498,13 @@ export function AdminView({
                     </th>
 
                     {/* Col 7: Actions */}
-                    <th className="py-3 px-3 text-right w-[12%]">
+                    <th className="py-3.5 px-3 text-right w-[12%]">
                       <span>Actions</span>
                     </th>
                   </tr>
 
                   {/* AG-GRID INLINE FILTER ROW */}
-                  <tr className="bg-gray-50 dark:bg-[#181d2c] border-b border-gray-200 dark:border-white/10">
+                  <tr className="bg-gray-50/95 dark:bg-[#181d2c] border-b border-gray-200 dark:border-white/10">
                     {/* Col 0: Index Filter Space */}
                     <th className="py-2 px-2 text-center border-r border-gray-200 dark:border-white/10">
                       <Filter size={11} className="mx-auto text-gray-400" />
@@ -1497,7 +1518,7 @@ export function AdminView({
                           placeholder="Filter name/ID..."
                           value={userColSearchName}
                           onChange={e => setUserColSearchName(e.target.value)}
-                          className="w-full h-8 pl-2 pr-5 rounded-md bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal"
+                          className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
                         />
                         {userColSearchName ? (
                           <button
@@ -1507,7 +1528,7 @@ export function AdminView({
                             <X size={11} />
                           </button>
                         ) : (
-                          <span className="absolute right-1.5 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                          <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                         )}
                       </div>
                     </th>
@@ -1518,14 +1539,14 @@ export function AdminView({
                         <select
                           value={userColFilterScheme}
                           onChange={e => setUserColFilterScheme(e.target.value)}
-                          className="w-full h-8 pl-2 pr-4 rounded-md bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none"
+                          className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
                         >
                           <option value="ALL">All Schemes</option>
                           {schemes.map(s => (
                             <option key={s.id} value={s.id}>{s.id}</option>
                           ))}
                         </select>
-                        <span className="absolute right-1.5 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                       </div>
                     </th>
 
@@ -1535,7 +1556,7 @@ export function AdminView({
                         <select
                           value={userColFilterRole}
                           onChange={e => setUserColFilterRole(e.target.value)}
-                          className="w-full h-8 pl-2 pr-4 rounded-md bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none"
+                          className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
                         >
                           <option value="ALL">All Roles</option>
                           <option value="Strata Admin">Strata Admin</option>
@@ -1546,7 +1567,7 @@ export function AdminView({
                           <option value="Tenant">Tenant</option>
                           <option value="Property Agent">Agent</option>
                         </select>
-                        <span className="absolute right-1.5 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                       </div>
                     </th>
 
@@ -1558,7 +1579,7 @@ export function AdminView({
                           placeholder="Filter unit..."
                           value={userColSearchUnit}
                           onChange={e => setUserColSearchUnit(e.target.value)}
-                          className="w-full h-8 pl-2 pr-5 rounded-md bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal"
+                          className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
                         />
                         {userColSearchUnit ? (
                           <button
@@ -1568,7 +1589,7 @@ export function AdminView({
                             <X size={10} />
                           </button>
                         ) : (
-                          <span className="absolute right-1.5 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                          <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                         )}
                       </div>
                     </th>
@@ -1581,7 +1602,7 @@ export function AdminView({
                           placeholder="Filter email / phone..."
                           value={userColSearchContact}
                           onChange={e => setUserColSearchContact(e.target.value)}
-                          className="w-full h-8 pl-2 pr-5 rounded-md bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal"
+                          className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
                         />
                         {userColSearchContact ? (
                           <button
@@ -1591,7 +1612,7 @@ export function AdminView({
                             <X size={10} />
                           </button>
                         ) : (
-                          <span className="absolute right-1.5 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                          <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                         )}
                       </div>
                     </th>
@@ -1602,14 +1623,14 @@ export function AdminView({
                         <select
                           value={userColFilterStatus}
                           onChange={e => setUserColFilterStatus(e.target.value)}
-                          className="w-full h-8 pl-2 pr-4 rounded-md bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none"
+                          className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
                         >
                           <option value="ALL">All Status</option>
                           <option value="Active">Active</option>
                           <option value="Invited">Invited</option>
                           <option value="Restricted">Restricted</option>
                         </select>
-                        <span className="absolute right-1.5 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                       </div>
                     </th>
 
@@ -1618,7 +1639,7 @@ export function AdminView({
                       {activeUserFiltersCount > 0 ? (
                         <button
                           onClick={handleResetUserFilters}
-                          className="w-full h-8 px-1.5 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-red-500/20"
+                          className="w-full h-8 px-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-red-500/20 shadow-2xs"
                           title="Reset all filters"
                         >
                           <RotateCcw size={10} />
@@ -1656,109 +1677,181 @@ export function AdminView({
                       </td>
                     </tr>
                   ) : (
-                    filteredMembers.map((m, idx) => (
-                      <tr key={m.id} className="hover:bg-gray-50/80 dark:hover:bg-white/[0.03] transition-colors border-b border-gray-100 dark:border-white/5">
-                        {/* Col 0: Index */}
-                        <td className="py-3 px-2 text-center text-gray-400 font-mono text-[11px] border-r border-gray-100 dark:border-white/5">
-                          {idx + 1}
-                        </td>
+                    filteredMembers.map((m, idx) => {
+                      // Avatar initials
+                      const initials = (m.name || 'User')
+                        .split(' ')
+                        .map(n => n[0])
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase();
 
-                        {/* Col 1: Name & ID */}
-                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5">
-                          <div className="font-bold text-gray-900 dark:text-white text-xs">{m.name}</div>
-                          <div className="text-[9px] font-mono text-gray-400">ID: {m.id}</div>
-                        </td>
+                      // Dynamic role gradient
+                      let avatarGradient = 'from-sky-500 to-blue-600';
+                      let roleBadgeClass = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
 
-                        {/* Col 2: Scheme */}
-                        <td className="py-3 px-3 font-bold text-gray-800 dark:text-gray-200 border-r border-gray-100 dark:border-white/5">
-                          <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 font-mono text-[11px]">
-                            {m.schemeId}
-                          </span>
-                        </td>
+                      if (m.role === 'Strata Admin') {
+                        avatarGradient = 'from-purple-500 to-indigo-600';
+                        roleBadgeClass = 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+                      } else if (m.role === 'Strata Manager') {
+                        avatarGradient = 'from-blue-600 to-[#00D4B2]';
+                        roleBadgeClass = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+                      } else if (m.role === 'Committee Member') {
+                        avatarGradient = 'from-emerald-500 to-teal-600';
+                        roleBadgeClass = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+                      } else if (m.role === 'Lot Owner') {
+                        avatarGradient = 'from-amber-500 to-orange-600';
+                        roleBadgeClass = 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20';
+                      }
 
-                        {/* Col 3: Role */}
-                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5">
-                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-gray-100 dark:bg-[#1a1d27] text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                            {m.role}
-                          </span>
-                        </td>
+                      return (
+                        <tr key={m.id} className="group hover:bg-blue-50/40 dark:hover:bg-white/[0.03] transition-colors border-b border-gray-100 dark:border-white/5">
+                          {/* Col 0: Index */}
+                          <td className="py-3 px-2 text-center text-gray-400 font-mono text-[11px] border-r border-gray-100 dark:border-white/5">
+                            {idx + 1}
+                          </td>
 
-                        {/* Col 4: Unit / Lot */}
-                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5">
-                          <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">{m.unitId}</div>
-                          <div className="text-[10px] text-gray-400">Lot {m.lotNumber}</div>
-                        </td>
-
-                        {/* Col 5: Contact Details (Email + Phone) */}
-                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 text-gray-700 dark:text-gray-300 text-xs">
-                          <div className="space-y-0.5">
-                            <div className="flex items-center gap-1.5 truncate max-w-[200px]" title={m.email}>
-                              <Mail size={11} className="text-gray-400 shrink-0" />
-                              <span className="truncate">{m.email}</span>
-                            </div>
-                            {m.phone && (
-                              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                <Phone size={10} className="text-gray-400 shrink-0" />
-                                <span>{m.phone}</span>
+                          {/* Col 1: Name & ID with Avatar */}
+                          <td className="py-3 px-3.5 border-r border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-[11px] font-black shrink-0 shadow-xs`}>
+                                {initials}
                               </div>
-                            )}
-                          </div>
-                        </td>
+                              <div className="min-w-0">
+                                <div className="font-bold text-gray-900 dark:text-white text-xs group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors truncate">
+                                  {m.name}
+                                </div>
+                                <div className="text-[9px] font-mono text-gray-400 truncate">
+                                  ID: {m.id}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
 
-                        {/* Col 6: Status */}
-                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5">
-                          <span className={`text-[9px] font-extrabold uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap ${
-                            m.status === 'Active' ? 'bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20' : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30'
-                          }`}>
-                            {m.status}
-                          </span>
-                        </td>
+                          {/* Col 2: Scheme */}
+                          <td className="py-3 px-3 font-bold text-gray-800 dark:text-gray-200 border-r border-gray-100 dark:border-white/5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] dark:bg-[#00D4B2]/10 border border-[#0055FF]/20 dark:border-[#00D4B2]/20 font-mono text-[11px] font-bold">
+                              <Building2 size={10} className="opacity-70" />
+                              {m.schemeId}
+                            </span>
+                          </td>
 
-                        {/* Col 7: Actions */}
-                        <td className="py-3 px-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => {
-                                setEditingMember(m);
-                                setEditMemberName(m.name);
-                                setEditMemberEmail(m.email);
-                                setEditMemberPhone(m.phone || '');
-                                setEditMemberRole(m.role);
-                                setEditMemberUnit(m.unitId);
-                                setEditMemberStatus(m.status);
-                              }}
-                              className="p-1.5 rounded-lg bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer"
-                              title="Edit User Profile"
-                            >
-                              <Edit3 size={12} />
-                            </button>
+                          {/* Col 3: Role */}
+                          <td className="py-3 px-3.5 border-r border-gray-100 dark:border-white/5">
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border whitespace-nowrap ${roleBadgeClass}`}>
+                              <Shield size={10} />
+                              {m.role}
+                            </span>
+                          </td>
 
-                            <button
-                              onClick={() => setMemberPermissionsAudit(m)}
-                              className="p-1.5 rounded-lg bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-xs font-bold transition-all cursor-pointer"
-                              title="View & Edit Individual Overrides"
-                            >
-                              <Key size={12} />
-                            </button>
+                          {/* Col 4: Unit / Lot */}
+                          <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5">
+                            <div className="text-xs font-bold text-gray-800 dark:text-gray-200">{m.unitId}</div>
+                            <div className="text-[10px] text-gray-400 font-medium">Lot {m.lotNumber}</div>
+                          </td>
 
-                            <button
-                              onClick={() => {
-                                if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
-                                  onDeleteMember(m.id);
-                                }
-                              }}
-                              className="p-1.5 rounded-lg text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
-                              title="Delete User"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                          {/* Col 5: Contact Details (Email + Phone) */}
+                          <td className="py-3 px-3.5 border-r border-gray-100 dark:border-white/5 text-gray-700 dark:text-gray-300 text-xs">
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-1.5 truncate max-w-[200px]" title={m.email}>
+                                <Mail size={11} className="text-gray-400 shrink-0" />
+                                <span className="truncate text-gray-800 dark:text-gray-200 font-medium">{m.email}</span>
+                              </div>
+                              {m.phone && (
+                                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                  <Phone size={10} className="text-gray-400 shrink-0" />
+                                  <span>{m.phone}</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Col 6: Status */}
+                          <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5">
+                            <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap ${
+                              m.status === 'Active' 
+                                ? 'bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20' 
+                                : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                m.status === 'Active' ? 'bg-[#00D4B2] animate-pulse' : 'bg-amber-500'
+                              }`}></span>
+                              {m.status}
+                            </span>
+                          </td>
+
+                          {/* Col 7: Actions */}
+                          <td className="py-3 px-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setEditingMember(m);
+                                  setEditMemberName(m.name);
+                                  setEditMemberEmail(m.email);
+                                  setEditMemberPhone(m.phone || '');
+                                  setEditMemberRole(m.role);
+                                  setEditMemberUnit(m.unitId);
+                                  setEditMemberStatus(m.status);
+                                }}
+                                className="p-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer shadow-2xs hover:scale-105"
+                                title="Edit User Profile"
+                              >
+                                <Edit3 size={13} />
+                              </button>
+
+                              <button
+                                onClick={() => setMemberPermissionsAudit(m)}
+                                className="p-1.5 rounded-xl bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-xs font-bold transition-all cursor-pointer shadow-2xs hover:scale-105"
+                                title="View & Edit Individual Overrides"
+                              >
+                                <Key size={13} />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
+                                    onDeleteMember(m.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer hover:scale-105"
+                                title="Delete User"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
+
+              {/* Table Footer Summary Bar */}
+              <div className="flex flex-wrap items-center justify-between p-3.5 bg-gray-50/90 dark:bg-[#151a28] border-t border-gray-200 dark:border-white/10 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-gray-700 dark:text-gray-300">
+                    Showing {filteredMembers.length} of {members.length} registered accounts
+                  </span>
+                  {activeUserFiltersCount > 0 && (
+                    <span className="text-[11px] text-[#0055FF] dark:text-[#00D4B2] font-semibold">
+                      ({activeUserFiltersCount} filter{activeUserFiltersCount > 1 ? 's' : ''} applied)
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 text-[11px]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#00D4B2]"></span> {members.filter(m => m.status === 'Active').length} Active
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400"></span> {members.filter(m => m.status === 'Invited').length} Invited
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-400"></span> {members.filter(m => m.status === 'Restricted').length} Restricted
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
