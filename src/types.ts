@@ -169,3 +169,5 @@ export interface ColumnSortConfig { field: string; direction: SortDirection; }
 export interface TableFilterState { [columnId: string]: string; }
 
 export interface MemberContactInfo { email: string; phone?: string; preferredChannel?: NotificationChannel; }
+
+export interface UnitAllocation { unitId: string; lotNumber: number; floorNumber?: number; parkingBay?: string; }
