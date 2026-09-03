@@ -183,3 +183,5 @@ export interface PermissionAuditLog { memberId: string; changedBy: string; times
 export interface SchemeFeatureToggles { enableVoting: boolean; enableAmenities: boolean; enableVisitorParking: boolean; }
 
 export interface AppToastNotification { id: string; title: string; message: string; type: "success" | "error" | "info"; }
+
+export interface SearchFilterCriteria { query: string; role?: string; schemeId?: string; status?: string; }
