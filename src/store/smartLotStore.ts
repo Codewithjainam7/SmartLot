@@ -1,3 +1,4 @@
+// JSDoc: Updates ticket workflow status (pending_triage, in_voting, resolved)
 // JSDoc: Submits new maintenance request with priority and image attachments
 // JSDoc: Removes member from scheme roster with cascading permission cleanup
 // JSDoc: Updates member account status (Active, Invited, Restricted)
