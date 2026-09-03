@@ -175,3 +175,5 @@ export interface UnitAllocation { unitId: string; lotNumber: number; floorNumber
 export interface QuorumConfig { requiredPercentage: number; minimumVoters: number; }
 
 export interface VendorQuoteComparison { quoteId: string; vendorName: string; amount: number; isSelected: boolean; }
+
+export interface MaintenanceSlaRule { priority: PriorityLevel; responseTimeHours: number; resolveTimeHours: number; }
