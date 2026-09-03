@@ -1,3 +1,4 @@
+/* @smartlot-design-system */
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
