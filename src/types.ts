@@ -163,3 +163,5 @@ export type AuditActionType = "create" | "update" | "delete" | "login" | "overri
 export interface SchemeSummaryStats { totalLots: number; activeMembers: number; openRequests: number; }
 
 export interface PaginationState { page: number; pageSize: number; totalItems: number; }
+
+export interface ColumnSortConfig { field: string; direction: SortDirection; }
