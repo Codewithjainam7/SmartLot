@@ -173,3 +173,5 @@ export interface MemberContactInfo { email: string; phone?: string; preferredCha
 export interface UnitAllocation { unitId: string; lotNumber: number; floorNumber?: number; parkingBay?: string; }
 
 export interface QuorumConfig { requiredPercentage: number; minimumVoters: number; }
+
+export interface VendorQuoteComparison { quoteId: string; vendorName: string; amount: number; isSelected: boolean; }
