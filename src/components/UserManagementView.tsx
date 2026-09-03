@@ -1,3 +1,4 @@
+// @smartlot/component
 import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant, getDefaultPermissionsForRole } from '../store/smartLotStore';
