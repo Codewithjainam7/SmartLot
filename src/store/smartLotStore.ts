@@ -1,3 +1,4 @@
+// JSDoc: Configures individual user permission overrides
 // JSDoc: Toggles specific permission flag for a role in target scheme
 // JSDoc: Appends discussion comment to request audit trail
 // JSDoc: Updates ticket workflow status (pending_triage, in_voting, resolved)
