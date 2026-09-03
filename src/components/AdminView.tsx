@@ -1331,8 +1331,7 @@ export function AdminView({
               <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
                 {[
                   { label: 'All Roles', value: 'ALL', count: members.length },
-                  { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager').length },
-                  { label: 'Admins', value: 'Strata Admin', count: members.filter(m => m.role === 'Strata Admin').length },
+                  { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
                   { label: 'Committee', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
                   { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
                   { label: 'Residents & Tenants', value: 'Resident', count: members.filter(m => m.role === 'Resident' || m.role === 'Tenant').length },
@@ -1690,15 +1689,12 @@ export function AdminView({
                       let avatarGradient = 'from-sky-500 to-blue-600';
                       let roleBadgeClass = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
 
-                      if (m.role === 'Strata Admin') {
-                        avatarGradient = 'from-purple-500 to-indigo-600';
-                        roleBadgeClass = 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
-                      } else if (m.role === 'Strata Manager') {
+                      if (m.role === 'Strata Manager' || m.role === 'Building Manager') {
                         avatarGradient = 'from-blue-600 to-[#00D4B2]';
                         roleBadgeClass = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
                       } else if (m.role === 'Committee Member') {
-                        avatarGradient = 'from-emerald-500 to-teal-600';
-                        roleBadgeClass = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+                        avatarGradient = 'from-purple-500 to-indigo-600';
+                        roleBadgeClass = 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
                       } else if (m.role === 'Lot Owner') {
                         avatarGradient = 'from-amber-500 to-orange-600';
                         roleBadgeClass = 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20';
