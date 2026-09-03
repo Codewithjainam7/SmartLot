@@ -1,3 +1,4 @@
+// @smartlot/component
 ﻿import React, { useState } from 'react';
 import { UnitData } from '../store/smartLotStore';
 import { AnimatedBackground } from './core/animated-background';
