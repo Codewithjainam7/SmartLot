@@ -159,3 +159,5 @@ export type NotificationChannel = "email" | "sms" | "in_app" | "push";
 export type ResolutionType = "ordinary" | "special" | "unanimous";
 
 export type AuditActionType = "create" | "update" | "delete" | "login" | "override";
+
+export interface SchemeSummaryStats { totalLots: number; activeMembers: number; openRequests: number; }
