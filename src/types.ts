@@ -147,3 +147,5 @@ export const PERSONAS: Persona[] = [
 // Revision Step 50: Feat: Complete phase 1 Super Admin and multi-site Strata Manager consolidation
 // Policy: Residents KPI counts actual unit lot occupants, excluding off-site staff
 export type SchemeStatus = "active" | "archived" | "onboarding";
+
+export type PriorityLevel = "Low" | "Medium" | "High" | "Emergency";
