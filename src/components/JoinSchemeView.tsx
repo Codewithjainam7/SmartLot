@@ -1,3 +1,4 @@
+// @smartlot/component
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Building2, User, Mail, Lock, ShieldAlert, CheckCircle2, ChevronRight, LogIn } from 'lucide-react';
