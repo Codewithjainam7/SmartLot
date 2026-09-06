@@ -1,7 +1,7 @@
 // @smartlot/component
 ﻿import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ResidentRequest, CaseStatus } from '../store/smartLotStore';
+import { ResidentRequest, CaseStatus, AuditEvent } from '../store/smartLotStore';
 import { 
   MorphingPopover, 
   MorphingPopoverTrigger, 
@@ -337,138 +337,200 @@ export function ResidentRequestsView({
                 </div>
               )}
 
-              {/* Discussion Thread */}
+              {/* Activity Timeline */}
               <div className="space-y-5 pt-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-black text-white">
                     <MessageSquare size={16} className="text-[#00D4B2]" /> 
-                    <span>Discussion ({activeDetail.comments.length})</span>
+                    <span>Activity Timeline ({activeDetail.comments.length + (activeDetail.auditLog?.length || 0)})</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-gray-400 font-bold hover:text-white cursor-pointer transition-colors">
-                    <span>Newest first</span>
+                  <div className="flex items-center gap-1 text-[11px] text-gray-400 font-bold">
+                    <span>Oldest first</span>
                     <ChevronDown size={13} />
                   </div>
                 </div>
                 
-                {/* Threaded Message List */}
-                <div className="space-y-4 relative">
-                  {activeDetail.comments.length === 0 ? (
+                {/* Unified Timeline: Audit Events + Comments merged and sorted */}
+                <div className="space-y-3 relative">
+                  {activeDetail.comments.length === 0 && !(activeDetail.auditLog?.length) ? (
                     <div className="text-center py-8 border border-dashed border-white/10 rounded-2xl text-xs text-gray-400">
-                      No comments yet in this discussion.
+                      No activity yet.
                     </div>
                   ) : (
-                    activeDetail.comments.map((c, idx) => {
-                      const authorInitials = c.authorName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                      const isManager = c.authorRole.toLowerCase().includes('manager') || c.authorRole.toLowerCase().includes('admin');
-                      const roleBadgeBg = isManager ? 'bg-[#0055FF]/20 text-[#66A3FF] border border-[#0055FF]/40' : 'bg-purple-900/30 text-purple-300 border border-purple-500/30';
-                      const avatarBg = idx % 2 === 0 ? 'bg-[#2A4365] text-[#90CDF4]' : 'bg-[#44337A] text-[#D6BCFA]';
-                      const likesCount = commentLikes[c.id] || (idx === 0 ? 2 : 1);
-                      const isLiked = likedByUser[c.id];
-                      const isHelpful = helpfulComments[c.id] || (idx === 0);
+                    (() => {
+                      // Build unified timeline items
+                      type TimelineItem =
+                        | { kind: 'comment'; data: typeof activeDetail.comments[number]; idx: number }
+                        | { kind: 'audit'; data: AuditEvent };
 
-                      return (
-                        <div key={c.id} className="relative pl-10">
-                          {/* Thread connecting line */}
-                          {idx < activeDetail.comments.length - 1 && (
-                            <div className="absolute left-4 top-9 bottom-[-16px] w-[1.5px] bg-white/10" />
-                          )}
+                      const items: TimelineItem[] = [
+                        ...(activeDetail.auditLog || []).map(a => ({ kind: 'audit' as const, data: a })),
+                        ...activeDetail.comments.map((c, idx) => ({ kind: 'comment' as const, data: c, idx })),
+                      ];
 
-                          {/* Left Avatar Badge */}
-                          <div className={`absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${avatarBg} border border-white/10 shadow-sm`}>
-                            {authorInitials}
-                          </div>
+                      return items.map((item, tIdx) => {
+                        if (item.kind === 'audit') {
+                          const ev = item.data;
 
-                          {/* Message Body */}
-                          <div className="space-y-2">
-                            {/* Header: Name, Role Pill, Timestamp & Options */}
-                            <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-bold text-white text-xs">{c.authorName}</span>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeBg}`}>
-                                  {c.authorRole}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-gray-400 text-[11px]">
-                                <span>{c.createdAt}</span>
-                                <MoreVertical size={13} className="text-gray-500 hover:text-white cursor-pointer" />
-                              </div>
-                            </div>
+                          // Icon + color per event type
+                          const auditMeta: Record<string, { icon: React.ReactNode; bg: string; border: string; label: string }> = {
+                            created:        { icon: <Plus size={11} />, bg: 'bg-[#0055FF]/15', border: 'border-[#0055FF]/30', label: 'Activity Created' },
+                            status_change:  { icon: <ChevronDown size={11} />, bg: 'bg-white/5', border: 'border-white/10', label: 'Status Updated' },
+                            triage_approved:{ icon: <CheckCircle2 size={11} />, bg: 'bg-[#10B981]/15', border: 'border-[#10B981]/30', label: 'Approved' },
+                            triage_rejected:{ icon: <XCircle size={11} />, bg: 'bg-[#FF4757]/15', border: 'border-[#FF4757]/30', label: 'Rejected' },
+                            comment_added:  { icon: <MessageSquare size={11} />, bg: 'bg-purple-900/20', border: 'border-purple-500/20', label: 'Comment Added' },
+                            closed:         { icon: <XCircle size={11} />, bg: 'bg-gray-800/60', border: 'border-gray-600/40', label: 'Activity Closed' },
+                            email_sent:     { icon: <AtSign size={11} />, bg: 'bg-[#00D4B2]/10', border: 'border-[#00D4B2]/25', label: 'Email Sent' },
+                            email_received: { icon: <Reply size={11} />, bg: 'bg-[#00D4B2]/10', border: 'border-[#00D4B2]/25', label: 'Email Reply Captured' },
+                            priority_change:{ icon: <AlertCircle size={11} />, bg: 'bg-[#FFB020]/10', border: 'border-[#FFB020]/20', label: 'Priority Changed' },
+                          };
+                          const meta = auditMeta[ev.type] || auditMeta.status_change;
 
-                            {/* Comment Box Container with smooth rounded curves */}
-                            <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4.5 border border-white/5 space-y-3 transition-colors shadow-xs">
-                              
-                              {/* Quoted Reply context if present */}
-                              {c.replyTo && (
-                                <div className="bg-black/30 border-l-2 border-[#00D4B2] px-3.5 py-2 rounded-2xl text-[11px] text-gray-300 flex items-center gap-2">
-                                  <Reply size={12} className="text-[#00D4B2] shrink-0" />
-                                  <span className="font-bold text-white">@{c.replyTo.authorName}:</span>
-                                  <span className="truncate text-gray-400">{c.replyTo.text}</span>
+                          return (
+                            <div key={ev.id} className="flex items-start gap-3">
+                              {/* Timeline line connector */}
+                              <div className="relative flex flex-col items-center shrink-0">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${meta.bg} border ${meta.border} text-white`}>
+                                  {meta.icon}
                                 </div>
-                              )}
+                                {tIdx < items.length - 1 && (
+                                  <div className="w-[1.5px] flex-1 min-h-[12px] mt-1 bg-white/8" />
+                                )}
+                              </div>
 
-                              {/* Text with @mentions */}
-                              <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
-                                {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part, i) => {
-                                  if (part.startsWith('@')) {
-                                    return (
-                                      <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
-                                        {part}
+                              {/* Event chip body */}
+                              <div className={`flex-1 mb-3 rounded-2xl px-3.5 py-2.5 border ${meta.bg} ${meta.border} text-[11px]`}>
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold text-white">{meta.label}</span>
+                                    {ev.fromStatus && ev.toStatus && (
+                                      <span className="flex items-center gap-1 text-gray-400">
+                                        <span className="px-1.5 py-0.5 rounded bg-white/8 capitalize">{ev.fromStatus.replace(/_/g, ' ')}</span>
+                                        <span className="text-gray-500">→</span>
+                                        <span className="px-1.5 py-0.5 rounded bg-white/8 capitalize">{ev.toStatus.replace(/_/g, ' ')}</span>
                                       </span>
-                                    );
-                                  }
-                                  return part;
-                                })}
-                              </p>
-
-                              {/* Footer Reactions & Actions Bar */}
-                              <div className="flex items-center justify-between pt-1.5 border-t border-white/5 text-xs text-gray-400">
-                                <div className="flex items-center gap-4">
-                                  {/* Thumbs up reaction */}
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleLikeComment(c.id)}
-                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
-                                      isLiked ? 'text-[#00D4B2] bg-[#00D4B2]/10' : 'hover:text-white hover:bg-white/5 text-gray-400'
-                                    }`}
-                                  >
-                                    <ThumbsUp size={13} className={isLiked ? 'fill-[#00D4B2]' : ''} />
-                                    <span>{likesCount}</span>
-                                  </button>
-
-                                  {/* Reply Button */}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setReplyingToComment({ authorName: c.authorName, text: c.text });
-                                      if (!commentInput.includes(`@${c.authorName}`)) {
-                                        setCommentInput(prev => `@${c.authorName} ${prev}`.trimStart());
-                                      }
-                                    }}
-                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold hover:text-white hover:bg-white/5 transition-all cursor-pointer"
-                                  >
-                                    <Reply size={13} />
-                                    <span>Reply</span>
-                                  </button>
+                                    )}
+                                  </div>
+                                  <span className="text-gray-500 shrink-0">{ev.timestamp}</span>
                                 </div>
-
-                                {/* Marked Helpful Badge / Toggle */}
-                                {isHelpful && (
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleHelpfulComment(c.id)}
-                                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-3 py-1 rounded-full cursor-pointer hover:bg-[#00D4B2]/20 transition-all"
-                                  >
-                                    <Check size={12} className="stroke-[3]" />
-                                    <span>Marked Helpful</span>
-                                  </button>
+                                <div className="flex items-center gap-1.5 mt-1 text-gray-400">
+                                  <span className="font-semibold text-gray-300">{ev.actor}</span>
+                                  <span className="text-gray-600">·</span>
+                                  <span>{ev.actorRole}</span>
+                                </div>
+                                {ev.note && (
+                                  <p className="mt-1 text-gray-400 leading-relaxed">{ev.note}</p>
                                 )}
                               </div>
                             </div>
+                          );
+                        }
 
+                        // Comment bubble
+                        const c = item.data;
+                        const commentIdx = item.idx;
+                        const authorInitials = c.authorName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+                        const isManager = c.authorRole.toLowerCase().includes('manager') || c.authorRole.toLowerCase().includes('admin');
+                        const roleBadgeBg = isManager ? 'bg-[#0055FF]/20 text-[#66A3FF] border border-[#0055FF]/40' : 'bg-purple-900/30 text-purple-300 border border-purple-500/30';
+                        const avatarBg = commentIdx % 2 === 0 ? 'bg-[#2A4365] text-[#90CDF4]' : 'bg-[#44337A] text-[#D6BCFA]';
+                        const likesCount = commentLikes[c.id] || 0;
+                        const isLiked = likedByUser[c.id];
+                        const isHelpful = helpfulComments[c.id];
+
+                        return (
+                          <div key={c.id} className="flex items-start gap-3">
+                            {/* Avatar */}
+                            <div className="relative flex flex-col items-center shrink-0">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${avatarBg} border border-white/10 shadow-sm`}>
+                                {authorInitials}
+                              </div>
+                              {tIdx < items.length - 1 && (
+                                <div className="w-[1.5px] flex-1 min-h-[12px] mt-1 bg-white/8" />
+                              )}
+                            </div>
+
+                            {/* Message Body */}
+                            <div className="flex-1 mb-3 space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-bold text-white text-xs">{c.authorName}</span>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeBg}`}>
+                                    {c.authorRole}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400 text-[11px]">
+                                  <span>{c.createdAt}</span>
+                                  <MoreVertical size={13} className="text-gray-500 hover:text-white cursor-pointer" />
+                                </div>
+                              </div>
+
+                              <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4 border border-white/5 space-y-3 transition-colors shadow-xs">
+                                {c.replyTo && (
+                                  <div className="bg-black/30 border-l-2 border-[#00D4B2] px-3.5 py-2 rounded-2xl text-[11px] text-gray-300 flex items-center gap-2">
+                                    <Reply size={12} className="text-[#00D4B2] shrink-0" />
+                                    <span className="font-bold text-white">@{c.replyTo.authorName}:</span>
+                                    <span className="truncate text-gray-400">{c.replyTo.text}</span>
+                                  </div>
+                                )}
+
+                                <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
+                                  {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part: string, i: number) => {
+                                    if (part.startsWith('@')) {
+                                      return (
+                                        <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
+                                          {part}
+                                        </span>
+                                      );
+                                    }
+                                    return part;
+                                  })}
+                                </p>
+
+                                <div className="flex items-center justify-between pt-1.5 border-t border-white/5 text-xs text-gray-400">
+                                  <div className="flex items-center gap-4">
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleLikeComment(c.id)}
+                                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+                                        isLiked ? 'text-[#00D4B2] bg-[#00D4B2]/10' : 'hover:text-white hover:bg-white/5 text-gray-400'
+                                      }`}
+                                    >
+                                      <ThumbsUp size={13} className={isLiked ? 'fill-[#00D4B2]' : ''} />
+                                      <span>{likesCount}</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setReplyingToComment({ authorName: c.authorName, text: c.text });
+                                        if (!commentInput.includes(`@${c.authorName}`)) {
+                                          setCommentInput(prev => `@${c.authorName} ${prev}`.trimStart());
+                                        }
+                                      }}
+                                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                                    >
+                                      <Reply size={13} />
+                                      <span>Reply</span>
+                                    </button>
+                                  </div>
+
+                                  {isHelpful && (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleHelpfulComment(c.id)}
+                                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-3 py-1 rounded-full cursor-pointer hover:bg-[#00D4B2]/20 transition-all"
+                                    >
+                                      <Check size={12} className="stroke-[3]" />
+                                      <span>Marked Helpful</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })
+                        );
+                      });
+                    })()
                   )}
                 </div>
 

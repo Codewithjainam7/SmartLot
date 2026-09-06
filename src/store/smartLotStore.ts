@@ -58,6 +58,30 @@ export type RequestComment = {
   isMarkedHelpful?: boolean;
 };
 
+export type AuditEventType =
+  | 'created'
+  | 'status_change'
+  | 'priority_change'
+  | 'comment_added'
+  | 'closed'
+  | 'triage_approved'
+  | 'triage_rejected'
+  | 'email_sent'
+  | 'email_received';
+
+export type AuditEvent = {
+  id: string;
+  type: AuditEventType;
+  actor: string;
+  actorRole: string;
+  timestamp: string;
+  note?: string;
+  fromStatus?: string;
+  toStatus?: string;
+  fromPriority?: string;
+  toPriority?: string;
+};
+
 export type ResidentRequest = {
   id: string;
   schemeId: string;
@@ -79,6 +103,7 @@ export type ResidentRequest = {
   rejectionReason?: string;
   closeReason?: string;
   comments: RequestComment[];
+  auditLog: AuditEvent[];
   linkedMotionId?: string;
 };
 
@@ -406,6 +431,13 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     comments: [
       { id: 'C1', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Contacted Automatic Gates NSW for emergency technician dispatch.', createdAt: '1 hour ago' }
     ],
+    auditLog: [
+      { id: 'AUD-D101-1', type: 'created', actor: 'Sarah Jones', actorRole: 'Lot Owner', timestamp: '3 hours ago', note: 'Activity submitted by resident.' },
+      { id: 'AUD-D101-2', type: 'status_change', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '2 hours ago', fromStatus: 'new', toStatus: 'pending_triage', note: 'Received and queued for triage.' },
+      { id: 'AUD-D101-3', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '2 hours ago', note: 'Email dispatched to strata manager with CC to Sarah Jones.' },
+      { id: 'AUD-D101-4', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '1.5 hours ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Approved for immediate contractor dispatch.' },
+      { id: 'AUD-D101-5', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '1 hour ago', note: 'Manager added a status update comment.' },
+    ],
   },
   {
     id: 'REQ-DUP-102',
@@ -424,6 +456,11 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0412 333 444',
     requestorRole: 'Tenant',
     comments: [],
+    auditLog: [
+      { id: 'AUD-D102-1', type: 'created', actor: 'David Miller', actorRole: 'Tenant', timestamp: '1 day ago', note: 'Activity submitted by resident.' },
+      { id: 'AUD-D102-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 day ago', note: 'Email dispatched to strata manager.' },
+      { id: 'AUD-D102-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '22 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+    ],
   },
 
   // Coronation (SP102) Requests
@@ -447,6 +484,12 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     comments: [
       { id: 'C2', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Electrician on route with replacement 24V power supply unit.', createdAt: '20 mins ago' }
     ],
+    auditLog: [
+      { id: 'AUD-C201-1', type: 'created', actor: 'Michael Chen', actorRole: 'Committee Member', timestamp: '45 mins ago', note: 'Emergency activity raised by committee.' },
+      { id: 'AUD-C201-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '45 mins ago', note: 'Urgent email dispatched to strata manager.' },
+      { id: 'AUD-C201-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '30 mins ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Emergency dispatch authorised.' },
+      { id: 'AUD-C201-4', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '20 mins ago', note: 'Manager posted update on technician ETA.' },
+    ],
   },
   {
     id: 'REQ-COR-202',
@@ -465,6 +508,10 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0422 100 200',
     requestorRole: 'Lot Owner',
     comments: [],
+    auditLog: [
+      { id: 'AUD-C202-1', type: 'created', actor: 'Elena Rostov', actorRole: 'Lot Owner', timestamp: '2 hours ago', note: 'Activity submitted by resident.' },
+      { id: 'AUD-C202-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '2 hours ago', note: 'Email dispatched to strata manager.' },
+    ],
   },
   {
     id: 'REQ-COR-203',
@@ -484,6 +531,13 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorRole: 'Committee Member',
     comments: [
       { id: 'C3', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Contractor repainted bays on Aug 30.', createdAt: 'Yesterday' }
+    ],
+    auditLog: [
+      { id: 'AUD-C203-1', type: 'created', actor: 'Marcus Sterling', actorRole: 'Committee Member', timestamp: '3 days ago', note: 'Activity submitted.' },
+      { id: 'AUD-C203-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '3 days ago', note: 'Email dispatched to strata manager.' },
+      { id: 'AUD-C203-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '2 days ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+      { id: 'AUD-C203-4', type: 'status_change', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: 'Yesterday', fromStatus: 'approved', toStatus: 'resolved', note: 'Work confirmed complete by contractor.' },
+      { id: 'AUD-C203-5', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: 'Yesterday', note: 'Closing update posted.' },
     ],
   },
 
@@ -508,6 +562,12 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     comments: [
       { id: 'C4', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'KONE Elevator technicians scheduled for 10:00 AM on-site service.', createdAt: '30 mins ago' }
     ],
+    auditLog: [
+      { id: 'AUD-V301-1', type: 'created', actor: 'Arthur Pendelton', actorRole: 'Committee Member', timestamp: '1 hour ago', note: 'Emergency escalation raised by committee chair.' },
+      { id: 'AUD-V301-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 hour ago', note: 'High-priority email dispatched to strata manager.' },
+      { id: 'AUD-V301-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '45 mins ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Approved — KONE service call booked.' },
+      { id: 'AUD-V301-4', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '30 mins ago', note: 'Technician arrival window posted.' },
+    ],
   },
   {
     id: 'REQ-CAV-302',
@@ -526,6 +586,10 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0488 222 888',
     requestorRole: 'Lot Owner',
     comments: [],
+    auditLog: [
+      { id: 'AUD-V302-1', type: 'created', actor: 'Sophia Zhang', actorRole: 'Lot Owner', timestamp: '2 hours ago', note: 'Activity submitted from telemetry alert.' },
+      { id: 'AUD-V302-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '2 hours ago', note: 'Urgent email dispatched to strata manager.' },
+    ],
   },
   {
     id: 'REQ-CAV-303',
@@ -544,6 +608,11 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0499 333 777',
     requestorRole: 'Resident',
     comments: [],
+    auditLog: [
+      { id: 'AUD-V303-1', type: 'created', actor: 'Oliver Vance', actorRole: 'Resident', timestamp: '1 day ago', note: 'Activity submitted by resident.' },
+      { id: 'AUD-V303-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 day ago', note: 'Email dispatched to strata manager.' },
+      { id: 'AUD-V303-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '20 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+    ],
   },
   {
     id: 'REQ-CAV-304',
@@ -562,6 +631,10 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0400 444 666',
     requestorRole: 'Tenant',
     comments: [],
+    auditLog: [
+      { id: 'AUD-V304-1', type: 'created', actor: 'Jessica Taylor', actorRole: 'Tenant', timestamp: '4 hours ago', note: 'Activity submitted by resident.' },
+      { id: 'AUD-V304-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '4 hours ago', note: 'Email dispatched to strata manager.' },
+    ],
   }
 ];
 
@@ -1628,6 +1701,7 @@ export function useSmartLotStore() {
     requestType?: RequestStream;
   }) => {
     const id = `REQ-${100 + residentRequests.length + 1}`;
+    const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     const req: ResidentRequest = {
       id,
       schemeId: reqData.schemeId,
@@ -1644,7 +1718,25 @@ export function useSmartLotStore() {
       requestorEmail: reqData.requestorEmail || 'admin@smartlot.com',
       requestorPhone: '0400 000 000',
       requestorRole: reqData.requestorRole || 'Strata Manager',
-      comments: []
+      comments: [],
+      auditLog: [
+        {
+          id: `AUD-${id}-1`,
+          type: 'created',
+          actor: reqData.requestorName || 'Super Admin',
+          actorRole: reqData.requestorRole || 'Strata Manager',
+          timestamp: `Today at ${now}`,
+          note: 'Activity created by administrator.',
+        },
+        {
+          id: `AUD-${id}-2`,
+          type: 'email_sent',
+          actor: 'SmartLot',
+          actorRole: 'System',
+          timestamp: `Today at ${now}`,
+          note: 'Notification email dispatched to strata manager.',
+        },
+      ],
     };
     setResidentRequests(prev => [req, ...prev]);
     return id;
@@ -1663,6 +1755,7 @@ export function useSmartLotStore() {
     const requestorEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit.com`;
     const requestorRole = activePersona.role.includes('Owner') ? 'Lot Owner' : (activePersona.role.includes('Tenant') ? 'Tenant' : (activePersona.role.includes('Committee') ? 'Committee Member' : 'Resident'));
 
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     const req: ResidentRequest = {
       id,
       schemeId: activeScheme.id,
@@ -1682,6 +1775,24 @@ export function useSmartLotStore() {
       requestorPhone: '0412 888 999',
       requestorRole: requestorRole as any,
       comments: [],
+      auditLog: [
+        {
+          id: `AUD-${id}-1`,
+          type: 'created',
+          actor: activePersona.name,
+          actorRole: activePersona.role,
+          timestamp: `Today at ${nowStr}`,
+          note: 'Activity submitted by resident.',
+        },
+        {
+          id: `AUD-${id}-2`,
+          type: 'email_sent',
+          actor: 'SmartLot',
+          actorRole: 'System',
+          timestamp: `Today at ${nowStr}`,
+          note: 'Notification email dispatched to strata manager with resident CC.',
+        },
+      ],
     };
 
     setResidentRequests(prev => [req, ...prev]);
@@ -1709,18 +1820,33 @@ export function useSmartLotStore() {
 
   const triageRequest = (requestId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
     const nextStatus = action === 'reject' ? 'rejected' : 'approved';
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${requestId}-T${Date.now()}`,
+        type: action === 'approve' ? 'triage_approved' : 'triage_rejected',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        fromStatus: 'pending_triage',
+        toStatus: nextStatus,
+        note: action === 'reject'
+          ? `Rejected: ${rejectionReason || 'Request rejected per strata guidelines.'}`
+          : 'Approved for action.',
+      };
       if (action === 'reject') {
         return {
           ...r,
           status: 'rejected',
           rejectionReason: rejectionReason || 'Request rejected per strata guidelines.',
+          auditLog: [...(r.auditLog || []), auditEntry],
         };
       }
       return {
         ...r,
         status: 'approved',
+        auditLog: [...(r.auditLog || []), auditEntry],
       };
     }));
 
@@ -1735,17 +1861,30 @@ export function useSmartLotStore() {
   };
 
   const closeResidentRequest = (requestId: string, closeReason: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${requestId}-CL${Date.now()}`,
+        type: 'closed',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        fromStatus: r.status,
+        toStatus: 'closed',
+        note: closeReason,
+      };
       return {
         ...r,
         status: 'closed',
         closeReason,
+        auditLog: [...(r.auditLog || []), auditEntry],
       };
     }));
   };
 
   const addCommentToRequest = (requestId: string, commentText: string, replyTo?: { authorName: string; text: string }) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId) return r;
       const newComment: RequestComment = {
@@ -1756,9 +1895,20 @@ export function useSmartLotStore() {
         createdAt: 'Just now',
         ...(replyTo ? { replyTo } : {}),
       };
+      const auditEntry: AuditEvent = {
+        id: `AUD-${requestId}-CM${Date.now()}`,
+        type: 'comment_added',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        note: replyTo
+          ? `Replied to ${replyTo.authorName}'s comment.`
+          : 'Comment posted to activity thread.',
+      };
       return {
         ...r,
         comments: [...r.comments, newComment],
+        auditLog: [...(r.auditLog || []), auditEntry],
       };
     }));
   };
