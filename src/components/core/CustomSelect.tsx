@@ -56,7 +56,7 @@ export function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] hover:bg-white dark:hover:bg-[#252836] focus:bg-white dark:focus:bg-[#252836] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between text-sm font-bold text-gray-900 dark:text-white shadow-sm cursor-pointer active:scale-[0.99]"
+        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#161a26] hover:bg-white dark:hover:bg-[#1f2434] focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between text-xs font-bold text-gray-900 dark:text-white shadow-xs cursor-pointer active:scale-[0.99]"
       >
         <span className="truncate flex items-center gap-2">
           {selectedOption?.icon}
@@ -80,7 +80,7 @@ export function CustomSelect({
               damping: 28,
               mass: 0.7
             }}
-            className={`absolute ${isUp ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 right-0 z-50 bg-[#0B1121] text-white rounded-2xl p-2 shadow-2xl border border-white/10 max-h-64 overflow-y-auto dark-scrollbar`}
+            className={`absolute ${isUp ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 right-0 z-50 bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white rounded-2xl p-1.5 shadow-2xl border border-gray-200 dark:border-white/10 max-h-64 overflow-y-auto dark-scrollbar`}
           >
             {options.map(option => {
               const isSelected = option.value === value;
@@ -92,10 +92,10 @@ export function CustomSelect({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between cursor-pointer ${
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between cursor-pointer ${
                     isSelected 
-                      ? 'bg-[#00D4B2] text-[#0B1121] font-extrabold shadow-sm' 
-                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#0055FF] dark:bg-[#00D4B2] text-white dark:text-[#0B1121] font-extrabold shadow-sm' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
@@ -103,7 +103,7 @@ export function CustomSelect({
                     <div>
                       <div>{option.label}</div>
                       {option.description && (
-                        <div className={`text-[10px] ${isSelected ? 'text-[#0B1121]/70' : 'text-gray-400'}`}>{option.description}</div>
+                        <div className={`text-[10px] ${isSelected ? 'text-white/80 dark:text-[#0B1121]/70' : 'text-gray-400'}`}>{option.description}</div>
                       )}
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export function CustomSelect({
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                     >
-                      <Check size={14} className="shrink-0 text-[#0B1121]" />
+                      <Check size={14} className="shrink-0 text-white dark:text-[#0B1121]" />
                     </motion.div>
                   )}
                 </button>

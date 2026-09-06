@@ -50,6 +50,12 @@ export type RequestComment = {
   authorRole: string;
   text: string;
   createdAt: string;
+  replyTo?: {
+    authorName: string;
+    text: string;
+  };
+  likes?: number;
+  isMarkedHelpful?: boolean;
 };
 
 export type ResidentRequest = {
@@ -1739,7 +1745,7 @@ export function useSmartLotStore() {
     }));
   };
 
-  const addCommentToRequest = (requestId: string, commentText: string) => {
+  const addCommentToRequest = (requestId: string, commentText: string, replyTo?: { authorName: string; text: string }) => {
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId) return r;
       const newComment: RequestComment = {
@@ -1748,6 +1754,7 @@ export function useSmartLotStore() {
         authorRole: activePersona.role,
         text: commentText,
         createdAt: 'Just now',
+        ...(replyTo ? { replyTo } : {}),
       };
       return {
         ...r,

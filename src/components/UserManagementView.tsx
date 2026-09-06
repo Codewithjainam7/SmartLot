@@ -743,33 +743,33 @@ export function UserManagementView({
                     <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
                       <Shield size={13} className="text-gray-400" /> Scheme Role
                     </label>
-                    <select
+                    <CustomSelect
+                      options={[
+                        { value: 'Lot Owner', label: 'Lot Owner' },
+                        { value: 'Resident', label: 'Resident (Owner-Occupier)' },
+                        { value: 'Tenant', label: 'Tenant (Renter)' },
+                        { value: 'Committee Member', label: 'Committee Member' },
+                        { value: 'Strata Manager', label: 'Strata Manager' },
+                        { value: 'Building Manager', label: 'Building Manager' }
+                      ]}
                       value={editRole}
-                      onChange={e => setEditRole(e.target.value as MemberRole)}
-                      className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] cursor-pointer"
-                    >
-                      <option value="Lot Owner">Lot Owner</option>
-                      <option value="Resident">Resident (Owner-Occupier)</option>
-                      <option value="Tenant">Tenant (Renter)</option>
-                      <option value="Committee Member">Committee Member</option>
-                      <option value="Strata Manager">Strata Manager</option>
-                      <option value="Building Manager">Building Manager</option>
-                    </select>
+                      onChange={val => setEditRole(val as MemberRole)}
+                    />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
                       <Activity size={13} className="text-gray-400" /> Status
                     </label>
-                    <select
+                    <CustomSelect
+                      options={[
+                        { value: 'Active', label: 'Active' },
+                        { value: 'Invited', label: 'Invited' },
+                        { value: 'Restricted', label: 'Restricted' }
+                      ]}
                       value={editStatus}
-                      onChange={e => setEditStatus(e.target.value as any)}
-                      className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] cursor-pointer"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Invited">Invited</option>
-                      <option value="Restricted">Restricted</option>
-                    </select>
+                      onChange={val => setEditStatus(val as any)}
+                    />
                   </div>
                 </div>
 
@@ -1093,45 +1093,45 @@ function AddMemberFormContent({
         </button>
       </div>
 
-      <form onSubmit={handleFormSubmit} className="space-y-5">
+      <form onSubmit={handleFormSubmit} className="space-y-4">
         
         {/* Personal Info Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Primary Member Full Name</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Primary Member Full Name</label>
             <input
               type="text"
               required
               placeholder="e.g. Mike Davies"
               value={formName}
               onChange={e => setFormName(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Primary Email Address</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Primary Email Address</label>
             <input
               type="email"
               required
               placeholder="mike@owner.com"
               value={formEmail}
               onChange={e => setFormEmail(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
             />
           </div>
         </div>
 
         {/* Phone & Custom Dropdown Role Selector */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Phone Number</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Phone Number</label>
             <input
               type="text"
               placeholder="0411 222 333"
               value={formPhone}
               onChange={e => setFormPhone(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
             />
           </div>
 
@@ -1144,27 +1144,27 @@ function AddMemberFormContent({
         </div>
 
         {/* Unit & Lot Number Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Unit / Apartment #</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Unit / Apartment #</label>
             <input
               type="text"
               required
               placeholder="e.g. Unit 10"
               value={formUnit}
               onChange={e => setFormUnit(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Lot Number</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Lot Number</label>
             <input
               type="number"
               required
               value={formLot}
               onChange={e => setFormLot(Number(e.target.value))}
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 text-sm outline-none font-bold text-gray-900 shadow-sm transition-all"
+              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
             />
           </div>
         </div>

@@ -17,10 +17,20 @@ import {
   XCircle, 
   Vote, 
   MessageSquare, 
-  X, 
-  Send,
   User,
-  AlertCircle
+  AlertCircle,
+  Reply,
+  AtSign,
+  FileText,
+  ThumbsUp,
+  MoreVertical,
+  Paperclip,
+  Image as ImageIcon,
+  Smile,
+  Check,
+  ChevronDown,
+  X,
+  Send
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -28,7 +38,7 @@ interface ResidentRequestsViewProps {
   onOpenCreateModal?: () => void;
   onSubmitRequest: (data: any) => void;
   onCloseRequest: (requestId: string, reason: string) => void;
-  onAddComment: (requestId: string, text: string) => void;
+  onAddComment: (requestId: string, text: string, replyTo?: { authorName: string; text: string }) => void;
   activePersonaName: string;
   activePersonaRole: string;
 }
@@ -46,6 +56,24 @@ export function ResidentRequestsView({
   const [closeModalRequest, setCloseModalRequest] = useState<ResidentRequest | null>(null);
   const [closeReason, setCloseReason] = useState('');
   const [commentInput, setCommentInput] = useState('');
+  const [replyingToComment, setReplyingToComment] = useState<{ authorName: string; text: string } | null>(null);
+  const [showMentionMenu, setShowMentionMenu] = useState(false);
+  const [commentLikes, setCommentLikes] = useState<Record<string, number>>({ 'C-1': 2, 'C-2': 1 });
+  const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
+  const [helpfulComments, setHelpfulComments] = useState<Record<string, boolean>>({ 'C-1': true });
+
+  const toggleLikeComment = (commentId: string) => {
+    const isLiked = likedByUser[commentId];
+    setLikedByUser(prev => ({ ...prev, [commentId]: !isLiked }));
+    setCommentLikes(prev => ({
+      ...prev,
+      [commentId]: (prev[commentId] || 0) + (isLiked ? -1 : 1)
+    }));
+  };
+
+  const toggleHelpfulComment = (commentId: string) => {
+    setHelpfulComments(prev => ({ ...prev, [commentId]: !prev[commentId] }));
+  };
 
   const filteredRequests = requests.filter(r => {
     if (viewScope === 'my' && r.requestorName !== activePersonaName) return false;
@@ -53,7 +81,46 @@ export function ResidentRequestsView({
     return true;
   });
 
+  // Extract unique authors from comments to suggest in @mention dropdown
   const activeDetail = selectedRequest ? requests.find(r => r.id === selectedRequest.id) || selectedRequest : null;
+  const possibleTagTargets = Array.from(new Set([
+    ...(activeDetail ? activeDetail.comments.map(c => c.authorName) : []),
+    activeDetail?.requestorName || '',
+    'Roman Joe',
+    'Sarah Jones',
+    'Michael Chen',
+    'Emma Wilson'
+  ].filter(name => name && name !== activePersonaName)));
+
+  const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setCommentInput(val);
+    if (val.endsWith('@') || (val.includes('@') && !val.split('@').pop()?.includes(' '))) {
+      setShowMentionMenu(true);
+    } else {
+      setShowMentionMenu(false);
+    }
+  };
+
+  const handleSelectMention = (name: string) => {
+    const lastAtIndex = commentInput.lastIndexOf('@');
+    if (lastAtIndex !== -1) {
+      const newText = commentInput.substring(0, lastAtIndex) + `@${name} `;
+      setCommentInput(newText);
+    } else {
+      setCommentInput(prev => `${prev} @${name} `);
+    }
+    setShowMentionMenu(false);
+  };
+
+  const handleSendComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentInput.trim() || !activeDetail) return;
+    onAddComment(activeDetail.id, commentInput.trim(), replyingToComment || undefined);
+    setCommentInput('');
+    setReplyingToComment(null);
+    setShowMentionMenu(false);
+  };
 
   const handleConfirmClose = () => {
     if (!closeModalRequest || !closeReason.trim()) return;
@@ -61,13 +128,6 @@ export function ResidentRequestsView({
     setCloseModalRequest(null);
     setCloseReason('');
     if (selectedRequest?.id === closeModalRequest.id) setSelectedRequest(null);
-  };
-
-  const handleSendComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeDetail || !commentInput.trim()) return;
-    onAddComment(activeDetail.id, commentInput);
-    setCommentInput('');
   };
 
   return (
@@ -160,7 +220,7 @@ export function ResidentRequestsView({
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{req.id} Ã¢â‚¬Â¢ {req.unit}</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{req.unit}</span>
                   <StatusBadge status={req.status} />
                 </div>
 
@@ -218,77 +278,301 @@ export function ResidentRequestsView({
               animate={{ x: 0 }}
               exit={{ x: '100%', opacity: 0.5, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="relative bg-white dark:bg-[#121316] w-full max-w-xl h-full shadow-2xl z-10 p-8 overflow-y-auto space-y-6"
+              className="relative bg-[#090D16] dark:bg-[#070B14] w-full max-w-xl h-full shadow-2xl z-10 p-7 overflow-y-auto space-y-6 text-white border-l border-white/10"
             >
               
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
-                <div>
-                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{activeDetail.id} Ã¢â‚¬Â¢ {activeDetail.unit}</span>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{activeDetail.title}</h2>
+              {/* Header: Unit Tag, Title, Close Button & Status Pill Bar */}
+              <div className="space-y-3 pb-2 border-b border-white/5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <span className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider block mb-1">
+                      {activeDetail.unit || 'LOT REQUEST'}
+                    </span>
+                    <h2 className="text-xl font-black text-white leading-tight">{activeDetail.title}</h2>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedRequest(null)} 
+                    className="p-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <button onClick={() => setSelectedRequest(null)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 cursor-pointer">
-                  <X size={20} />
-                </button>
+
+                {/* Status & Stream Badges */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/30 text-[11px] font-bold">
+                    <Clock size={12} className="text-[#FFB020]" />
+                    <span className="capitalize">{activeDetail.status.replace(/_/g, ' ')}</span>
+                  </div>
+
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px] font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                    <span className="capitalize">{activeDetail.requestType.replace(/_/g, ' ')}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <StatusBadge status={activeDetail.status} />
-                <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full text-gray-800 dark:text-gray-200 border dark:border-white/5 capitalize">
-                  {activeDetail.requestType.replace(/_/g, ' ')}
-                </span>
-              </div>
-
-              <div className="space-y-2 bg-gray-50 dark:bg-[#1a1d27] p-4 rounded-2xl border border-gray-100 dark:border-white/5 text-xs">
-                <div className="font-bold text-gray-900 dark:text-white">Full Description:</div>
-                <p className="text-gray-600 dark:text-gray-350 leading-relaxed">{activeDetail.description}</p>
+              {/* Description Card */}
+              <div className="bg-[#101726]/80 rounded-2xl p-5 border border-white/5 space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-black text-[#00D4B2] uppercase tracking-wider">
+                  <FileText size={15} />
+                  <span>Description</span>
+                </div>
+                <p className="text-xs text-gray-300 leading-relaxed font-normal">
+                  {activeDetail.description}
+                </p>
               </div>
 
               {activeDetail.attachmentUrl && (
-                <div>
-                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2 block">Attached Image</span>
-                  <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-48 object-cover rounded-2xl border border-gray-200" />
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached Image</span>
+                  <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-44 object-cover rounded-2xl border border-white/10" />
                 </div>
               )}
 
               {activeDetail.status === 'closed' && activeDetail.closeReason && (
                 <div className="bg-[#FF4757]/10 border border-[#FF4757]/30 p-4 rounded-2xl text-xs space-y-1">
-                  <div className="font-bold text-red-900 flex items-center gap-1.5"><AlertCircle size={14} /> Closed with Rationale:</div>
-                  <p className="text-red-700">{activeDetail.closeReason}</p>
+                  <div className="font-bold text-red-400 flex items-center gap-1.5"><AlertCircle size={14} /> Closed with Rationale:</div>
+                  <p className="text-red-300">{activeDetail.closeReason}</p>
                 </div>
               )}
 
-              {/* Comments Thread */}
-              <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
-                <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Comments Thread ({activeDetail.comments.length})</h4>
+              {/* Discussion Thread */}
+              <div className="space-y-5 pt-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-black text-white">
+                    <MessageSquare size={16} className="text-[#00D4B2]" /> 
+                    <span>Discussion ({activeDetail.comments.length})</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-gray-400 font-bold hover:text-white cursor-pointer transition-colors">
+                    <span>Newest first</span>
+                    <ChevronDown size={13} />
+                  </div>
+                </div>
                 
-                <div className="space-y-3">
-                  {activeDetail.comments.map(c => (
-                    <div key={c.id} className="bg-gray-50 dark:bg-[#1a1d27] p-3.5 rounded-2xl border border-gray-100 dark:border-white/5 text-xs space-y-1">
-                      <div className="flex items-center justify-between font-bold text-gray-900 dark:text-white">
-                        <span>{c.authorName} ({c.authorRole})</span>
-                        <span className="text-[10px] text-gray-400 font-normal">{c.createdAt}</span>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-350 leading-relaxed">{c.text}</p>
+                {/* Threaded Message List */}
+                <div className="space-y-4 relative">
+                  {activeDetail.comments.length === 0 ? (
+                    <div className="text-center py-8 border border-dashed border-white/10 rounded-2xl text-xs text-gray-400">
+                      No comments yet in this discussion.
                     </div>
-                  ))}
+                  ) : (
+                    activeDetail.comments.map((c, idx) => {
+                      const authorInitials = c.authorName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                      const isManager = c.authorRole.toLowerCase().includes('manager') || c.authorRole.toLowerCase().includes('admin');
+                      const roleBadgeBg = isManager ? 'bg-[#0055FF]/20 text-[#66A3FF] border border-[#0055FF]/40' : 'bg-purple-900/30 text-purple-300 border border-purple-500/30';
+                      const avatarBg = idx % 2 === 0 ? 'bg-[#2A4365] text-[#90CDF4]' : 'bg-[#44337A] text-[#D6BCFA]';
+                      const likesCount = commentLikes[c.id] || (idx === 0 ? 2 : 1);
+                      const isLiked = likedByUser[c.id];
+                      const isHelpful = helpfulComments[c.id] || (idx === 0);
+
+                      return (
+                        <div key={c.id} className="relative pl-10">
+                          {/* Thread connecting line */}
+                          {idx < activeDetail.comments.length - 1 && (
+                            <div className="absolute left-4 top-9 bottom-[-16px] w-[1.5px] bg-white/10" />
+                          )}
+
+                          {/* Left Avatar Badge */}
+                          <div className={`absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${avatarBg} border border-white/10 shadow-sm`}>
+                            {authorInitials}
+                          </div>
+
+                          {/* Message Body */}
+                          <div className="space-y-2">
+                            {/* Header: Name, Role Pill, Timestamp & Options */}
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-white text-xs">{c.authorName}</span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeBg}`}>
+                                  {c.authorRole}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-400 text-[11px]">
+                                <span>{c.createdAt}</span>
+                                <MoreVertical size={13} className="text-gray-500 hover:text-white cursor-pointer" />
+                              </div>
+                            </div>
+
+                            {/* Comment Box Container with smooth rounded curves */}
+                            <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4.5 border border-white/5 space-y-3 transition-colors shadow-xs">
+                              
+                              {/* Quoted Reply context if present */}
+                              {c.replyTo && (
+                                <div className="bg-black/30 border-l-2 border-[#00D4B2] px-3.5 py-2 rounded-2xl text-[11px] text-gray-300 flex items-center gap-2">
+                                  <Reply size={12} className="text-[#00D4B2] shrink-0" />
+                                  <span className="font-bold text-white">@{c.replyTo.authorName}:</span>
+                                  <span className="truncate text-gray-400">{c.replyTo.text}</span>
+                                </div>
+                              )}
+
+                              {/* Text with @mentions */}
+                              <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
+                                {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part, i) => {
+                                  if (part.startsWith('@')) {
+                                    return (
+                                      <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
+                                        {part}
+                                      </span>
+                                    );
+                                  }
+                                  return part;
+                                })}
+                              </p>
+
+                              {/* Footer Reactions & Actions Bar */}
+                              <div className="flex items-center justify-between pt-1.5 border-t border-white/5 text-xs text-gray-400">
+                                <div className="flex items-center gap-4">
+                                  {/* Thumbs up reaction */}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleLikeComment(c.id)}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+                                      isLiked ? 'text-[#00D4B2] bg-[#00D4B2]/10' : 'hover:text-white hover:bg-white/5 text-gray-400'
+                                    }`}
+                                  >
+                                    <ThumbsUp size={13} className={isLiked ? 'fill-[#00D4B2]' : ''} />
+                                    <span>{likesCount}</span>
+                                  </button>
+
+                                  {/* Reply Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setReplyingToComment({ authorName: c.authorName, text: c.text });
+                                      if (!commentInput.includes(`@${c.authorName}`)) {
+                                        setCommentInput(prev => `@${c.authorName} ${prev}`.trimStart());
+                                      }
+                                    }}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                                  >
+                                    <Reply size={13} />
+                                    <span>Reply</span>
+                                  </button>
+                                </div>
+
+                                {/* Marked Helpful Badge / Toggle */}
+                                {isHelpful && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleHelpfulComment(c.id)}
+                                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-3 py-1 rounded-full cursor-pointer hover:bg-[#00D4B2]/20 transition-all"
+                                  >
+                                    <Check size={12} className="stroke-[3]" />
+                                    <span>Marked Helpful</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
 
-                <form onSubmit={handleSendComment} className="flex gap-2 pt-2">
-                  <input
-                    type="text"
-                    placeholder="Add a comment or response..."
-                    value={commentInput}
-                    onChange={e => setCommentInput(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] text-xs outline-none focus:bg-white dark:focus:bg-[#252836] text-gray-900 dark:text-white"
-                  />
-                  <button type="submit" className="bg-[#0B1121] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer">
-                    <Send size={12} /> Post
-                  </button>
-                </form>
+                {/* Reply To Preview Bar */}
+                {replyingToComment && (
+                  <div className="flex items-center justify-between bg-[#00D4B2]/10 border-l-4 border-[#00D4B2] px-4 py-2.5 rounded-3xl text-xs backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="flex items-center gap-2 truncate">
+                      <Reply size={14} className="text-[#00D4B2] shrink-0" />
+                      <div className="truncate">
+                        <span className="text-[#00D4B2] text-[10px] uppercase font-extrabold block">Replying to {replyingToComment.authorName}</span>
+                        <span className="text-gray-200 font-medium truncate block max-w-sm">{replyingToComment.text}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setReplyingToComment(null)}
+                      className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Bottom Input Area matching reference screenshot */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-start gap-3">
+                    {/* Active User Avatar */}
+                    <div className="w-9 h-9 rounded-full bg-[#0D3B36] text-[#00D4B2] border border-[#00D4B2]/30 flex items-center justify-center text-[11px] font-black shrink-0 mt-1 shadow-sm">
+                      {activePersonaName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </div>
+
+                    {/* Input Field Container with smooth round border */}
+                    <div className="flex-1 bg-[#111726] rounded-3xl border border-white/10 focus-within:border-[#00D4B2]/60 transition-all p-3.5 space-y-2.5 relative shadow-md">
+                      
+                      {/* Mention Popover Suggestions */}
+                      {showMentionMenu && possibleTagTargets.length > 0 && (
+                        <div className="absolute bottom-full mb-2 left-0 right-0 z-30 bg-[#0E1524] border border-white/10 rounded-3xl shadow-2xl p-2 max-h-48 overflow-y-auto space-y-1 backdrop-blur-md">
+                          <div className="text-[10px] font-black uppercase text-[#00D4B2] px-3.5 py-1 tracking-wider">Mention Member</div>
+                          {possibleTagTargets.map(name => (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => handleSelectMention(name)}
+                              className="w-full text-left px-3.5 py-2 rounded-2xl text-xs font-bold text-gray-200 hover:bg-[#00D4B2]/15 hover:text-[#00D4B2] transition-colors flex items-center justify-between cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center text-[10px] font-black">
+                                  @
+                                </div>
+                                <span>{name}</span>
+                              </div>
+                              <span className="text-[10px] text-gray-400 font-normal">Tag</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <textarea
+                        rows={2}
+                        placeholder="Write a comment... (Type @ to tag a person)"
+                        value={commentInput}
+                        onChange={(e: any) => {
+                          const val = e.target.value;
+                          setCommentInput(val);
+                          if (val.endsWith('@') || (val.includes('@') && !val.split('@').pop()?.includes(' '))) {
+                            setShowMentionMenu(true);
+                          } else {
+                            setShowMentionMenu(false);
+                          }
+                        }}
+                        className="w-full bg-transparent px-1 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
+                      />
+
+                      {/* Bottom action icons & Post Comment Button */}
+                      <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                            <Paperclip size={15} />
+                          </button>
+                          <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                            <ImageIcon size={15} />
+                          </button>
+                          <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                            <Smile size={15} />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleSendComment}
+                          disabled={!commentInput.trim()}
+                          className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-4.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md active:scale-95"
+                        >
+                          <Send size={13} className="fill-[#070B14]" />
+                          <span>Post Comment</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {activeDetail.status !== 'closed' && activeDetail.requestorName === activePersonaName && (
-                <div className="pt-6 border-t border-gray-100 dark:border-white/5">
+                <div className="pt-4 border-t border-white/5">
                   <button
                     onClick={() => setCloseModalRequest(activeDetail)}
                     className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF4757] border border-[#FF4757]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"

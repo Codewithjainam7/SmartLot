@@ -77,7 +77,7 @@ export function ResidentVotingView({
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold uppercase ${activeDetail?.id === req.id ? 'text-[#0055FF]' : 'text-gray-400 dark:text-gray-500'}`}>{req.id} â€¢ {req.unit}</span>
+                  <span className={`text-xs font-bold uppercase ${activeDetail?.id === req.id ? 'text-[#0055FF]' : 'text-gray-400 dark:text-gray-500'}`}>{req.unit}</span>
                   <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${activeDetail?.id === req.id ? 'bg-[#00D4B2] text-[#0B1121]' : 'bg-purple-100 dark:bg-purple-950/20 text-[#0055FF] dark:text-[#6699ff]'}`}>
                     IN VOTING
                   </span>
@@ -94,7 +94,7 @@ export function ResidentVotingView({
           <div className="lg:col-span-7 bg-white dark:bg-[#0d1117] rounded-3xl p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 dark:border-white/5 pb-4">
               <div>
-                <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{activeDetail.id} â€¢ {activeDetail.unit}</span>
+                <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{activeDetail.unit}</span>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{activeDetail.title}</h2>
               </div>
               <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-950/20 text-[#0055FF] dark:text-[#6699ff] text-xs font-bold uppercase">
