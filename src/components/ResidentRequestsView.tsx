@@ -37,7 +37,8 @@ import {
   Building,
   Lock,
   Shield,
-  RotateCcw
+  RotateCcw,
+  Inbox
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -262,9 +263,22 @@ export function ResidentRequestsView({
       </div>
 
       {/* Requests Grid with Fading & Shrinking Depth Exit Animation */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredRequests.map(req => (
+      {filteredRequests.length === 0 ? (
+        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 mx-auto flex items-center justify-center">
+            <Inbox size={24} />
+          </div>
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+            {filterStatus === 'all' 
+              ? "No activities have been recorded yet. Click '+ New Request' to submit an issue."
+              : `No activities found with status '${filterStatus}'. Try selecting 'All' or clearing filters.`}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence mode="popLayout">
+            {filteredRequests.map(req => (
             <motion.div
               key={req.id}
               layout
@@ -351,6 +365,7 @@ export function ResidentRequestsView({
           ))}
         </AnimatePresence>
       </div>
+      )}
 
       {/* Details Drawer */}
       <AnimatePresence>
