@@ -120,12 +120,18 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               {item.status === 'pending_triage' && (
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
+                    type="button"
+                    aria-label={`Reject request ${item.referenceId || item.id}`}
+                    title="Reject request with mandatory rationale"
                     onClick={() => setSelectedCaseForRejection(item)}
                     className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF6B6B] border border-[#FF4757]/30 rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
                     <XCircle size={14} /> Reject
                   </button>
                   <button
+                    type="button"
+                    aria-label={`Approve request ${item.referenceId || item.id}`}
+                    title="Approve request for action"
                     onClick={() => onTriageCase(item.id, 'approve')}
                     className="w-full bg-[#10B981] hover:bg-emerald-600 text-white rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
