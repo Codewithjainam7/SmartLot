@@ -142,22 +142,28 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
                       <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Cast Your Digital Ballot</h4>
                       <div className="grid grid-cols-3 gap-3">
                         <button
+                          type="button"
+                          aria-label="Vote YES for this motion"
                           onClick={() => onCastBallot(motion.id, 'YES')}
-                          className="bg-[#10B981] hover:bg-emerald-600 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02]"
+                          className="bg-[#10B981] hover:bg-emerald-600 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02] cursor-pointer"
                         >
                           <CheckCircle2 size={18} /> Vote YES
                         </button>
 
                         <button
+                          type="button"
+                          aria-label="Vote NO for this motion"
                           onClick={() => onCastBallot(motion.id, 'NO')}
-                          className="bg-[#FF6B6B] hover:bg-red-600 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02]"
+                          className="bg-[#FF6B6B] hover:bg-red-600 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02] cursor-pointer"
                         >
                           <XCircle size={18} /> Vote NO
                         </button>
 
                         <button
+                          type="button"
+                          aria-label="Abstain from voting on this motion"
                           onClick={() => onCastBallot(motion.id, 'ABSTAIN')}
-                          className="bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+                          className="bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
                         >
                           <MinusCircle size={18} /> ABSTAIN
                         </button>
