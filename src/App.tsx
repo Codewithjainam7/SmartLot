@@ -398,8 +398,10 @@ export default function App() {
               onAddComment={store.addCommentToRequest}
               onSimulateManagerReply={store.simulateManagerEmailReply}
               onAddInternalNote={store.addInternalNoteToRequest}
-              onUpdateStatus={(id, status) => store.updateResidentRequest(id, { status })}
-              onUpdatePriority={(id, priority) => store.updateResidentRequest(id, { priority })}
+              onUpdateStatus={store.updateActivityStatus}
+              onUpdatePriority={store.updateActivityPriority}
+              onAssignActivity={store.assignActivity}
+              onReopenActivity={store.reopenActivity}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
               activePersonaEmail={store.activePersona.email}

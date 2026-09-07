@@ -96,8 +96,8 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               </div>
 
               <div className="flex items-center gap-2 mb-3">
-                <StreamIcon stream={item.stream} />
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize">{item.stream.replace(/_/g, ' ')}</span>
+                <StreamIcon stream={item.stream || 'common_area_repair'} />
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize">{(item.stream || 'common_area_repair').replace(/_/g, ' ')}</span>
               </div>
 
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{item.title}</h3>

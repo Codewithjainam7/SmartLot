@@ -36,7 +36,8 @@ import {
   Sparkles,
   Building,
   Lock,
-  Shield
+  Shield,
+  RotateCcw
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -49,6 +50,8 @@ interface ResidentRequestsViewProps {
   onAddInternalNote?: (requestId: string, text: string) => void;
   onUpdateStatus?: (requestId: string, status: CaseStatus) => void;
   onUpdatePriority?: (requestId: string, priority: any) => void;
+  onAssignActivity?: (requestId: string, assigneeName: string, assigneeRole: string, assigneeEmail?: string) => void;
+  onReopenActivity?: (requestId: string, reason: string) => void;
   activePersonaName: string;
   activePersonaRole: string;
   activePersonaEmail?: string;
@@ -67,6 +70,8 @@ export function ResidentRequestsView({
   onAddInternalNote,
   onUpdateStatus,
   onUpdatePriority,
+  onAssignActivity,
+  onReopenActivity,
   activePersonaName,
   activePersonaRole,
   activePersonaEmail,
@@ -140,6 +145,9 @@ export function ResidentRequestsView({
 
   const [internalNoteInput, setInternalNoteInput] = useState('');
   const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
+  const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
+  const [reopenModalRequest, setReopenModalRequest] = useState<ResidentRequest | null>(null);
+  const [reopenReason, setReopenReason] = useState('');
 
   const handleSendComment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +171,13 @@ export function ResidentRequestsView({
     setCloseModalRequest(null);
     setCloseReason('');
     if (selectedRequest?.id === closeModalRequest.id) setSelectedRequest(null);
+  };
+
+  const handleConfirmReopen = () => {
+    if (!reopenModalRequest || !reopenReason.trim() || !onReopenActivity) return;
+    onReopenActivity(reopenModalRequest.id, reopenReason);
+    setReopenModalRequest(null);
+    setReopenReason('');
   };
 
   return (
@@ -294,6 +309,13 @@ export function ResidentRequestsView({
                   <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mb-2 font-medium">
                     <MapPin size={11} className="text-[#00D4B2] shrink-0" />
                     <span>{req.location}</span>
+                  </div>
+                )}
+
+                {req.assignedToName && (
+                  <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full mb-2">
+                    <User size={10} />
+                    <span>Assigned: {req.assignedToName}</span>
                   </div>
                 )}
 
@@ -429,6 +451,36 @@ export function ResidentRequestsView({
                       <span>{activeDetail.location}</span>
                     </div>
                   )}
+
+                  {/* Assignee Selector for Managers */}
+                  {isManagerOrAdmin && onAssignActivity ? (
+                    <select
+                      value={activeDetail.assignedToName ? `${activeDetail.assignedToName}|${activeDetail.assignedToRole || 'Contractor'}` : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) {
+                          onAssignActivity(activeDetail.id, '', '');
+                        } else {
+                          const [name, role] = val.split('|');
+                          onAssignActivity(activeDetail.id, name, role || 'Contractor');
+                        }
+                      }}
+                      className="h-7 px-2.5 rounded-full bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 text-[11px] font-bold outline-none cursor-pointer hover:bg-[#00D4B2]/25 transition-colors"
+                      title="Assign activity to contractor or manager"
+                    >
+                      <option value="" className="bg-[#0B1121] text-white">Select Assignee...</option>
+                      <option value="Apex Gate & Security Services|Specialist Contractor" className="bg-[#0B1121] text-white">Assign: Apex Gate & Security</option>
+                      <option value="Rapid Response Electrical|Certified Electrician" className="bg-[#0B1121] text-white">Assign: Rapid Response Electrical</option>
+                      <option value="Bright Water Plumbing Solutions|Licensed Plumber" className="bg-[#0B1121] text-white">Assign: Bright Water Plumbing</option>
+                      <option value="Roman Joe|Strata Manager" className="bg-[#0B1121] text-white">Assign: Roman Joe (Manager)</option>
+                      <option value="Alex Vance|Building Manager" className="bg-[#0B1121] text-white">Assign: Alex Vance (Building Mgr)</option>
+                    </select>
+                  ) : activeDetail.assignedToName ? (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 text-[11px] font-bold">
+                      <User size={11} />
+                      <span>Assigned: {activeDetail.assignedToName}</span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -503,8 +555,8 @@ export function ResidentRequestsView({
                 </div>
               )}
 
-              {/* Internal Strata Manager Notes (Visible only to Strata Managers and Admins) */}
-              {isManagerOrAdmin && (
+              {/* Internal Strata Manager Notes (Visible to Strata Managers, Admins, and Committee Members) */}
+              {isManagerOrCommittee && (
                 <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-[#13110d] to-[#0a0f1d] p-4.5 space-y-3 shadow-lg relative overflow-hidden">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
@@ -513,13 +565,13 @@ export function ResidentRequestsView({
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-black text-white">Internal Strata Manager Notes</span>
+                          <span className="text-xs font-black text-white">Internal Staff & Committee Notes</span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
                             <Shield size={10} /> Private
                           </span>
                         </div>
                         <p className="text-[11px] text-gray-400 mt-0.5">
-                          Visible only to Strata Managers and Building Admins. Completely hidden from residents and lot owners.
+                          Visible to Strata Managers, Building Admins, and Committee Members. Completely hidden from regular residents and lot owners.
                         </p>
                       </div>
                     </div>
@@ -937,13 +989,25 @@ export function ResidentRequestsView({
                 </div>
               </div>
 
-              {activeDetail.status !== 'closed' && activeDetail.requestorName === activePersonaName && (
+              {activeDetail.status !== 'closed' && (activeDetail.requestorName === activePersonaName || isManagerOrAdmin) && (
                 <div className="pt-4 border-t border-white/5">
                   <button
                     onClick={() => setCloseModalRequest(activeDetail)}
                     className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF4757] border border-[#FF4757]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     Close Request & Add Reason
+                  </button>
+                </div>
+              )}
+
+              {activeDetail.status === 'closed' && (
+                <div className="pt-4 border-t border-white/5">
+                  <button
+                    onClick={() => setReopenModalRequest(activeDetail)}
+                    className="w-full bg-[#00D4B2]/10 hover:bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw size={14} />
+                    <span>Reopen Activity & Add Reason</span>
                   </button>
                 </div>
               )}
@@ -992,6 +1056,52 @@ export function ResidentRequestsView({
                   className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer"
                 >
                   Close & Notify Manager
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Reopen Request Modal */}
+      <AnimatePresence>
+        {reopenModalRequest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+              onClick={() => setReopenModalRequest(null)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 12, filter: 'blur(3px)' }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-white dark:bg-[#0d1117] w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 border dark:border-white/5 space-y-4"
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Reopen Activity & Notify Team</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">State your rationale for reopening <span className="font-bold">{reopenModalRequest.referenceId || reopenModalRequest.id}</span>:</p>
+
+              <textarea
+                required
+                rows={3}
+                placeholder="e.g. Issue recurred / contractor work incomplete / further inspection needed..."
+                value={reopenReason}
+                onChange={e => setReopenReason(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] text-xs outline-none font-semibold text-gray-800 dark:text-gray-200 focus:bg-white dark:focus:bg-[#252836]"
+              />
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button onClick={() => setReopenModalRequest(null)} className="px-4 py-2 text-xs font-bold text-gray-650 dark:text-gray-400 cursor-pointer">Cancel</button>
+                <button
+                  onClick={handleConfirmReopen}
+                  disabled={!reopenReason.trim()}
+                  className="bg-[#0055FF] hover:bg-[#0040CC] text-white px-5 py-2 rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer shadow-md"
+                >
+                  Reopen Activity
                 </button>
               </div>
             </motion.div>

@@ -127,6 +127,9 @@ export type ResidentRequest = {
   requestorEmail: string;
   requestorPhone: string;
   requestorRole: 'Lot Owner' | 'Resident' | 'Tenant' | 'Strata Manager' | 'Committee Member' | 'Building Manager';
+  assignedToName?: string;
+  assignedToRole?: string;
+  assignedToEmail?: string;
   rejectionReason?: string;
   closeReason?: string;
   comments: RequestComment[];
@@ -1203,13 +1206,11 @@ export function useSmartLotStore() {
         { data: schemesData },
         { data: membersData },
         { data: profilesData },
-        { data: reqsData },
         { data: unitsData }
       ] = await Promise.all([
         supabase.from('schemes').select('*'),
         supabase.from('members').select('*'),
         supabase.from('profiles').select('*'),
-        supabase.from('resident_requests').select('*'),
         supabase.from('units').select('*')
       ]);
       
@@ -1253,40 +1254,6 @@ export function useSmartLotStore() {
         });
       }
       setMembers(formattedMembers);
-
-      // Process requests
-      if (reqsData && reqsData.length > 0) {
-        const formattedReqs = reqsData.map(r => {
-          const matchingMember = formattedMembers.find(m => m.schemeId === r.scheme_id && m.unitId === r.unit_id);
-          const initialMatchingReq = INITIAL_RESIDENT_REQUESTS.find(ir => ir.title === r.title || ir.id === r.id);
-          
-          const requestorName = r.requestor_name || initialMatchingReq?.requestorName || matchingMember?.name || 'Resident';
-          const requestorEmail = r.requestor_email || initialMatchingReq?.requestorEmail || matchingMember?.email || 'resident@smartlot.com.au';
-          const requestorRole = (r.requestor_role || initialMatchingReq?.requestorRole || matchingMember?.role || 'Lot Owner') as any;
-
-          return {
-            id: r.id,
-            schemeId: r.scheme_id,
-            unit: r.unit_id || 'Unit 1',
-            title: r.title,
-            description: r.description || initialMatchingReq?.description || '',
-            requestType: r.request_type || 'maintenance_upgrade',
-            stream: (r.request_type || 'common_area_repair') as any,
-            priority: r.priority || 'Medium',
-            status: r.status || 'new',
-            createdAt: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent',
-            requestorName,
-            reportedBy: `${requestorName} (${requestorRole})`,
-            requestorEmail,
-            requestorPhone: initialMatchingReq?.requestorPhone || matchingMember?.phone || '0400 000 000',
-            requestorRole,
-            comments: initialMatchingReq?.comments || []
-          };
-        });
-        setResidentRequests(formattedReqs);
-      } else {
-        setResidentRequests(INITIAL_RESIDENT_REQUESTS);
-      }
 
       // Process units
       let allUnits: UnitData[] = [];
@@ -1349,6 +1316,131 @@ export function useSmartLotStore() {
           }
           return m;
         }));
+      }
+
+      // Fetch live resident requests, comments, and internal notes from Supabase
+      const { data: requestsData, error: reqErr } = await supabase
+        .from('resident_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (requestsData && requestsData.length > 0) {
+        const { data: commentsData } = await supabase
+          .from('request_comments')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        const { data: notesData } = await supabase
+          .from('activity_notes')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        const mappedRequests: ResidentRequest[] = requestsData.map(r => {
+          const comments: RequestComment[] = (commentsData || [])
+            .filter(c => c.request_id === r.id)
+            .map(c => ({
+              id: c.id,
+              authorName: c.author_name || 'Member',
+              authorRole: c.author_role || (c.is_email_reply ? 'Strata Manager (via Email)' : 'Resident'),
+              text: c.text,
+              createdAt: new Date(c.created_at).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }),
+              replyTo: c.reply_to_name ? { authorName: c.reply_to_name, text: c.reply_to_text || '' } : undefined,
+            }));
+
+          const internalNotes: InternalNote[] = (notesData || [])
+            .filter(n => n.request_id === r.id)
+            .map(n => ({
+              id: n.id,
+              authorName: n.author_name,
+              authorRole: n.author_role,
+              text: n.text,
+              createdAt: new Date(n.created_at).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }),
+            }));
+
+          const ref = r.reference_id || `SL-${r.id.slice(0, 5).toUpperCase()}`;
+          const dateStr = new Date(r.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+          const initialAuditLog: AuditEvent[] = [
+            {
+              id: `AUD-${r.id}-1`,
+              type: 'created',
+              actor: r.requestor_name || 'Resident',
+              actorRole: r.requestor_role || 'Resident',
+              timestamp: dateStr,
+              note: `Activity #${ref.replace('#', '')} initiated.`,
+            },
+          ];
+
+          if (r.strata_manager_email) {
+            initialAuditLog.push({
+              id: `AUD-${r.id}-2`,
+              type: 'email_sent',
+              actor: 'SmartLot Conduit',
+              actorRole: 'System',
+              timestamp: dateStr,
+              note: `Conduit email dispatched to ${r.strata_manager_email}. Resident CC'd. Reply-To: requests+${ref.replace('#', '')}@mail.smartlot.app`,
+            });
+          }
+
+          if (r.status === 'acknowledged' && comments.some(c => c.authorRole.includes('Email') || c.authorRole.includes('Manager'))) {
+            initialAuditLog.push({
+              id: `AUD-${r.id}-3`,
+              type: 'email_received',
+              actor: r.strata_manager_email ? 'Emma Wilson' : 'Strata Manager',
+              actorRole: 'Strata Manager',
+              timestamp: dateStr,
+              fromStatus: 'new',
+              toStatus: 'acknowledged',
+              note: 'Inbound email reply captured via Reply-To conduit.',
+            });
+          }
+
+          const stream: RequestStream = 
+            (r.stream as RequestStream) ||
+            (r.request_type === 'emergency_repair' || r.request_type === 'Urgent Issue' ? 'emergency_repair' :
+             r.request_type === 'by_law_breach' || r.request_type === 'Complaint' ? 'complaint' :
+             r.request_type === 'lot_owner_modification' || r.request_type === 'Administrative Request' ? 'general_inquiry' :
+             r.request_type === 'Maintenance / Vendor' ? 'maintenance_upgrade' :
+             'common_area_repair');
+
+          const reqName = r.requestor_name || 'Resident';
+          const reqRole = (r.requestor_role || 'Lot Owner') as any;
+
+          return {
+            id: r.id,
+            referenceId: r.reference_id,
+            schemeId: r.scheme_id,
+            buildingName: r.building_name,
+            unit: r.unit_id || 'Unit 1',
+            title: r.title,
+            description: r.description,
+            requestType: r.request_type || stream,
+            stream: stream,
+            priority: r.priority || 'Normal',
+            location: r.location || 'Common area',
+            contactPreference: r.contact_preference || 'Email',
+            strataManagerEmail: r.strata_manager_email,
+            attachmentUrls: r.attachment_urls || [],
+            attachmentUrl: r.attachment_urls?.[0],
+            status: r.status || 'new',
+            createdAt: dateStr,
+            requestorName: reqName,
+            reportedBy: `${reqName} (${reqRole})`,
+            requestorEmail: r.requestor_email || 'resident@smartlot.com',
+            requestorPhone: '0412 888 999',
+            requestorRole: reqRole,
+            assignedToName: r.assigned_to_name,
+            assignedToRole: r.assigned_to_role,
+            assignedToEmail: r.assigned_to_email,
+            closeReason: r.close_reason,
+            comments,
+            internalNotes,
+            auditLog: initialAuditLog,
+          };
+        });
+
+        setResidentRequests(mappedRequests);
+      } else {
+        setResidentRequests(INITIAL_RESIDENT_REQUESTS);
       }
 
     } catch (err) {
@@ -2047,6 +2139,28 @@ export function useSmartLotStore() {
         auditLog: [...(req.auditLog || []), newAuditEvent],
       };
     }));
+
+    const targetReq = residentRequests.find(r => r.id === requestId || r.referenceId === requestId);
+    const realId = targetReq?.id || requestId;
+
+    // Persist inbound comment to Supabase
+    supabase.from('request_comments').insert({
+      request_id: realId,
+      author_name: managerName,
+      author_role: 'Strata Manager (via Email)',
+      text: replyText,
+      is_email_reply: true,
+    }).then(({ error }) => {
+      if (error) console.warn('[SmartLot] Inbound comment sync note:', error.message);
+    });
+
+    // Update activity status to acknowledged in Supabase
+    supabase.from('resident_requests').update({
+      status: 'acknowledged',
+      updated_at: new Date().toISOString()
+    }).eq('id', realId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] Activity status sync note:', error.message);
+    });
   };
 
   const triageRequest = (requestId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
@@ -2094,9 +2208,9 @@ export function useSmartLotStore() {
   const closeResidentRequest = (requestId: string, closeReason: string) => {
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     setResidentRequests(prev => prev.map(r => {
-      if (r.id !== requestId) return r;
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
       const auditEntry: AuditEvent = {
-        id: `AUD-${requestId}-CL${Date.now()}`,
+        id: `AUD-${r.id}-CL${Date.now()}`,
         type: 'closed',
         actor: activePersona.name,
         actorRole: activePersona.role,
@@ -2112,14 +2226,147 @@ export function useSmartLotStore() {
         auditLog: [...(r.auditLog || []), auditEntry],
       };
     }));
+
+    supabase.from('resident_requests').update({
+      status: 'closed',
+      close_reason: closeReason,
+      updated_at: new Date().toISOString(),
+    }).eq('id', requestId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] closeResidentRequest sync note:', error.message);
+    });
+  };
+
+  const updateActivityStatus = (requestId: string, newStatus: CaseStatus, reason?: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${r.id}-ST${Date.now()}`,
+        type: 'status_change',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        fromStatus: r.status,
+        toStatus: newStatus,
+        note: reason || `Status manually changed to ${newStatus.replace(/_/g, ' ')} by ${activePersona.role}.`,
+      };
+      return {
+        ...r,
+        status: newStatus,
+        closeReason: newStatus === 'closed' ? (reason || r.closeReason) : undefined,
+        auditLog: [...(r.auditLog || []), auditEntry],
+      };
+    }));
+
+    supabase.from('resident_requests').update({
+      status: newStatus,
+      close_reason: newStatus === 'closed' ? (reason || null) : null,
+      updated_at: new Date().toISOString(),
+    }).eq('id', requestId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] updateActivityStatus sync note:', error.message);
+    });
+  };
+
+  const updateActivityPriority = (requestId: string, newPriority: 'Low' | 'Normal' | 'High' | 'Urgent') => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${r.id}-PR${Date.now()}`,
+        type: 'priority_change',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        fromPriority: r.priority,
+        toPriority: newPriority,
+        note: `Priority updated from ${r.priority} to ${newPriority}.`,
+      };
+      return {
+        ...r,
+        priority: newPriority,
+        auditLog: [...(r.auditLog || []), auditEntry],
+      };
+    }));
+
+    supabase.from('resident_requests').update({
+      priority: newPriority,
+      updated_at: new Date().toISOString(),
+    }).eq('id', requestId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] updateActivityPriority sync note:', error.message);
+    });
+  };
+
+  const assignActivity = (requestId: string, assigneeName: string, assigneeRole: string, assigneeEmail?: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${r.id}-AS${Date.now()}`,
+        type: 'status_change',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        note: `Activity assigned to ${assigneeName} (${assigneeRole}).`,
+      };
+      return {
+        ...r,
+        assignedToName: assigneeName,
+        assignedToRole: assigneeRole,
+        assignedToEmail: assigneeEmail,
+        status: r.status === 'new' ? 'acknowledged' : r.status,
+        auditLog: [...(r.auditLog || []), auditEntry],
+      };
+    }));
+
+    supabase.from('resident_requests').update({
+      assigned_to_name: assigneeName,
+      assigned_to_role: assigneeRole,
+      assigned_to_email: assigneeEmail || null,
+      status: 'acknowledged',
+      updated_at: new Date().toISOString(),
+    }).eq('id', requestId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] assignActivity sync note:', error.message);
+    });
+  };
+
+  const reopenActivity = (requestId: string, reason: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${r.id}-RO${Date.now()}`,
+        type: 'status_change',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        fromStatus: 'closed',
+        toStatus: 'in_progress',
+        note: `Activity reopened: ${reason}`,
+      };
+      return {
+        ...r,
+        status: 'in_progress',
+        closeReason: undefined,
+        auditLog: [...(r.auditLog || []), auditEntry],
+      };
+    }));
+
+    supabase.from('resident_requests').update({
+      status: 'in_progress',
+      close_reason: null,
+      updated_at: new Date().toISOString(),
+    }).eq('id', requestId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] reopenActivity sync note:', error.message);
+    });
   };
 
   const addCommentToRequest = (requestId: string, commentText: string, replyTo?: { authorName: string; text: string }) => {
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const commentId = `C-${Date.now()}`;
     setResidentRequests(prev => prev.map(r => {
-      if (r.id !== requestId) return r;
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
       const newComment: RequestComment = {
-        id: `C-${Date.now()}`,
+        id: commentId,
         authorName: activePersona.name,
         authorRole: activePersona.role,
         text: commentText,
@@ -2127,7 +2374,7 @@ export function useSmartLotStore() {
         ...(replyTo ? { replyTo } : {}),
       };
       const auditEntry: AuditEvent = {
-        id: `AUD-${requestId}-CM${Date.now()}`,
+        id: `AUD-${r.id}-CM${Date.now()}`,
         type: 'comment_added',
         actor: activePersona.name,
         actorRole: activePersona.role,
@@ -2142,6 +2389,19 @@ export function useSmartLotStore() {
         auditLog: [...(r.auditLog || []), auditEntry],
       };
     }));
+
+    // Persist comment to Supabase request_comments table
+    supabase.from('request_comments').insert({
+      request_id: requestId,
+      author_name: activePersona.name,
+      author_role: activePersona.role,
+      text: commentText.trim(),
+      reply_to_name: replyTo?.authorName || null,
+      reply_to_text: replyTo?.text || null,
+      is_email_reply: false,
+    }).then(({ error }) => {
+      if (error) console.warn('[SmartLot] request_comments sync note:', error.message);
+    });
   };
 
   const addInternalNoteToRequest = (requestId: string, text: string) => {
@@ -2317,6 +2577,10 @@ export function useSmartLotStore() {
     createMasterRequest,
     triageRequest,
     closeResidentRequest,
+    updateActivityStatus,
+    updateActivityPriority,
+    assignActivity,
+    reopenActivity,
     addCommentToRequest,
     addInternalNoteToRequest,
     addResidentToUnit,
