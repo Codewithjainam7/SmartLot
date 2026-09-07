@@ -235,7 +235,8 @@ export function ResidentDashboardView({
             <div key={req.id} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1a1d27]/50 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="font-bold text-gray-400 dark:text-gray-500">{req.id} • {req.unit}</span>
+                  <span className="font-bold text-[#0055FF] dark:text-[#00D4B2]">{req.referenceId || req.id}</span>
+                  <span className="text-gray-400 dark:text-gray-500">• {req.buildingName ? `${req.buildingName} ${req.unit}` : req.unit}</span>
                   <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">{req.status}</span>
                 </div>
                 <h4 className="font-bold text-sm text-gray-900 dark:text-white mt-0.5">{req.title}</h4>

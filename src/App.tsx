@@ -313,7 +313,11 @@ export default function App() {
     // An author always sees activities they submitted even across un-onboarded schemes or scheme toggles
     const isAuthor = r.requestorName === store.activePersona.name || 
       (store.activePersona.email && r.requestorEmail === store.activePersona.email);
-    return isAuthor || r.schemeId === store.activeScheme.id;
+    const isAssigned = r.assignedToName === store.activePersona.name ||
+      (store.activePersona.email && (r.assignedToEmail === store.activePersona.email || r.strataManagerEmail === store.activePersona.email));
+    const isMatchingScheme = r.schemeId === store.activeScheme.id ||
+      (r.buildingName && store.activeScheme.name && r.buildingName.toLowerCase() === store.activeScheme.name.toLowerCase());
+    return isAuthor || isAssigned || isMatchingScheme;
   });
 
   return (
