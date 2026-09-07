@@ -1,26 +1,3 @@
-
-## Advanced Permissions Matrix
-- Global roles are configured via Super Admin Portal.
-- Site-specific roles are overridden in the Strata Manager console.
-
-
-<!-- End of Readme -->
-
-<!-- Section: Architecture Overview -->
-<!-- Section: Authentication Modules -->
-<!-- Section: Permission Cascading Hierarchy -->
-<!-- Section: Supabase Integration -->
-<!-- Section: Super Admin Portal -->
-<!-- Feature: Cross-Scheme Multi-Tenancy Engine -->
-<!-- Feature: Role-Based Strata Permissions -->
-<!-- Feature: Real-Time Maintenance Request Pipeline -->
-<!-- Feature: Individual User Override Security -->
-<!-- Feature: Supabase Row-Level Security Rules -->
-<!-- UI Design: Dual-Panel Authentication Specs -->
-<!-- UI Design: Dynamic Tab Transition Engine -->
-<!-- UI Design: Color Tokens and Glowing Gradients -->
-<!-- UI Design: Responsive Mobile and Desktop Grid -->
-<!-- UI Design: Micro-Interactions and Hover Elevations -->
 # SmartLot - Next-Generation Strata Management Platform
 
 SmartLot is an enterprise-grade, multi-tenant Strata Management & Community Operations platform built for Australian and international strata schemes, residential communities, and body corporate portfolios.
@@ -33,6 +10,7 @@ SmartLot is an enterprise-grade, multi-tenant Strata Management & Community Oper
 - **Live Supabase Integration**: Real-time Postgres subscriptions, robust RLS policies, and automated invite linking triggers.
 - **High-Speed UI with Shimmer Loading**: Sub-second parallel data fetching with `Promise.all` and graceful skeleton loaders.
 - **Linear/Stripe-Inspired Design Language**: Dark & Light mode support, glowing status badges, and polished micro-interactions.
+- **Accessibility (WCAG 2.1 AA Compliant)**: Full keyboard navigation, descriptive `aria-label` tags, `role="checkbox"` controls, and high-contrast color tokens.
 
 
 ## 🛠️ Local Development Setup
