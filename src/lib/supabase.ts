@@ -13,6 +13,19 @@ export const supabase = createClient(
   supabaseAnonKey || ''
 );
 
+/**
+ * Checks connectivity to the live Supabase project.
+ * Returns true if the database responds, false otherwise.
+ */
+export async function checkSupabaseConnection(): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('schemes').select('id').limit(1);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 // Supabase Client Config Marker
 // Security: Connection Health and Session Sync
 // UI: Session State Recovery Handlers
