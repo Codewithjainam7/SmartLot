@@ -495,6 +495,8 @@ export function AdminView({
           
           <div className="flex items-center gap-4">
             <button 
+              type="button"
+              aria-label="Return to Main Application"
               onClick={onBackToLanding}
               className="p-2.5 rounded-2xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-all border border-gray-200 dark:border-white/5 cursor-pointer shadow-sm"
               title="Return to Main Application"
@@ -545,6 +547,7 @@ export function AdminView({
             {setTheme && (
               <button
                 type="button"
+                aria-label="Toggle Color Theme"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 className="p-2.5 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
                 title="Toggle Theme"
