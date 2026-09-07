@@ -152,6 +152,7 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 pointer-events-none" />
                   <input 
                     type="text" 
+                    aria-label="Admin Identifier"
                     value={adminId}
                     onChange={e => setAdminId(e.target.value)}
                     className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
@@ -170,6 +171,7 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 pointer-events-none" />
                   <input 
                     type={showPassword ? "text" : "password"} 
+                    aria-label="Security Passkey"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-12 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
