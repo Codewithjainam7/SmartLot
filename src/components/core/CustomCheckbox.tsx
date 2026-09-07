@@ -19,8 +19,18 @@ export function CustomCheckbox({
   return (
     <label className={`inline-flex items-center gap-2.5 cursor-pointer select-none ${className}`}>
       <div 
+        role="checkbox"
+        aria-checked={checked}
+        tabIndex={0}
+        aria-label={label || 'Checkbox'}
         onClick={() => onChange(!checked)}
-        className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            onChange(!checked);
+          }
+        }}
+        className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-visible:ring-2 focus-visible:ring-[#00D4B2] ${
           checked 
             ? 'bg-[#0B1121] dark:bg-white/10 border-[#0B1121] dark:border-white/20 shadow-sm' 
             : 'bg-gray-50 dark:bg-[#1a1d27] border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#252836]'
