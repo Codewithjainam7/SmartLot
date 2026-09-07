@@ -2545,8 +2545,18 @@ export function useSmartLotStore() {
     }
   };
 
+  const getRequestById = (idOrRef: string): ResidentRequest | undefined => {
+    return residentRequests.find(r => r.id === idOrRef || r.referenceId === idOrRef);
+  };
+
+  const getRequestsByScheme = (schemeId: string): ResidentRequest[] => {
+    return residentRequests.filter(r => r.schemeId === schemeId);
+  };
+
   return {
     schemes,
+    getRequestById,
+    getRequestsByScheme,
     activeScheme,
     setActiveScheme,
     user,
