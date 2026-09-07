@@ -291,6 +291,7 @@ export function Dashboard({ store }: DashboardProps) {
                 <button 
                   type="button"
                   onClick={() => setShowSetupPopup(false)}
+                  aria-label="Close setup modal"
                   className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
                 >
                   <X size={16} />
@@ -349,6 +350,7 @@ export function Dashboard({ store }: DashboardProps) {
                     <input 
                       type="text"
                       required
+                      aria-label="Strata Plan ID"
                       placeholder="e.g. SP101"
                       value={newSchemeId}
                       onChange={e => setNewSchemeId(e.target.value)}
@@ -361,6 +363,7 @@ export function Dashboard({ store }: DashboardProps) {
                     <input 
                       type="text"
                       required
+                      aria-label="Building or site name"
                       placeholder="e.g. Sunset Duplex"
                       value={newSchemeName}
                       onChange={e => setNewSchemeName(e.target.value)}
@@ -372,6 +375,7 @@ export function Dashboard({ store }: DashboardProps) {
                     <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Unit Lots Size</label>
                     <input 
                       type="number"
+                      aria-label="Unit lots size"
                       disabled={buildingType !== 'custom'}
                       value={newLotsCount}
                       onChange={e => setNewLotsCount(parseInt(e.target.value) || 2)}
@@ -423,7 +427,7 @@ function MetricTile({ icon, label, value, highlight }: { icon: React.ReactNode, 
 
 function WorklistItem({ unit, owner, active, alert }: { unit: string, owner: string, active?: boolean, alert?: boolean }) {
   return (
-    <button className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
+    <button aria-label={`Select unit ${unit}, occupant ${owner}`} className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
       active 
         ? 'bg-[#00D4B2] text-[#0B1121] ring-1 ring-[#00A38C]' 
         : 'hover:bg-gray-50 dark:hover:bg-white/5 bg-white dark:bg-[#0d1117] border border-transparent dark:border-white/5'
@@ -477,6 +481,7 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
             <div className="pl-8 pt-2">
               <button 
                 onClick={() => alert('Plumbing Specialist dispatched. Work Order #WO-105 created.')}
+                aria-label="Assign Service Provider"
                 className="w-full bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] text-[10px] font-extrabold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/10"
               >
                 <Zap size={11} /> Assign Service Provider
