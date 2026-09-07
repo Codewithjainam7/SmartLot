@@ -187,6 +187,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                   }}
                   className="p-1 rounded bg-white/10 hover:bg-white/20 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer border border-transparent dark:border-white/5"
                   title="Edit Lot Metadata"
+                  aria-label="Edit Lot Metadata"
                 >
                   <Settings size={14} />
                 </button>
@@ -295,6 +296,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               <button 
                 type="button"
                 onClick={() => setShowEditLotModal(false)}
+                aria-label="Close edit lot modal"
                 className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
               >
                 <X size={16} />
@@ -375,6 +377,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               <button 
                 type="button"
                 onClick={() => setShowAddOccupantModal(false)}
+                aria-label="Close add occupant modal"
                 className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
               >
                 <X size={16} />
@@ -465,7 +468,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
 function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) {
   return (
-    <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
+    <button aria-label={label} className="flex flex-col items-center gap-1.5 group cursor-pointer">
       <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#00D4B2] group-hover:text-[#0B1121] transition-colors">
         {icon}
       </div>
@@ -497,6 +500,7 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
             onClick={onOffboard}
             className="p-2 rounded-xl border border-[#FF4757]/20 text-[#FF4757] hover:text-white hover:bg-[#FF4757] hover:border-red-500 transition-all cursor-pointer"
             title="Offboard Occupant"
+            aria-label={`Offboard occupant ${name}`}
           >
             <Trash2 size={14} />
           </button>
@@ -529,6 +533,7 @@ function PermissionToggle({ label, active, locked, onToggle }: { key?: React.Key
       </div>
       <button 
         onClick={() => !locked && onToggle && onToggle()}
+        aria-label={`Toggle ${label} permission`}
         className={`transition-colors ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-300 dark:text-gray-600 dark:text-gray-300'}`}
         disabled={locked}
       >
