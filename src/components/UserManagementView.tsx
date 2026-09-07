@@ -292,6 +292,7 @@ export function UserManagementView({
                 <Search size={16} className="text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
+                  aria-label="Search members by name, email, or unit number"
                   placeholder="Search users by name, email, or unit number..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
