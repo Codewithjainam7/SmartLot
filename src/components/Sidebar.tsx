@@ -162,6 +162,8 @@ function NavItem({
     <button
       type="button"
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      aria-label={label}
       className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-between px-4 py-3'} rounded-2xl transition-all duration-300 ease-out group cursor-pointer ${
         active 
           ? 'bg-gray-100 dark:bg-[#0F172A] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-[#0055FF]/10 dark:border-[#00D4B2]/20 font-bold' 
