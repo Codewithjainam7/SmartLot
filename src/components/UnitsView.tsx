@@ -69,6 +69,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                 <button
                   key={u.unitId}
                   data-id={`unit-${u.unitId}`}
+                  aria-label={`Select unit ${u.unitId} (Lot ${u.lotNumber})`}
                   onClick={() => setSelectedUnit(u)}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer ${
                     currentUnit.unitId === u.unitId ? 'bg-[#0B1121] dark:bg-white/10 text-white dark:text-[#00D4B2] border-black dark:border-[#00D4B2]/30 shadow-md font-bold' : 'text-gray-900 dark:text-white dark:text-white font-semibold hover:text-black dark:hover:text-[#00D4B2]'
