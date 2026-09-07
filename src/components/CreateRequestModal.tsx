@@ -547,6 +547,11 @@ export function CreateRequestFormContent({
             onChange={e => setDescription(e.target.value)}
             className="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
           />
+          <div className="flex justify-end mt-1">
+            <span className={`text-[10px] ${description.length > 500 ? 'text-amber-500 font-bold' : 'text-gray-400'}`}>
+              {description.length} characters
+            </span>
+          </div>
         </div>
 
         {/* ROW 6: Photos / Attachments */}
