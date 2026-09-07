@@ -19,7 +19,16 @@
 // JSDoc: List of registered schemes in user accessible portfolio
 // JSDoc: State container for active strata scheme context
 import React, { useState, useEffect } from 'react';
-import { SCHEMES, PERSONAS, Scheme, Persona } from '../types';
+import { 
+  SCHEMES, 
+  PERSONAS, 
+  Scheme, 
+  Persona,
+  ActivityType,
+  ActivityPriority,
+  ActivityLocation,
+  ContactPreference
+} from '../types';
 import { supabase } from '../lib/supabase';
 
 export type RequestStream = 
@@ -27,21 +36,24 @@ export type RequestStream =
   | 'emergency' 
   | 'complaint' 
   | 'unit_request' 
-  | 'recurring_task'
-  | 'general_inquiry'
-  | 'emergency_repair'
-  | 'private_lot_repair'
+  | 'recurring_task' 
+  | 'general_inquiry' 
+  | 'emergency_repair' 
+  | 'private_lot_repair' 
   | 'common_area_repair';
 
 export type CaseStatus = 
   | 'new' 
+  | 'acknowledged'
+  | 'in_progress'
+  | 'waiting'
   | 'in_voting'
   | 'approved' 
   | 'rejected' 
-  | 'closed'
-  | 'pending_triage'
-  | 'approved_direct_dispatch'
-  | 'approved_pending_vote'
+  | 'closed' 
+  | 'pending_triage' 
+  | 'approved_direct_dispatch' 
+  | 'approved_pending_vote' 
   | 'resolved';
 
 export type RequestComment = {
@@ -84,15 +96,21 @@ export type AuditEvent = {
 
 export type ResidentRequest = {
   id: string;
+  referenceId?: string; // Standard #SL-10452 reference
   schemeId: string;
+  buildingName?: string;
   unit: string;
   title: string;
   description: string;
-  requestType: RequestStream;
+  requestType: RequestStream | ActivityType | string;
   stream?: RequestStream;
-  priority: 'Low' | 'Medium' | 'High' | 'Emergency';
+  priority: 'Low' | 'Medium' | 'High' | 'Emergency' | 'Normal' | 'Urgent';
+  location?: string;
+  contactPreference?: ContactPreference;
+  strataManagerEmail?: string;
   dueDate?: string;
   attachmentUrl?: string;
+  attachmentUrls?: string[];
   status: CaseStatus;
   createdAt: string;
   requestorName: string;
@@ -410,16 +428,87 @@ const INITIAL_MEMBERS: Member[] = [
 ];
 
 const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
+  // Story 1 Worked Example: Sarah - Unit 12, Cavalier Apartments
+  {
+    id: 'REQ-SL-10452',
+    referenceId: '#SL-10452',
+    schemeId: 'SP103',
+    buildingName: 'Cavalier Apartments',
+    unit: 'Unit 12',
+    title: 'Front security gate not closing',
+    description: 'Sarah notices that the front security gate is no longer closing properly. She previously contacted the strata manager by email without a clear update. Safety hazard for common driveway.',
+    requestType: 'Common Property Repair',
+    stream: 'common_area_repair',
+    priority: 'High',
+    location: 'Front entrance',
+    contactPreference: 'Email',
+    strataManagerEmail: 'emma.wilson@agency.com',
+    attachmentUrl: 'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800&auto=format&fit=crop',
+    attachmentUrls: [
+      'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1584463623578-3019808d4b38?w=800&auto=format&fit=crop'
+    ],
+    status: 'acknowledged',
+    createdAt: '1 hour ago',
+    requestorName: 'Sarah Jones',
+    reportedBy: 'Sarah Jones (Resident)',
+    requestorEmail: 'sarah.jones@duplex.com',
+    requestorPhone: '0400 111 222',
+    requestorRole: 'Resident',
+    comments: [
+      {
+        id: 'C-SL-10452-1',
+        authorName: 'Emma Wilson',
+        authorRole: 'Strata Manager (via Email)',
+        text: "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.",
+        createdAt: '45 mins ago',
+      }
+    ],
+    auditLog: [
+      {
+        id: 'AUD-SL-10452-1',
+        type: 'created',
+        actor: 'Sarah Jones',
+        actorRole: 'Resident',
+        timestamp: '1 hour ago',
+        note: 'Activity #SL-10452 created for Cavalier Apartments Unit 12.',
+      },
+      {
+        id: 'AUD-SL-10452-2',
+        type: 'email_sent',
+        actor: 'SmartLot Conduit',
+        actorRole: 'System',
+        timestamp: '1 hour ago',
+        note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10452@smartlot.com',
+      },
+      {
+        id: 'AUD-SL-10452-3',
+        type: 'email_received',
+        actor: 'Emma Wilson',
+        actorRole: 'Strata Manager',
+        timestamp: '45 mins ago',
+        fromStatus: 'new',
+        toStatus: 'acknowledged',
+        note: 'Strata manager replied via email: "Thanks Sarah. I\'ve contacted the security gate contractor. They will attend tomorrow."',
+      }
+    ],
+  },
+
   // Duplex (SP101) Requests
   {
     id: 'REQ-DUP-101',
+    referenceId: '#SL-10451',
     schemeId: 'SP101',
+    buildingName: 'Sunset Duplex',
     unit: 'Unit 1',
     title: 'Shared Driveway Motorized Gate Sensor Glitch',
     description: 'Vehicle entrance swing gate safety beam is tripping intermittently during sunset, causing gate to stall halfway.',
-    requestType: 'maintenance_upgrade',
+    requestType: 'Common Property Repair',
     stream: 'common_area_repair',
     priority: 'High',
+    location: 'Front entrance',
+    contactPreference: 'Email',
+    strataManagerEmail: 'romanjoe@gmail.com',
     dueDate: '2026-09-05',
     status: 'pending_triage',
     createdAt: '3 hours ago',
@@ -1743,31 +1832,49 @@ export function useSmartLotStore() {
   };
 
   const submitResidentRequest = (newReq: {
-    requestType: RequestStream;
+    requestType: RequestStream | ActivityType | string;
     title: string;
     description: string;
     attachmentUrl?: string;
-    priority: 'Low' | 'Medium' | 'High' | 'Emergency';
+    attachmentUrls?: string[];
+    priority: 'Low' | 'Medium' | 'High' | 'Emergency' | 'Normal' | 'Urgent';
     dueDate?: string;
+    buildingName?: string;
+    unit?: string;
+    location?: string;
+    contactPreference?: ContactPreference;
+    strataManagerEmail?: string;
   }) => {
-    const id = `REQ-${Date.now()}`;
-    const unit = activePersona.context || 'Unit 1';
+    // Generate standard #SL-10452 format reference
+    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
+    const slRef = `SL-${randomSuffix}`;
+    const id = `REQ-${slRef}`;
+    
+    const unit = newReq.unit || activePersona.context || 'Unit 1';
+    const buildingName = newReq.buildingName || activeScheme.name || 'Cavalier Apartments';
     const requestorEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit.com`;
     const requestorRole = activePersona.role.includes('Owner') ? 'Lot Owner' : (activePersona.role.includes('Tenant') ? 'Tenant' : (activePersona.role.includes('Committee') ? 'Committee Member' : 'Resident'));
+    const managerEmail = newReq.strataManagerEmail || (activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com');
 
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     const req: ResidentRequest = {
       id,
+      referenceId: `#${slRef}`,
       schemeId: activeScheme.id,
+      buildingName,
       unit,
       title: newReq.title,
       description: newReq.description,
       requestType: newReq.requestType,
-      stream: newReq.requestType === 'emergency' ? 'emergency_repair' : newReq.requestType === 'unit_request' ? 'private_lot_repair' : 'common_area_repair',
+      stream: (newReq.requestType === 'emergency' || newReq.priority === 'Emergency' || newReq.priority === 'Urgent') ? 'emergency_repair' : 'common_area_repair',
       priority: newReq.priority,
+      location: newReq.location || 'Common area',
+      contactPreference: newReq.contactPreference || 'Email',
+      strataManagerEmail: managerEmail,
       dueDate: newReq.dueDate,
       attachmentUrl: newReq.attachmentUrl,
-      status: 'pending_triage',
+      attachmentUrls: newReq.attachmentUrls || (newReq.attachmentUrl ? [newReq.attachmentUrl] : []),
+      status: 'new',
       createdAt: 'Just now',
       requestorName: activePersona.name,
       reportedBy: `${activePersona.name} (${activePersona.role})`,
@@ -1782,15 +1889,15 @@ export function useSmartLotStore() {
           actor: activePersona.name,
           actorRole: activePersona.role,
           timestamp: `Today at ${nowStr}`,
-          note: 'Activity submitted by resident.',
+          note: `Activity #${slRef} created by resident.`,
         },
         {
           id: `AUD-${id}-2`,
           type: 'email_sent',
-          actor: 'SmartLot',
+          actor: 'SmartLot Conduit',
           actorRole: 'System',
           timestamp: `Today at ${nowStr}`,
-          note: 'Notification email dispatched to strata manager with resident CC.',
+          note: `Conduit email sent to Strata Manager (${managerEmail}) with CC to ${activePersona.name} (${requestorEmail}). Reply-To: requests+${slRef}@smartlot.com`,
         },
       ],
     };
@@ -1799,13 +1906,13 @@ export function useSmartLotStore() {
 
     // Persist to Supabase asynchronously
     supabase.from('resident_requests').insert({
-      scheme_id: activeScheme.id,
+      scheme_id: activeScheme.id !== 'NO_SCHEME' ? activeScheme.id : 'SP101',
       unit_id: unit,
       title: newReq.title,
       description: newReq.description,
       request_type: req.stream,
       priority: newReq.priority,
-      status: 'pending_triage',
+      status: 'new',
       requestor_name: activePersona.name,
       requestor_email: requestorEmail,
       requestor_role: requestorRole
@@ -1816,6 +1923,45 @@ export function useSmartLotStore() {
     });
 
     return id;
+  };
+
+  const simulateManagerEmailReply = (
+    requestId: string,
+    replyText: string = "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.",
+    managerName: string = "Emma Wilson (Strata Manager)"
+  ) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const commentId = `C-EMAIL-${Date.now()}`;
+
+    setResidentRequests(prev => prev.map(req => {
+      if (req.id !== requestId && req.referenceId !== requestId) return req;
+
+      const newComment: RequestComment = {
+        id: commentId,
+        authorName: managerName,
+        authorRole: 'Strata Manager (via Email)',
+        text: replyText,
+        createdAt: 'Just now (via Email)',
+      };
+
+      const newAuditEvent: AuditEvent = {
+        id: `AUD-${req.id}-${Date.now()}`,
+        type: 'email_received',
+        actor: managerName,
+        actorRole: 'Strata Manager',
+        timestamp: `Today at ${nowStr}`,
+        fromStatus: req.status,
+        toStatus: 'acknowledged',
+        note: `Inbound email reply captured via Reply-To conduit: "${replyText.slice(0, 70)}..."`,
+      };
+
+      return {
+        ...req,
+        status: 'acknowledged',
+        comments: [...req.comments, newComment],
+        auditLog: [...(req.auditLog || []), newAuditEvent],
+      };
+    }));
   };
 
   const triageRequest = (requestId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
@@ -2036,6 +2182,7 @@ export function useSmartLotStore() {
     updateMemberStatus,
     deleteMember,
     submitResidentRequest,
+    simulateManagerEmailReply,
     createMasterRequest,
     triageRequest,
     closeResidentRequest,

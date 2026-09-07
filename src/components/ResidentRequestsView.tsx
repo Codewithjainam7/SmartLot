@@ -30,7 +30,11 @@ import {
   Check,
   ChevronDown,
   X,
-  Send
+  Send,
+  Mail,
+  MapPin,
+  Sparkles,
+  Building
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -39,6 +43,7 @@ interface ResidentRequestsViewProps {
   onSubmitRequest: (data: any) => void;
   onCloseRequest: (requestId: string, reason: string) => void;
   onAddComment: (requestId: string, text: string, replyTo?: { authorName: string; text: string }) => void;
+  onSimulateManagerReply?: (requestId: string, replyText: string, managerName?: string) => void;
   activePersonaName: string;
   activePersonaRole: string;
 }
@@ -48,6 +53,7 @@ export function ResidentRequestsView({
   onSubmitRequest,
   onCloseRequest,
   onAddComment,
+  onSimulateManagerReply,
   activePersonaName,
 }: ResidentRequestsViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -61,6 +67,9 @@ export function ResidentRequestsView({
   const [commentLikes, setCommentLikes] = useState<Record<string, number>>({ 'C-1': 2, 'C-2': 1 });
   const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
   const [helpfulComments, setHelpfulComments] = useState<Record<string, boolean>>({ 'C-1': true });
+  const [simulatedReplyText, setSimulatedReplyText] = useState(
+    "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow."
+  );
 
   const toggleLikeComment = (commentId: string) => {
     const isLiked = likedByUser[commentId];
@@ -172,9 +181,11 @@ export function ResidentRequestsView({
         <div className="flex flex-wrap items-center gap-2">
           <StatusPill label="All" active={filterStatus === 'all'} onClick={() => setFilterStatus('all')} count={requests.length} />
           <StatusPill label="New" active={filterStatus === 'new'} onClick={() => setFilterStatus('new')} />
+          <StatusPill label="Acknowledged" active={filterStatus === 'acknowledged'} onClick={() => setFilterStatus('acknowledged')} />
+          <StatusPill label="In Progress" active={filterStatus === 'in_progress'} onClick={() => setFilterStatus('in_progress')} />
+          <StatusPill label="Waiting" active={filterStatus === 'waiting'} onClick={() => setFilterStatus('waiting')} />
+          <StatusPill label="Resolved" active={filterStatus === 'resolved'} onClick={() => setFilterStatus('resolved')} />
           <StatusPill label="Pending Triage" active={filterStatus === 'pending_triage'} onClick={() => setFilterStatus('pending_triage')} />
-          <StatusPill label="Approved" active={filterStatus === 'approved'} onClick={() => setFilterStatus('approved')} />
-          <StatusPill label="Rejected" active={filterStatus === 'rejected'} onClick={() => setFilterStatus('rejected')} />
           <StatusPill label="Closed" active={filterStatus === 'closed'} onClick={() => setFilterStatus('closed')} />
         </div>
 
@@ -219,17 +230,44 @@ export function ResidentRequestsView({
               className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
             >
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{req.unit}</span>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wider">
+                      {req.referenceId || req.id}
+                    </span>
+                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {req.buildingName ? `${req.buildingName} • ${req.unit}` : req.unit}
+                    </span>
+                  </div>
                   <StatusBadge status={req.status} />
                 </div>
 
-                <div className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider mb-1 capitalize">
-                  {req.requestType.replace(/_/g, ' ')}
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="text-xs font-extrabold text-[#0055FF] dark:text-[#66A3FF] uppercase tracking-wider capitalize">
+                    {req.requestType.replace(/_/g, ' ')}
+                  </div>
+                  {req.priority && (
+                    <span className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
+                      req.priority === 'Urgent' || req.priority === 'Emergency'
+                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                        : req.priority === 'High'
+                        ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
+                        : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                    }`}>
+                      {req.priority}
+                    </span>
+                  )}
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white dark:text-white mb-2 leading-snug">{req.title}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
+                {req.location && (
+                  <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mb-2 font-medium">
+                    <MapPin size={11} className="text-[#00D4B2] shrink-0" />
+                    <span>{req.location}</span>
+                  </div>
+                )}
+
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{req.title}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
               </div>
 
               <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
@@ -285,9 +323,14 @@ export function ResidentRequestsView({
               <div className="space-y-3 pb-2 border-b border-white/5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <span className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider block mb-1">
-                      {activeDetail.unit || 'LOT REQUEST'}
-                    </span>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-xs font-black text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full tracking-wider">
+                        {activeDetail.referenceId || activeDetail.id}
+                      </span>
+                      <span className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">
+                        {activeDetail.buildingName ? `${activeDetail.buildingName} • ${activeDetail.unit}` : activeDetail.unit || 'LOT REQUEST'}
+                      </span>
+                    </div>
                     <h2 className="text-xl font-black text-white leading-tight">{activeDetail.title}</h2>
                   </div>
                   <button 
@@ -298,17 +341,69 @@ export function ResidentRequestsView({
                   </button>
                 </div>
 
-                {/* Status & Stream Badges */}
+                {/* Status, Priority & Location Badges */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/30 text-[11px] font-bold">
-                    <Clock size={12} className="text-[#FFB020]" />
-                    <span className="capitalize">{activeDetail.status.replace(/_/g, ' ')}</span>
-                  </div>
+                  <StatusBadge status={activeDetail.status} />
 
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px] font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                     <span className="capitalize">{activeDetail.requestType.replace(/_/g, ' ')}</span>
                   </div>
+
+                  {activeDetail.priority && (
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+                      activeDetail.priority === 'Urgent' || activeDetail.priority === 'Emergency'
+                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                        : activeDetail.priority === 'High'
+                        ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
+                        : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                    }`}>
+                      Priority: {activeDetail.priority}
+                    </span>
+                  )}
+
+                  {activeDetail.location && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px]">
+                      <MapPin size={11} className="text-[#00D4B2]" />
+                      <span>{activeDetail.location}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Conduit Outbound Email Card */}
+              <div className="bg-[#101726]/90 rounded-2xl p-4 border border-[#00D4B2]/20 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-black text-[#00D4B2] uppercase tracking-wider">
+                    <Mail size={15} />
+                    <span>Conduit Email Dispatch Record</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 flex items-center gap-1">
+                    <Check size={11} className="stroke-[3]" />
+                    <span>Dispatched via SmartLot Conduit</span>
+                  </span>
+                </div>
+                <div className="text-[11px] font-mono text-gray-300 space-y-1.5 bg-black/40 rounded-xl p-3 border border-white/5">
+                  <div className="flex items-start gap-1">
+                    <span className="text-gray-400 font-bold min-w-[70px]">Subject:</span> 
+                    <span className="text-white font-semibold">[SmartLot {activeDetail.referenceId || activeDetail.id}] {activeDetail.title}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-400 font-bold min-w-[70px]">To:</span> 
+                    <span className="text-gray-200">{activeDetail.strataManagerEmail || 'emma.wilson@agency.com'} <span className="text-gray-500">(Strata Manager)</span></span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-400 font-bold min-w-[70px]">CC:</span> 
+                    <span className="text-gray-200">{activeDetail.requestorEmail} <span className="text-gray-500">({activeDetail.requestorName})</span></span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-400 font-bold min-w-[70px]">Reply-To:</span> 
+                    <span className="text-[#00D4B2] font-bold">requests+{(activeDetail.referenceId ? activeDetail.referenceId.replace('#', '') : activeDetail.id).toLowerCase()}@smartlot.com</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-gray-400 pt-0.5">
+                  <span>Manager responds by clicking <strong>Reply All</strong> — no account required.</span>
+                  <span className="text-gray-500">Preference: {activeDetail.contactPreference || 'Email'}</span>
                 </div>
               </div>
 
@@ -323,12 +418,22 @@ export function ResidentRequestsView({
                 </p>
               </div>
 
-              {activeDetail.attachmentUrl && (
+              {/* Multi-Photo Attachments */}
+              {(activeDetail.attachmentUrls && activeDetail.attachmentUrls.length > 0) ? (
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached Image</span>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached Photos ({activeDetail.attachmentUrls.length})</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {activeDetail.attachmentUrls.map((img, i) => (
+                      <img key={i} src={img} alt={`Attachment ${i+1}`} className="w-full h-36 object-cover rounded-2xl border border-white/10 shadow-sm" />
+                    ))}
+                  </div>
+                </div>
+              ) : activeDetail.attachmentUrl ? (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached Photo</span>
                   <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-44 object-cover rounded-2xl border border-white/10" />
                 </div>
-              )}
+              ) : null}
 
               {activeDetail.status === 'closed' && activeDetail.closeReason && (
                 <div className="bg-[#FF4757]/10 border border-[#FF4757]/30 p-4 rounded-2xl text-xs space-y-1">
@@ -554,6 +659,76 @@ export function ResidentRequestsView({
                   </div>
                 )}
 
+                {/* Strata Manager Email Conduit Reply Simulator Card */}
+                {activeDetail.status !== 'closed' && (
+                  <div className="rounded-3xl border border-[#0055FF]/30 bg-gradient-to-br from-[#0055FF]/10 via-[#0d1527] to-[#0a0f1d] p-4.5 space-y-3 shadow-lg relative overflow-hidden">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#0055FF]/20 border border-[#0055FF]/40 flex items-center justify-center text-[#60A5FA] shrink-0">
+                          <Mail size={15} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-black text-white">External Strata Manager Email Reply</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0055FF]/20 text-[#60A5FA] border border-[#0055FF]/30">
+                              Conduit Simulation
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-400 mt-0.5">
+                            Simulate strata manager replying by standard email without logging in. Captures via <code className="text-[#00D4B2] font-mono font-bold">requests+{activeDetail.referenceId ? activeDetail.referenceId.replace('#', '') : activeDetail.id}@smartlot.com</code>.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between text-[11px] text-gray-400">
+                        <span>From: <strong className="text-gray-200">{activeDetail.strataManagerEmail || 'emma.wilson@agency.com'}</strong></span>
+                        <span className="text-[10px] text-[#00D4B2] font-semibold flex items-center gap-1">
+                          <Check size={11} className="stroke-[3]" /> Auto-acknowledges activity
+                        </span>
+                      </div>
+
+                      <textarea
+                        rows={2}
+                        value={simulatedReplyText}
+                        onChange={(e) => setSimulatedReplyText(e.target.value)}
+                        placeholder="Type email reply from strata manager..."
+                        className="w-full bg-[#070B14] border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-gray-500 outline-none focus:border-[#0055FF]/60 resize-none font-medium leading-relaxed"
+                      />
+
+                      <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSimulatedReplyText("Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.")}
+                          className="text-[11px] text-[#60A5FA] hover:text-[#93C5FD] underline underline-offset-2 transition-colors cursor-pointer"
+                        >
+                          Load Sarah's Worked Example Reply
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!simulatedReplyText.trim()) return;
+                            if (onSimulateManagerReply) {
+                              onSimulateManagerReply(
+                                activeDetail.id,
+                                simulatedReplyText.trim(),
+                                activeDetail.strataManagerEmail ? 'Emma Wilson (Strata Manager)' : 'Strata Manager'
+                              );
+                            }
+                          }}
+                          disabled={!simulatedReplyText.trim()}
+                          className="bg-gradient-to-r from-[#0055FF] to-[#00D4B2] hover:brightness-110 text-white px-4.5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <Mail size={13} />
+                          <span>Simulate Manager Email Reply</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Bottom Input Area matching reference screenshot */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3">
@@ -718,17 +893,27 @@ function StatusPill({ label, active, onClick, count }: any) {
 function StatusBadge({ status }: { status: CaseStatus }) {
   switch (status) {
     case 'new':
-      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">NEW</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/25 text-[10px] font-black uppercase tracking-wider">NEW</span>;
+    case 'acknowledged':
+      return <span className="px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 text-[10px] font-black uppercase tracking-wider">ACKNOWLEDGED</span>;
+    case 'in_progress':
+      return <span className="px-3 py-1 rounded-full bg-[#0055FF]/15 text-[#66A3FF] border border-[#0055FF]/30 text-[10px] font-black uppercase tracking-wider">IN PROGRESS</span>;
+    case 'waiting':
+      return <span className="px-3 py-1 rounded-full bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/25 text-[10px] font-black uppercase tracking-wider">WAITING</span>;
+    case 'resolved':
+      return <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-[#10B981] border border-emerald-500/25 text-[10px] font-black uppercase tracking-wider">RESOLVED</span>;
     case 'pending_triage':
-      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/20 text-[10px] font-bold uppercase">PENDING TRIAGE</span>;
+      return <span className="px-3 py-1 rounded-full bg-[#FFB020]/10 text-[#FFB020] border border-[#FFB020]/25 text-[10px] font-black uppercase tracking-wider">PENDING TRIAGE</span>;
     case 'in_voting':
-      return <span className="px-3 py-1 rounded-full bg-purple-100 text-[#0055FF] text-[10px] font-bold uppercase">IN VOTING</span>;
+      return <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/25 text-[10px] font-black uppercase tracking-wider">IN VOTING</span>;
     case 'approved':
-      return <span className="px-3 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase">APPROVED</span>;
+      return <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-[#10B981] border border-emerald-500/25 text-[10px] font-black uppercase tracking-wider">APPROVED</span>;
     case 'rejected':
-      return <span className="px-3 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase">REJECTED</span>;
+      return <span className="px-3 py-1 rounded-full bg-red-500/10 text-[#FF6B6B] border border-red-500/25 text-[10px] font-black uppercase tracking-wider">REJECTED</span>;
     case 'closed':
-      return <span className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] font-bold uppercase">CLOSED</span>;
+      return <span className="px-3 py-1 rounded-full bg-gray-500/10 text-gray-400 border border-gray-500/20 text-[10px] font-black uppercase tracking-wider">CLOSED</span>;
+    default:
+      return <span className="px-3 py-1 rounded-full bg-gray-500/10 text-gray-400 border border-gray-500/20 text-[10px] font-black uppercase tracking-wider">{(status as string).toUpperCase()}</span>;
   }
 }
 

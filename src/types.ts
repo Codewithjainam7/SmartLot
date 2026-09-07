@@ -185,3 +185,29 @@ export interface SchemeFeatureToggles { enableVoting: boolean; enableAmenities: 
 export interface AppToastNotification { id: string; title: string; message: string; type: "success" | "error" | "info"; }
 
 export interface SearchFilterCriteria { query: string; role?: string; schemeId?: string; status?: string; }
+
+// Module 1 — Activity Management (Story 1: Resident Initiates an Activity)
+export type ActivityType =
+  | 'Common Property Repair'
+  | 'Maintenance / Vendor'
+  | 'General Request'
+  | 'Complaint'
+  | 'Administrative Request'
+  | 'Urgent Issue';
+
+export type ActivityPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
+
+export type ActivityLocation =
+  | 'Front entrance'
+  | 'Lift'
+  | 'Lobby'
+  | 'Car park'
+  | 'Common area'
+  | 'Garden'
+  | 'Bin room'
+  | 'Roof'
+  | 'Pool'
+  | 'Other'
+  | 'Not applicable';
+
+export type ContactPreference = 'Email' | 'SmartLot notifications';

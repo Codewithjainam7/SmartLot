@@ -310,7 +310,10 @@ export default function App() {
 
   // Handle active scheme switcher filters dynamically
   const filteredRequests = store.residentRequests.filter(r => {
-    return r.schemeId === store.activeScheme.id;
+    // An author always sees activities they submitted even across un-onboarded schemes or scheme toggles
+    const isAuthor = r.requestorName === store.activePersona.name || 
+      (store.activePersona.email && r.requestorEmail === store.activePersona.email);
+    return isAuthor || r.schemeId === store.activeScheme.id;
   });
 
   return (
@@ -393,6 +396,7 @@ export default function App() {
               onSubmitRequest={store.submitResidentRequest}
               onCloseRequest={store.closeResidentRequest}
               onAddComment={store.addCommentToRequest}
+              onSimulateManagerReply={store.simulateManagerEmailReply}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
             />
