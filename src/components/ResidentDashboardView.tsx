@@ -231,25 +231,31 @@ export function ResidentDashboardView({
         <h3 className="text-base font-bold text-gray-900 dark:text-white">Recent Service Requests</h3>
 
         <div className="space-y-3">
-          {requests.slice(0, 3).map(req => (
-            <div key={req.id} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1a1d27]/50 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="font-bold text-[#0055FF] dark:text-[#00D4B2]">{req.referenceId || req.id}</span>
-                  <span className="text-gray-400 dark:text-gray-500">• {req.buildingName ? `${req.buildingName} ${req.unit}` : req.unit}</span>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">{req.status}</span>
-                </div>
-                <h4 className="font-bold text-sm text-gray-900 dark:text-white mt-0.5">{req.title}</h4>
-              </div>
-
-              <button
-                onClick={onNavigateToRequests}
-                className="text-xs font-bold text-[#0055FF] hover:text-[#0033CC] cursor-pointer"
-              >
-                View Details
-              </button>
+          {requests.length === 0 ? (
+            <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-white/10 text-xs text-gray-500 dark:text-gray-400">
+              No recent activities logged yet. Click &quot;Log New Activity&quot; above to initiate a request.
             </div>
-          ))}
+          ) : (
+            requests.slice(0, 3).map(req => (
+              <div key={req.id} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-[#1a1d27]/50 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-bold text-[#0055FF] dark:text-[#00D4B2]">{req.referenceId || req.id}</span>
+                    <span className="text-gray-400 dark:text-gray-500">• {req.buildingName ? `${req.buildingName} ${req.unit}` : req.unit}</span>
+                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">{req.status}</span>
+                  </div>
+                  <h4 className="font-bold text-sm text-gray-900 dark:text-white mt-0.5">{req.title}</h4>
+                </div>
+
+                <button
+                  onClick={onNavigateToRequests}
+                  className="text-xs font-bold text-[#0055FF] hover:text-[#0033CC] cursor-pointer"
+                >
+                  View Details
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
