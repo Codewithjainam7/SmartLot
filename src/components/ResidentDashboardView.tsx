@@ -25,7 +25,7 @@ interface ResidentDashboardViewProps {
   requests: ResidentRequest[];
   onNavigateToRequests: () => void;
   onOpenCreateRequest?: () => void;
-  onSubmitRequest: (data: any) => void;
+  onSubmitRequest: (data: any) => any;
   activePersonaName: string;
   activePersonaRole: string;
   activePersonaMemberships?: any[];
