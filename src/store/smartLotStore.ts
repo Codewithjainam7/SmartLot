@@ -79,7 +79,8 @@ export type AuditEventType =
   | 'triage_approved'
   | 'triage_rejected'
   | 'email_sent'
-  | 'email_received';
+  | 'email_received'
+  | 'internal_note_added';
 
 export type AuditEvent = {
   id: string;
@@ -92,6 +93,14 @@ export type AuditEvent = {
   toStatus?: string;
   fromPriority?: string;
   toPriority?: string;
+};
+
+export type InternalNote = {
+  id: string;
+  authorName: string;
+  authorRole: string;
+  text: string;
+  createdAt: string;
 };
 
 export type ResidentRequest = {
@@ -121,6 +130,7 @@ export type ResidentRequest = {
   rejectionReason?: string;
   closeReason?: string;
   comments: RequestComment[];
+  internalNotes?: InternalNote[];
   auditLog: AuditEvent[];
   linkedMotionId?: string;
 };
@@ -1845,18 +1855,38 @@ export function useSmartLotStore() {
     contactPreference?: ContactPreference;
     strataManagerEmail?: string;
   }) => {
-    // Generate standard #SL-10452 format reference
+    // ── 1. Derive stable values ──────────────────────────────────────────────
     const randomSuffix = Math.floor(10000 + Math.random() * 90000);
     const slRef = `SL-${randomSuffix}`;
     const id = `REQ-${slRef}`;
-    
-    const unit = newReq.unit || activePersona.context || 'Unit 1';
-    const buildingName = newReq.buildingName || (activeScheme.name !== 'No Registered Schemes' ? activeScheme.name : 'My Building');
-    const requestorEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
-    const requestorRole = activePersona.role.includes('Owner') ? 'Lot Owner' : (activePersona.role.includes('Tenant') ? 'Tenant' : (activePersona.role.includes('Committee') ? 'Committee Member' : 'Resident'));
-    const managerEmail = newReq.strataManagerEmail || (activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com');
 
+    const unit = (newReq.unit || activePersona.context || 'Unit 1').trim();
+    const buildingName = (
+      newReq.buildingName ||
+      (activeScheme.name !== 'No Registered Schemes' ? activeScheme.name : 'My Building')
+    ).trim();
+    const requestorEmail = (
+      activePersona.email ||
+      `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`
+    ).toLowerCase();
+    const requestorRole: ResidentRequest['requestorRole'] = activePersona.role.includes('Owner')
+      ? 'Lot Owner'
+      : activePersona.role.includes('Tenant')
+      ? 'Tenant'
+      : activePersona.role.includes('Committee')
+      ? 'Committee Member'
+      : 'Resident';
+    // Prefer explicitly provided manager email, then fall back to scheme default
+    const managerEmail = (
+      newReq.strataManagerEmail ||
+      (activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com')
+    ).trim();
+    const location = newReq.location || 'Common area';
+    const contactPreference: ContactPreference = newReq.contactPreference || 'Email';
+    const attachmentUrls = newReq.attachmentUrls || (newReq.attachmentUrl ? [newReq.attachmentUrl] : []);
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+
+    // ── 2. Optimistic local state update ─────────────────────────────────────
     const req: ResidentRequest = {
       id,
       referenceId: `#${slRef}`,
@@ -1866,21 +1896,26 @@ export function useSmartLotStore() {
       title: newReq.title,
       description: newReq.description,
       requestType: newReq.requestType,
-      stream: (newReq.requestType === 'emergency' || newReq.priority === 'Emergency' || newReq.priority === 'Urgent') ? 'emergency_repair' : 'common_area_repair',
+      stream:
+        newReq.requestType === 'emergency' ||
+        newReq.priority === 'Emergency' ||
+        newReq.priority === 'Urgent'
+          ? 'emergency_repair'
+          : 'common_area_repair',
       priority: newReq.priority,
-      location: newReq.location || 'Common area',
-      contactPreference: newReq.contactPreference || 'Email',
+      location,
+      contactPreference,
       strataManagerEmail: managerEmail,
       dueDate: newReq.dueDate,
-      attachmentUrl: newReq.attachmentUrl,
-      attachmentUrls: newReq.attachmentUrls || (newReq.attachmentUrl ? [newReq.attachmentUrl] : []),
+      attachmentUrl: attachmentUrls[0],
+      attachmentUrls,
       status: 'new',
-      createdAt: 'Just now',
+      createdAt: new Date().toISOString(),
       requestorName: activePersona.name,
       reportedBy: `${activePersona.name} (${activePersona.role})`,
       requestorEmail,
-      requestorPhone: '0412 888 999',
-      requestorRole: requestorRole as any,
+      requestorPhone: activePersona.context?.includes('0') ? activePersona.context : '0412 888 999',
+      requestorRole,
       comments: [],
       auditLog: [
         {
@@ -1889,7 +1924,7 @@ export function useSmartLotStore() {
           actor: activePersona.name,
           actorRole: activePersona.role,
           timestamp: `Today at ${nowStr}`,
-          note: `Activity #${slRef} created by resident.`,
+          note: `Activity #${slRef} initiated by ${requestorRole}.`,
         },
         {
           id: `AUD-${id}-2`,
@@ -1897,30 +1932,80 @@ export function useSmartLotStore() {
           actor: 'SmartLot Conduit',
           actorRole: 'System',
           timestamp: `Today at ${nowStr}`,
-          note: `Conduit email sent to Strata Manager (${managerEmail}) with CC to ${activePersona.name} (${requestorEmail}). Reply-To: requests+${slRef}@smartlot.com`,
+          note: `Conduit email dispatched to ${managerEmail}. Resident CC'd at ${requestorEmail}. Reply-To: requests+${slRef}@mail.smartlot.app`,
         },
       ],
     };
 
     setResidentRequests(prev => [req, ...prev]);
 
-    // Persist to Supabase asynchronously
-    supabase.from('resident_requests').insert({
-      scheme_id: activeScheme.id !== 'NO_SCHEME' ? activeScheme.id : 'SP101',
-      unit_id: unit,
-      title: newReq.title,
-      description: newReq.description,
-      request_type: req.stream,
-      priority: newReq.priority,
-      status: 'new',
-      requestor_name: activePersona.name,
-      requestor_email: requestorEmail,
-      requestor_role: requestorRole
-    }).then(({ error }) => {
-      if (error) {
-        console.error("Error creating request in Supabase:", error);
-      }
-    });
+    // ── 3. Persist to Supabase (fire-and-forget, non-blocking) ────────────────
+    const schemeId = activeScheme.id !== 'NO_SCHEME' ? activeScheme.id : 'SP101';
+
+    supabase
+      .from('resident_requests')
+      .insert({
+        reference_id:          slRef,
+        scheme_id:             schemeId,
+        unit_id:               unit,
+        building_name:         buildingName,
+        title:                 newReq.title,
+        description:           newReq.description,
+        request_type:          newReq.requestType,
+        priority:              newReq.priority,
+        location,
+        contact_preference:    contactPreference,
+        strata_manager_email:  managerEmail,
+        status:                'new',
+        requestor_name:        activePersona.name,
+        requestor_email:       requestorEmail,
+        requestor_role:        requestorRole,
+        attachment_urls:       attachmentUrls.length > 0 ? attachmentUrls : null,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.error('[SmartLot] Failed to persist activity to Supabase:', error.message);
+        }
+      });
+
+    // ── 4. Dispatch conduit email via Edge Function (fire-and-forget) ─────────
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+    fetch(`${supabaseUrl}/functions/v1/send-activity-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${anonKey}`,
+        'apikey':        anonKey,
+      },
+      body: JSON.stringify({
+        referenceId:   slRef,
+        activityTitle: newReq.title,
+        activityType:  newReq.requestType,
+        priority:      newReq.priority,
+        location,
+        buildingName,
+        unit,
+        description:   newReq.description,
+        requestorName: activePersona.name,
+        requestorEmail,
+        managerEmail,
+        attachmentUrls,
+      }),
+    })
+      .then(async res => {
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          console.warn(`[SmartLot] Conduit email partially failed (HTTP ${res.status}):`, body);
+        } else {
+          console.log(`[SmartLot] ✅ Conduit email dispatched for #${slRef}`);
+        }
+      })
+      .catch(err => {
+        // Never block the user flow — email failure is non-fatal
+        console.warn('[SmartLot] Conduit email network error:', err?.message ?? err);
+      });
 
     return id;
   };
@@ -2059,6 +2144,52 @@ export function useSmartLotStore() {
     }));
   };
 
+  const addInternalNoteToRequest = (requestId: string, text: string) => {
+    if (!text.trim()) return;
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const noteId = `NOTE-${Date.now()}`;
+    const newNote: InternalNote = {
+      id: noteId,
+      authorName: activePersona.name,
+      authorRole: activePersona.role,
+      text: text.trim(),
+      createdAt: 'Just now',
+    };
+
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${r.id}-N${Date.now()}`,
+        type: 'internal_note_added',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        note: `Private internal manager note added.`,
+      };
+      return {
+        ...r,
+        internalNotes: [...(r.internalNotes || []), newNote],
+        auditLog: [...(r.auditLog || []), auditEntry],
+      };
+    }));
+
+    // Persist to Supabase activity_notes (non-blocking)
+    supabase
+      .from('activity_notes')
+      .insert({
+        request_id: requestId,
+        author_name: activePersona.name,
+        author_role: activePersona.role,
+        text: text.trim(),
+        is_internal: true,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn('[SmartLot] activity_notes sync note:', error.message);
+        }
+      });
+  };
+
   const updateUnitMetadata = async (schemeId: string, unitId: string, entitlement: string, status: 'Occupied' | 'Vacant') => {
     setUnits(prev => prev.map(u => {
       if (u.schemeId !== schemeId || u.unitId !== unitId) return u;
@@ -2187,6 +2318,7 @@ export function useSmartLotStore() {
     triageRequest,
     closeResidentRequest,
     addCommentToRequest,
+    addInternalNoteToRequest,
     addResidentToUnit,
     offboardActor,
     updateUnitMetadata,
