@@ -225,9 +225,10 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
                     <input 
                       type="email" 
+                      aria-label="Email Address"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="e.g. sm1@strata.com"
                       required
                     />
@@ -243,9 +244,10 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
                     <input 
                       type={showLoginPassword ? "text" : "password"} 
+                      aria-label="Password"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="••••••••"
                       required
                     />
