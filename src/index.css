@@ -220,3 +220,11 @@ input, textarea, select, button {
 .bg-\[\#0B1121\] *, .dark-scrollbar {
   scrollbar-color: rgba(0, 212, 178, 0.4) transparent;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
