@@ -46,6 +46,11 @@ interface ResidentRequestsViewProps {
   onSimulateManagerReply?: (requestId: string, replyText: string, managerName?: string) => void;
   activePersonaName: string;
   activePersonaRole: string;
+  activePersonaEmail?: string;
+  activePersonaPhone?: string;
+  activePersonaContext?: string;
+  activeSchemeName?: string;
+  activeManagerEmail?: string;
 }
 
 export function ResidentRequestsView({
@@ -55,6 +60,12 @@ export function ResidentRequestsView({
   onAddComment,
   onSimulateManagerReply,
   activePersonaName,
+  activePersonaRole,
+  activePersonaEmail,
+  activePersonaPhone,
+  activePersonaContext,
+  activeSchemeName,
+  activeManagerEmail,
 }: ResidentRequestsViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [viewScope, setViewScope] = useState<'my' | 'all'>('all');
@@ -68,7 +79,7 @@ export function ResidentRequestsView({
   const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
   const [helpfulComments, setHelpfulComments] = useState<Record<string, boolean>>({ 'C-1': true });
   const [simulatedReplyText, setSimulatedReplyText] = useState(
-    "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow."
+    "Thank you for reporting this issue. I have contacted our service contractor to attend and inspect the site."
   );
 
   const toggleLikeComment = (commentId: string) => {
@@ -95,10 +106,7 @@ export function ResidentRequestsView({
   const possibleTagTargets = Array.from(new Set([
     ...(activeDetail ? activeDetail.comments.map(c => c.authorName) : []),
     activeDetail?.requestorName || '',
-    'Roman Joe',
-    'Sarah Jones',
-    'Michael Chen',
-    'Emma Wilson'
+    activeDetail?.strataManagerEmail ? 'Strata Manager' : '',
   ].filter(name => name && name !== activePersonaName)));
 
   const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,6 +176,11 @@ export function ResidentRequestsView({
               <CreateRequestFormContent 
                 onSubmit={onSubmitRequest}
                 requestorName={activePersonaName}
+                requestorEmail={activePersonaEmail}
+                requestorPhone={activePersonaPhone}
+                defaultBuildingName={activeSchemeName}
+                defaultUnit={activePersonaContext}
+                defaultManagerEmail={activeManagerEmail}
               />
             </MorphingPopoverContent>
           </MorphingPopover>
@@ -700,10 +713,10 @@ export function ResidentRequestsView({
                       <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => setSimulatedReplyText("Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.")}
+                          onClick={() => setSimulatedReplyText("Thank you for raising this activity. I have notified our maintenance contractors to inspect and resolve this.")}
                           className="text-[11px] text-[#60A5FA] hover:text-[#93C5FD] underline underline-offset-2 transition-colors cursor-pointer"
                         >
-                          Load Sarah's Worked Example Reply
+                          Insert standard contractor dispatch update
                         </button>
 
                         <button

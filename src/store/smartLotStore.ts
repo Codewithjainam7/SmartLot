@@ -428,7 +428,7 @@ const INITIAL_MEMBERS: Member[] = [
 ];
 
 const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
-  // Story 1 Worked Example: Sarah - Unit 12, Cavalier Apartments
+  // Cavalier Grand Residences (SP103) Initial Requests
   {
     id: 'REQ-SL-10452',
     referenceId: '#SL-10452',
@@ -436,7 +436,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     buildingName: 'Cavalier Apartments',
     unit: 'Unit 12',
     title: 'Front security gate not closing',
-    description: 'Sarah notices that the front security gate is no longer closing properly. She previously contacted the strata manager by email without a clear update. Safety hazard for common driveway.',
+    description: 'Front vehicle access security gate sensor is stalling halfway during closing cycle. Entry and safety hazard for common driveway.',
     requestType: 'Common Property Repair',
     stream: 'common_area_repair',
     priority: 'High',
@@ -450,17 +450,17 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     ],
     status: 'acknowledged',
     createdAt: '1 hour ago',
-    requestorName: 'Sarah Jones',
-    reportedBy: 'Sarah Jones (Resident)',
-    requestorEmail: 'sarah.jones@duplex.com',
-    requestorPhone: '0400 111 222',
+    requestorName: 'Arthur Pendelton',
+    reportedBy: 'Arthur Pendelton (Resident)',
+    requestorEmail: 'arthur.p@cavalier.com',
+    requestorPhone: '0433 111 222',
     requestorRole: 'Resident',
     comments: [
       {
         id: 'C-SL-10452-1',
         authorName: 'Emma Wilson',
         authorRole: 'Strata Manager (via Email)',
-        text: "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.",
+        text: "Thanks Arthur. I've contacted the security gate contractor. They will attend tomorrow.",
         createdAt: '45 mins ago',
       }
     ],
@@ -468,7 +468,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
       {
         id: 'AUD-SL-10452-1',
         type: 'created',
-        actor: 'Sarah Jones',
+        actor: 'Arthur Pendelton',
         actorRole: 'Resident',
         timestamp: '1 hour ago',
         note: 'Activity #SL-10452 created for Cavalier Apartments Unit 12.',
@@ -479,7 +479,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         actor: 'SmartLot Conduit',
         actorRole: 'System',
         timestamp: '1 hour ago',
-        note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10452@smartlot.com',
+        note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Arthur Pendelton. Reply-To: requests+SL-10452@smartlot.com',
       },
       {
         id: 'AUD-SL-10452-3',
@@ -489,7 +489,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         timestamp: '45 mins ago',
         fromStatus: 'new',
         toStatus: 'acknowledged',
-        note: 'Strata manager replied via email: "Thanks Sarah. I\'ve contacted the security gate contractor. They will attend tomorrow."',
+        note: 'Strata manager replied via email: "Thanks Arthur. I\'ve contacted the security gate contractor. They will attend tomorrow."',
       }
     ],
   },
@@ -1250,7 +1250,7 @@ export function useSmartLotStore() {
           const matchingMember = formattedMembers.find(m => m.schemeId === r.scheme_id && m.unitId === r.unit_id);
           const initialMatchingReq = INITIAL_RESIDENT_REQUESTS.find(ir => ir.title === r.title || ir.id === r.id);
           
-          const requestorName = r.requestor_name || initialMatchingReq?.requestorName || matchingMember?.name || (r.scheme_id === 'SP101' ? 'Sarah Jones' : r.scheme_id === 'SP102' ? 'Michael Chen' : 'Arthur Pendelton');
+          const requestorName = r.requestor_name || initialMatchingReq?.requestorName || matchingMember?.name || 'Resident';
           const requestorEmail = r.requestor_email || initialMatchingReq?.requestorEmail || matchingMember?.email || 'resident@smartlot.com.au';
           const requestorRole = (r.requestor_role || initialMatchingReq?.requestorRole || matchingMember?.role || 'Lot Owner') as any;
 
@@ -1851,8 +1851,8 @@ export function useSmartLotStore() {
     const id = `REQ-${slRef}`;
     
     const unit = newReq.unit || activePersona.context || 'Unit 1';
-    const buildingName = newReq.buildingName || activeScheme.name || 'Cavalier Apartments';
-    const requestorEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@unit.com`;
+    const buildingName = newReq.buildingName || (activeScheme.name !== 'No Registered Schemes' ? activeScheme.name : 'My Building');
+    const requestorEmail = activePersona.email || `${activePersona.name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
     const requestorRole = activePersona.role.includes('Owner') ? 'Lot Owner' : (activePersona.role.includes('Tenant') ? 'Tenant' : (activePersona.role.includes('Committee') ? 'Committee Member' : 'Resident'));
     const managerEmail = newReq.strataManagerEmail || (activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com');
 
@@ -1927,8 +1927,8 @@ export function useSmartLotStore() {
 
   const simulateManagerEmailReply = (
     requestId: string,
-    replyText: string = "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.",
-    managerName: string = "Emma Wilson (Strata Manager)"
+    replyText: string = "Thank you for the update. I have contacted our service contractor who will attend to inspect and resolve this.",
+    managerName: string = "Strata Manager"
   ) => {
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     const commentId = `C-EMAIL-${Date.now()}`;

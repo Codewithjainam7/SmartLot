@@ -399,6 +399,14 @@ export default function App() {
               onSimulateManagerReply={store.simulateManagerEmailReply}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
+              activePersonaEmail={store.activePersona.email}
+              activePersonaPhone="0400 000 000"
+              activePersonaContext={store.activePersona.context}
+              activeSchemeName={store.activeScheme.name !== 'No Registered Schemes' ? store.activeScheme.name : ''}
+              activeManagerEmail={
+                store.members.find(m => m.schemeId === store.activeScheme.id && (m.role.includes('Manager') || m.role.includes('Admin')) && m.email !== store.activePersona.email)?.email ||
+                (store.activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com')
+              }
             />
           )}
 

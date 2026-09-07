@@ -121,10 +121,11 @@ const PRIORITIES: { value: ActivityPriority; label: string; desc: string; color:
 export function CreateRequestFormContent({
   onSubmit,
   requestorName,
-  requestorEmail = "sarah.jones@duplex.com",
-  requestorPhone = "0400 111 222",
-  defaultBuildingName = "Cavalier Apartments",
-  defaultUnit = "Unit 12",
+  requestorEmail = "",
+  requestorPhone = "",
+  defaultBuildingName = "",
+  defaultUnit = "",
+  defaultManagerEmail = "",
   onClose,
 }: {
   onSubmit: (data: any) => void;
@@ -133,6 +134,7 @@ export function CreateRequestFormContent({
   requestorPhone?: string;
   defaultBuildingName?: string;
   defaultUnit?: string;
+  defaultManagerEmail?: string;
   onClose?: () => void;
 }) {
   const morphContext = useMorphingPopoverContext();
@@ -140,38 +142,15 @@ export function CreateRequestFormContent({
   // Form State
   const [buildingName, setBuildingName] = useState(defaultBuildingName);
   const [unit, setUnit] = useState(defaultUnit);
-  const [strataManagerEmail, setStrataManagerEmail] = useState('emma.wilson@agency.com');
+  const [strataManagerEmail, setStrataManagerEmail] = useState(defaultManagerEmail);
   const [activityType, setActivityType] = useState<ActivityType>('Common Property Repair');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<ActivityPriority>('High');
-  const [location, setLocation] = useState<ActivityLocation>('Front entrance');
+  const [priority, setPriority] = useState<ActivityPriority>('Normal');
+  const [location, setLocation] = useState<ActivityLocation>('Common area');
   const [contactPreference, setContactPreference] = useState<ContactPreference>('Email');
-  const [photos, setPhotos] = useState<string[]>([
-    'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800&auto=format&fit=crop'
-  ]);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Quick Demo: Sarah's Worked Example loader
-  const handleLoadSarahWorkedExample = () => {
-    setBuildingName('Cavalier Apartments');
-    setUnit('Unit 12');
-    setTitle('Front security gate not closing');
-    setActivityType('Common Property Repair');
-    setPriority('High');
-    setLocation('Front entrance');
-    setDescription(
-      "Sarah notices that the front security gate is no longer closing properly. " +
-      "She previously contacted the strata manager by email without a clear update. " +
-      "The automatic safety sensor trips intermittently during evening hours and stalls halfway, creating an entry hazard for residents."
-    );
-    setContactPreference('Email');
-    setStrataManagerEmail('emma.wilson@agency.com');
-    setPhotos([
-      'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1584463623578-3019808d4b38?w=800&auto=format&fit=crop'
-    ]);
-  };
 
   const handleDismiss = () => {
     if (morphContext) {
@@ -188,8 +167,8 @@ export function CreateRequestFormContent({
     setIsSubmitting(true);
 
     onSubmit({
-      buildingName,
-      unit,
+      buildingName: buildingName || defaultBuildingName || 'My Building',
+      unit: unit || defaultUnit || 'Unit 1',
       activityType,
       requestType: activityType,
       title,
@@ -197,7 +176,7 @@ export function CreateRequestFormContent({
       priority,
       location,
       contactPreference,
-      strataManagerEmail,
+      strataManagerEmail: strataManagerEmail || defaultManagerEmail || undefined,
       attachmentUrl: photos[0] || undefined,
       attachmentUrls: photos,
     });
@@ -212,7 +191,7 @@ export function CreateRequestFormContent({
       <div className="flex items-start justify-between border-b border-gray-100 dark:border-white/10 pb-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 text-[10px] font-black uppercase tracking-wider mb-1">
-            Story 1 • Activity Management
+            Activity Management
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
             Initiate Building Activity
@@ -226,32 +205,6 @@ export function CreateRequestFormContent({
           className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
         >
           <X size={18} />
-        </button>
-      </div>
-
-      {/* 🚀 One-Click Sarah Worked Example Demo Bar */}
-      <div className="bg-gradient-to-r from-[#0055FF]/10 via-[#00D4B2]/10 to-[#0055FF]/5 border border-[#00D4B2]/30 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#00D4B2]/20 text-[#00D4B2] flex items-center justify-center shrink-0">
-            <Sparkles size={16} />
-          </div>
-          <div>
-            <div className="text-xs font-black text-gray-900 dark:text-white flex items-center gap-1.5">
-              <span>Quick Test: Sarah's Worked Example</span>
-              <span className="text-[10px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.2 rounded-full">Unit 12 • Cavalier</span>
-            </div>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              Pre-populates the exact gate repair scenario from the specification.
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleLoadSarahWorkedExample}
-          className="px-3.5 py-1.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 cursor-pointer shrink-0"
-        >
-          <Sparkles size={13} />
-          <span>Load Sarah's Example</span>
         </button>
       </div>
 
