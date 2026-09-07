@@ -992,6 +992,9 @@ export function ResidentRequestsView({
               {activeDetail.status !== 'closed' && (activeDetail.requestorName === activePersonaName || isManagerOrAdmin) && (
                 <div className="pt-4 border-t border-white/5">
                   <button
+                    type="button"
+                    aria-label="Close activity and state rationale"
+                    title="Close this activity with mandatory justification reason"
                     onClick={() => setCloseModalRequest(activeDetail)}
                     className="w-full bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF4757] border border-[#FF4757]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
@@ -1003,6 +1006,9 @@ export function ResidentRequestsView({
               {activeDetail.status === 'closed' && (
                 <div className="pt-4 border-t border-white/5">
                   <button
+                    type="button"
+                    aria-label="Reopen activity and notify team"
+                    title="Reopen this activity with mandatory justification reason"
                     onClick={() => setReopenModalRequest(activeDetail)}
                     className="w-full bg-[#00D4B2]/10 hover:bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
