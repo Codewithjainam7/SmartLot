@@ -121,6 +121,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             <button 
               type="button"
               onClick={onClose}
+              aria-label="Close onboarding modal"
               className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
             >
               <X size={16} />
@@ -182,6 +183,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                   <input
                     type="text"
                     required
+                    aria-label="Scheme or site name"
                     value={schemeName}
                     onChange={e => setSchemeName(e.target.value)}
                     className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200"
@@ -195,6 +197,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                     <input
                       type="text"
                       required
+                      aria-label="Strata Plan ID"
                       value={schemeId}
                       onChange={e => setSchemeId(e.target.value)}
                       className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200"
@@ -207,6 +210,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                       type="number"
                       required
                       min={1}
+                      aria-label="Total lots count"
                       disabled={siteType !== 'custom'}
                       value={lotsCount}
                       onChange={e => setLotsCount(Number(e.target.value))}
