@@ -100,12 +100,14 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} />}
           </button>
 
           <button 
             onClick={() => window.location.hash = '#/admin'}
+            aria-label="Open System Console"
             className="hidden lg:flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
           >
             <ShieldAlert size={14} /> System Console
@@ -113,6 +115,7 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
 
           <button 
             onClick={() => onSelectPersona('guest')}
+            aria-label="Access Roster or Sign Up"
             className="bg-[#0B1121] dark:bg-white dark:text-black hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] px-6 py-2.5 rounded-full font-black text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer"
           >
             Access Roster / Sign Up
@@ -136,6 +139,7 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
           <div className="flex flex-col items-center justify-center pt-4 gap-4">
             <button 
               onClick={() => onSelectPersona('guest')}
+              aria-label="Get Started with SmartLot"
               className="w-full sm:w-auto bg-[#0B1121] dark:bg-white dark:text-black hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] dark:text-black px-10 py-4.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#0B1121]/10 dark:shadow-white/5"
             >
               <span>Get Started Now</span>
