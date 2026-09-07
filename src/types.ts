@@ -186,7 +186,9 @@ export interface AppToastNotification { id: string; title: string; message: stri
 
 export interface SearchFilterCriteria { query: string; role?: string; schemeId?: string; status?: string; }
 
-// Module 1 — Activity Management (Story 1: Resident Initiates an Activity)
+/**
+ * Categorization of requests and incidents logged by residents, owners, or strata managers.
+ */
 export type ActivityType =
   | 'Common Property Repair'
   | 'Maintenance / Vendor'
@@ -195,8 +197,14 @@ export type ActivityType =
   | 'Administrative Request'
   | 'Urgent Issue';
 
+/**
+ * Priority classification determining dispatch urgency and committee SLA escalation.
+ */
 export type ActivityPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
 
+/**
+ * Standard common property architectural zones within Australian strata building plans.
+ */
 export type ActivityLocation =
   | 'Front entrance'
   | 'Lift'
@@ -210,4 +218,7 @@ export type ActivityLocation =
   | 'Other'
   | 'Not applicable';
 
+/**
+ * Preferred communication channel for updates and work order status notifications.
+ */
 export type ContactPreference = 'Email' | 'SmartLot notifications';
