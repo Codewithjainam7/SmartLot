@@ -13,8 +13,8 @@ export function SmartLotLogo({ className = "h-10", iconOnly = false, textColor =
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <SmartLotLogoIcon className={className} {...props} />
+    <div className="flex items-center gap-3" role="img" aria-label="SmartLot">
+      <SmartLotLogoIcon className={className} aria-hidden="true" {...props} />
       <div className="flex flex-col justify-center select-none">
         <div className="flex items-baseline font-sans leading-none tracking-tight">
           <span className={`text-xl font-bold ${textColor}`}>Smart</span>
@@ -35,6 +35,7 @@ export function SmartLotLogoIcon({ className = "w-10 h-10", ...props }: React.SV
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      aria-hidden="true"
       {...props}
     >
       <defs>
