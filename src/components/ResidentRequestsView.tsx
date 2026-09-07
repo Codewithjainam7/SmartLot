@@ -34,16 +34,21 @@ import {
   Mail,
   MapPin,
   Sparkles,
-  Building
+  Building,
+  Lock,
+  Shield
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
   requests: ResidentRequest[];
   onOpenCreateModal?: () => void;
-  onSubmitRequest: (data: any) => void;
+  onSubmitRequest: (data: any) => any;
   onCloseRequest: (requestId: string, reason: string) => void;
   onAddComment: (requestId: string, text: string, replyTo?: { authorName: string; text: string }) => void;
   onSimulateManagerReply?: (requestId: string, replyText: string, managerName?: string) => void;
+  onAddInternalNote?: (requestId: string, text: string) => void;
+  onUpdateStatus?: (requestId: string, status: CaseStatus) => void;
+  onUpdatePriority?: (requestId: string, priority: any) => void;
   activePersonaName: string;
   activePersonaRole: string;
   activePersonaEmail?: string;
@@ -59,6 +64,9 @@ export function ResidentRequestsView({
   onCloseRequest,
   onAddComment,
   onSimulateManagerReply,
+  onAddInternalNote,
+  onUpdateStatus,
+  onUpdatePriority,
   activePersonaName,
   activePersonaRole,
   activePersonaEmail,
@@ -130,6 +138,9 @@ export function ResidentRequestsView({
     setShowMentionMenu(false);
   };
 
+  const [internalNoteInput, setInternalNoteInput] = useState('');
+  const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
+
   const handleSendComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentInput.trim() || !activeDetail) return;
@@ -137,6 +148,13 @@ export function ResidentRequestsView({
     setCommentInput('');
     setReplyingToComment(null);
     setShowMentionMenu(false);
+  };
+
+  const handleAddInternalNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!internalNoteInput.trim() || !activeDetail || !onAddInternalNote) return;
+    onAddInternalNote(activeDetail.id, internalNoteInput.trim());
+    setInternalNoteInput('');
   };
 
   const handleConfirmClose = () => {
@@ -356,14 +374,44 @@ export function ResidentRequestsView({
 
                 {/* Status, Priority & Location Badges */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <StatusBadge status={activeDetail.status} />
+                  {isManagerOrAdmin && onUpdateStatus ? (
+                    <select
+                      value={activeDetail.status}
+                      onChange={(e) => onUpdateStatus(activeDetail.id, e.target.value as CaseStatus)}
+                      className="h-7 px-2.5 rounded-full bg-[#0055FF]/20 text-[#60A5FA] border border-[#0055FF]/40 text-[11px] font-extrabold outline-none cursor-pointer hover:bg-[#0055FF]/30 transition-colors"
+                      title="Manager quick status override"
+                    >
+                      <option value="new" className="bg-[#0B1121] text-white">Status: New</option>
+                      <option value="acknowledged" className="bg-[#0B1121] text-white">Status: Acknowledged</option>
+                      <option value="in_progress" className="bg-[#0B1121] text-white">Status: In Progress</option>
+                      <option value="waiting" className="bg-[#0B1121] text-white">Status: Waiting</option>
+                      <option value="resolved" className="bg-[#0B1121] text-white">Status: Resolved</option>
+                      <option value="closed" className="bg-[#0B1121] text-white">Status: Closed</option>
+                    </select>
+                  ) : (
+                    <StatusBadge status={activeDetail.status} />
+                  )}
 
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px] font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                     <span className="capitalize">{activeDetail.requestType.replace(/_/g, ' ')}</span>
                   </div>
 
-                  {activeDetail.priority && (
+                  {isManagerOrAdmin && onUpdatePriority ? (
+                    <select
+                      value={activeDetail.priority || 'Normal'}
+                      onChange={(e) => onUpdatePriority(activeDetail.id, e.target.value)}
+                      className="h-7 px-2.5 rounded-full bg-white/10 text-gray-200 border border-white/15 text-[11px] font-bold outline-none cursor-pointer hover:bg-white/15 transition-colors"
+                      title="Manager priority override"
+                    >
+                      <option value="Low" className="bg-[#0B1121] text-white">Priority: Low</option>
+                      <option value="Normal" className="bg-[#0B1121] text-white">Priority: Normal</option>
+                      <option value="Medium" className="bg-[#0B1121] text-white">Priority: Medium</option>
+                      <option value="High" className="bg-[#0B1121] text-white">Priority: High</option>
+                      <option value="Urgent" className="bg-[#0B1121] text-white">Priority: Urgent</option>
+                      <option value="Emergency" className="bg-[#0B1121] text-white">Priority: Emergency</option>
+                    </select>
+                  ) : activeDetail.priority ? (
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
                       activeDetail.priority === 'Urgent' || activeDetail.priority === 'Emergency'
                         ? 'bg-red-500/10 text-red-400 border-red-500/30'
@@ -373,7 +421,7 @@ export function ResidentRequestsView({
                     }`}>
                       Priority: {activeDetail.priority}
                     </span>
-                  )}
+                  ) : null}
 
                   {activeDetail.location && (
                     <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px]">
@@ -452,6 +500,74 @@ export function ResidentRequestsView({
                 <div className="bg-[#FF4757]/10 border border-[#FF4757]/30 p-4 rounded-2xl text-xs space-y-1">
                   <div className="font-bold text-red-400 flex items-center gap-1.5"><AlertCircle size={14} /> Closed with Rationale:</div>
                   <p className="text-red-300">{activeDetail.closeReason}</p>
+                </div>
+              )}
+
+              {/* Internal Strata Manager Notes (Visible only to Strata Managers and Admins) */}
+              {isManagerOrAdmin && (
+                <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-[#13110d] to-[#0a0f1d] p-4.5 space-y-3 shadow-lg relative overflow-hidden">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                        <Lock size={15} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-black text-white">Internal Strata Manager Notes</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                            <Shield size={10} /> Private
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          Visible only to Strata Managers and Building Admins. Completely hidden from residents and lot owners.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Existing Notes List */}
+                  <div className="space-y-2 pt-1">
+                    {(!activeDetail.internalNotes || activeDetail.internalNotes.length === 0) ? (
+                      <div className="bg-black/30 rounded-2xl p-3 border border-white/5 text-[11px] text-gray-500 italic">
+                        No internal notes recorded. Use this space for contractor quotes, committee memos, or private follow-ups.
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {activeDetail.internalNotes.map((note) => (
+                          <div key={note.id} className="bg-black/40 rounded-2xl p-3 border border-amber-500/20 space-y-1 text-xs">
+                            <div className="flex items-center justify-between text-[10px] text-gray-400">
+                              <span className="font-bold text-amber-300">
+                                {note.authorName} <span className="text-gray-500">({note.authorRole})</span>
+                              </span>
+                              <span>{note.createdAt}</span>
+                            </div>
+                            <p className="text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">{note.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Compose Note */}
+                    <form onSubmit={handleAddInternalNote} className="space-y-2 pt-1">
+                      <textarea
+                        rows={2}
+                        value={internalNoteInput}
+                        onChange={(e) => setInternalNoteInput(e.target.value)}
+                        placeholder="Type private manager note (not visible to residents)..."
+                        className="w-full bg-[#070B14] border border-amber-500/30 rounded-2xl p-3 text-xs text-white placeholder-gray-500 outline-none focus:border-amber-400 resize-none font-medium leading-relaxed"
+                      />
+                      <div className="flex justify-end">
+                        <button
+                          type="submit"
+                          disabled={!internalNoteInput.trim()}
+                          className="bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <Lock size={12} />
+                          <span>Save Private Note</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               )}
 

@@ -397,6 +397,9 @@ export default function App() {
               onCloseRequest={store.closeResidentRequest}
               onAddComment={store.addCommentToRequest}
               onSimulateManagerReply={store.simulateManagerEmailReply}
+              onAddInternalNote={store.addInternalNoteToRequest}
+              onUpdateStatus={(id, status) => store.updateResidentRequest(id, { status })}
+              onUpdatePriority={(id, priority) => store.updateResidentRequest(id, { priority })}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
               activePersonaEmail={store.activePersona.email}
