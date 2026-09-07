@@ -31,8 +31,13 @@ import {
   Clock,
   Check,
   HelpCircle,
-  Paperclip
+  Paperclip,
+  PartyPopper,
+  ExternalLink
 } from 'lucide-react';
+
+
+// ─── Prop types ───────────────────────────────────────────────────────────────
 
 interface CreateRequestModalProps {
   isOpen?: boolean;
@@ -50,13 +55,15 @@ interface CreateRequestModalProps {
     location?: string;
     contactPreference?: ContactPreference;
     strataManagerEmail?: string;
-  }) => void;
+  }) => string;  // returns the generated activity ID
   requestorName: string;
   requestorEmail?: string;
   requestorPhone?: string;
   defaultBuildingName?: string;
   defaultUnit?: string;
+  onViewActivity?: (activityId: string) => void;
 }
+
 
 const ACTIVITY_TYPES: { value: ActivityType; label: string; desc: string; icon: React.ReactNode }[] = [
   { 
@@ -118,28 +125,162 @@ const PRIORITIES: { value: ActivityPriority; label: string; desc: string; color:
   { value: 'Urgent', label: 'Urgent', desc: 'Immediate safety or property hazard', color: 'text-red-400 border-red-500/40' },
 ];
 
+// ─── Confirmation Screen ──────────────────────────────────────────────────────
+
+function ConfirmationScreen({
+  referenceId,
+  activityTitle,
+  managerEmail,
+  requestorEmail,
+  onClose,
+  onViewActivity,
+}: {
+  referenceId: string;
+  activityTitle: string;
+  managerEmail?: string;
+  requestorEmail?: string;
+  onClose: () => void;
+  onViewActivity?: () => void;
+}) {
+  // Strip 'REQ-' prefix to display as #SL-XXXXX
+  const displayRef = referenceId.startsWith('REQ-')
+    ? `#${referenceId.replace('REQ-', '')}`
+    : referenceId;
+
+  return (
+    <motion.div
+      key="confirmation"
+      initial={{ opacity: 0, scale: 0.97, y: 8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col items-center text-center gap-5 py-4"
+    >
+      {/* Success icon */}
+      <div className="relative flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center">
+          <CheckCircle2 size={38} className="text-emerald-500 dark:text-emerald-400" strokeWidth={1.5} />
+        </div>
+        <motion.div
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 260 }}
+          className="absolute -top-1 -right-1 w-6 h-6 bg-[#00D4B2] rounded-full flex items-center justify-center"
+        >
+          <Check size={12} className="text-white" strokeWidth={3} />
+        </motion.div>
+      </div>
+
+      {/* Headline */}
+      <div className="space-y-1">
+        <p className="text-xs font-black uppercase tracking-[0.15em] text-[#00D4B2]">Activity Created</p>
+        <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
+          {displayRef}
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-normal">
+          {activityTitle}
+        </p>
+      </div>
+
+      {/* Status steps */}
+      <div className="w-full max-w-xs space-y-2">
+        {[
+          {
+            icon: <Check size={12} className="text-emerald-400" strokeWidth={3} />,
+            bg: 'bg-emerald-400/10 border-emerald-400/20',
+            label: 'Activity logged in SmartLot',
+          },
+          {
+            icon: <Check size={12} className="text-[#00D4B2]" strokeWidth={3} />,
+            bg: 'bg-[#00D4B2]/10 border-[#00D4B2]/20',
+            label: managerEmail
+              ? `Email dispatched to ${managerEmail}`
+              : 'Conduit email dispatched to strata manager',
+          },
+          {
+            icon: <Check size={12} className="text-[#0055FF]" strokeWidth={3} />,
+            bg: 'bg-[#0055FF]/10 border-[#0055FF]/20',
+            label: requestorEmail
+              ? `You are CC'd at ${requestorEmail}`
+              : "You have been CC'd on the email",
+          },
+        ].map((step, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 + i * 0.08, duration: 0.25 }}
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-left ${step.bg}`}
+          >
+            <div className="shrink-0 w-4 h-4 rounded-full border border-current/30 flex items-center justify-center">
+              {step.icon}
+            </div>
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{step.label}</span>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Reply-To info */}
+      <div className="w-full max-w-xs bg-gray-50 dark:bg-[#12161F] border border-gray-200 dark:border-white/8 rounded-xl p-3 text-left">
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">What happens next?</p>
+        <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+          The strata manager can simply <strong className="text-gray-700 dark:text-gray-200">Reply All</strong> to the email.
+          Their response will automatically appear as a comment on this activity in SmartLot.
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-3 pt-1">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/6 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors"
+        >
+          Close
+        </button>
+        {onViewActivity && (
+          <button
+            type="button"
+            onClick={onViewActivity}
+            className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-500/20 cursor-pointer transition-all hover:scale-[1.02]"
+          >
+            <ExternalLink size={13} />
+            <span>View Activity</span>
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Form content ─────────────────────────────────────────────────────────────
+
+
 export function CreateRequestFormContent({
   onSubmit,
   requestorName,
-  requestorEmail = "",
-  requestorPhone = "",
-  defaultBuildingName = "",
-  defaultUnit = "",
-  defaultManagerEmail = "",
+  requestorEmail = '',
+  requestorPhone = '',
+  defaultBuildingName = '',
+  defaultUnit = '',
+  defaultManagerEmail = '',
+  knownBuildingNames = ['Cavalier Apartments', 'Ocean View Strata', 'Highland Towers', 'Coronation Ave Strata'],
   onClose,
+  onViewActivity,
 }: {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => any;
   requestorName: string;
   requestorEmail?: string;
   requestorPhone?: string;
   defaultBuildingName?: string;
   defaultUnit?: string;
   defaultManagerEmail?: string;
+  knownBuildingNames?: string[];
   onClose?: () => void;
+  onViewActivity?: (activityId: string) => void;
 }) {
   const morphContext = useMorphingPopoverContext();
 
-  // Form State
+  // ── Form state ──────────────────────────────────────────────────────────────
   const [buildingName, setBuildingName] = useState(defaultBuildingName);
   const [unit, setUnit] = useState(defaultUnit);
   const [strataManagerEmail, setStrataManagerEmail] = useState(defaultManagerEmail);
@@ -152,39 +293,64 @@ export function CreateRequestFormContent({
   const [photos, setPhotos] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // After submit: store the returned activity ID to show the confirmation screen
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
+
+  // Check whether building is recognized or pending onboarding
+  const isKnownBuilding = !buildingName.trim() || (
+    Boolean(defaultBuildingName) && buildingName.trim().toLowerCase() === defaultBuildingName.trim().toLowerCase()
+  ) || (
+    Boolean(knownBuildingNames) && knownBuildingNames.some(b => b.toLowerCase() === buildingName.trim().toLowerCase())
+  );
+
   const handleDismiss = () => {
-    if (morphContext) {
-      morphContext.setIsOpen(false);
-    }
-    if (onClose) {
-      onClose();
-    }
+    if (morphContext) morphContext.setIsOpen(false);
+    onClose?.();
   };
 
   const handleFinalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
+    if (!title.trim() || !description.trim() || isSubmitting) return;
     setIsSubmitting(true);
 
-    onSubmit({
-      buildingName: buildingName || defaultBuildingName || 'My Building',
-      unit: unit || defaultUnit || 'Unit 1',
+    const generatedId = onSubmit({
+      buildingName:        (buildingName || defaultBuildingName || 'My Building').trim(),
+      unit:                (unit || defaultUnit || 'Unit 1').trim(),
       activityType,
-      requestType: activityType,
-      title,
-      description,
+      requestType:         activityType,
+      title:               title.trim(),
+      description:         description.trim(),
       priority,
       location,
       contactPreference,
-      strataManagerEmail: strataManagerEmail || defaultManagerEmail || undefined,
-      attachmentUrl: photos[0] || undefined,
-      attachmentUrls: photos,
+      strataManagerEmail:  strataManagerEmail.trim() || defaultManagerEmail || undefined,
+      attachmentUrl:       photos[0] ?? undefined,
+      attachmentUrls:      photos,
     });
 
     setIsSubmitting(false);
-    handleDismiss();
+    setSubmittedId(generatedId);
   };
 
+  // ── Confirmation screen (post-submit) ────────────────────────────────────────
+  if (submittedId !== null) {
+    return (
+      <ConfirmationScreen
+        referenceId={submittedId}
+        activityTitle={title}
+        managerEmail={strataManagerEmail.trim() || defaultManagerEmail}
+        requestorEmail={requestorEmail}
+        onClose={handleDismiss}
+        onViewActivity={
+          onViewActivity
+            ? () => { onViewActivity(submittedId); handleDismiss(); }
+            : undefined
+        }
+      />
+    );
+  }
+
+  // ── Form ─────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5 text-left">
       {/* Modal Header */}
@@ -209,7 +375,6 @@ export function CreateRequestFormContent({
       </div>
 
       <form onSubmit={handleFinalSubmit} className="space-y-4">
-        
         {/* ROW 1: Building (Search/Select) & Unit */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="md:col-span-2">
@@ -226,6 +391,12 @@ export function CreateRequestFormContent({
               onChange={e => setBuildingName(e.target.value)}
               className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
             />
+            {!isKnownBuilding && (
+              <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-400 text-[11px] font-semibold">
+                <Sparkles size={12} className="shrink-0 text-amber-500" />
+                <span>Building not registered in SmartLot — conduit email will bridge communication.</span>
+              </div>
+            )}
           </div>
 
           <div>
@@ -246,20 +417,30 @@ export function CreateRequestFormContent({
         </div>
 
         {/* Conduit Notification Route (Strata Manager Email) */}
-        <div className="bg-gray-50/70 dark:bg-[#121622] rounded-2xl p-3 border border-gray-200/80 dark:border-white/5 space-y-2">
+        <div className={`rounded-2xl p-3 border space-y-2 transition-all ${
+          !isKnownBuilding 
+            ? 'bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/30 ring-1 ring-amber-500/20' 
+            : 'bg-gray-50/70 dark:bg-[#121622] border-gray-200/80 dark:border-white/5'
+        }`}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
               <Mail size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
               <span>Strata Manager Email (Conduit Recipient)</span>
             </span>
-            <span className="text-[10px] text-[#00D4B2] font-semibold">No SmartLot account required</span>
+            <span className={`text-[10px] font-bold ${!isKnownBuilding ? 'text-amber-500' : 'text-[#00D4B2]'}`}>
+              {!isKnownBuilding ? 'Required for unlisted building' : 'No SmartLot account required'}
+            </span>
           </div>
           <input
             type="email"
             value={strataManagerEmail}
             onChange={e => setStrataManagerEmail(e.target.value)}
             placeholder="e.g. manager@agency.com"
-            className="w-full h-9 px-3 rounded-xl bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+            className={`w-full h-9 px-3 rounded-xl bg-white dark:bg-[#161a26] border text-xs font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 ${
+              !isKnownBuilding 
+                ? 'border-amber-500/50 focus:ring-amber-500' 
+                : 'border-gray-200 dark:border-white/10 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]'
+            }`}
           />
           <p className="text-[10px] text-gray-400 leading-normal">
             SmartLot sends your request to this address with your unique reference. The manager can simply click <strong>Reply All</strong> from their inbox without registering.
@@ -475,6 +656,7 @@ export function CreateRequestModal({
   requestorPhone,
   defaultBuildingName,
   defaultUnit,
+  onViewActivity,
 }: CreateRequestModalProps) {
   if (!isOpen) return null;
 
@@ -482,7 +664,7 @@ export function CreateRequestModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#0B1121]/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-[#0d1117] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-gray-200 dark:border-white/10 p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
-        <CreateRequestFormContent 
+        <CreateRequestFormContent
           onSubmit={onSubmit}
           requestorName={requestorName}
           requestorEmail={requestorEmail}
@@ -490,8 +672,9 @@ export function CreateRequestModal({
           defaultBuildingName={defaultBuildingName}
           defaultUnit={defaultUnit}
           onClose={onClose}
+          onViewActivity={onViewActivity}
         />
       </div>
     </div>
   );
-}
+}
