@@ -38,7 +38,7 @@ export function JoinSchemeView({ schemeId, onJoinSuccess, onBackToLanding }: Joi
         const { data, error } = await supabase
           .from('schemes')
           .select('name, lots')
-          .eq('id', schemeId)
+          .eq('id', (schemeId || '').toUpperCase().trim())
           .maybeSingle();
 
         if (error) throw error;
