@@ -127,6 +127,44 @@ export function UserManagementView({
     setEditStatus(m.status || 'Active');
   };
 
+  // Unit options for Edit Member Modal
+  const editUnitOptions: SelectOption[] = useMemo(() => {
+    const unitsMap = new Map<string, number>();
+
+    if (members && members.length > 0) {
+      members.forEach(m => {
+        if (m.unitId && !m.role.includes('Manager') && !m.role.includes('Admin')) {
+          const num = m.lotNumber || parseInt(m.unitId.replace(/\D/g, ''), 10) || 1;
+          unitsMap.set(m.unitId, num);
+        }
+      });
+    }
+
+    for (let i = 1; i <= 24; i++) {
+      if (!unitsMap.has(`Unit ${i}`)) {
+        unitsMap.set(`Unit ${i}`, i);
+      }
+    }
+
+    const list: SelectOption[] = Array.from(unitsMap.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map(([unit, lot]) => ({
+        value: unit,
+        label: `${unit} (Lot ${lot})`,
+        description: `Physical Lot ${lot}`,
+      }));
+
+    if (editRole === 'Strata Manager' || editRole === 'Building Manager') {
+      list.unshift({
+        value: 'HQ / Management',
+        label: 'HQ / Management Office',
+        description: 'Strata Staff / HQ',
+      });
+    }
+
+    return list;
+  }, [members, editRole]);
+
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMember) return;
@@ -373,6 +411,9 @@ export function UserManagementView({
             onAddMember={onAddMember} 
             activePersonaName={activePersonaName}
             activeSchemeId={activeSchemeId}
+            members={members}
+            prefillUnit={prefillLotData?.unitId}
+            prefillLotNumber={prefillLotData?.lotNumber}
           />
         </MorphingPopoverContent>
 
@@ -800,6 +841,7 @@ export function UserManagementView({
                 }} 
                 activePersonaName={activePersonaName}
                 activeSchemeId={activeSchemeId}
+                members={members}
                 prefillUnit={prefillLotData.unitId}
                 prefillLotNumber={prefillLotData.lotNumber}
               />
@@ -923,16 +965,20 @@ export function UserManagementView({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
-                      <Home size={13} className="text-gray-400" /> Unit
-                    </label>
-                    <input
-                      type="text"
-                      required
+                    <CustomSelect
+                      label="Unit / Apartment #"
+                      options={editUnitOptions}
                       value={editUnitId}
-                      onChange={e => setEditUnitId(e.target.value)}
-                      placeholder="e.g. Unit 1"
-                      className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                      onChange={val => {
+                        setEditUnitId(val);
+                        if (val === 'HQ / Management') {
+                          setEditLotNumber(1);
+                        } else {
+                          const match = val.match(/\d+/);
+                          if (match) setEditLotNumber(parseInt(match[0], 10));
+                        }
+                      }}
+                      placeholder="Select Unit..."
                     />
                   </div>
 
@@ -1023,6 +1069,22 @@ interface MemberRosterGridProps {
   onResetFilters: () => void;
 }
 
+const ROLE_FILTER_OPTIONS: SelectOption[] = [
+  { value: 'ALL', label: 'All Roles' },
+  { value: 'Strata Manager', label: 'Strata Manager' },
+  { value: 'Building Manager', label: 'Building Manager' },
+  { value: 'Committee Member', label: 'Committee' },
+  { value: 'Lot Owner', label: 'Lot Owner' },
+  { value: 'Tenant', label: 'Tenant' },
+];
+
+const STATUS_FILTER_OPTIONS: SelectOption[] = [
+  { value: 'ALL', label: 'All Status' },
+  { value: 'Active', label: 'Active' },
+  { value: 'Invited', label: 'Invited' },
+  { value: 'Restricted', label: 'Restricted' },
+];
+
 function MemberRosterGrid({ 
   members, 
   allMembersCount,
@@ -1060,7 +1122,7 @@ function MemberRosterGrid({
 
   return (
     <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
-      <div className="overflow-x-auto w-full">
+      <div className="overflow-x-auto w-full min-h-[440px]">
         <table className="w-full text-left text-xs border-collapse font-sans table-auto">
           <thead>
             {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
@@ -1202,22 +1264,14 @@ function MemberRosterGrid({
               </th>
 
               {/* Col 2: Role Dropdown Filter (NO Resident!) */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                <div className="relative flex items-center">
-                  <select
-                    value={colFilterRole}
-                    onChange={e => setColFilterRole(e.target.value)}
-                    className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
-                  >
-                    <option value="ALL">All Roles</option>
-                    <option value="Strata Manager">Strata Manager</option>
-                    <option value="Building Manager">Building Manager</option>
-                    <option value="Committee Member">Committee</option>
-                    <option value="Lot Owner">Lot Owner</option>
-                    <option value="Tenant">Tenant</option>
-                  </select>
-                  <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                </div>
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                <CustomSelect
+                  size="sm"
+                  options={ROLE_FILTER_OPTIONS}
+                  value={colFilterRole}
+                  onChange={setColFilterRole}
+                  placeholder="All Roles"
+                />
               </th>
 
               {/* Col 3: Unit / Lot Filter */}
@@ -1274,20 +1328,15 @@ function MemberRosterGrid({
               </th>
 
               {/* Col 6: Status Dropdown Filter */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                <div className="relative flex items-center">
-                  <select
-                    value={colFilterStatus}
-                    onChange={e => setColFilterStatus(e.target.value)}
-                    className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
-                  >
-                    <option value="ALL">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Invited">Invited</option>
-                    <option value="Restricted">Restricted</option>
-                  </select>
-                  <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                </div>
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                <CustomSelect
+                  size="sm"
+                  menuAlign="right"
+                  options={STATUS_FILTER_OPTIONS}
+                  value={colFilterStatus}
+                  onChange={setColFilterStatus}
+                  placeholder="All Status"
+                />
               </th>
 
               {/* Col 7: Reset Filter Button */}
@@ -1460,11 +1509,17 @@ function MemberRosterGrid({
 function PopoverAddMemberWrapper({
   onAddMember,
   activePersonaName,
-  activeSchemeId
+  activeSchemeId,
+  members,
+  prefillUnit,
+  prefillLotNumber,
 }: {
   onAddMember: any;
   activePersonaName: string;
   activeSchemeId: string;
+  members?: Member[];
+  prefillUnit?: string;
+  prefillLotNumber?: number;
 }) {
   const { setIsOpen } = useMorphingPopover();
   return (
@@ -1472,6 +1527,9 @@ function PopoverAddMemberWrapper({
       onAddMember={onAddMember}
       activePersonaName={activePersonaName}
       activeSchemeId={activeSchemeId}
+      members={members}
+      prefillUnit={prefillUnit}
+      prefillLotNumber={prefillLotNumber}
       onClose={() => setIsOpen(false)}
     />
   );
@@ -1482,29 +1540,68 @@ function AddMemberFormContent({
   onAddMember, 
   activePersonaName,
   activeSchemeId,
+  members,
   prefillUnit,
   prefillLotNumber,
   onClose
 }: { 
-  onAddMember: any;
+  onAddMember: any; 
   activePersonaName: string;
   activeSchemeId: string;
+  members?: Member[];
   prefillUnit?: string;
   prefillLotNumber?: number;
   onClose?: () => void;
 }) {
-  // If we are inside the MorphingPopover without an onClose prop, try getting setIsOpen, 
-  // but we can't conditionally call hooks. So we will rely on the parent closing the popover,
-  // or we'll pass onClose explicitly from the parent. 
-  // We removed useMorphingPopover here to avoid hook violations.
-
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formRole, setFormRole] = useState<MemberRole>(prefillUnit ? 'Tenant' : 'Lot Owner');
-  const [formUnit, setFormUnit] = useState(prefillUnit || 'Unit 10');
-  const [formLot, setFormLot] = useState<number | string>(prefillLotNumber || 10);
+  const [formUnit, setFormUnit] = useState(prefillUnit || 'Unit 1');
+  const [formLot, setFormLot] = useState<number | string>(prefillLotNumber || 1);
   const [additionalOccupants, setAdditionalOccupants] = useState<{ id: string; name: string; email: string; role: 'Resident' | 'Tenant' | 'Family Member' | 'Co-Owner' }[]>([]);
+
+  // Dynamically assemble unit options from members + standard 24 units + HQ / Management
+  const unitOptions: SelectOption[] = useMemo(() => {
+    const unitSet = new Set<string>();
+    if (members && members.length > 0) {
+      members.forEach(m => {
+        if (m.unitId && m.unitId.trim()) unitSet.add(m.unitId.trim());
+      });
+    }
+    // Standard units 1 to 24
+    for (let i = 1; i <= 24; i++) {
+      unitSet.add(`Unit ${i}`);
+    }
+    unitSet.add('HQ / Management');
+
+    const sorted = Array.from(unitSet).sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, ''), 10);
+      const numB = parseInt(b.replace(/\D/g, ''), 10);
+      if (isNaN(numA) && isNaN(numB)) return a.localeCompare(b);
+      if (isNaN(numA)) return 1;
+      if (isNaN(numB)) return -1;
+      return numA - numB;
+    });
+
+    return sorted.map(u => ({
+      value: u,
+      label: u === 'HQ / Management' ? 'HQ / Management (Scheme Wide)' : u,
+      description: u === 'HQ / Management' ? 'All lots administration' : `Assigned to Lot ${u.replace(/\D/g, '') || '1'}`
+    }));
+  }, [members]);
+
+  const handleUnitChange = (val: string) => {
+    setFormUnit(val);
+    if (val === 'HQ / Management') {
+      setFormLot(1);
+    } else {
+      const match = val.match(/\d+/);
+      if (match) {
+        setFormLot(parseInt(match[0], 10));
+      }
+    }
+  };
 
   const handleAddOccupantRow = () => {
     setAdditionalOccupants(prev => [
@@ -1648,25 +1745,23 @@ function AddMemberFormContent({
         {/* Unit & Lot Number Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Unit / Apartment #</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Unit 10"
+            <CustomSelect
+              label="Unit / Apartment #"
+              options={unitOptions}
               value={formUnit}
-              onChange={e => setFormUnit(e.target.value)}
-              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+              onChange={handleUnitChange}
+              placeholder="Select Unit..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Lot Number</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 ml-1">Assigned Lot #</label>
             <input
               type="number"
-              required
+              readOnly
               value={formLot}
-              onChange={e => setFormLot(Number(e.target.value))}
-              className="w-full h-10 px-3.5 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+              className="w-full h-10 px-3.5 rounded-xl bg-gray-100 dark:bg-[#12151f] border border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-500 dark:text-gray-400 cursor-not-allowed"
+              title="Automatically synchronized with selected Unit"
             />
           </div>
         </div>

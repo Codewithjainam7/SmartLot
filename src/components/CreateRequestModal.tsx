@@ -34,6 +34,7 @@ import {
   PartyPopper,
   ExternalLink
 } from 'lucide-react';
+import { CustomSelect } from './core/CustomSelect';
 
 
 // ─── Prop types ───────────────────────────────────────────────────────────────
@@ -486,15 +487,16 @@ export function CreateRequestFormContent({
               <span>Activity Type</span>
               <span className="text-red-500">*</span>
             </label>
-            <select
+            <CustomSelect
+              options={ACTIVITY_TYPES.map(t => ({
+                value: t.value,
+                label: t.label,
+                description: t.desc,
+                icon: t.icon,
+              }))}
               value={activityType}
-              onChange={e => setActivityType(e.target.value as ActivityType)}
-              className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] cursor-pointer"
-            >
-              {ACTIVITY_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+              onChange={val => setActivityType(val as ActivityType)}
+            />
           </div>
 
           <div>
@@ -502,15 +504,14 @@ export function CreateRequestFormContent({
               <MapPin size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
               <span>Location (Optional)</span>
             </label>
-            <select
+            <CustomSelect
+              options={LOCATIONS.map(loc => ({
+                value: loc,
+                label: loc,
+              }))}
               value={location}
-              onChange={e => setLocation(e.target.value as ActivityLocation)}
-              className="w-full h-10 px-3 rounded-xl bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] cursor-pointer"
-            >
-              {LOCATIONS.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
+              onChange={val => setLocation(val as ActivityLocation)}
+            />
           </div>
         </div>
 

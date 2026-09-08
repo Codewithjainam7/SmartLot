@@ -10,6 +10,7 @@ import {
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';
 import { Scheme } from '../types';
 import { CustomCheckbox } from './core/CustomCheckbox';
+import { CustomSelect } from './core/CustomSelect';
 
 interface AdminViewProps {
   members: Member[];
@@ -662,44 +663,54 @@ export function AdminView({
               </div>
 
               {/* Scheme Filter */}
-              <select
-                value={selectedSchemeFilter}
-                onChange={e => setSelectedSchemeFilter(e.target.value)}
-                className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
-              >
-                {activeTab === 'users' && <option value="ALL">All Schemes</option>}
-                {schemes.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
-                ))}
-              </select>
+              <div className="min-w-[170px]">
+                <CustomSelect
+                  size="sm"
+                  options={[
+                    ...(activeTab === 'users' ? [{ value: 'ALL', label: 'All Schemes' }] : []),
+                    ...schemes.map(s => ({ value: s.id, label: `${s.name} (${s.id})` }))
+                  ]}
+                  value={selectedSchemeFilter}
+                  onChange={setSelectedSchemeFilter}
+                  placeholder="Select Scheme"
+                />
+              </div>
               {/* Status Filter for Requests */}
               {activeTab === 'requests' && (
                 <>
-                  <select
-                    value={selectedStatusFilter}
-                    onChange={e => setSelectedStatusFilter(e.target.value)}
-                    className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
-                  >
-                    <option value="ALL">All Statuses</option>
-                    <option value="new">New</option>
-                    <option value="pending_triage">Pending Triage</option>
-                    <option value="in_voting">In Voting</option>
-                    <option value="approved">Approved</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
+                  <div className="min-w-[130px]">
+                    <CustomSelect
+                      size="sm"
+                      options={[
+                        { value: 'ALL', label: 'All Statuses' },
+                        { value: 'new', label: 'New' },
+                        { value: 'pending_triage', label: 'Pending Triage' },
+                        { value: 'in_voting', label: 'In Voting' },
+                        { value: 'approved', label: 'Approved' },
+                        { value: 'resolved', label: 'Resolved' },
+                        { value: 'rejected', label: 'Rejected' },
+                      ]}
+                      value={selectedStatusFilter}
+                      onChange={setSelectedStatusFilter}
+                      placeholder="All Statuses"
+                    />
+                  </div>
 
-                  <select
-                    value={selectedPriorityFilter}
-                    onChange={e => setSelectedPriorityFilter(e.target.value)}
-                    className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
-                  >
-                    <option value="ALL">All Priorities</option>
-                    <option value="Emergency">Emergency Only</option>
-                    <option value="High">High Priority</option>
-                    <option value="Medium">Medium Priority</option>
-                    <option value="Low">Low Priority</option>
-                  </select>
+                  <div className="min-w-[135px]">
+                    <CustomSelect
+                      size="sm"
+                      options={[
+                        { value: 'ALL', label: 'All Priorities' },
+                        { value: 'Emergency', label: 'Emergency Only' },
+                        { value: 'High', label: 'High Priority' },
+                        { value: 'Medium', label: 'Medium Priority' },
+                        { value: 'Low', label: 'Low Priority' },
+                      ]}
+                      value={selectedPriorityFilter}
+                      onChange={setSelectedPriorityFilter}
+                      placeholder="All Priorities"
+                    />
+                  </div>
                 </>
               )}
 
@@ -1383,7 +1394,7 @@ export function AdminView({
             </div>
 
             {/* Main Enterprise Data Table */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
               <table className="w-full text-left text-xs border-collapse font-sans table-auto">
                 <thead>
                   {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
@@ -1537,41 +1548,37 @@ export function AdminView({
                     </th>
 
                     {/* Col 2: Scheme Dropdown Filter */}
-                    <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                      <div className="relative flex items-center">
-                        <select
-                          value={userColFilterScheme}
-                          onChange={e => setUserColFilterScheme(e.target.value)}
-                          className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
-                        >
-                          <option value="ALL">All Schemes</option>
-                          {schemes.map(s => (
-                            <option key={s.id} value={s.id}>{s.id}</option>
-                          ))}
-                        </select>
-                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                      </div>
+                    <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                      <CustomSelect
+                        size="sm"
+                        options={[
+                          { value: 'ALL', label: 'All Schemes' },
+                          ...schemes.map(s => ({ value: s.id, label: s.id }))
+                        ]}
+                        value={userColFilterScheme}
+                        onChange={setUserColFilterScheme}
+                        placeholder="All Schemes"
+                      />
                     </th>
 
                     {/* Col 3: Role Dropdown Filter */}
-                    <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                      <div className="relative flex items-center">
-                        <select
-                          value={userColFilterRole}
-                          onChange={e => setUserColFilterRole(e.target.value)}
-                          className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
-                        >
-                          <option value="ALL">All Roles</option>
-                          <option value="Strata Admin">Strata Admin</option>
-                          <option value="Strata Manager">Strata Manager</option>
-                          <option value="Committee Member">Committee</option>
-                          <option value="Lot Owner">Lot Owner</option>
-                          <option value="Resident">Resident</option>
-                          <option value="Tenant">Tenant</option>
-                          <option value="Property Agent">Agent</option>
-                        </select>
-                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                      </div>
+                    <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                      <CustomSelect
+                        size="sm"
+                        options={[
+                          { value: 'ALL', label: 'All Roles' },
+                          { value: 'Strata Admin', label: 'Strata Admin' },
+                          { value: 'Strata Manager', label: 'Strata Manager' },
+                          { value: 'Committee Member', label: 'Committee' },
+                          { value: 'Lot Owner', label: 'Lot Owner' },
+                          { value: 'Resident', label: 'Resident' },
+                          { value: 'Tenant', label: 'Tenant' },
+                          { value: 'Property Agent', label: 'Agent' },
+                        ]}
+                        value={userColFilterRole}
+                        onChange={setUserColFilterRole}
+                        placeholder="All Roles"
+                      />
                     </th>
 
                     {/* Col 4: Unit / Lot Filter */}
@@ -1621,20 +1628,20 @@ export function AdminView({
                     </th>
 
                     {/* Col 6: Status Dropdown Filter */}
-                    <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                      <div className="relative flex items-center">
-                        <select
-                          value={userColFilterStatus}
-                          onChange={e => setUserColFilterStatus(e.target.value)}
-                          className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
-                        >
-                          <option value="ALL">All Status</option>
-                          <option value="Active">Active</option>
-                          <option value="Invited">Invited</option>
-                          <option value="Restricted">Restricted</option>
-                        </select>
-                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                      </div>
+                    <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                      <CustomSelect
+                        size="sm"
+                        menuAlign="right"
+                        options={[
+                          { value: 'ALL', label: 'All Status' },
+                          { value: 'Active', label: 'Active' },
+                          { value: 'Invited', label: 'Invited' },
+                          { value: 'Restricted', label: 'Restricted' },
+                        ]}
+                        value={userColFilterStatus}
+                        onChange={setUserColFilterStatus}
+                        placeholder="All Status"
+                      />
                     </th>
 
                     {/* Col 7: Reset / Actions Filter */}
