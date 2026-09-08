@@ -1,8 +1,12 @@
 // @smartlot/services emailService
-// Client service to trigger transactional emails via Supabase Edge Functions with Resend.
+// Client service to trigger transactional emails via Mailtrap (Sandbox testing) & Supabase Edge Functions.
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+// Direct client-side Mailtrap testing configuration (optional, for rapid local sandbox testing)
+const mailtrapApiToken = (import.meta.env.VITE_MAILTRAP_API_TOKEN || import.meta.env.MAILTRAP_API_TOKEN) as string | undefined;
+const mailtrapInboxId = (import.meta.env.VITE_MAILTRAP_INBOX_ID || import.meta.env.MAILTRAP_INBOX_ID) as string | undefined;
 
 export interface ActivityEmailPayload {
   referenceId: string;
@@ -51,9 +55,67 @@ export interface CommentNotificationPayload {
   commentText: string;
 }
 
-async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; error?: string }> {
+/**
+ * Sends directly to Mailtrap Sandbox API from client if token is present in .env
+ */
+async function sendDirectToMailtrap(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; provider?: string } | null> {
+  if (!mailtrapApiToken) return null;
+
+  try {
+    const endpoint = mailtrapInboxId
+      ? `https://sandbox.api.mailtrap.io/api/send/${mailtrapInboxId}`
+      : `https://send.api.mailtrap.io/api/send`;
+
+    const toEmail = body.toEmail || body.managerEmail;
+    if (!toEmail) return null;
+
+    const toList = [{ email: toEmail, name: body.toName || body.requestorName || 'Recipient' }];
+    const ccList = body.requestorEmail && body.managerEmail ? [{ email: body.requestorEmail }] : undefined;
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${mailtrapApiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: { email: 'notifications@smartlot.app', name: 'SmartLot' },
+        to: toList,
+        cc: ccList,
+        subject: body.activityTitle ? `[SmartLot #${body.referenceId || ''}] ${body.activityTitle}` : `[SmartLot] Notification`,
+        html: `<div style="font-family:sans-serif;padding:20px;background:#F4F6F9">
+          <div style="background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0">
+            <h2 style="color:#0055FF;margin-top:0">SmartLot Notification</h2>
+            <p><strong>Type:</strong> ${body.type || 'Notification'}</p>
+            <p><strong>Reference:</strong> #${body.referenceId || body.schemeId || 'N/A'}</p>
+            <p>${body.description || body.reason || body.commentText || 'SmartLot automated notification'}</p>
+          </div>
+        </div>`,
+        category: `smartlot-${body.type || 'general'}`,
+      }),
+    });
+
+    if (res.ok) {
+      console.log(`[SmartLot Email] 📬 Direct Mailtrap dispatch successful to ${toEmail}`);
+      return { success: true, provider: 'mailtrap_direct' };
+    }
+    return null;
+  } catch (err) {
+    console.warn('[SmartLot Email] Direct Mailtrap dispatch failed, falling back to Edge Function:', err);
+    return null;
+  }
+}
+
+async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; error?: string; provider?: string }> {
+  // 1. Try direct Mailtrap dispatch if configured in Vite .env
+  const directResult = await sendDirectToMailtrap(body);
+  if (directResult?.success) {
+    return directResult;
+  }
+
+  // 2. Dispatch via Supabase Edge function
   if (!supabaseUrl || !anonKey) {
-    console.warn('[SmartLot Email] Supabase URL or Anon Key missing in environment.');
+    console.log(`[SmartLot Email] ✉️ [Sandbox Simulation] ${body.type || 'activity_conduit'} to:`, body.toEmail || body.managerEmail);
     return { success: true, simulated: true };
   }
 
@@ -75,15 +137,14 @@ async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success
     }
 
     if (data.simulated) {
-      console.log(`[SmartLot Email] ✉️ Simulated dispatch: ${body.type || 'activity_conduit'} → ${data.to?.join(', ') || 'recipient'}`);
+      console.log(`[SmartLot Email] ✉️ [Sandbox Simulation]: ${body.type || 'activity_conduit'} → ${data.to?.join(', ') || 'recipient'}`);
     } else {
-      console.log(`[SmartLot Email] ✅ Email dispatched via Resend: ${data.resendId}`);
+      console.log(`[SmartLot Email] 📬 Dispatched via ${data.provider || 'email provider'}:`, data);
     }
 
-    return { success: true, simulated: Boolean(data.simulated) };
+    return { success: true, simulated: Boolean(data.simulated), provider: data.provider };
   } catch (err: any) {
-    console.warn('[SmartLot Email] Network error calling edge function:', err?.message ?? err);
-    // Non-fatal — we return graceful fallback
+    console.warn('[SmartLot Email] Network notice during email dispatch:', err?.message ?? err);
     return { success: false, error: err?.message };
   }
 }

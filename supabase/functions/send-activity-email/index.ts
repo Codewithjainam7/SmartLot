@@ -1,9 +1,13 @@
 // @smartlot/edge-function send-activity-email
-// Sends transactional emails (activity conduit, member invites, triage/status updates, comment alerts) via Resend API.
-// Uses Resend sandbox mode (onboarding@resend.dev) or verified custom domain (mail.smartlot.app).
+// Sends transactional emails (activity conduit, member invites, triage/status updates, comment alerts).
+// Primary provider: Mailtrap (Sandbox testing or Sending API) with fallback to Resend API.
 
+const MAILTRAP_SANDBOX_BASE = "https://sandbox.api.mailtrap.io/api/send";
+const MAILTRAP_SEND_BASE = "https://send.api.mailtrap.io/api/send";
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM_ADDRESS = "SmartLot <onboarding@resend.dev>";
+
+const FROM_EMAIL = "notifications@smartlot.app";
+const FROM_NAME = "SmartLot";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -453,6 +457,9 @@ Deno.serve(async (req: Request) => {
     );
   }
 
+  // Check providers: Mailtrap first, then Resend
+  const mailtrapToken = Deno.env.get("MAILTRAP_API_TOKEN") || Deno.env.get("MAILTRAP_TOKEN");
+  const mailtrapInboxId = Deno.env.get("MAILTRAP_INBOX_ID");
   const resendKey = Deno.env.get("RESEND_API_KEY");
 
   // Determine Email Type
@@ -520,72 +527,120 @@ Deno.serve(async (req: Request) => {
     referenceId = p.referenceId;
   }
 
-  // If RESEND_API_KEY is not configured in Supabase secrets, simulate cleanly
-  if (!resendKey) {
-    console.warn(`[send-activity-email] RESEND_API_KEY not configured. Simulating ${emailType} dispatch to ${to.join(", ")}`);
-    return new Response(
-      JSON.stringify({
-        success: true,
-        simulated: true,
-        type: emailType,
-        to,
-        subject,
-        message: "Email logged. To send live emails, configure RESEND_API_KEY in Supabase dashboard secrets.",
-      }),
-      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
-  }
+  // 1. Dispatch via Mailtrap if token is configured
+  if (mailtrapToken) {
+    const endpoint = mailtrapInboxId
+      ? `${MAILTRAP_SANDBOX_BASE}/${mailtrapInboxId}`
+      : MAILTRAP_SEND_BASE;
 
-  const emailBody: Record<string, any> = {
-    from: FROM_ADDRESS,
-    to,
-    subject,
-    html,
-    tags: [
-      { name: "type", value: emailType },
-      { name: "reference_id", value: referenceId },
-      { name: "source", value: "smartlot" },
-    ],
-  };
+    const mailtrapBody: Record<string, any> = {
+      from: { email: FROM_EMAIL, name: FROM_NAME },
+      to: to.map(email => ({ email })),
+      subject,
+      html,
+      category: `smartlot-${emailType}`,
+    };
 
-  if (cc && cc.length > 0) emailBody.cc = cc;
-  if (replyTo) emailBody.reply_to = replyTo;
-
-  try {
-    const resendRes = await fetch(RESEND_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(emailBody),
-    });
-
-    const resendData = await resendRes.json();
-
-    if (!resendRes.ok) {
-      const resendError = resendData?.message ?? `Resend responded ${resendRes.status}`;
-      console.error("[send-activity-email] Resend error:", resendError, resendData);
-      return new Response(
-        JSON.stringify({ success: false, error: resendError, resendData }),
-        { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+    if (cc && cc.length > 0) {
+      mailtrapBody.cc = cc.map(email => ({ email }));
+    }
+    if (replyTo) {
+      mailtrapBody.headers = { "Reply-To": replyTo };
     }
 
-    console.log(
-      `[send-activity-email] ✅ Email dispatched (${emailType}) → ${to.join(", ")}. Resend ID: ${resendData?.id}`,
-    );
+    try {
+      const mtRes = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${mailtrapToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(mailtrapBody),
+      });
 
-    return new Response(
-      JSON.stringify({ success: true, resendId: resendData?.id, type: emailType }),
-      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
-  } catch (fetchErr) {
-    const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
-    console.error("[send-activity-email] Fetch failed:", msg);
-    return new Response(
-      JSON.stringify({ success: false, error: msg }),
-      { status: 503, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
+      const mtData = await mtRes.json().catch(() => ({}));
+      if (!mtRes.ok) {
+        console.error("[send-activity-email] Mailtrap error:", mtData);
+        return new Response(
+          JSON.stringify({ success: false, provider: "mailtrap", error: mtData?.errors ?? mtData?.message }),
+          { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+        );
+      }
+
+      console.log(`[send-activity-email] 📬 Dispatched via Mailtrap to ${to.join(", ")}`);
+      return new Response(
+        JSON.stringify({ success: true, provider: "mailtrap", messageIds: mtData?.message_ids ?? [mtData?.id] }),
+        { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    } catch (err: any) {
+      console.error("[send-activity-email] Mailtrap network error:", err?.message ?? err);
+      return new Response(
+        JSON.stringify({ success: false, error: err?.message }),
+        { status: 503, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
   }
+
+  // 2. Fallback to Resend if configured
+  if (resendKey) {
+    const emailBody: Record<string, any> = {
+      from: "SmartLot <onboarding@resend.dev>",
+      to,
+      subject,
+      html,
+      tags: [
+        { name: "type", value: emailType },
+        { name: "reference_id", value: referenceId },
+      ],
+    };
+
+    if (cc && cc.length > 0) emailBody.cc = cc;
+    if (replyTo) emailBody.reply_to = replyTo;
+
+    try {
+      const resendRes = await fetch(RESEND_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(emailBody),
+      });
+
+      const resendData = await resendRes.json().catch(() => ({}));
+      if (!resendRes.ok) {
+        console.error("[send-activity-email] Resend error:", resendData);
+        return new Response(
+          JSON.stringify({ success: false, provider: "resend", error: resendData?.message }),
+          { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+        );
+      }
+
+      console.log(`[send-activity-email] ✅ Dispatched via Resend to ${to.join(", ")}`);
+      return new Response(
+        JSON.stringify({ success: true, provider: "resend", resendId: resendData?.id }),
+        { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    } catch (fetchErr: any) {
+      console.error("[send-activity-email] Fetch failed:", fetchErr?.message ?? fetchErr);
+      return new Response(
+        JSON.stringify({ success: false, error: fetchErr?.message }),
+        { status: 503, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
+  }
+
+  // 3. Fallback: Clean simulation mode (logs payload without erroring)
+  console.log(`[send-activity-email] ✉️ [Sandbox Simulation] ${emailType} email dispatched to: ${to.join(", ")} | Subject: ${subject}`);
+  return new Response(
+    JSON.stringify({
+      success: true,
+      simulated: true,
+      type: emailType,
+      to,
+      subject,
+      message: "Email logged in sandbox testing mode. To receive in Mailtrap, set MAILTRAP_API_TOKEN in .env",
+    }),
+    { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+  );
 });
