@@ -55,6 +55,139 @@ export interface CommentNotificationPayload {
   commentText: string;
 }
 
+function buildHtmlForType(body: Record<string, any>): { subject: string; html: string } {
+  const type = body.type || 'activity_conduit';
+
+  if (type === 'member_invite') {
+    const schemeName = body.schemeName || 'SmartLot Scheme';
+    const role = body.role || 'Resident';
+    const lotNumber = body.lotNumber ? `Lot ${body.lotNumber}` : 'Assigned Lot';
+    const joinUrl = body.joinUrl || `https://smartlot.app/join?scheme=${encodeURIComponent(body.schemeId || 'SP101')}`;
+    const inviter = body.inviterName || 'Strata Administration';
+
+    return {
+      subject: `[SmartLot] You are invited to join ${schemeName}`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:30px;background:#F4F6F9">
+          <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;max-width:600px;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+            <div style="background:linear-gradient(135deg,#0055FF 0%,#00D4B2 100%);padding:28px 36px">
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Strata Onboarding</p>
+              <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:800">You're invited to join ${schemeName}</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:13px">${lotNumber} • Plan: ${body.schemeId || 'SP101'}</p>
+            </div>
+            <div style="padding:28px 36px">
+              <p style="margin:0 0 16px;color:#0F172A;font-size:14px;font-weight:600">Hi ${body.toName || 'Resident'},</p>
+              <p style="margin:0 0 20px;color:#334155;font-size:13px;line-height:1.6">
+                <strong>${inviter}</strong> has invited you to access <strong>${schemeName}</strong> as a <strong>${role}</strong>.
+              </p>
+              <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:24px">
+                <p style="margin:0 0 6px;color:#64748B;font-size:12px"><strong>Role:</strong> <span style="color:#0055FF;font-weight:700">${role}</span></p>
+                <p style="margin:0;color:#64748B;font-size:12px"><strong>Lot / Unit:</strong> ${lotNumber}</p>
+              </div>
+              <div style="text-align:center;margin-bottom:24px">
+                <a href="${joinUrl}" target="_blank" style="display:inline-block;background:#0055FF;color:#ffffff;font-size:13px;font-weight:700;padding:12px 28px;border-radius:10px;text-decoration:none">
+                  Activate SmartLot Access &rarr;
+                </a>
+              </div>
+              <p style="margin:0;color:#94A3B8;font-size:11px;border-top:1px solid #E2E8F0;padding-top:16px">SmartLot Automated Onboarding Engine</p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+  }
+
+  if (type === 'status_update') {
+    const ref = body.referenceId || 'N/A';
+    const status = (body.newStatus || 'UPDATED').replace(/_/g, ' ').toUpperCase();
+    return {
+      subject: `[SmartLot #${ref}] Status Updated: ${status}`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:30px;background:#F4F6F9">
+          <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;max-width:600px;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+            <div style="background:linear-gradient(135deg,#0055FF 0%,#0040CC 100%);padding:28px 36px">
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Activity Status Update</p>
+              <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:800">#${ref}: ${status}</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px">${body.activityTitle || 'Activity Notice'}</p>
+            </div>
+            <div style="padding:28px 36px">
+              <p style="margin:0 0 14px;color:#0F172A;font-size:14px;font-weight:600">Hi ${body.requestorName || 'Resident'},</p>
+              <p style="margin:0 0 16px;color:#334155;font-size:13px;line-height:1.6">
+                Your activity <strong>#${ref}</strong> status has been updated to <strong style="color:#0055FF">${status}</strong>.
+              </p>
+              ${body.reason ? `
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:20px">
+                  <p style="margin:0 0 4px;color:#94A3B8;font-size:10px;font-weight:700;text-transform:uppercase">Statutory Rationale / Note</p>
+                  <p style="margin:0;color:#334155;font-size:13px">${body.reason}</p>
+                </div>
+              ` : ''}
+              <p style="margin:0;color:#94A3B8;font-size:11px;border-top:1px solid #E2E8F0;padding-top:16px">SmartLot Activity Tracker</p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+  }
+
+  if (type === 'comment_notification') {
+    const ref = body.referenceId || 'N/A';
+    return {
+      subject: `[SmartLot #${ref}] New message from ${body.commenterName || 'Participant'}`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:30px;background:#F4F6F9">
+          <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;max-width:600px;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+            <div style="background:linear-gradient(135deg,#0055FF 0%,#0040CC 100%);padding:28px 36px">
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Message</p>
+              <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:800">New Message on #${ref}</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px">${body.activityTitle || ''}</p>
+            </div>
+            <div style="padding:28px 36px">
+              <p style="margin:0 0 14px;color:#0F172A;font-size:14px;font-weight:600">Hi ${body.recipientName || 'Member'},</p>
+              <p style="margin:0 0 10px;color:#64748B;font-size:12px"><strong>${body.commenterName}</strong> (${body.commenterRole || 'Member'}) posted:</p>
+              <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:4px solid #0055FF;border-radius:8px;padding:14px;margin-bottom:20px">
+                <p style="margin:0;color:#0F172A;font-size:13px;line-height:1.5">${(body.commentText || '').replace(/\n/g, '<br/>')}</p>
+              </div>
+              <p style="margin:0;color:#94A3B8;font-size:11px;border-top:1px solid #E2E8F0;padding-top:16px">SmartLot Activity Management</p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+  }
+
+  // Default: Conduit email
+  const ref = body.referenceId || 'N/A';
+  return {
+    subject: `[SmartLot #${ref}] ${body.activityTitle || 'New Request'}`,
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:30px;background:#F4F6F9">
+        <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;max-width:600px;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+          <div style="background:linear-gradient(135deg,#0055FF 0%,#0040CC 100%);padding:28px 36px">
+            <p style="margin:0 0 4px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Activity Management</p>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800">New Activity: #${ref}</h1>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px">${body.activityTitle || ''}</p>
+          </div>
+          <div style="padding:28px 36px">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:16px">
+              <p style="margin:0 0 4px;color:#64748B;font-size:12px"><strong>Building:</strong> ${body.buildingName || 'N/A'} • <strong>Unit:</strong> ${body.unit || 'N/A'}</p>
+              <p style="margin:0;color:#64748B;font-size:12px"><strong>Priority:</strong> <span style="color:#FF4757;font-weight:700">${body.priority || 'Normal'}</span> • <strong>Type:</strong> ${body.activityType || 'General'}</p>
+            </div>
+            <p style="margin:0 0 6px;color:#94A3B8;font-size:10px;font-weight:700;text-transform:uppercase">Description</p>
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:20px">
+              <p style="margin:0;color:#334155;font-size:13px;line-height:1.6">${(body.description || '').replace(/\n/g, '<br/>')}</p>
+            </div>
+            <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px;margin-bottom:20px">
+              <p style="margin:0 0 4px;color:#1D4ED8;font-size:12px;font-weight:700">How to Respond</p>
+              <p style="margin:0;color:#1E40AF;font-size:12px;line-height:1.5">Reply All to this email. Your response will be automatically attached to activity #${ref}.</p>
+            </div>
+            <p style="margin:0;color:#94A3B8;font-size:11px;border-top:1px solid #E2E8F0;padding-top:16px">Submitted by ${body.requestorName || 'Resident'} &lt;${body.requestorEmail || ''}&gt;</p>
+          </div>
+        </div>
+      </div>
+    `,
+  };
+}
+
 /**
  * Sends directly to Mailtrap Sandbox API from client if token is present in .env
  */
@@ -71,6 +204,7 @@ async function sendDirectToMailtrap(body: Record<string, any>): Promise<{ succes
 
     const toList = [{ email: toEmail, name: body.toName || body.requestorName || 'Recipient' }];
     const ccList = body.requestorEmail && body.managerEmail ? [{ email: body.requestorEmail }] : undefined;
+    const { subject, html } = buildHtmlForType(body);
 
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -82,15 +216,9 @@ async function sendDirectToMailtrap(body: Record<string, any>): Promise<{ succes
         from: { email: 'notifications@smartlot.app', name: 'SmartLot' },
         to: toList,
         cc: ccList,
-        subject: body.activityTitle ? `[SmartLot #${body.referenceId || ''}] ${body.activityTitle}` : `[SmartLot] Notification`,
-        html: `<div style="font-family:sans-serif;padding:20px;background:#F4F6F9">
-          <div style="background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0">
-            <h2 style="color:#0055FF;margin-top:0">SmartLot Notification</h2>
-            <p><strong>Type:</strong> ${body.type || 'Notification'}</p>
-            <p><strong>Reference:</strong> #${body.referenceId || body.schemeId || 'N/A'}</p>
-            <p>${body.description || body.reason || body.commentText || 'SmartLot automated notification'}</p>
-          </div>
-        </div>`,
+        headers: body.referenceId ? { 'Reply-To': `requests+${String(body.referenceId).replace('#', '')}@mail.smartlot.app` } : undefined,
+        subject,
+        html,
         category: `smartlot-${body.type || 'general'}`,
       }),
     });
@@ -101,7 +229,7 @@ async function sendDirectToMailtrap(body: Record<string, any>): Promise<{ succes
     }
     return null;
   } catch (err) {
-    console.warn('[SmartLot Email] Direct Mailtrap dispatch failed, falling back to Edge Function:', err);
+    console.warn('[SmartLot Email] Direct Mailtrap dispatch notice:', err);
     return null;
   }
 }
