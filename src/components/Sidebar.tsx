@@ -8,7 +8,8 @@ import {
   Wrench,
   UserCheck,
   FileText,
-  Settings
+  Settings,
+  ClipboardList
 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 
@@ -89,14 +90,26 @@ export function Sidebar({
                 isCollapsed={isCollapsed} 
               />
             )}
+            {/* Requests & Activity Module for Everyone */}
             <NavItem 
-              icon={<Wrench size={18} />} 
-              label={(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee')) ? "Triage Requests" : "My Requests"} 
-              active={activeView === 'requests' || activeView === 'triage'} 
-              onClick={() => setActiveView((activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee')) ? 'triage' : 'requests')}
-              badge={(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee')) && pendingTriageCount > 0 ? String(pendingTriageCount) : undefined}
+              icon={<ClipboardList size={18} />} 
+              label={(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? "Requests & Activity" : "My Requests"} 
+              active={activeView === 'requests'} 
+              onClick={() => setActiveView('requests')}
               isCollapsed={isCollapsed} 
             />
+
+            {/* Dedicated Triage Engine for Managers, Admins & Committee Members */}
+            {(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) && (
+              <NavItem 
+                icon={<Wrench size={18} />} 
+                label="Triage Engine" 
+                active={activeView === 'triage'} 
+                onClick={() => setActiveView('triage')}
+                badge={pendingTriageCount && pendingTriageCount > 0 ? String(pendingTriageCount) : undefined}
+                isCollapsed={isCollapsed} 
+              />
+            )}
             <NavItem 
               icon={<FileText size={18} />} 
               label="Bylaws Library" 

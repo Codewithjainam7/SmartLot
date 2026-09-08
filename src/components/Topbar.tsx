@@ -20,13 +20,26 @@ export function Topbar({
   schemes, 
   activeScheme, 
   setActiveScheme, 
+  personas,
   activePersona, 
+  setActivePersona,
   onAddSchemeClick,
   onLogout
 }: TopbarProps) {
   const isResidentOrTenant = activePersona.role === 'Resident' || activePersona.role === 'Tenant' || activePersona.role === 'On-Site Resident';
   const canCreateSites = !isResidentOrTenant;
   const hasMultipleSchemes = schemes.length > 1;
+
+  const handleSwitchPersona = (p: Persona) => {
+    setActivePersona(p);
+    if (p.memberships && p.memberships.length > 0) {
+      const targetSchemeId = p.memberships[0].schemeId;
+      const targetScheme = schemes.find(s => s.id === targetSchemeId);
+      if (targetScheme) {
+        setActiveScheme(targetScheme);
+      }
+    }
+  };
 
   return (
     <div className="h-20 bg-white/50 dark:bg-[#0B1121]/50 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-8 sticky top-0 z-20 font-sans">
@@ -135,12 +148,45 @@ export function Topbar({
         </button>
 
         {/* Dropdown Menu */}
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right p-2 text-left">
+        <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right p-2 text-left z-30">
           <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Logged In As</div>
             <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{activePersona.name}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{activePersona.email}</div>
           </div>
+
+          {/* Quick Persona Switcher for Testing */}
+          {personas && personas.length > 0 && (
+            <div className="py-2 border-b border-gray-100 dark:border-gray-800 space-y-1">
+              <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Switch Test Account
+              </div>
+              {personas.filter(p => !p.isSystemAdmin).map(p => {
+                const isActive = activePersona.name === p.name;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleSwitchPersona(p)}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                      isActive 
+                        ? "bg-[#00D4B2]/15 text-[#00D4B2] font-bold" 
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <div className="truncate">
+                      <span className="font-semibold block">{p.name}</span>
+                      <span className="text-[10px] text-gray-400 block">{p.role} • {p.context}</span>
+                    </div>
+                    {isActive && (
+                      <span className="w-2 h-2 rounded-full bg-[#00D4B2] shrink-0 ml-2" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="pt-2">
             <button
               onClick={onLogout}
