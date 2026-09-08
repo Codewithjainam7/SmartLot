@@ -28,7 +28,8 @@ import {
   Edit3,
   Save,
   Home,
-  Activity
+  Activity,
+  RotateCcw
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -58,7 +59,6 @@ interface UserManagementViewProps {
 
 const ROLE_OPTIONS: SelectOption[] = [
   { value: 'Lot Owner', label: 'Lot Owner', description: 'Property Owner (Levies, Financials & Voting)' },
-  { value: 'Resident', label: 'Resident (Owner-Occupier)', description: 'On-site resident access & request logging' },
   { value: 'Tenant', label: 'Tenant (Renter)', description: 'Renter access (Request logging, No voting)' },
   { value: 'Committee Member', label: 'Committee Member', description: 'Elected governance & quote approval rights' },
   { value: 'Strata Manager', label: 'Strata Manager', description: 'Portfolio administration & scheme setup' },
@@ -98,7 +98,7 @@ export function UserManagementView({
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editRole, setEditRole] = useState<MemberRole>('Resident');
+  const [editRole, setEditRole] = useState<MemberRole>('Lot Owner');
   const [editUnitId, setEditUnitId] = useState('');
   const [editLotNumber, setEditLotNumber] = useState(1);
   const [editStatus, setEditStatus] = useState<'Active' | 'Invited' | 'Restricted'>('Active');
@@ -109,7 +109,7 @@ export function UserManagementView({
     setEditName(m.name || '');
     setEditEmail(m.email || '');
     setEditPhone(m.phone || '');
-    setEditRole(m.role || 'Resident');
+    setEditRole(m.role || 'Lot Owner');
     setEditUnitId(m.unitId || '');
     setEditLotNumber(m.lotNumber || 1);
     setEditStatus(m.status || 'Active');
@@ -166,15 +166,24 @@ export function UserManagementView({
   const canManageUsers = true;
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
+  const activeFiltersCount = (filterRole !== 'all' ? 1 : 0) + (searchQuery.trim() !== '' ? 1 : 0);
+
   const filteredMembers = members.filter(m => {
-    if (filterRole !== 'all' && m.role !== filterRole) return false;
+    if (filterRole !== 'all') {
+      if (filterRole === 'Managers') {
+        if (m.role !== 'Strata Manager' && m.role !== 'Building Manager') return false;
+      } else if (m.role !== filterRole) {
+        return false;
+      }
+    }
     if (filterStatus !== 'all' && m.status !== filterStatus) return false;
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       return (
         m.name.toLowerCase().includes(q) ||
         m.email.toLowerCase().includes(q) ||
-        m.unitId.toLowerCase().includes(q)
+        m.unitId.toLowerCase().includes(q) ||
+        (m.role && m.role.toLowerCase().includes(q))
       );
     }
     return true;
@@ -279,32 +288,90 @@ export function UserManagementView({
             transition={{ duration: 0.2 }}
             className="space-y-8"
           >
-            {/* Filter & Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
-              
-              {/* Search Input */}
-              <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/5 px-4 py-2.5 rounded-2xl text-xs flex-1 max-w-md">
-                <Search size={16} className="text-gray-400 dark:text-gray-500" />
-                <input
-                  type="text"
-                  aria-label="Search members by name, email, or unit number"
-                  placeholder="Search users by name, email, or unit number..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 font-semibold"
-                />
+            {/* Filter & Search Bar - styled like Global Platform Directory */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-4 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
+                
+                {/* Search Input */}
+                <div className="flex items-center gap-2.5 bg-gray-50/80 dark:bg-[#151a28] border border-gray-200/80 dark:border-white/5 px-3.5 py-2.5 rounded-2xl text-xs flex-1 max-w-md focus-within:border-[#0055FF]/50 dark:focus-within:border-[#00D4B2]/50 transition-colors">
+                  <Search size={15} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                  <input
+                    type="text"
+                    aria-label="Search members by name, email, or unit number"
+                    placeholder="Search members by name, email, or unit..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 font-semibold"
+                  />
+                  {searchQuery && (
+                    <button 
+                      type="button"
+                      onClick={() => setSearchQuery('')} 
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Live Counter Badge */}
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 rounded-xl bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[11px] font-extrabold font-mono flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF] dark:bg-[#00D4B2] animate-pulse" />
+                    {filteredMembers.length} of {members.length} Members
+                  </span>
+                </div>
               </div>
 
-              {/* Animated Role Filter Pills */}
-              <div className="flex flex-wrap items-center gap-2">
-                <FilterPill label="All Roles" active={filterRole === 'all'} onClick={() => setFilterRole('all')} count={members.length} />
-                <FilterPill label="Lot Owners" active={filterRole === 'Lot Owner'} onClick={() => setFilterRole('Lot Owner')} />
-                <FilterPill label="Residents" active={filterRole === 'Resident'} onClick={() => setFilterRole('Resident')} />
-                <FilterPill label="Tenants" active={filterRole === 'Tenant'} onClick={() => setFilterRole('Tenant')} />
-                <FilterPill label="Committee" active={filterRole === 'Committee Member'} onClick={() => setFilterRole('Committee Member')} />
-                <FilterPill label="Strata Manager" active={filterRole === 'Strata Manager'} onClick={() => setFilterRole('Strata Manager')} />
-              </div>
+              {/* Quick Role Filter Preset Pills Row */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
+                  {[
+                    { label: 'All Roles', value: 'all', count: members.length },
+                    { label: 'Managers', value: 'Managers', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
+                    { label: 'Committee', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
+                    { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
+                    { label: 'Tenants', value: 'Tenant', count: members.filter(m => m.role === 'Tenant').length },
+                  ].map(tab => {
+                    const isActive = filterRole === tab.value;
+                    return (
+                      <button
+                        key={tab.label}
+                        type="button"
+                        onClick={() => setFilterRole(tab.value)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          isActive
+                            ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <span>{tab.label}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                          isActive 
+                            ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]' 
+                            : 'bg-gray-200/70 dark:bg-white/5 text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {tab.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
+                {/* Reset Filters Button */}
+                {activeFiltersCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFilterRole('all');
+                      setSearchQuery('');
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-red-500/20 shadow-xs"
+                  >
+                    <RotateCcw size={12} /> Clear Filters ({activeFiltersCount})
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Member Roster AG Grid */}
@@ -742,7 +809,6 @@ export function UserManagementView({
                     <CustomSelect
                       options={[
                         { value: 'Lot Owner', label: 'Lot Owner' },
-                        { value: 'Resident', label: 'Resident (Owner-Occupier)' },
                         { value: 'Tenant', label: 'Tenant (Renter)' },
                         { value: 'Committee Member', label: 'Committee Member' },
                         { value: 'Strata Manager', label: 'Strata Manager' },
@@ -1012,7 +1078,7 @@ function AddMemberFormContent({
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
-  const [formRole, setFormRole] = useState<MemberRole>(prefillUnit ? 'Resident' : 'Lot Owner');
+  const [formRole, setFormRole] = useState<MemberRole>(prefillUnit ? 'Tenant' : 'Lot Owner');
   const [formUnit, setFormUnit] = useState(prefillUnit || 'Unit 10');
   const [formLot, setFormLot] = useState<number | string>(prefillLotNumber || 10);
   const [additionalOccupants, setAdditionalOccupants] = useState<{ id: string; name: string; email: string; role: 'Resident' | 'Tenant' | 'Family Member' | 'Co-Owner' }[]>([]);
