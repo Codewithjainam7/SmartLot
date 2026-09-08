@@ -844,6 +844,25 @@ export function ResidentRequestsView({
                   <span className="text-gray-400">Status: Notification dispatched</span>
                   <span className="text-gray-500">Preference: {activeDetail.contactPreference || 'Email'}</span>
                 </div>
+
+                {onSimulateManagerReply && activeDetail.status !== 'closed' && (
+                  <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-[10px] text-gray-400">Strata Manager responding via email?</span>
+                    <button
+                      type="button"
+                      onClick={() => onSimulateManagerReply(
+                        activeDetail.id,
+                        "Thanks. I've contacted the security gate contractor. They will attend tomorrow to inspect.",
+                        activeDetail.strataManagerEmail ? (activeDetail.strataManagerEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())) : 'Emma Wilson'
+                      )}
+                      className="px-3 py-1.5 rounded-xl bg-[#00D4B2]/15 hover:bg-[#00D4B2]/25 text-[#00D4B2] border border-[#00D4B2]/30 text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 self-end sm:self-auto"
+                      title="Simulate manager replying via email to test automatic capture"
+                    >
+                      <Mail size={12} />
+                      <span>Simulate Inbound Email Reply</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Description Card */}
