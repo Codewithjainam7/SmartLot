@@ -726,12 +726,12 @@ export function ResidentRequestsView({
                               </div>
 
                               {/* Event chip body */}
-                              <div className={`flex-1 mb-3 rounded-2xl px-3.5 py-2.5 border ${meta.bg} ${meta.border} text-[11px]`}>
+                              <div className={`flex-1 min-w-0 mb-3 rounded-2xl px-3.5 py-2.5 border ${meta.bg} ${meta.border} text-[11px]`}>
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2 flex-wrap">
+                                  <div className="flex items-center gap-2 flex-wrap min-w-0">
                                     <span className="font-bold text-white">{meta.label}</span>
                                     {ev.fromStatus && ev.toStatus && (
-                                      <span className="flex items-center gap-1 text-gray-400">
+                                      <span className="flex items-center gap-1 text-gray-400 min-w-0">
                                         <span className="px-1.5 py-0.5 rounded bg-white/8 capitalize">{ev.fromStatus.replace(/_/g, ' ')}</span>
                                         <span className="text-gray-500">→</span>
                                         <span className="px-1.5 py-0.5 rounded bg-white/8 capitalize">{ev.toStatus.replace(/_/g, ' ')}</span>
@@ -768,7 +768,7 @@ export function ResidentRequestsView({
                         const isHelpful = helpfulComments[c.id];
 
                         return (
-                          <div key={c.id} className="flex items-start gap-3">
+                          <div key={c.id} className="flex items-start gap-3 w-full min-w-0">
                             {/* Avatar */}
                             <div className="relative flex flex-col items-center shrink-0">
                               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${avatarBg} border border-white/10 shadow-sm`}>
@@ -780,15 +780,15 @@ export function ResidentRequestsView({
                             </div>
 
                             {/* Message Body */}
-                            <div className="flex-1 mb-3 space-y-1.5">
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-bold text-white text-xs">{c.authorName}</span>
-                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeBg}`}>
+                            <div className="flex-1 min-w-0 mb-3 space-y-1.5">
+                              <div className="flex items-center justify-between gap-2 text-xs w-full">
+                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                  <span className="font-bold text-white text-xs truncate">{c.authorName}</span>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${roleBadgeBg}`}>
                                     {c.authorRole}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-gray-400 text-[11px]">
+                                <div className="flex items-center gap-2 text-gray-400 text-[11px] shrink-0">
                                   {c.isEdited && (
                                     <span className="text-[10px] text-gray-500 font-medium italic">
                                       (edited)
@@ -839,12 +839,12 @@ export function ResidentRequestsView({
                                 </div>
                               </div>
 
-                              <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4 border border-white/5 space-y-3 transition-colors shadow-xs">
+                              <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4 border border-white/5 space-y-3 transition-colors shadow-xs w-full overflow-hidden">
                                 {c.replyTo && (
-                                  <div className="bg-white/[0.04] border-l-2 border-[#00D4B2] px-3 py-1.5 rounded-r-xl rounded-l-xs text-[11px] text-gray-300 flex items-center gap-2">
+                                  <div className="bg-white/[0.04] border-l-2 border-[#00D4B2] px-3 py-1.5 rounded-r-xl rounded-l-xs text-[11px] text-gray-300 flex items-center gap-2 min-w-0 w-full overflow-hidden">
                                     <Reply size={12} className="text-[#00D4B2] shrink-0" />
-                                    <span className="font-semibold text-white/90">@{c.replyTo.authorName}:</span>
-                                    <span className="truncate text-gray-400 font-normal">{c.replyTo.text}</span>
+                                    <span className="font-semibold text-white/90 shrink-0">@{c.replyTo.authorName}:</span>
+                                    <span className="truncate text-gray-400 font-normal min-w-0 flex-1">{c.replyTo.text}</span>
                                   </div>
                                 )}
 
