@@ -20,7 +20,6 @@ import {
   X, 
   Trash2,
   Plus,
-  Link2,
   Check,
   Shield,
   Lock,
@@ -94,7 +93,6 @@ export function UserManagementView({
 
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [permTab, setPermTab] = useState<'default' | 'individual'>('default');
-  const [copied, setCopied] = useState(false);
 
   // Column-Specific Search & Filter States (Enterprise AG-Grid style matching Global Platform Directory)
   const [colSearchName, setColSearchName] = useState('');
@@ -187,13 +185,6 @@ export function UserManagementView({
     } finally {
       setIsSavingEdit(false);
     }
-  };
-
-  const handleCopyInviteLink = () => {
-    const joinLink = `${window.location.origin}/#/join/${activeSchemeId}`;
-    navigator.clipboard.writeText(joinLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const [prefillLotData, setPrefillLotData] = useState<Member | null>(null);
@@ -373,34 +364,15 @@ export function UserManagementView({
             </div>
 
             {activeTab === 'roster' && (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyInviteLink}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-[#151a28] hover:bg-gray-200/80 dark:hover:bg-white/10 text-gray-800 dark:text-white font-bold text-xs border border-gray-200/80 dark:border-white/10 transition-all cursor-pointer"
+              <MorphingPopoverTrigger>
+                <div 
+                  onClick={() => setPrefillLotData(null)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  {copied ? (
-                    <>
-                      <Check size={14} className="text-[#059669]" />
-                      <span>Copied Link!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Link2 size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                      <span>Copy Link</span>
-                    </>
-                  )}
-                </button>
-                <MorphingPopoverTrigger>
-                  <div 
-                    onClick={() => setPrefillLotData(null)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-                  >
-                    <UserPlus size={15} /> 
-                    <span>Invite Member</span>
-                  </div>
-                </MorphingPopoverTrigger>
-              </div>
+                  <UserPlus size={15} /> 
+                  <span>Invite Member</span>
+                </div>
+              </MorphingPopoverTrigger>
             )}
           </div>
         </div>
