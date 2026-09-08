@@ -235,7 +235,25 @@ async function sendDirectToMailtrap(body: Record<string, any>): Promise<{ succes
 }
 
 async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; error?: string; provider?: string }> {
-  // 1. Try direct Mailtrap dispatch if configured in Vite .env
+  const { subject, html } = buildHtmlForType(body);
+
+  // 1. Try local dev server Mailtrap relay (/api/email) - zero CORS issues
+  try {
+    const localRes = await fetch('/api/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, subject, html }),
+    });
+    if (localRes.ok) {
+      const data = await localRes.json();
+      console.log(`[SmartLot Email] 📬 Dispatched via local Mailtrap relay:`, data);
+      return { success: true, provider: 'mailtrap_sandbox' };
+    }
+  } catch (relayErr) {
+    // If running in an environment without the local Vite proxy, fallback gracefully
+  }
+
+  // 2. Try direct Mailtrap dispatch if configured in Vite .env
   const directResult = await sendDirectToMailtrap(body);
   if (directResult?.success) {
     return directResult;

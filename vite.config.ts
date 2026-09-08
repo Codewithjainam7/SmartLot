@@ -9,45 +9,67 @@ import dotenv from 'dotenv';
 dotenv.config();
 const resend = new Resend(process.env.RESEND_API_KEY || 're_mock_key');
 
-function resendPlugin() {
+function mailtrapPlugin() {
   return {
-    name: 'resend-invite-api',
+    name: 'mailtrap-email-api',
     configureServer(server: any) {
       server.middlewares.use(async (req: any, res: any, next: any) => {
-        if (req.url === '/api/invite' && req.method === 'POST') {
+        if (req.url === '/api/email' && req.method === 'POST') {
           let body = '';
           req.on('data', (chunk: any) => { body += chunk.toString(); });
           req.on('end', async () => {
             try {
               const data = JSON.parse(body);
-              const { toEmail, toName, role, schemeName, schemeId, inviterName } = data;
+              const token = process.env.MAILTRAP_API_TOKEN || 'b68d42639db12dd9c3a52f87968d94de';
+              const inboxId = process.env.MAILTRAP_INBOX_ID || '4900976';
               
-              if (!toEmail) throw new Error('Missing toEmail');
+              const toEmail = data.toEmail || data.managerEmail;
+              if (!toEmail) throw new Error('Missing recipient email (toEmail or managerEmail)');
 
-              const inviteUrl = `http://localhost:3000/join/${schemeId}`;
+              const toList = [{ email: toEmail, name: data.toName || data.requestorName || 'Recipient' }];
+              const ccList = data.requestorEmail && data.managerEmail ? [{ email: data.requestorEmail }] : undefined;
 
-              const response = await resend.emails.send({
-                from: 'Smart Lot <onboarding@resend.dev>',
-                to: toEmail,
-                subject: `You have been invited to ${schemeName}`,
-                html: `
-                  <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-                    <h2>Welcome to Smart Lot!</h2>
-                    <p>Hi ${toName},</p>
-                    <p><strong>${inviterName}</strong> has invited you to join <strong>${schemeName}</strong> as a <strong>${role}</strong>.</p>
-                    <div style="margin: 30px 0;">
-                      <a href="${inviteUrl}" style="background-color: #00D4B2; color: #0B1121; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Accept Invitation</a>
-                    </div>
-                    <p style="color: #666; font-size: 14px;">If you didn't expect this invitation, you can safely ignore this email.</p>
-                  </div>
-                `,
+              const mailtrapPayload: Record<string, any> = {
+                from: { email: 'notifications@smartlot.app', name: 'SmartLot' },
+                to: toList,
+                subject: data.subject || `[SmartLot] Notification`,
+                html: data.html || `<p>${data.description || 'SmartLot Notification'}</p>`,
+                category: data.category || `smartlot-${data.type || 'invite'}`,
+              };
+
+              if (ccList && ccList.length > 0) {
+                mailtrapPayload.cc = ccList;
+              }
+              if (data.referenceId) {
+                mailtrapPayload.headers = {
+                  'Reply-To': `requests+${String(data.referenceId).replace('#', '')}@mail.smartlot.app`
+                };
+              }
+
+              const response = await fetch(`https://sandbox.api.mailtrap.io/api/send/${inboxId}`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(mailtrapPayload)
               });
 
+              const result = await response.json();
+              if (!response.ok) {
+                console.error('[Vite Mailtrap Relay Error]:', result);
+                res.statusCode = response.status;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, error: result }));
+                return;
+              }
+
+              console.log(`[Vite Mailtrap Relay] 📬 Email sent to Sandbox Inbox #${inboxId}:`, result);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success: true, response }));
+              res.end(JSON.stringify({ success: true, result }));
             } catch (error: any) {
-              console.error('Resend Error:', error);
+              console.error('[Vite Mailtrap Relay Error]:', error);
               res.statusCode = 500;
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ success: false, error: error.message }));
@@ -63,7 +85,7 @@ function resendPlugin() {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), resendPlugin()],
+    plugins: [react(), tailwindcss(), mailtrapPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
