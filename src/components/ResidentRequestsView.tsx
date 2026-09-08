@@ -37,7 +37,9 @@ import {
   Lock,
   Shield,
   RotateCcw,
-  Inbox
+  Inbox,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -46,6 +48,8 @@ interface ResidentRequestsViewProps {
   onSubmitRequest: (data: any) => any;
   onCloseRequest: (requestId: string, reason: string) => void;
   onAddComment: (requestId: string, text: string, replyTo?: { authorName: string; text: string }) => void;
+  onEditComment?: (requestId: string, commentId: string, newText: string) => void;
+  onDeleteComment?: (requestId: string, commentId: string) => void;
   onSimulateManagerReply?: (requestId: string, replyText: string, managerName?: string) => void;
   onAddInternalNote?: (requestId: string, text: string) => void;
   onUpdateStatus?: (requestId: string, status: CaseStatus) => void;
@@ -66,6 +70,8 @@ export function ResidentRequestsView({
   onSubmitRequest,
   onCloseRequest,
   onAddComment,
+  onEditComment,
+  onDeleteComment,
   onSimulateManagerReply,
   onAddInternalNote,
   onUpdateStatus,
@@ -92,6 +98,9 @@ export function ResidentRequestsView({
   const [commentLikes, setCommentLikes] = useState<Record<string, number>>({ 'C-1': 2, 'C-2': 1 });
   const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
   const [helpfulComments, setHelpfulComments] = useState<Record<string, boolean>>({ 'C-1': true });
+  const [activeMenuCommentId, setActiveMenuCommentId] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
 
   const toggleLikeComment = (commentId: string) => {
     const isLiked = likedByUser[commentId];
@@ -154,6 +163,25 @@ export function ResidentRequestsView({
     setCommentInput('');
     setReplyingToComment(null);
     setShowMentionMenu(false);
+  };
+
+  const handleSaveEditComment = (commentId: string) => {
+    if (!editingCommentText.trim() || !activeDetail) return;
+    if (onEditComment) {
+      onEditComment(activeDetail.id, commentId, editingCommentText.trim());
+    }
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    if (!activeDetail) return;
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      if (onDeleteComment) {
+        onDeleteComment(activeDetail.id, commentId);
+      }
+    }
+    setActiveMenuCommentId(null);
   };
 
   const handleAddInternalNote = (e: React.FormEvent) => {
@@ -730,6 +758,9 @@ export function ResidentRequestsView({
                         const commentIdx = item.idx;
                         const authorInitials = c.authorName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
                         const isManager = c.authorRole.toLowerCase().includes('manager') || c.authorRole.toLowerCase().includes('admin');
+                        const isAuthor = c.authorName === activePersonaName;
+                        const canEditOrDelete = isAuthor || isManagerOrAdmin;
+                        const isEditingThis = editingCommentId === c.id;
                         const roleBadgeBg = isManager ? 'bg-[#0055FF]/20 text-[#66A3FF] border border-[#0055FF]/40' : 'bg-purple-900/30 text-purple-300 border border-purple-500/30';
                         const avatarBg = commentIdx % 2 === 0 ? 'bg-[#2A4365] text-[#90CDF4]' : 'bg-[#44337A] text-[#D6BCFA]';
                         const likesCount = commentLikes[c.id] || 0;
@@ -758,8 +789,53 @@ export function ResidentRequestsView({
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400 text-[11px]">
+                                  {c.isEdited && (
+                                    <span className="text-[10px] text-gray-500 font-medium italic">
+                                      (edited)
+                                    </span>
+                                  )}
                                   <span>{c.createdAt}</span>
-                                  <MoreVertical size={13} className="text-gray-500 hover:text-white cursor-pointer" />
+
+                                  {canEditOrDelete && (
+                                    <div className="relative">
+                                      <button
+                                        type="button"
+                                        onClick={() => setActiveMenuCommentId(activeMenuCommentId === c.id ? null : c.id)}
+                                        className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                                        title="More options"
+                                      >
+                                        <MoreVertical size={13} />
+                                      </button>
+
+                                      {activeMenuCommentId === c.id && (
+                                        <>
+                                          <div className="fixed inset-0 z-20" onClick={() => setActiveMenuCommentId(null)} />
+                                          <div className="absolute right-0 top-full mt-1 z-30 bg-[#0E1524] border border-white/10 rounded-2xl shadow-2xl py-1 min-w-[110px] backdrop-blur-md animate-in fade-in duration-150">
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setEditingCommentId(c.id);
+                                                setEditingCommentText(c.text);
+                                                setActiveMenuCommentId(null);
+                                              }}
+                                              className="w-full text-left px-3.5 py-1.5 text-xs text-gray-200 hover:text-white hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors"
+                                            >
+                                              <Pencil size={12} className="text-[#00D4B2]" />
+                                              <span>Edit</span>
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteComment(c.id)}
+                                              className="w-full text-left px-3.5 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2 cursor-pointer transition-colors"
+                                            >
+                                              <Trash2 size={12} className="text-red-400" />
+                                              <span>Delete</span>
+                                            </button>
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -772,18 +848,50 @@ export function ResidentRequestsView({
                                   </div>
                                 )}
 
-                                <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
-                                  {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part: string, i: number) => {
-                                    if (part.startsWith('@')) {
-                                      return (
-                                        <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
-                                          {part}
-                                        </span>
-                                      );
-                                    }
-                                    return part;
-                                  })}
-                                </p>
+                                {isEditingThis ? (
+                                  <div className="space-y-2 pt-1">
+                                    <textarea
+                                      rows={2}
+                                      value={editingCommentText}
+                                      onChange={(e) => setEditingCommentText(e.target.value)}
+                                      className="w-full bg-[#070B14] border border-[#00D4B2]/40 focus:border-[#00D4B2] rounded-2xl p-2.5 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
+                                      autoFocus
+                                    />
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setEditingCommentId(null);
+                                          setEditingCommentText('');
+                                        }}
+                                        className="px-3 py-1 rounded-full text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSaveEditComment(c.id)}
+                                        disabled={!editingCommentText.trim() || editingCommentText.trim() === c.text}
+                                        className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-3.5 py-1 rounded-full text-xs font-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-sm"
+                                      >
+                                        Save
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
+                                    {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part: string, i: number) => {
+                                      if (part.startsWith('@')) {
+                                        return (
+                                          <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
+                                            {part}
+                                          </span>
+                                        );
+                                      }
+                                      return part;
+                                    })}
+                                  </p>
+                                )}
 
                                 <div className="flex items-center justify-between pt-1.5 border-t border-white/5 text-xs text-gray-400">
                                   <div className="flex items-center gap-4">

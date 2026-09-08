@@ -400,6 +400,8 @@ export default function App() {
               onSubmitRequest={store.submitResidentRequest}
               onCloseRequest={store.closeResidentRequest}
               onAddComment={store.addCommentToRequest}
+              onEditComment={store.editCommentOnRequest}
+              onDeleteComment={store.deleteCommentFromRequest}
               onSimulateManagerReply={store.simulateManagerEmailReply}
               onAddInternalNote={store.addInternalNoteToRequest}
               onUpdateStatus={store.updateActivityStatus}

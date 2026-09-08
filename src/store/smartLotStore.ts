@@ -68,6 +68,8 @@ export type RequestComment = {
   };
   likes?: number;
   isMarkedHelpful?: boolean;
+  isEdited?: boolean;
+  editedAt?: string;
 };
 
 export type AuditEventType =
@@ -1340,6 +1342,8 @@ export function useSmartLotStore() {
               text: c.text,
               createdAt: new Date(c.created_at).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }),
               replyTo: c.reply_to_name ? { authorName: c.reply_to_name, text: c.reply_to_text || '' } : undefined,
+              isEdited: c.is_edited || false,
+              editedAt: c.edited_at ? new Date(c.edited_at).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }) : undefined,
             }));
 
           const internalNotes: InternalNote[] = (notesData || [])
@@ -2399,6 +2403,80 @@ export function useSmartLotStore() {
     });
   };
 
+  const editCommentOnRequest = (requestId: string, commentId: string, newText: string) => {
+    if (!newText.trim()) return;
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      return {
+        ...r,
+        comments: r.comments.map(c => {
+          if (c.id !== commentId) return c;
+          return {
+            ...c,
+            text: newText.trim(),
+            isEdited: true,
+            editedAt: nowStr,
+          };
+        }),
+      };
+    }));
+
+    // Persist to Supabase
+    supabase
+      .from('request_comments')
+      .update({
+        text: newText.trim(),
+        is_edited: true,
+        edited_at: new Date().toISOString(),
+      })
+      .eq('id', commentId)
+      .then(({ error }) => {
+        if (error) {
+          supabase
+            .from('request_comments')
+            .update({
+              text: newText.trim(),
+              is_edited: true,
+              edited_at: new Date().toISOString(),
+            })
+            .eq('request_id', requestId)
+            .eq('author_name', activePersona.name)
+            .then(({ error: err2 }) => {
+              if (err2) console.warn('[SmartLot] request_comments edit note:', err2.message);
+            });
+        }
+      });
+  };
+
+  const deleteCommentFromRequest = (requestId: string, commentId: string) => {
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      return {
+        ...r,
+        comments: r.comments.filter(c => c.id !== commentId),
+      };
+    }));
+
+    // Persist deletion to Supabase
+    supabase
+      .from('request_comments')
+      .delete()
+      .eq('id', commentId)
+      .then(({ error }) => {
+        if (error) {
+          supabase
+            .from('request_comments')
+            .delete()
+            .eq('request_id', requestId)
+            .eq('author_name', activePersona.name)
+            .then(({ error: err2 }) => {
+              if (err2) console.warn('[SmartLot] request_comments delete note:', err2.message);
+            });
+        }
+      });
+  };
+
   const addInternalNoteToRequest = (requestId: string, text: string) => {
     if (!text.trim()) return;
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
@@ -2587,6 +2665,8 @@ export function useSmartLotStore() {
     assignActivity,
     reopenActivity,
     addCommentToRequest,
+    editCommentOnRequest,
+    deleteCommentFromRequest,
     addInternalNoteToRequest,
     addResidentToUnit,
     offboardActor,
