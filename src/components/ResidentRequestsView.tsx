@@ -502,11 +502,11 @@ export function ResidentRequestsView({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-black text-[#00D4B2] uppercase tracking-wider">
                     <Mail size={15} />
-                    <span>Conduit Email Dispatch Record</span>
+                    <span>Email Dispatch Record</span>
                   </div>
                   <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 flex items-center gap-1">
                     <Check size={11} className="stroke-[3]" />
-                    <span>Dispatched via SmartLot Conduit</span>
+                    <span>Dispatched via SmartLot</span>
                   </span>
                 </div>
                 <div className="text-[11px] font-mono text-gray-300 space-y-1.5 bg-black/40 rounded-xl p-3 border border-white/5">
@@ -528,7 +528,7 @@ export function ResidentRequestsView({
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-gray-400 pt-0.5">
-                  <span>Manager responds by clicking <strong>Reply All</strong> — no account required.</span>
+                  <span className="text-gray-400">Status: Notification dispatched</span>
                   <span className="text-gray-500">Preference: {activeDetail.contactPreference || 'Email'}</span>
                 </div>
               </div>

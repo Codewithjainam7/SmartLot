@@ -489,10 +489,10 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
       {
         id: 'AUD-SL-10452-2',
         type: 'email_sent',
-        actor: 'SmartLot Conduit',
+        actor: 'SmartLot Email',
         actorRole: 'System',
         timestamp: '1 hour ago',
-        note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10452@smartlot.com',
+        note: 'Notification email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10452@smartlot.com',
       },
       {
         id: 'AUD-SL-10452-3',
@@ -533,7 +533,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     comments: [],
     auditLog: [
       { id: 'AUD-D101-1', type: 'created', actor: 'Sarah Jones', actorRole: 'Lot Owner', timestamp: '3 hours ago', note: 'Activity submitted by resident.' },
-      { id: 'AUD-D101-2', type: 'email_sent', actor: 'SmartLot Conduit', actorRole: 'System', timestamp: '3 hours ago', note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10451@smartlot.com' },
+      { id: 'AUD-D101-2', type: 'email_sent', actor: 'SmartLot Email', actorRole: 'System', timestamp: '3 hours ago', note: 'Notification email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10451@smartlot.com' },
     ],
   },
   {
@@ -1369,10 +1369,10 @@ export function useSmartLotStore() {
             initialAuditLog.push({
               id: `AUD-${r.id}-2`,
               type: 'email_sent',
-              actor: 'SmartLot Conduit',
+              actor: 'SmartLot Email',
               actorRole: 'System',
               timestamp: dateStr,
-              note: `Conduit email dispatched to ${r.strata_manager_email}. Resident CC'd. Reply-To: requests+${ref.replace('#', '')}@mail.smartlot.app`,
+              note: `Notification email dispatched to ${r.strata_manager_email}. Resident CC'd. Reply-To: requests+${ref.replace('#', '')}@mail.smartlot.app`,
             });
           }
 
@@ -2016,10 +2016,10 @@ export function useSmartLotStore() {
         {
           id: `AUD-${id}-2`,
           type: 'email_sent',
-          actor: 'SmartLot Conduit',
+          actor: 'SmartLot Email',
           actorRole: 'System',
           timestamp: `Today at ${nowStr}`,
-          note: `Conduit email dispatched to ${managerEmail}. Resident CC'd at ${requestorEmail}. Reply-To: requests+${slRef}@mail.smartlot.app`,
+          note: `Notification email dispatched to ${managerEmail}. Resident CC'd at ${requestorEmail}. Reply-To: requests+${slRef}@mail.smartlot.app`,
         },
       ],
     };
