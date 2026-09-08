@@ -378,9 +378,11 @@ export function UserManagementView({
             <MemberRosterGrid
               members={filteredMembers}
               activePersonaName={activePersonaName}
+              activeSchemeId={activeSchemeId}
               onViewDetails={setSelectedMember}
               onEditMember={handleOpenEdit}
               onUpdateStatus={onUpdateStatus}
+              onDeleteMember={onDeleteMember}
             />
           </motion.div>
         ) : (
@@ -865,23 +867,39 @@ export function UserManagementView({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex items-center justify-between gap-2.5 pt-4 border-t border-gray-100 dark:border-gray-800">
                   <button
                     type="button"
-                    onClick={() => setEditingMember(null)}
-                    disabled={isSavingEdit}
-                    className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors"
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to permanently delete member ${editName || 'this user'} from scheme ${activeSchemeId}?`)) {
+                        onDeleteMember(editingMember.id);
+                        setEditingMember(null);
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors border border-red-500/20"
                   >
-                    Cancel
+                    <Trash2 size={13} />
+                    <span>Delete Member</span>
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isSavingEdit}
-                    className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer transition-all hover:scale-[1.02]"
-                  >
-                    <Save size={14} />
-                    <span>{isSavingEdit ? 'Saving...' : 'Save Changes'}</span>
-                  </button>
+
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditingMember(null)}
+                      disabled={isSavingEdit}
+                      className="px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingEdit}
+                      className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer transition-all hover:scale-[1.02]"
+                    >
+                      <Save size={14} />
+                      <span>{isSavingEdit ? 'Saving...' : 'Save Changes'}</span>
+                    </button>
+                  </div>
                 </div>
               </form>
             </motion.div>
@@ -898,12 +916,22 @@ export function UserManagementView({
 interface MemberRosterGridProps {
   members: Member[];
   activePersonaName: string;
+  activeSchemeId: string;
   onViewDetails: (m: Member) => void;
   onEditMember: (m: Member) => void;
   onUpdateStatus: (id: string, status: 'Active' | 'Invited' | 'Restricted') => void;
+  onDeleteMember: (id: string) => void;
 }
 
-function MemberRosterGrid({ members, activePersonaName, onViewDetails, onEditMember, onUpdateStatus }: MemberRosterGridProps) {
+function MemberRosterGrid({ 
+  members, 
+  activePersonaName, 
+  activeSchemeId, 
+  onViewDetails, 
+  onEditMember, 
+  onUpdateStatus, 
+  onDeleteMember 
+}: MemberRosterGridProps) {
   const roleColors: Record<string, string> = {
     'Lot Owner':        'bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]/20',
     'Resident':         'bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/20',
@@ -1022,6 +1050,19 @@ function MemberRosterGrid({ members, activePersonaName, onViewDetails, onEditMem
                         </button>
                       )
                     )}
+                    {m.name !== activePersonaName && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to remove ${m.name} (${m.email}) from scheme ${activeSchemeId}?`)) {
+                            onDeleteMember(m.id);
+                          }
+                        }}
+                        className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 border border-transparent hover:border-[#FF4757]/20 transition-all cursor-pointer hover:scale-105"
+                        title={`Delete Member ${m.name}`}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -1105,6 +1146,9 @@ function AddMemberFormContent({
     if (!formName || !formEmail) return;
     setIsSubmitting(true);
 
+    const primaryToken = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const primaryJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${primaryToken}&email=${encodeURIComponent(formEmail.trim())}`;
+
     try {
       // 1. Dispatch invite email to primary member
       await dispatchMemberInviteEmail({
@@ -1115,11 +1159,15 @@ function AddMemberFormContent({
         schemeId: activeSchemeId,
         lotNumber: formLot,
         inviterName: activePersonaName,
+        inviteToken: primaryToken,
+        joinUrl: primaryJoinUrl,
       });
 
       // 2. Dispatch invite emails to any additional occupants
       const validOccupants = additionalOccupants.filter(o => o.name.trim() && o.email.trim());
       for (const occ of validOccupants) {
+        const occToken = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        const occJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${occToken}&email=${encodeURIComponent(occ.email.trim())}`;
         await dispatchMemberInviteEmail({
           toEmail: occ.email.trim(),
           toName: occ.name.trim(),
@@ -1128,6 +1176,8 @@ function AddMemberFormContent({
           schemeId: activeSchemeId,
           lotNumber: formLot,
           inviterName: activePersonaName,
+          inviteToken: occToken,
+          joinUrl: occJoinUrl,
         });
       }
     } catch (err) {
@@ -1142,6 +1192,8 @@ function AddMemberFormContent({
       unitId: formUnit,
       lotNumber: Number(formLot),
       additionalOccupants: additionalOccupants.filter(o => o.name.trim() && o.email.trim()),
+      initialStatus: 'Invited',
+      inviteToken: primaryToken,
     });
     
     setIsSubmitting(false);

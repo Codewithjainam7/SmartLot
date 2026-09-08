@@ -31,6 +31,7 @@ export interface MemberInvitePayload {
   schemeId: string;
   lotNumber?: number | string;
   inviterName?: string;
+  inviteToken?: string;
   joinUrl?: string;
 }
 
@@ -62,7 +63,10 @@ function buildHtmlForType(body: Record<string, any>): { subject: string; html: s
     const schemeName = body.schemeName || 'SmartLot Scheme';
     const role = body.role || 'Resident';
     const lotNumber = body.lotNumber ? `Lot ${body.lotNumber}` : 'Assigned Lot';
-    const joinUrl = body.joinUrl || `https://smartlot.app/join?scheme=${encodeURIComponent(body.schemeId || 'SP101')}`;
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
+    const tokenQuery = body.inviteToken ? `?token=${encodeURIComponent(body.inviteToken)}` : '';
+    const emailQuery = body.toEmail ? `${tokenQuery ? '&' : '?'}email=${encodeURIComponent(body.toEmail)}` : '';
+    const joinUrl = body.joinUrl || `${origin}/#/join/${encodeURIComponent(body.schemeId || 'SP101')}${tokenQuery}${emailQuery}`;
     const inviter = body.inviterName || 'Strata Administration';
 
     return {

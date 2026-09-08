@@ -40,17 +40,42 @@ export default function App() {
   // Pre-fill parameters when redirecting from landing page simulating a persona
   const [prefillPersona, setPrefillPersona] = useState<string | null>(null);
   const [joinSchemeId, setJoinSchemeId] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const parseUrl = () => {
-      const hashMatch = window.location.hash.match(/^#\/join\/([A-Za-z0-9_-]+)/);
-      const pathMatch = window.location.pathname.match(/^\/join\/([A-Za-z0-9_-]+)/);
-      const schemeId = hashMatch ? hashMatch[1] : (pathMatch ? pathMatch[1] : null);
+      const hashStr = window.location.hash || '';
+      const pathStr = window.location.pathname || '';
 
-      if (schemeId) {
-        setJoinSchemeId(schemeId);
+      // Extract query parameters from hash (?token=...) or window.location.search
+      let queryString = '';
+      if (hashStr.includes('?')) {
+        queryString = hashStr.split('?')[1];
+      } else if (window.location.search) {
+        queryString = window.location.search.replace(/^\?/, '');
+      }
+
+      const params = new URLSearchParams(queryString);
+      const token = params.get('token');
+      const email = params.get('email');
+      const schemeFromParam = params.get('scheme');
+
+      // Match path or hash like #/join/SP101 or #/join?scheme=SP101 or /lander?scheme=SP101
+      const hashMatch = hashStr.match(/^#\/join(?:\/([A-Za-z0-9_-]+))?/);
+      const pathMatch = pathStr.match(/^\/join(?:\/([A-Za-z0-9_-]+))?/);
+      const isLander = hashStr.includes('lander') || pathStr.includes('lander');
+
+      const extractedSchemeId = hashMatch?.[1] || pathMatch?.[1] || schemeFromParam || (isLander ? schemeFromParam : null);
+
+      if (extractedSchemeId || token) {
+        setJoinSchemeId(extractedSchemeId || 'SP101');
+        setInviteToken(token || null);
+        setInvitedEmail(email || null);
       } else {
         setJoinSchemeId(null);
+        setInviteToken(null);
+        setInvitedEmail(null);
       }
     };
     parseUrl();
@@ -220,12 +245,17 @@ export default function App() {
     return (
       <JoinSchemeView 
         schemeId={joinSchemeId}
+        inviteToken={inviteToken || undefined}
+        invitedEmail={invitedEmail || undefined}
+        store={store}
         onJoinSuccess={async (role, name, siteInfo) => {
           window.location.hash = '';
           if (window.history.pushState) {
             window.history.pushState('', '', '/');
           }
           setJoinSchemeId(null);
+          setInviteToken(null);
+          setInvitedEmail(null);
           await handleLoginSuccess(role, name, siteInfo);
         }}
         onBackToLanding={() => {
@@ -234,6 +264,8 @@ export default function App() {
             window.history.pushState('', '', '/');
           }
           setJoinSchemeId(null);
+          setInviteToken(null);
+          setInvitedEmail(null);
           setSessionState('landing');
         }}
       />

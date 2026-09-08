@@ -125,12 +125,19 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
     const confirmed = window.confirm(`Are you sure you want to offboard ${actorName}?`);
     if (!confirmed) return;
 
-    // Find in current unit actors
+    // 1. Remove from unit actors
     const matchedActor = currentUnit.actors?.find((a: any) => a.name === actorName || a.email === email);
     if (matchedActor && store.offboardActor) {
       store.offboardActor(activeScheme.id, currentUnit.unitId, matchedActor.id);
+    }
+
+    // 2. Also ensure removed from members store & Supabase atomically in the same click
+    const memberToDelete = store.members?.find((m: any) => 
+      (m.email === email || m.name === actorName) && m.schemeId === activeScheme.id
+    );
+    if (memberToDelete && store.deleteMember) {
+      store.deleteMember(memberToDelete.id);
     } else {
-      // Fallback: directly remove from members store
       store.setMembers((prev: any[]) => prev.filter(m => !(m.name === actorName && m.schemeId === activeScheme.id)));
     }
   };

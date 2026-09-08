@@ -241,6 +241,7 @@ export type Member = {
   additionalOccupants?: AdditionalOccupant[];
   status: 'Active' | 'Invited' | 'Restricted';
   joinedAt: string;
+  inviteToken?: string;
   individualPermissions?: { label: string; active: boolean }[];
 };
 
@@ -1799,15 +1800,21 @@ export function useSmartLotStore() {
     coOwnerName?: string;
     coOwnerEmail?: string;
     additionalOccupants?: AdditionalOccupant[];
+    initialStatus?: 'Active' | 'Invited' | 'Restricted';
+    inviteToken?: string;
   }) => {
     const targetSchemeId = memberData.schemeId || activeScheme.id;
     const id = `MEM-${Date.now()}`;
+    const token = memberData.inviteToken || `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const status = memberData.initialStatus || 'Invited';
+
     const newMember: Member = {
       ...memberData,
       id,
       schemeId: targetSchemeId,
-      status: 'Active',
-      joinedAt: new Date().toISOString().split('T')[0],
+      status,
+      inviteToken: token,
+      joinedAt: status === 'Active' ? new Date().toISOString().split('T')[0] : '',
     };
     setMembers(prev => [newMember, ...prev]);
 
@@ -1827,7 +1834,7 @@ export function useSmartLotStore() {
         phone: memberData.phone || '0400 000 000',
         role: validRole,
         unit_id: memberData.unitId,
-        status: 'Active'
+        status
       };
 
       const { error } = await supabase.from('members').insert([payload]);
@@ -1836,7 +1843,47 @@ export function useSmartLotStore() {
       }
     }
 
-    return id;
+    return { id, inviteToken: token };
+  };
+
+  const acceptMemberInvite = async (tokenOrId: string, userAuthId?: string, updates?: Partial<Member>) => {
+    let acceptedMemberId = '';
+    const now = new Date().toISOString().split('T')[0];
+
+    setMembers(prev => prev.map(m => {
+      const isMatch = m.inviteToken === tokenOrId || m.id === tokenOrId || m.email.toLowerCase() === tokenOrId.toLowerCase();
+      if (!isMatch) return m;
+
+      acceptedMemberId = m.id;
+      return {
+        ...m,
+        status: 'Active',
+        joinedAt: now,
+        ...(updates || {}),
+      };
+    }));
+
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const effectiveUserId = userAuthId || currentSession?.user?.id;
+
+    if (acceptedMemberId) {
+      const dbPayload: any = {
+        status: 'Active',
+      };
+      if (effectiveUserId) {
+        dbPayload.user_id = effectiveUserId;
+      }
+      if (updates?.name) dbPayload.name = updates.name;
+      if (updates?.phone) dbPayload.phone = updates.phone;
+
+      const { error } = await supabase
+        .from('members')
+        .update(dbPayload)
+        .eq('id', acceptedMemberId);
+      if (error) {
+        console.error("Error updating accepted member status in Supabase:", error);
+      }
+    }
   };
 
   const updateMemberStatus = async (memberId: string, status: 'Active' | 'Invited' | 'Restricted') => {
@@ -1881,12 +1928,15 @@ export function useSmartLotStore() {
     setResidentRequests(prev => prev.map(r => r.id === requestId ? { ...r, ...updates } : r));
   };
 
-  const deleteMember = async (memberId: string) => {
-    setMembers(prev => prev.filter(m => m.id !== memberId));
+  const deleteMember = async (idOrEmail: string) => {
+    setMembers(prev => prev.filter(m => m.id !== idOrEmail && m.email.toLowerCase() !== idOrEmail.toLowerCase()));
 
     const { data: { session: currentSession } } = await supabase.auth.getSession();
     if (currentSession?.user) {
-      const { error } = await supabase.from('members').delete().eq('id', memberId);
+      const { error } = await supabase
+        .from('members')
+        .delete()
+        .or(`id.eq.${idOrEmail},email.eq.${idOrEmail}`);
       if (error) {
         console.error("Error deleting member from Supabase:", error);
       }
@@ -2679,11 +2729,15 @@ export function useSmartLotStore() {
 
   const offboardActor = (schemeId: string, unitId: string, actorId: string) => {
     let emailToOffboard = '';
+    let actorNameToOffboard = '';
     
     setUnits(prev => prev.map(u => {
       if (u.schemeId !== schemeId || u.unitId !== unitId) return u;
       const targetActor = u.actors.find(a => a.id === actorId);
-      if (targetActor) emailToOffboard = targetActor.email;
+      if (targetActor) {
+        emailToOffboard = targetActor.email;
+        actorNameToOffboard = targetActor.name;
+      }
       
       const newActors = u.actors.filter(a => a.id !== actorId);
       const newStatus = newActors.length === 0 ? 'Vacant' : u.status;
@@ -2703,7 +2757,14 @@ export function useSmartLotStore() {
       };
     }));
 
-    if (emailToOffboard) {
+    // Find and delete matching member in store and database atomically
+    const memberToDelete = members.find(m => 
+      (m.email?.toLowerCase() === emailToOffboard.toLowerCase() || m.name === actorNameToOffboard) &&
+      m.schemeId === schemeId
+    );
+    if (memberToDelete) {
+      deleteMember(memberToDelete.id);
+    } else if (emailToOffboard) {
       deleteMember(emailToOffboard);
     }
   };
@@ -2743,6 +2804,7 @@ export function useSmartLotStore() {
     customPersonas,
     addCustomPersona,
     addMember,
+    acceptMemberInvite,
     updateMemberStatus,
     deleteMember,
     submitResidentRequest,
