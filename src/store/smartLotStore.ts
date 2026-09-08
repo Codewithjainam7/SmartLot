@@ -463,17 +463,17 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     ],
     status: 'acknowledged',
     createdAt: '1 hour ago',
-    requestorName: 'Arthur Pendelton',
-    reportedBy: 'Arthur Pendelton (Resident)',
-    requestorEmail: 'arthur.p@cavalier.com',
-    requestorPhone: '0433 111 222',
-    requestorRole: 'Resident',
+    requestorName: 'Sarah Jones',
+    reportedBy: 'Sarah Jones (Lot Owner)',
+    requestorEmail: 'sarah.jones@cavalier.com',
+    requestorPhone: '0400 111 222',
+    requestorRole: 'Lot Owner',
     comments: [
       {
         id: 'C-SL-10452-1',
         authorName: 'Emma Wilson',
         authorRole: 'Strata Manager (via Email)',
-        text: "Thanks Arthur. I've contacted the security gate contractor. They will attend tomorrow.",
+        text: "Thanks Sarah. I've contacted the security gate contractor. They will attend tomorrow.",
         createdAt: '45 mins ago',
       }
     ],
@@ -481,8 +481,8 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
       {
         id: 'AUD-SL-10452-1',
         type: 'created',
-        actor: 'Arthur Pendelton',
-        actorRole: 'Resident',
+        actor: 'Sarah Jones',
+        actorRole: 'Lot Owner',
         timestamp: '1 hour ago',
         note: 'Activity #SL-10452 created for Cavalier Apartments Unit 12.',
       },
@@ -492,7 +492,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         actor: 'SmartLot Conduit',
         actorRole: 'System',
         timestamp: '1 hour ago',
-        note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Arthur Pendelton. Reply-To: requests+SL-10452@smartlot.com',
+        note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10452@smartlot.com',
       },
       {
         id: 'AUD-SL-10452-3',
@@ -502,7 +502,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         timestamp: '45 mins ago',
         fromStatus: 'new',
         toStatus: 'acknowledged',
-        note: 'Strata manager replied via email: "Thanks Arthur. I\'ve contacted the security gate contractor. They will attend tomorrow."',
+        note: 'Strata manager replied via email: "Thanks Sarah. I\'ve contacted the security gate contractor. They will attend tomorrow."',
       }
     ],
   },
@@ -521,7 +521,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     priority: 'High',
     location: 'Front entrance',
     contactPreference: 'Email',
-    strataManagerEmail: 'romanjoe@gmail.com',
+    strataManagerEmail: 'emma.wilson@agency.com',
     dueDate: '2026-09-05',
     status: 'pending_triage',
     createdAt: '3 hours ago',
@@ -530,15 +530,10 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorEmail: 'sarah.jones@duplex.com',
     requestorPhone: '0400 111 222',
     requestorRole: 'Lot Owner',
-    comments: [
-      { id: 'C1', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Contacted Automatic Gates NSW for emergency technician dispatch.', createdAt: '1 hour ago' }
-    ],
+    comments: [],
     auditLog: [
       { id: 'AUD-D101-1', type: 'created', actor: 'Sarah Jones', actorRole: 'Lot Owner', timestamp: '3 hours ago', note: 'Activity submitted by resident.' },
-      { id: 'AUD-D101-2', type: 'status_change', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '2 hours ago', fromStatus: 'new', toStatus: 'pending_triage', note: 'Received and queued for triage.' },
-      { id: 'AUD-D101-3', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '2 hours ago', note: 'Email dispatched to strata manager with CC to Sarah Jones.' },
-      { id: 'AUD-D101-4', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '1.5 hours ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Approved for immediate contractor dispatch.' },
-      { id: 'AUD-D101-5', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '1 hour ago', note: 'Manager added a status update comment.' },
+      { id: 'AUD-D101-2', type: 'email_sent', actor: 'SmartLot Conduit', actorRole: 'System', timestamp: '3 hours ago', note: 'Conduit email sent to Strata Manager (emma.wilson@agency.com) with CC to Sarah Jones. Reply-To: requests+SL-10451@smartlot.com' },
     ],
   },
   {
@@ -561,7 +556,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     auditLog: [
       { id: 'AUD-D102-1', type: 'created', actor: 'David Miller', actorRole: 'Tenant', timestamp: '1 day ago', note: 'Activity submitted by resident.' },
       { id: 'AUD-D102-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 day ago', note: 'Email dispatched to strata manager.' },
-      { id: 'AUD-D102-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '22 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+      { id: 'AUD-D102-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '22 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
     ],
   },
 
@@ -584,13 +579,13 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0411 222 333',
     requestorRole: 'Committee Member',
     comments: [
-      { id: 'C2', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Electrician on route with replacement 24V power supply unit.', createdAt: '20 mins ago' }
+      { id: 'C2', authorName: 'Emma Wilson', authorRole: 'Strata Manager', text: 'Electrician on route with replacement 24V power supply unit.', createdAt: '20 mins ago' }
     ],
     auditLog: [
       { id: 'AUD-C201-1', type: 'created', actor: 'Michael Chen', actorRole: 'Committee Member', timestamp: '45 mins ago', note: 'Emergency activity raised by committee.' },
       { id: 'AUD-C201-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '45 mins ago', note: 'Urgent email dispatched to strata manager.' },
-      { id: 'AUD-C201-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '30 mins ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Emergency dispatch authorised.' },
-      { id: 'AUD-C201-4', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '20 mins ago', note: 'Manager posted update on technician ETA.' },
+      { id: 'AUD-C201-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '30 mins ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Emergency dispatch authorised.' },
+      { id: 'AUD-C201-4', type: 'comment_added', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '20 mins ago', note: 'Manager posted update on technician ETA.' },
     ],
   },
   {
@@ -632,14 +627,14 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0433 444 555',
     requestorRole: 'Committee Member',
     comments: [
-      { id: 'C3', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'Contractor repainted bays on Aug 30.', createdAt: 'Yesterday' }
+      { id: 'C3', authorName: 'Emma Wilson', authorRole: 'Strata Manager', text: 'Contractor repainted bays on Aug 30.', createdAt: 'Yesterday' }
     ],
     auditLog: [
       { id: 'AUD-C203-1', type: 'created', actor: 'Marcus Sterling', actorRole: 'Committee Member', timestamp: '3 days ago', note: 'Activity submitted.' },
       { id: 'AUD-C203-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '3 days ago', note: 'Email dispatched to strata manager.' },
-      { id: 'AUD-C203-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '2 days ago', fromStatus: 'pending_triage', toStatus: 'approved' },
-      { id: 'AUD-C203-4', type: 'status_change', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: 'Yesterday', fromStatus: 'approved', toStatus: 'resolved', note: 'Work confirmed complete by contractor.' },
-      { id: 'AUD-C203-5', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: 'Yesterday', note: 'Closing update posted.' },
+      { id: 'AUD-C203-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '2 days ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+      { id: 'AUD-C203-4', type: 'status_change', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: 'Yesterday', fromStatus: 'approved', toStatus: 'resolved', note: 'Work confirmed complete by contractor.' },
+      { id: 'AUD-C203-5', type: 'comment_added', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: 'Yesterday', note: 'Closing update posted.' },
     ],
   },
 
@@ -662,13 +657,13 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorPhone: '0477 111 999',
     requestorRole: 'Committee Member',
     comments: [
-      { id: 'C4', authorName: 'Roman Joe', authorRole: 'Strata Manager', text: 'KONE Elevator technicians scheduled for 10:00 AM on-site service.', createdAt: '30 mins ago' }
+      { id: 'C4', authorName: 'Emma Wilson', authorRole: 'Strata Manager', text: 'KONE Elevator technicians scheduled for 10:00 AM on-site service.', createdAt: '30 mins ago' }
     ],
     auditLog: [
       { id: 'AUD-V301-1', type: 'created', actor: 'Arthur Pendelton', actorRole: 'Committee Member', timestamp: '1 hour ago', note: 'Emergency escalation raised by committee chair.' },
       { id: 'AUD-V301-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 hour ago', note: 'High-priority email dispatched to strata manager.' },
-      { id: 'AUD-V301-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '45 mins ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Approved — KONE service call booked.' },
-      { id: 'AUD-V301-4', type: 'comment_added', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '30 mins ago', note: 'Technician arrival window posted.' },
+      { id: 'AUD-V301-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '45 mins ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Approved — KONE service call booked.' },
+      { id: 'AUD-V301-4', type: 'comment_added', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '30 mins ago', note: 'Technician arrival window posted.' },
     ],
   },
   {
@@ -713,7 +708,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     auditLog: [
       { id: 'AUD-V303-1', type: 'created', actor: 'Oliver Vance', actorRole: 'Resident', timestamp: '1 day ago', note: 'Activity submitted by resident.' },
       { id: 'AUD-V303-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 day ago', note: 'Email dispatched to strata manager.' },
-      { id: 'AUD-V303-3', type: 'triage_approved', actor: 'Roman Joe', actorRole: 'Strata Manager', timestamp: '20 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+      { id: 'AUD-V303-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '20 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
     ],
   },
   {

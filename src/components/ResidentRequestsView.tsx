@@ -92,9 +92,6 @@ export function ResidentRequestsView({
   const [commentLikes, setCommentLikes] = useState<Record<string, number>>({ 'C-1': 2, 'C-2': 1 });
   const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
   const [helpfulComments, setHelpfulComments] = useState<Record<string, boolean>>({ 'C-1': true });
-  const [simulatedReplyText, setSimulatedReplyText] = useState(
-    "Thank you for reporting this issue. I have contacted our service contractor to attend and inspect the site."
-  );
 
   const toggleLikeComment = (commentId: string) => {
     const isLiked = likedByUser[commentId];
@@ -487,6 +484,7 @@ export function ResidentRequestsView({
                       <option value="Apex Gate & Security Services|Specialist Contractor" className="bg-[#0B1121] text-white">Assign: Apex Gate & Security</option>
                       <option value="Rapid Response Electrical|Certified Electrician" className="bg-[#0B1121] text-white">Assign: Rapid Response Electrical</option>
                       <option value="Bright Water Plumbing Solutions|Licensed Plumber" className="bg-[#0B1121] text-white">Assign: Bright Water Plumbing</option>
+                      <option value="Emma Wilson|Strata Manager" className="bg-[#0B1121] text-white">Assign: Emma Wilson (Manager)</option>
                       <option value="Roman Joe|Strata Manager" className="bg-[#0B1121] text-white">Assign: Roman Joe (Manager)</option>
                       <option value="Alex Vance|Building Manager" className="bg-[#0B1121] text-white">Assign: Alex Vance (Building Mgr)</option>
                     </select>
@@ -852,76 +850,6 @@ export function ResidentRequestsView({
                     >
                       <X size={14} />
                     </button>
-                  </div>
-                )}
-
-                {/* Strata Manager Email Conduit Reply Simulator Card */}
-                {activeDetail.status !== 'closed' && (
-                  <div className="rounded-3xl border border-[#0055FF]/30 bg-gradient-to-br from-[#0055FF]/10 via-[#0d1527] to-[#0a0f1d] p-4.5 space-y-3 shadow-lg relative overflow-hidden">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#0055FF]/20 border border-[#0055FF]/40 flex items-center justify-center text-[#60A5FA] shrink-0">
-                          <Mail size={15} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-black text-white">External Strata Manager Email Reply</span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0055FF]/20 text-[#60A5FA] border border-[#0055FF]/30">
-                              Conduit Simulation
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-gray-400 mt-0.5">
-                            Simulate strata manager replying by standard email without logging in. Captures via <code className="text-[#00D4B2] font-mono font-bold">requests+{activeDetail.referenceId ? activeDetail.referenceId.replace('#', '') : activeDetail.id}@smartlot.com</code>.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-1">
-                      <div className="flex items-center justify-between text-[11px] text-gray-400">
-                        <span>From: <strong className="text-gray-200">{activeDetail.strataManagerEmail || 'emma.wilson@agency.com'}</strong></span>
-                        <span className="text-[10px] text-[#00D4B2] font-semibold flex items-center gap-1">
-                          <Check size={11} className="stroke-[3]" /> Auto-acknowledges activity
-                        </span>
-                      </div>
-
-                      <textarea
-                        rows={2}
-                        value={simulatedReplyText}
-                        onChange={(e) => setSimulatedReplyText(e.target.value)}
-                        placeholder="Type email reply from strata manager..."
-                        className="w-full bg-[#070B14] border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-gray-500 outline-none focus:border-[#0055FF]/60 resize-none font-medium leading-relaxed"
-                      />
-
-                      <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setSimulatedReplyText("Thank you for raising this activity. I have notified our maintenance contractors to inspect and resolve this.")}
-                          className="text-[11px] text-[#60A5FA] hover:text-[#93C5FD] underline underline-offset-2 transition-colors cursor-pointer"
-                        >
-                          Insert standard contractor dispatch update
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!simulatedReplyText.trim()) return;
-                            if (onSimulateManagerReply) {
-                              onSimulateManagerReply(
-                                activeDetail.id,
-                                simulatedReplyText.trim(),
-                                activeDetail.strataManagerEmail ? 'Emma Wilson (Strata Manager)' : 'Strata Manager'
-                              );
-                            }
-                          }}
-                          disabled={!simulatedReplyText.trim()}
-                          className="bg-gradient-to-r from-[#0055FF] to-[#00D4B2] hover:brightness-110 text-white px-4.5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          <Mail size={13} />
-                          <span>Simulate Manager Email Reply</span>
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 )}
 
