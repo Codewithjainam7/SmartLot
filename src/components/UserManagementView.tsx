@@ -162,8 +162,8 @@ export function UserManagementView({
   const activeUser = members.find(m => m.name === activePersonaName);
   const activeUserRole = activeUser?.role || 'Resident';
   
-  // Only upper-level management can add new members
-  const canManageUsers = ['Strata Admin', 'Strata Manager', 'Building Manager'].includes(activeUserRole);
+  // All authorized users in Team Access can manage & invite members
+  const canManageUsers = true;
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   const filteredMembers = members.filter(m => {
@@ -225,18 +225,12 @@ export function UserManagementView({
               </button>
             </div>
 
-            {activeTab === 'roster' && canManageUsers && (
+            {activeTab === 'roster' && (
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleCopyInviteLink}
-                  disabled={activePersonaName === 'Emma Wilson'}
-                  title={activePersonaName === 'Emma Wilson' ? 'Copy Invite Link is disabled for Emma Wilson' : undefined}
-                  className={`bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white px-5 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all ${
-                    activePersonaName === 'Emma Wilson'
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:bg-gray-200 dark:hover:bg-white/10 hover:scale-105 cursor-pointer'
-                  }`}
+                  className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white px-5 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:bg-gray-200 dark:hover:bg-white/10 hover:scale-105 cursor-pointer"
                 >
                   {copied ? (
                     <>
@@ -256,7 +250,7 @@ export function UserManagementView({
                     className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer"
                   >
                     <UserPlus size={18} className="text-[#00D4B2]" /> 
-                    <span>Add New Member</span>
+                    <span>Invite Member</span>
                   </div>
                 </MorphingPopoverTrigger>
               </div>
