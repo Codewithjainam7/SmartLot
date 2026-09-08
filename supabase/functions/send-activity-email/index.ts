@@ -1,21 +1,17 @@
 // @smartlot/edge-function send-activity-email
-// Sends the conduit email to the strata manager (CC resident) via Resend API.
-// Called from the client immediately after a resident_request is inserted.
-// Uses Resend sandbox mode until mail.smartlot.app domain is verified.
-
-
-// ─── Constants ────────────────────────────────────────────────────────────────
+// Sends transactional emails (activity conduit, member invites, triage/status updates, comment alerts) via Resend API.
+// Uses Resend sandbox mode (onboarding@resend.dev) or verified custom domain (mail.smartlot.app).
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-
-// Sandbox from-address — no domain verification needed.
-// Replace with noreply@mail.smartlot.app once DNS is configured.
 const FROM_ADDRESS = "SmartLot <onboarding@resend.dev>";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ActivityEmailPayload {
-  referenceId: string;          // e.g. "SL-12345"
+export type EmailType = "activity_conduit" | "member_invite" | "status_update" | "comment_notification";
+
+export interface ActivityEmailPayload {
+  type?: "activity_conduit";
+  referenceId: string; // e.g. "SL-12345"
   activityTitle: string;
   activityType: string;
   priority: string;
@@ -29,6 +25,47 @@ interface ActivityEmailPayload {
   attachmentUrls?: string[];
 }
 
+export interface MemberInvitePayload {
+  type: "member_invite";
+  toEmail: string;
+  toName: string;
+  role: string;
+  schemeName: string;
+  schemeId: string;
+  lotNumber?: number | string;
+  inviterName?: string;
+  joinUrl?: string;
+}
+
+export interface StatusUpdatePayload {
+  type: "status_update";
+  toEmail: string;
+  requestorName: string;
+  referenceId: string;
+  activityTitle: string;
+  oldStatus: string;
+  newStatus: string;
+  reason?: string;
+  actionType?: "approved" | "rejected" | "closed" | "in_progress" | "status_change";
+}
+
+export interface CommentNotificationPayload {
+  type: "comment_notification";
+  toEmail: string;
+  recipientName: string;
+  referenceId: string;
+  activityTitle: string;
+  commenterName: string;
+  commenterRole: string;
+  commentText: string;
+}
+
+export type AnyEmailPayload =
+  | ActivityEmailPayload
+  | MemberInvitePayload
+  | StatusUpdatePayload
+  | CommentNotificationPayload;
+
 // ─── CORS headers ─────────────────────────────────────────────────────────────
 
 const CORS_HEADERS = {
@@ -36,9 +73,9 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ─── Email HTML builder ───────────────────────────────────────────────────────
+// ─── HTML Email Builders ──────────────────────────────────────────────────────
 
-function buildEmailHtml(p: ActivityEmailPayload): string {
+function buildConduitEmailHtml(p: ActivityEmailPayload): string {
   const priorityColor: Record<string, string> = {
     Urgent: "#FF4757",
     High: "#FFB020",
@@ -68,14 +105,14 @@ function buildEmailHtml(p: ActivityEmailPayload): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6F9;padding:40px 20px">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
 
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#0055FF 0%,#0040CC 100%);padding:32px 40px">
-              <p style="margin:0 0 4px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Activity Management</p>
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Activity Management</p>
               <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800">New Activity: #${p.referenceId}</h1>
-              <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:13px">${p.activityTitle}</p>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px">${p.activityTitle}</p>
             </td>
           </tr>
 
@@ -140,7 +177,6 @@ function buildEmailHtml(p: ActivityEmailPayload): string {
               <p style="margin:0;color:#94A3B8;font-size:11px">
                 This notification was sent by <strong style="color:#64748B">SmartLot Activity Management</strong>.
                 Activity reference: <strong style="color:#64748B">#${p.referenceId}</strong>.
-                Reply-To is configured to capture your response automatically.
               </p>
             </td>
           </tr>
@@ -154,8 +190,247 @@ function buildEmailHtml(p: ActivityEmailPayload): string {
   `.trim();
 }
 
+function buildInviteEmailHtml(p: MemberInvitePayload): string {
+  const inviter = p.inviterName || "Strata Administration";
+  const lotInfo = p.lotNumber ? `Lot ${p.lotNumber}` : "Registered Lot";
+  const joinLink = p.joinUrl || `https://smartlot.app/join?scheme=${encodeURIComponent(p.schemeId)}`;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>You're invited to SmartLot: ${p.schemeName}</title>
+</head>
+<body style="margin:0;padding:0;background:#F4F6F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6F9;padding:40px 20px">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0055FF 0%,#00D4B2 100%);padding:32px 40px">
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Strata Onboarding</p>
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800">You're invited to join ${p.schemeName}</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:13px">Plan ID: ${p.schemeId} • ${lotInfo}</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 40px">
+              <p style="margin:0 0 16px;color:#0F172A;font-size:15px;font-weight:600">Hi ${p.toName},</p>
+              <p style="margin:0 0 20px;color:#334155;font-size:14px;line-height:1.6">
+                <strong>${inviter}</strong> has invited you to access <strong>${p.schemeName}</strong> on SmartLot as a <strong>${p.role}</strong>.
+              </p>
+
+              <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:24px">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding-bottom:8px">
+                      <span style="color:#94A3B8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Scheme / Site</span><br/>
+                      <strong style="color:#0F172A;font-size:14px">${p.schemeName} (${p.schemeId})</strong>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-bottom:8px">
+                      <span style="color:#94A3B8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Assigned Lot / Unit</span><br/>
+                      <strong style="color:#0F172A;font-size:14px">${lotInfo}</strong>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span style="color:#94A3B8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Access Role</span><br/>
+                      <strong style="color:#0055FF;font-size:14px">${p.role}</strong>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Button CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px">
+                <tr>
+                  <td align="center">
+                    <a href="${joinLink}" target="_blank" style="display:inline-block;background:#0055FF;color:#ffffff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;box-shadow:0 4px 12px rgba(0,85,255,0.25)">
+                      Activate Your SmartLot Access &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0;color:#64748B;font-size:12px;line-height:1.5">
+                With SmartLot, you can submit maintenance requests, vote on scheme motions, access by-laws, and track compliance notices securely from any device.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:20px 40px">
+              <p style="margin:0;color:#94A3B8;font-size:11px">
+                Sent by <strong style="color:#64748B">SmartLot Onboarding Engine</strong> for ${p.schemeName}.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+function buildStatusUpdateEmailHtml(p: StatusUpdatePayload): string {
+  const statusLabel = p.newStatus.replace(/_/g, " ").toUpperCase();
+  const isApproved = p.newStatus === "approved" || p.actionType === "approved";
+  const isRejected = p.newStatus === "rejected" || p.actionType === "rejected";
+  const isClosed = p.newStatus === "closed" || p.actionType === "closed";
+
+  const bannerColor = isApproved
+    ? "linear-gradient(135deg,#0055FF 0%,#00D4B2 100%)"
+    : isRejected
+    ? "linear-gradient(135deg,#FF4757 0%,#B3002D 100%)"
+    : isClosed
+    ? "linear-gradient(135deg,#10B981 0%,#059669 100%)"
+    : "linear-gradient(135deg,#0055FF 0%,#0040CC 100%)";
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Update on Activity #${p.referenceId}</title>
+</head>
+<body style="margin:0;padding:0;background:#F4F6F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6F9;padding:40px 20px">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:${bannerColor};padding:32px 40px">
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Activity Status Update</p>
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800">#${p.referenceId}: ${statusLabel}</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:13px">${p.activityTitle}</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 40px">
+              <p style="margin:0 0 16px;color:#0F172A;font-size:15px;font-weight:600">Hi ${p.requestorName},</p>
+              <p style="margin:0 0 20px;color:#334155;font-size:14px;line-height:1.6">
+                Your activity <strong>#${p.referenceId}</strong> status has changed to <strong style="color:#0055FF">${statusLabel}</strong>.
+              </p>
+
+              ${
+                p.reason
+                  ? `
+              <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:20px">
+                <p style="margin:0 0 4px;color:#94A3B8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px">Decision Note / Statutory Rationale</p>
+                <p style="margin:0;color:#334155;font-size:13px;line-height:1.6">${p.reason.replace(/\n/g, "<br/>")}</p>
+              </div>
+              `
+                  : ""
+              }
+
+              <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px;margin-bottom:24px">
+                <p style="margin:0;color:#1E40AF;font-size:12px;line-height:1.5">
+                  You can view full history, comments, and attachments directly on your SmartLot dashboard.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:20px 40px">
+              <p style="margin:0;color:#94A3B8;font-size:11px">
+                Sent by <strong style="color:#64748B">SmartLot Activity Tracker</strong>.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+function buildCommentNotificationEmailHtml(p: CommentNotificationPayload): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New comment on #${p.referenceId}</title>
+</head>
+<body style="margin:0;padding:0;background:#F4F6F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6F9;padding:40px 20px">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0055FF 0%,#0040CC 100%);padding:32px 40px">
+              <p style="margin:0 0 4px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">SmartLot Message Notification</p>
+              <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:800">New Message on #${p.referenceId}</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px">${p.activityTitle}</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 40px">
+              <p style="margin:0 0 16px;color:#0F172A;font-size:15px;font-weight:600">Hi ${p.recipientName},</p>
+              <p style="margin:0 0 12px;color:#64748B;font-size:13px">
+                <strong>${p.commenterName}</strong> (${p.commenterRole}) posted an update:
+              </p>
+
+              <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:4px solid #0055FF;border-radius:8px;padding:16px;margin-bottom:24px">
+                <p style="margin:0;color:#0F172A;font-size:13px;line-height:1.6">${p.commentText.replace(/\n/g, "<br/>")}</p>
+              </div>
+
+              <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px">
+                <p style="margin:0;color:#1E40AF;font-size:12px;line-height:1.5">
+                  Reply directly to this email or open your SmartLot portal to respond.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:20px 40px">
+              <p style="margin:0;color:#94A3B8;font-size:11px">
+                SmartLot Activity Management • Reference: #${p.referenceId}
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+// ─── Main Deno Server ─────────────────────────────────────────────────────────
+
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
@@ -167,10 +442,10 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  let payload: ActivityEmailPayload;
+  let payload: AnyEmailPayload;
 
   try {
-    payload = await req.json() as ActivityEmailPayload;
+    payload = (await req.json()) as AnyEmailPayload;
   } catch {
     return new Response(
       JSON.stringify({ error: "Invalid JSON body" }),
@@ -178,46 +453,103 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const { referenceId, activityTitle, managerEmail, requestorEmail, requestorName } = payload;
+  const resendKey = Deno.env.get("RESEND_API_KEY");
 
-  if (!referenceId || !activityTitle || !managerEmail || !requestorEmail) {
-    return new Response(
-      JSON.stringify({ error: "Missing required fields: referenceId, activityTitle, managerEmail, requestorEmail" }),
-      { status: 422, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
+  // Determine Email Type
+  const emailType = (payload as any).type || "activity_conduit";
+
+  let to: string[] = [];
+  let cc: string[] | undefined = undefined;
+  let replyTo: string | undefined = undefined;
+  let subject = "";
+  let html = "";
+  let referenceId = "";
+
+  if (emailType === "member_invite") {
+    const p = payload as MemberInvitePayload;
+    if (!p.toEmail || !p.schemeName) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: toEmail, schemeName" }),
+        { status: 422, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
+    to = [p.toEmail];
+    subject = `[SmartLot] You are invited to join ${p.schemeName}`;
+    html = buildInviteEmailHtml(p);
+    referenceId = p.schemeId;
+  } else if (emailType === "status_update") {
+    const p = payload as StatusUpdatePayload;
+    if (!p.toEmail || !p.referenceId) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: toEmail, referenceId" }),
+        { status: 422, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
+    to = [p.toEmail];
+    subject = `[SmartLot #${p.referenceId}] Status Updated: ${p.newStatus.replace(/_/g, " ").toUpperCase()}`;
+    html = buildStatusUpdateEmailHtml(p);
+    referenceId = p.referenceId;
+    replyTo = `requests+${p.referenceId.replace("#", "")}@mail.smartlot.app`;
+  } else if (emailType === "comment_notification") {
+    const p = payload as CommentNotificationPayload;
+    if (!p.toEmail || !p.referenceId) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: toEmail, referenceId" }),
+        { status: 422, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
+    to = [p.toEmail];
+    subject = `[SmartLot #${p.referenceId}] New message from ${p.commenterName}`;
+    html = buildCommentNotificationEmailHtml(p);
+    referenceId = p.referenceId;
+    replyTo = `requests+${p.referenceId.replace("#", "")}@mail.smartlot.app`;
+  } else {
+    // Default / activity_conduit
+    const p = payload as ActivityEmailPayload;
+    if (!p.referenceId || !p.activityTitle || !p.managerEmail || !p.requestorEmail) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: referenceId, activityTitle, managerEmail, requestorEmail" }),
+        { status: 422, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
+    to = [p.managerEmail];
+    cc = [p.requestorEmail];
+    subject = `[SmartLot #${p.referenceId}] ${p.activityTitle}`;
+    replyTo = `requests+${p.referenceId.replace("#", "")}@mail.smartlot.app`;
+    html = buildConduitEmailHtml(p);
+    referenceId = p.referenceId;
   }
 
-  const resendKey = Deno.env.get("RESEND_API_KEY");
+  // If RESEND_API_KEY is not configured in Supabase secrets, simulate cleanly
   if (!resendKey) {
-    console.warn("[send-activity-email] RESEND_API_KEY not configured in Supabase secrets. Simulating conduit dispatch for #" + referenceId);
+    console.warn(`[send-activity-email] RESEND_API_KEY not configured. Simulating ${emailType} dispatch to ${to.join(", ")}`);
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        simulated: true, 
-        message: "Conduit email logged. To send live emails, configure RESEND_API_KEY in Supabase dashboard secrets." 
+      JSON.stringify({
+        success: true,
+        simulated: true,
+        type: emailType,
+        to,
+        subject,
+        message: "Email logged. To send live emails, configure RESEND_API_KEY in Supabase dashboard secrets.",
       }),
       { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
 
-  const subject = `[SmartLot #${referenceId}] ${activityTitle}`;
-  const replyTo = `requests+${referenceId}@mail.smartlot.app`;
-
-  const emailBody = {
+  const emailBody: Record<string, any> = {
     from: FROM_ADDRESS,
-    to: [managerEmail],
-    cc: [requestorEmail],
-    reply_to: replyTo,
+    to,
     subject,
-    html: buildEmailHtml(payload),
+    html,
     tags: [
+      { name: "type", value: emailType },
       { name: "reference_id", value: referenceId },
-      { name: "source", value: "smartlot-activity" },
+      { name: "source", value: "smartlot" },
     ],
   };
 
-  let resendData: any = null;
-  let resendError: string | null = null;
+  if (cc && cc.length > 0) emailBody.cc = cc;
+  if (replyTo) emailBody.reply_to = replyTo;
 
   try {
     const resendRes = await fetch(RESEND_API_URL, {
@@ -229,17 +561,25 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify(emailBody),
     });
 
-    resendData = await resendRes.json();
+    const resendData = await resendRes.json();
 
     if (!resendRes.ok) {
-      resendError = resendData?.message ?? `Resend responded ${resendRes.status}`;
+      const resendError = resendData?.message ?? `Resend responded ${resendRes.status}`;
       console.error("[send-activity-email] Resend error:", resendError, resendData);
-      // Return partial success — the activity was still created, just email failed
       return new Response(
         JSON.stringify({ success: false, error: resendError, resendData }),
         { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
       );
     }
+
+    console.log(
+      `[send-activity-email] ✅ Email dispatched (${emailType}) → ${to.join(", ")}. Resend ID: ${resendData?.id}`,
+    );
+
+    return new Response(
+      JSON.stringify({ success: true, resendId: resendData?.id, type: emailType }),
+      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
   } catch (fetchErr) {
     const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
     console.error("[send-activity-email] Fetch failed:", msg);
@@ -248,13 +588,4 @@ Deno.serve(async (req: Request) => {
       { status: 503, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
-
-  console.log(
-    `[send-activity-email] ✅ Email dispatched for #${referenceId} → ${managerEmail} (CC: ${requestorName} <${requestorEmail}>). Resend ID: ${resendData?.id}`,
-  );
-
-  return new Response(
-    JSON.stringify({ success: true, resendId: resendData?.id }),
-    { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-  );
 });
