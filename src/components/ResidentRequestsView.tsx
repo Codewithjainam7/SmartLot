@@ -381,7 +381,7 @@ export function ResidentRequestsView({
               animate={{ x: 0 }}
               exit={{ x: '100%', opacity: 0.5, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="relative bg-[#090D16] dark:bg-[#070B14] w-full max-w-xl h-full shadow-2xl z-10 p-7 overflow-y-auto space-y-6 text-white border-l border-white/10"
+              className="relative bg-[#090D16] dark:bg-[#070B14] w-full max-w-xl h-full shadow-2xl z-10 p-5 sm:p-7 overflow-y-auto overflow-x-hidden space-y-6 text-white border-l border-white/10"
             >
               
               {/* Header: Unit Tag, Title, Close Button & Status Pill Bar */}
@@ -842,19 +842,19 @@ export function ResidentRequestsView({
                     </div>
 
                     {/* Input Field Container with smooth round border */}
-                    <div className="flex-1 bg-[#111726] rounded-3xl border border-white/10 focus-within:border-[#00D4B2]/60 transition-all relative shadow-md">
+                    <div className="flex-1 min-w-0 bg-[#111726] rounded-3xl border border-white/10 focus-within:border-[#00D4B2]/60 transition-all relative shadow-md">
                       
                       {/* Docked Reply Preview Header */}
                       {replyingToComment && (
-                        <div className="flex items-center justify-between px-4 py-2.5 bg-[#00D4B2]/[0.08] border-b border-[#00D4B2]/20 text-xs rounded-t-3xl animate-in fade-in duration-150">
-                          <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="flex items-center justify-between gap-2 px-3.5 py-2 bg-[#00D4B2]/[0.08] border-b border-[#00D4B2]/20 text-xs rounded-t-3xl min-w-0 animate-in fade-in duration-150">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className="w-1 h-5.5 rounded-full bg-[#00D4B2] shrink-0" />
                             <Reply size={13} className="text-[#00D4B2] shrink-0" />
-                            <div className="min-w-0">
-                              <span className="text-[#00D4B2] text-[10px] uppercase font-extrabold tracking-wider block">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[#00D4B2] text-[10px] uppercase font-extrabold tracking-wider block truncate">
                                 Replying to {replyingToComment.authorName}
                               </span>
-                              <span className="text-gray-300 text-xs font-normal truncate block max-w-md">
+                              <span className="text-gray-300 text-xs font-normal truncate block">
                                 "{replyingToComment.text}"
                               </span>
                             </div>
@@ -862,7 +862,7 @@ export function ResidentRequestsView({
                           <button
                             type="button"
                             onClick={() => setReplyingToComment(null)}
-                            className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2"
+                            className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-1"
                             title="Cancel reply"
                           >
                             <X size={14} />
