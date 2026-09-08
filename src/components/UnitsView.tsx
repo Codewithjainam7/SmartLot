@@ -1,6 +1,7 @@
 // @smartlot/component
 ﻿import React, { useState } from 'react';
 import { UnitData } from '../store/smartLotStore';
+import { dispatchMemberInviteEmail } from '../services/emailService';
 import { AnimatedBackground } from './core/animated-background';
 import { 
   User, 
@@ -30,6 +31,17 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newResidentName || !newResidentEmail) return;
+    
+    // Dispatch onboarding invitation email
+    dispatchMemberInviteEmail({
+      toEmail: newResidentEmail.trim(),
+      toName: newResidentName.trim(),
+      role: 'On-Site Resident',
+      schemeName: currentUnit?.schemeId || 'SmartLot Scheme',
+      schemeId: currentUnit?.schemeId || 'SP101',
+      lotNumber: currentUnit?.unitId || 'Unit 1',
+    }).catch(err => console.warn('Unit invite email note:', err));
+
     onAddResident(currentUnit.unitId, newResidentName, newResidentEmail);
     setNewResidentName('');
     setNewResidentEmail('');

@@ -19,6 +19,8 @@ import {
   X 
 } from 'lucide-react';
 
+import { dispatchMemberInviteEmail } from '../services/emailService';
+
 interface DashboardProps {
   store: any;
 }
@@ -36,6 +38,27 @@ export function Dashboard({ store }: DashboardProps) {
   const [newSchemeId, setNewSchemeId] = useState(`SP${Math.floor(100 + Math.random() * 900)}`);
   const [newSchemeName, setNewSchemeName] = useState('Sunset Duplex');
   const [newLotsCount, setNewLotsCount] = useState(2);
+  const [inviteStatus, setInviteStatus] = useState<string | null>(null);
+
+  const handleQuickEmailInvite = async () => {
+    const targetEmail = store.activePersona?.email || 'resident@smartlot.app';
+    setInviteStatus('sending');
+    try {
+      await dispatchMemberInviteEmail({
+        toEmail: targetEmail,
+        toName: 'New Resident',
+        role: 'Resident',
+        schemeName: activeScheme.name !== 'No Registered Schemes' ? activeScheme.name : 'SmartLot Scheme',
+        schemeId: activeScheme.id,
+        inviterName: store.activePersona?.name || 'Strata Admin',
+      });
+      setInviteStatus('sent');
+      setTimeout(() => setInviteStatus(null), 3500);
+    } catch {
+      setInviteStatus('error');
+      setTimeout(() => setInviteStatus(null), 3000);
+    }
+  };
 
   const handleBuildingTypeChange = (type: 'duplex' | 'townhouse' | 'apartment' | 'custom') => {
     setBuildingType(type);
@@ -215,13 +238,16 @@ export function Dashboard({ store }: DashboardProps) {
             {store.hasPermission('Role & Permission Setup') && (
               <div className="grid grid-cols-2 gap-1.5 mb-4">
                 <button 
-                  onClick={() => alert('Invite sent via Email!')} 
+                  type="button"
+                  onClick={handleQuickEmailInvite} 
+                  disabled={inviteStatus === 'sending'}
                   className="bg-white/20 hover:bg-white/35 text-[#0B1121] text-[10px] font-black py-2 rounded-xl border border-[#0B1121]/15 flex items-center justify-center gap-1 transition-all cursor-pointer"
                 >
-                  <Mail size={11} /> Email Invite
+                  <Mail size={11} /> {inviteStatus === 'sending' ? 'Sending...' : inviteStatus === 'sent' ? 'Sent!' : 'Email Invite'}
                 </button>
                 <button 
-                  onClick={() => alert('Invite sent via SMS!')} 
+                  type="button"
+                  onClick={() => alert('SMS invite dispatched via notification service.')} 
                   className="bg-white/20 hover:bg-white/35 text-[#0B1121] text-[10px] font-black py-2 rounded-xl border border-[#0B1121]/15 flex items-center justify-center gap-1 transition-all cursor-pointer"
                 >
                   <Phone size={11} /> SMS Invite

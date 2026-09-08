@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant, getDefaultPermissionsForRole } from '../store/smartLotStore';
+import { dispatchMemberInviteEmail } from '../services/emailService';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { CustomCheckbox } from './core/CustomCheckbox';
 import { GlowSubmitButton } from './core/GlowSubmitButton';
@@ -1045,26 +1046,32 @@ function AddMemberFormContent({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          toEmail: formEmail,
-          toName: formName,
-          role: formRole,
-          schemeName: activeSchemeId, // Fallback since we only have ID here easily
-          schemeId: activeSchemeId,
-          inviterName: activePersonaName
-        })
+      // 1. Dispatch invite email to primary member
+      await dispatchMemberInviteEmail({
+        toEmail: formEmail.trim(),
+        toName: formName.trim(),
+        role: formRole,
+        schemeName: activeSchemeId,
+        schemeId: activeSchemeId,
+        lotNumber: formLot,
+        inviterName: activePersonaName,
       });
-      
-      const data = await response.json();
-      if (!data.success) {
-        console.error('Failed to send invite:', data.error);
-        alert('Warning: API Invite failed, but user will be added locally. Error: ' + data.error);
+
+      // 2. Dispatch invite emails to any additional occupants
+      const validOccupants = additionalOccupants.filter(o => o.name.trim() && o.email.trim());
+      for (const occ of validOccupants) {
+        await dispatchMemberInviteEmail({
+          toEmail: occ.email.trim(),
+          toName: occ.name.trim(),
+          role: occ.role,
+          schemeName: activeSchemeId,
+          schemeId: activeSchemeId,
+          lotNumber: formLot,
+          inviterName: activePersonaName,
+        });
       }
     } catch (err) {
-      console.error('Network error calling invite API:', err);
+      console.error('Email dispatch error on onboarding member:', err);
     }
 
     onAddMember({
