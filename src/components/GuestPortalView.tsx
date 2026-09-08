@@ -1,5 +1,4 @@
-// @smartlot/component
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { WorkOrder } from '../store/smartLotStore';
 import { BorderTrail } from './core/border-trail';
 import { 
@@ -22,12 +21,34 @@ interface GuestPortalViewProps {
 
 export function GuestPortalView({ workOrder, onSubmitCompletion, onBack }: GuestPortalViewProps) {
   const [photoUrl, setPhotoUrl] = useState('https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop');
+  const [invoicePdfName, setInvoicePdfName] = useState('Invoice_SP10482_WO.pdf');
+  const [invoiceAttached, setInvoiceAttached] = useState(false);
   const [finalCost, setFinalCost] = useState(workOrder.budgetCap);
   const [isSubmitted, setIsSubmitted] = useState(workOrder.status === 'completion_submitted' || workOrder.status === 'completed');
 
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const invoiceInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPhotoUrl(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleInvoiceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setInvoicePdfName(file.name);
+    setInvoiceAttached(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmitCompletion(workOrder.id, photoUrl, Number(finalCost), 'Invoice_SP10482_WO.pdf');
+    onSubmitCompletion(workOrder.id, photoUrl, Number(finalCost), invoicePdfName);
     setIsSubmitted(true);
   };
 
@@ -78,16 +99,31 @@ export function GuestPortalView({ workOrder, onSubmitCompletion, onBack }: Guest
               <Camera size={16} className="text-[#0055FF]" /> Upload Completion Proof
             </h3>
 
-            {/* Photo Upload Simulation */}
+            {/* Photo Upload */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 mb-2">On-Site Completion Photo</label>
-              <div className="border-2 border-dashed border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center bg-white/5 text-center cursor-pointer hover:bg-white/10 transition-colors">
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
+              <div 
+                onClick={() => photoInputRef.current?.click()}
+                className="border-2 border-dashed border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center bg-white/5 text-center cursor-pointer hover:bg-white/10 transition-colors group"
+              >
                 {photoUrl ? (
-                  <img src={photoUrl} alt="Preview" className="w-full h-32 object-cover rounded-xl border border-white/10 mb-2" />
+                  <div className="w-full">
+                    <img src={photoUrl} alt="Preview" className="w-full h-36 object-cover rounded-xl border border-white/10 mb-2" />
+                    <span className="text-[11px] text-[#00D4B2] font-semibold group-hover:underline block">Click to change completion photo</span>
+                  </div>
                 ) : (
-                  <Upload size={24} className="text-gray-400 mb-1" />
+                  <>
+                    <Upload size={24} className="text-gray-400 mb-1 group-hover:text-white transition-colors" />
+                    <span className="text-xs text-gray-300 font-medium">Click to upload completion photo</span>
+                  </>
                 )}
-                <span className="text-xs text-gray-300 font-medium">Photo attached automatically</span>
               </div>
             </div>
 
@@ -103,14 +139,27 @@ export function GuestPortalView({ workOrder, onSubmitCompletion, onBack }: Guest
               />
             </div>
 
-            {/* Invoice PDF Upload Simulation */}
+            {/* Invoice PDF Upload */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 mb-2">Attach Final Invoice PDF</label>
-              <div className="bg-white/5 border border-white/10 p-3 rounded-2xl flex items-center justify-between text-xs text-gray-300">
-                <span className="flex items-center gap-2 font-medium">
-                  <FileText size={16} className="text-[#0055FF]" /> Invoice_SP10482_WO.pdf
+              <input
+                ref={invoiceInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,image/*"
+                className="hidden"
+                onChange={handleInvoiceUpload}
+              />
+              <div 
+                onClick={() => invoiceInputRef.current?.click()}
+                className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00D4B2]/40 p-3.5 rounded-2xl flex items-center justify-between text-xs text-gray-300 cursor-pointer transition-all"
+              >
+                <span className="flex items-center gap-2 font-medium truncate max-w-[240px]">
+                  <FileText size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+                  <span className="truncate">{invoicePdfName}</span>
                 </span>
-                <span className="text-[10px] font-bold text-emerald-400 bg-[#00D4B2]/100/20 px-2 py-0.5 rounded-full">Ready</span>
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                  {invoiceAttached ? 'Uploaded' : 'Click to Upload'}
+                </span>
               </div>
             </div>
 

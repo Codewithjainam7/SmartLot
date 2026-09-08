@@ -1,5 +1,4 @@
-// @smartlot/component
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { 
   ActivityType, 
@@ -291,7 +290,39 @@ export function CreateRequestFormContent({
   const [location, setLocation] = useState<ActivityLocation>('Common area');
   const [contactPreference, setContactPreference] = useState<ContactPreference>('Email');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [fileDetails, setFileDetails] = useState<{ name: string; size: string; type: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files: File[] = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+
+    files.forEach((file: File) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        const sizeFormatted = file.size < 1024 * 1024
+          ? `${(file.size / 1024).toFixed(1)} KB`
+          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+        setFileDetails(prev => [...prev, {
+          name: file.name,
+          size: sizeFormatted,
+          type: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream')
+        }]);
+        setPhotos(prev => [...prev, dataUrl]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+  };
+
+  const handleRemovePhoto = (idx: number) => {
+    setPhotos(prev => prev.filter((_, i) => i !== idx));
+    setFileDetails(prev => prev.filter((_, i) => i !== idx));
+  };
 
   // After submit: store the returned activity ID to show the confirmation screen
   const [submittedId, setSubmittedId] = useState<string | null>(null);
@@ -560,31 +591,57 @@ export function CreateRequestFormContent({
             <Paperclip size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
             <span>Photos / Attachments</span>
           </label>
+
+          {/* Hidden real file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+
           <div className="flex flex-wrap items-center gap-2.5">
-            {photos.map((url, idx) => (
-              <div key={idx} className="relative group w-20 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xs">
-                <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setPhotos(prev => prev.filter((_, i) => i !== idx))}
-                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+            {photos.map((url, idx) => {
+              const isImage = url.startsWith('data:image') || url.includes('unsplash.com') || url.match(/\.(jpg|jpeg|png|webp|gif)/i);
+              const meta = fileDetails[idx];
+              return (
+                <div
+                  key={idx}
+                  className="relative group h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xs"
                 >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
+                  {isImage ? (
+                    <div className="w-20 h-16">
+                      <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-32 h-16 p-2 bg-gray-50 dark:bg-[#161a26] flex flex-col justify-center">
+                      <div className="flex items-center gap-1.5 text-[#0055FF] dark:text-[#00D4B2] mb-1">
+                        <FileText size={14} />
+                        <span className="text-[10px] font-bold truncate max-w-[80px]">{meta?.name || 'Document'}</span>
+                      </div>
+                      <span className="text-[9px] text-gray-400">{meta?.size || 'PDF'}</span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(idx)}
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+                    title="Remove attachment"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              );
+            })}
             <button
               type="button"
-              onClick={() => {
-                setPhotos(prev => [
-                  ...prev,
-                  'https://images.unsplash.com/photo-1584463623578-3019808d4b38?w=800&auto=format&fit=crop'
-                ]);
-              }}
+              onClick={() => fileInputRef.current?.click()}
               className="h-16 px-4 rounded-xl border border-dashed border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-[#161a26] hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 flex flex-col items-center justify-center text-[10px] font-bold cursor-pointer transition-colors"
             >
               <Upload size={14} className="mb-0.5" />
-              <span>+ Add Photo</span>
+              <span>+ Add File / Photo</span>
             </button>
           </div>
         </div>

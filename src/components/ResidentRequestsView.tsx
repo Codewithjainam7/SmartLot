@@ -39,7 +39,9 @@ import {
   RotateCcw,
   Inbox,
   Pencil,
-  Trash2
+  Trash2,
+  Download,
+  ExternalLink
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -47,7 +49,12 @@ interface ResidentRequestsViewProps {
   onOpenCreateModal?: () => void;
   onSubmitRequest: (data: any) => any;
   onCloseRequest: (requestId: string, reason: string) => void;
-  onAddComment: (requestId: string, text: string, replyTo?: { authorName: string; text: string }) => void;
+  onAddComment: (
+    requestId: string,
+    text: string,
+    replyTo?: { authorName: string; text: string },
+    attachments?: { name: string; url: string; type?: string; size?: string }[]
+  ) => void;
   onEditComment?: (requestId: string, commentId: string, newText: string) => void;
   onDeleteComment?: (requestId: string, commentId: string) => void;
   onSimulateManagerReply?: (requestId: string, replyText: string, managerName?: string) => void;
@@ -156,13 +163,83 @@ export function ResidentRequestsView({
   const [reopenModalRequest, setReopenModalRequest] = useState<ResidentRequest | null>(null);
   const [reopenReason, setReopenReason] = useState('');
 
+  // Comment attachments and emoji state
+  const [commentAttachments, setCommentAttachments] = useState<{
+    id: string;
+    name: string;
+    size: string;
+    type: string;
+    url: string;
+  }[]>([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [previewModalImage, setPreviewModalImage] = useState<string | null>(null);
+
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const imgInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAttachmentSelect = (e: React.ChangeEvent<HTMLInputElement>, isImageOnly: boolean) => {
+    const files: File[] = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+
+    files.forEach((file: File) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        const sizeFormatted = file.size < 1024 * 1024
+          ? `${(file.size / 1024).toFixed(1)} KB`
+          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+        setCommentAttachments(prev => [
+          ...prev,
+          {
+            id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+            name: file.name,
+            size: sizeFormatted,
+            type: file.type || (isImageOnly ? 'image/jpeg' : 'application/pdf'),
+            url: result,
+          }
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setCommentAttachments(prev => prev.filter(att => att.id !== id));
+  };
+
+  const handleSelectEmoji = (emoji: string) => {
+    const textarea = commentTextareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart || commentInput.length;
+      const end = textarea.selectionEnd || commentInput.length;
+      const nextVal = commentInput.substring(0, start) + emoji + commentInput.substring(end);
+      setCommentInput(nextVal);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+      }, 0);
+    } else {
+      setCommentInput(prev => prev + emoji);
+    }
+  };
+
   const handleSendComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentInput.trim() || !activeDetail) return;
-    onAddComment(activeDetail.id, commentInput.trim(), replyingToComment || undefined);
+    if ((!commentInput.trim() && commentAttachments.length === 0) || !activeDetail) return;
+    onAddComment(
+      activeDetail.id,
+      commentInput.trim(),
+      replyingToComment || undefined,
+      commentAttachments.map(a => ({ name: a.name, url: a.url, type: a.type, size: a.size }))
+    );
     setCommentInput('');
+    setCommentAttachments([]);
     setReplyingToComment(null);
     setShowMentionMenu(false);
+    setShowEmojiPicker(false);
   };
 
   const handleSaveEditComment = (commentId: string) => {
@@ -572,20 +649,82 @@ export function ResidentRequestsView({
                 </p>
               </div>
 
-              {/* Multi-Photo Attachments */}
+              {/* Multi-Photo & Document Attachments */}
               {(activeDetail.attachmentUrls && activeDetail.attachmentUrls.length > 0) ? (
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached Photos ({activeDetail.attachmentUrls.length})</span>
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                    Attached Files ({activeDetail.attachmentUrls.length})
+                  </span>
                   <div className="grid grid-cols-2 gap-2">
-                    {activeDetail.attachmentUrls.map((img, i) => (
-                      <img key={i} src={img} alt={`Attachment ${i+1}`} className="w-full h-36 object-cover rounded-2xl border border-white/10 shadow-sm" />
-                    ))}
+                    {activeDetail.attachmentUrls.map((url, i) => {
+                      const isImage = url.startsWith('data:image') || url.includes('unsplash.com') || url.match(/\.(jpg|jpeg|png|webp|gif|avif)/i);
+                      if (isImage) {
+                        return (
+                          <div
+                            key={i}
+                            onClick={() => setPreviewModalImage(url)}
+                            className="relative group rounded-2xl overflow-hidden border border-white/10 shadow-sm cursor-pointer"
+                          >
+                            <img src={url} alt={`Attachment ${i+1}`} className="w-full h-36 object-cover group-hover:scale-105 transition-transform" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                              <ExternalLink size={16} />
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <a
+                          key={i}
+                          href={url}
+                          download={`document_${i+1}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="col-span-2 flex items-center gap-3 p-3 bg-white/[0.04] hover:bg-white/[0.08] rounded-2xl border border-white/10 transition-colors group"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                            <FileText size={18} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-white truncate">Attached Document {i+1}</p>
+                            <p className="text-[10px] text-gray-400">Click to view / download file</p>
+                          </div>
+                          <Download size={15} className="text-gray-400 group-hover:text-[#00D4B2] shrink-0" />
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               ) : activeDetail.attachmentUrl ? (
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached Photo</span>
-                  <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-44 object-cover rounded-2xl border border-white/10" />
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached File</span>
+                  {activeDetail.attachmentUrl.startsWith('data:image') || activeDetail.attachmentUrl.includes('unsplash.com') || activeDetail.attachmentUrl.match(/\.(jpg|jpeg|png|webp|gif|avif)/i) ? (
+                    <div
+                      onClick={() => setPreviewModalImage(activeDetail.attachmentUrl!)}
+                      className="relative group rounded-2xl overflow-hidden border border-white/10 shadow-sm cursor-pointer"
+                    >
+                      <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-44 object-cover group-hover:scale-105 transition-transform" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                        <ExternalLink size={16} />
+                      </div>
+                    </div>
+                  ) : (
+                    <a
+                      href={activeDetail.attachmentUrl}
+                      download="document"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-white/[0.04] hover:bg-white/[0.08] rounded-2xl border border-white/10 transition-colors group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                        <FileText size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-white truncate">Attached Document</p>
+                        <p className="text-[10px] text-gray-400">Click to view / download file</p>
+                      </div>
+                      <Download size={15} className="text-gray-400 group-hover:text-[#00D4B2] shrink-0" />
+                    </a>
+                  )}
                 </div>
               ) : null}
 
@@ -879,18 +1018,79 @@ export function ResidentRequestsView({
                                     </div>
                                   </div>
                                 ) : (
-                                  <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
-                                    {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part: string, i: number) => {
-                                      if (part.startsWith('@')) {
-                                        return (
-                                          <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
-                                            {part}
-                                          </span>
-                                        );
-                                      }
-                                      return part;
-                                    })}
-                                  </p>
+                                  <div className="space-y-2.5">
+                                    {c.text && (
+                                      <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
+                                        {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part: string, i: number) => {
+                                          if (part.startsWith('@')) {
+                                            return (
+                                              <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
+                                                {part}
+                                              </span>
+                                            );
+                                          }
+                                          return part;
+                                        })}
+                                      </p>
+                                    )}
+
+                                    {/* Attached Media & Documents */}
+                                    {c.attachments && c.attachments.length > 0 && (
+                                      <div className="space-y-2 pt-1">
+                                        {/* Images preview grid */}
+                                        {c.attachments.filter(a => a.type?.startsWith('image/') || a.url.startsWith('data:image')).length > 0 && (
+                                          <div className="flex flex-wrap gap-2">
+                                            {c.attachments
+                                              .filter(a => a.type?.startsWith('image/') || a.url.startsWith('data:image'))
+                                              .map((att, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  onClick={() => setPreviewModalImage(att.url)}
+                                                  className="relative group rounded-xl overflow-hidden border border-white/10 hover:border-[#00D4B2]/50 transition-all cursor-pointer shadow-xs"
+                                                  title={`${att.name} (${att.size || ''}) - Click to preview`}
+                                                >
+                                                  <img
+                                                    src={att.url}
+                                                    alt={att.name}
+                                                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover group-hover:scale-105 transition-transform"
+                                                  />
+                                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                                                    <ExternalLink size={14} />
+                                                  </div>
+                                                </div>
+                                              ))}
+                                          </div>
+                                        )}
+
+                                        {/* Documents list */}
+                                        {c.attachments.filter(a => !(a.type?.startsWith('image/') || a.url.startsWith('data:image'))).length > 0 && (
+                                          <div className="flex flex-col gap-1.5">
+                                            {c.attachments
+                                              .filter(a => !(a.type?.startsWith('image/') || a.url.startsWith('data:image')))
+                                              .map((att, idx) => (
+                                                <a
+                                                  key={idx}
+                                                  href={att.url}
+                                                  download={att.name}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="inline-flex items-center gap-2.5 px-3 py-2 rounded-xl bg-black/30 hover:bg-black/50 border border-white/10 hover:border-[#00D4B2]/40 transition-all text-xs text-gray-200 group w-fit max-w-full"
+                                                >
+                                                  <div className="w-7 h-7 rounded-lg bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                                                    <FileText size={14} />
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <p className="font-semibold text-white truncate max-w-[180px] sm:max-w-xs">{att.name}</p>
+                                                    <p className="text-[10px] text-gray-400">{att.size || 'Document'} • Click to download</p>
+                                                  </div>
+                                                  <Download size={13} className="text-gray-400 group-hover:text-[#00D4B2] shrink-0 ml-1" />
+                                                </a>
+                                              ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 )}
 
                                 <div className="flex items-center justify-between pt-1.5 border-t border-white/5 text-xs text-gray-400">
@@ -978,6 +1178,63 @@ export function ResidentRequestsView({
                         </div>
                       )}
 
+                      {/* Selected Attachments Preview Chips */}
+                      {commentAttachments.length > 0 && (
+                        <div className="px-3.5 py-2.5 bg-white/[0.03] border-b border-white/5 space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] font-bold text-gray-400">
+                            <span className="flex items-center gap-1.5 text-[#00D4B2]">
+                              <Paperclip size={11} /> Attached Files ({commentAttachments.length})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setCommentAttachments([])}
+                              className="text-gray-400 hover:text-red-400 text-[10px] font-medium transition-colors cursor-pointer"
+                            >
+                              Remove all
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 max-h-28 overflow-y-auto pr-1">
+                            {commentAttachments.map(att => {
+                              const isImage = att.type.startsWith('image/') || att.url.startsWith('data:image');
+                              return (
+                                <div
+                                  key={att.id}
+                                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl bg-[#070B14] border border-white/10 text-xs text-white shadow-xs max-w-full"
+                                >
+                                  {isImage ? (
+                                    <img
+                                      src={att.url}
+                                      alt={att.name}
+                                      className="w-7 h-7 rounded-lg object-cover border border-white/10 shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-7 h-7 rounded-lg bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                                      <FileText size={13} />
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-[11px] font-bold text-gray-200 truncate max-w-[130px] leading-tight">
+                                      {att.name}
+                                    </p>
+                                    <p className="text-[9px] text-gray-400 leading-none">
+                                      {att.size}
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveAttachment(att.id)}
+                                    className="p-1 text-gray-400 hover:text-red-400 hover:bg-white/5 rounded-full transition-colors cursor-pointer ml-1 shrink-0"
+                                    title="Remove file"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="p-3.5 space-y-2.5">
                         {/* Mention Popover Suggestions */}
                         {showMentionMenu && possibleTagTargets.length > 0 && (
@@ -1019,16 +1276,126 @@ export function ResidentRequestsView({
                           className="w-full bg-transparent px-1 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
                         />
 
+                        {/* Hidden Real File Inputs */}
+                        <input
+                          ref={docInputRef}
+                          type="file"
+                          multiple
+                          accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip"
+                          className="hidden"
+                          onChange={(e) => handleAttachmentSelect(e, false)}
+                        />
+                        <input
+                          ref={imgInputRef}
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleAttachmentSelect(e, true)}
+                        />
+
                         {/* Bottom action icons & Post Comment Button */}
-                        <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-                          <div className="flex items-center gap-2 text-gray-400">
-                            <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                        <div className="flex items-center justify-between pt-1.5 border-t border-white/5 relative">
+                          {/* Interactive Emoji Picker Popover */}
+                          {showEmojiPicker && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-30"
+                                onClick={() => setShowEmojiPicker(false)}
+                              />
+                              <div className="absolute bottom-full mb-3 left-0 z-40 bg-[#0E1524] border border-[#00D4B2]/30 rounded-2xl shadow-2xl p-3 w-72 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 space-y-2.5">
+                                <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+                                  <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-[#00D4B2] tracking-wider">
+                                    <Smile size={13} />
+                                    <span>Quick Emojis</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowEmojiPicker(false)}
+                                    className="text-gray-400 hover:text-white p-0.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                                  >
+                                    <X size={13} />
+                                  </button>
+                                </div>
+
+                                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                  <div>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1 block">Reactions</span>
+                                    <div className="grid grid-cols-6 gap-1">
+                                      {['👍', '👎', '❤️', '👏', '🎉', '🙌', '🤝', '🔥', '😊', '🙏', '💡', '💯'].map(emoji => (
+                                        <button
+                                          key={emoji}
+                                          type="button"
+                                          onClick={() => handleSelectEmoji(emoji)}
+                                          className="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
+                                        >
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1 block">Building & Strata</span>
+                                    <div className="grid grid-cols-6 gap-1">
+                                      {['🏢', '🚪', '🔑', '🪟', '🚿', '⚡', '🔧', '🔨', '🚨', '⚠️', '🛠️', '📦'].map(emoji => (
+                                        <button
+                                          key={emoji}
+                                          type="button"
+                                          onClick={() => handleSelectEmoji(emoji)}
+                                          className="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
+                                        >
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1 block">Tasks & Verification</span>
+                                    <div className="grid grid-cols-6 gap-1">
+                                      {['✅', '❌', '📋', '📝', '💬', '⏱️', '🔍', '📌', '👀', '🙋‍♂️', '⏳', '📢'].map(emoji => (
+                                        <button
+                                          key={emoji}
+                                          type="button"
+                                          onClick={() => handleSelectEmoji(emoji)}
+                                          className="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
+                                        >
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          <div className="flex items-center gap-1 text-gray-400">
+                            <button
+                              type="button"
+                              onClick={() => docInputRef.current?.click()}
+                              title="Attach Document (.pdf, .doc, .xlsx, etc.)"
+                              className="p-1.5 rounded-full hover:bg-white/10 hover:text-[#00D4B2] cursor-pointer transition-colors"
+                            >
                               <Paperclip size={15} />
                             </button>
-                            <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                            <button
+                              type="button"
+                              onClick={() => imgInputRef.current?.click()}
+                              title="Attach Photo / Image"
+                              className="p-1.5 rounded-full hover:bg-white/10 hover:text-[#00D4B2] cursor-pointer transition-colors"
+                            >
                               <ImageIcon size={15} />
                             </button>
-                            <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                            <button
+                              type="button"
+                              onClick={() => setShowEmojiPicker(prev => !prev)}
+                              title="Insert Emoji"
+                              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                                showEmojiPicker ? 'text-[#00D4B2] bg-white/10' : 'hover:bg-white/10 hover:text-white'
+                              }`}
+                            >
                               <Smile size={15} />
                             </button>
                           </div>
@@ -1036,7 +1403,7 @@ export function ResidentRequestsView({
                           <button
                             type="button"
                             onClick={handleSendComment}
-                            disabled={!commentInput.trim()}
+                            disabled={!commentInput.trim() && commentAttachments.length === 0}
                             className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-4.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md active:scale-95"
                           >
                             <Send size={13} className="fill-[#070B14]" />
@@ -1174,6 +1541,51 @@ export function ResidentRequestsView({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Image Lightbox Modal */}
+      {previewModalImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewModalImage(null)}
+        >
+          <div
+            className="relative max-w-3xl max-h-[85vh] bg-[#0E1524] p-3 rounded-3xl border border-white/20 shadow-2xl overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-white/10 text-xs text-gray-300">
+              <span className="font-bold flex items-center gap-1.5 text-white">
+                <ImageIcon size={14} className="text-[#00D4B2]" /> Attachment Preview
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewModalImage}
+                  download="attached_photo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 rounded-full bg-white/10 hover:bg-[#00D4B2]/20 hover:text-[#00D4B2] text-white transition-colors cursor-pointer"
+                  title="Open Original / Download"
+                >
+                  <Download size={14} />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewModalImage(null)}
+                  className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="p-2 flex items-center justify-center overflow-auto max-h-[75vh]">
+              <img
+                src={previewModalImage}
+                alt="Enlarged Attachment"
+                className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -56,6 +56,13 @@ export type CaseStatus =
   | 'approved_pending_vote' 
   | 'resolved';
 
+export type RequestCommentAttachment = {
+  name: string;
+  url: string;
+  type?: string;
+  size?: string;
+};
+
 export type RequestComment = {
   id: string;
   authorName: string;
@@ -70,6 +77,7 @@ export type RequestComment = {
   isMarkedHelpful?: boolean;
   isEdited?: boolean;
   editedAt?: string;
+  attachments?: RequestCommentAttachment[];
 };
 
 export type AuditEventType =
@@ -1344,6 +1352,7 @@ export function useSmartLotStore() {
               replyTo: c.reply_to_name ? { authorName: c.reply_to_name, text: c.reply_to_text || '' } : undefined,
               isEdited: c.is_edited || false,
               editedAt: c.edited_at ? new Date(c.edited_at).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }) : undefined,
+              attachments: Array.isArray(c.attachments) ? c.attachments : undefined,
             }));
 
           const internalNotes: InternalNote[] = (notesData || [])
@@ -2359,7 +2368,12 @@ export function useSmartLotStore() {
     });
   };
 
-  const addCommentToRequest = (requestId: string, commentText: string, replyTo?: { authorName: string; text: string }) => {
+  const addCommentToRequest = (
+    requestId: string,
+    commentText: string,
+    replyTo?: { authorName: string; text: string },
+    attachments?: RequestCommentAttachment[]
+  ) => {
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     const commentId = `C-${Date.now()}`;
     setResidentRequests(prev => prev.map(r => {
@@ -2371,6 +2385,7 @@ export function useSmartLotStore() {
         text: commentText,
         createdAt: 'Just now',
         ...(replyTo ? { replyTo } : {}),
+        ...(attachments && attachments.length > 0 ? { attachments } : {}),
       };
       const auditEntry: AuditEvent = {
         id: `AUD-${r.id}-CM${Date.now()}`,
@@ -2380,7 +2395,9 @@ export function useSmartLotStore() {
         timestamp: `Today at ${nowStr}`,
         note: replyTo
           ? `Replied to ${replyTo.authorName}'s comment.`
-          : 'Comment posted to activity thread.',
+          : (attachments && attachments.length > 0
+              ? `Comment posted with ${attachments.length} attachment(s).`
+              : 'Comment posted to activity thread.'),
       };
       return {
         ...r,
@@ -2398,6 +2415,7 @@ export function useSmartLotStore() {
       reply_to_name: replyTo?.authorName || null,
       reply_to_text: replyTo?.text || null,
       is_email_reply: false,
+      attachments: attachments && attachments.length > 0 ? attachments : null,
     }).then(({ error }) => {
       if (error) console.warn('[SmartLot] request_comments sync note:', error.message);
     });
