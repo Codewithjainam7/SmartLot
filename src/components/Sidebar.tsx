@@ -94,22 +94,11 @@ export function Sidebar({
             <NavItem 
               icon={<ClipboardList size={18} />} 
               label={(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? "Requests & Activity" : "My Requests"} 
-              active={activeView === 'requests'} 
+              active={activeView === 'requests' || activeView === 'triage'} 
               onClick={() => setActiveView('requests')}
+              badge={pendingTriageCount && pendingTriageCount > 0 && (activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? String(pendingTriageCount) : undefined}
               isCollapsed={isCollapsed} 
             />
-
-            {/* Dedicated Triage Engine for Managers, Admins & Committee Members */}
-            {(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) && (
-              <NavItem 
-                icon={<Wrench size={18} />} 
-                label="Triage Engine" 
-                active={activeView === 'triage'} 
-                onClick={() => setActiveView('triage')}
-                badge={pendingTriageCount && pendingTriageCount > 0 ? String(pendingTriageCount) : undefined}
-                isCollapsed={isCollapsed} 
-              />
-            )}
             <NavItem 
               icon={<FileText size={18} />} 
               label="Bylaws Library" 

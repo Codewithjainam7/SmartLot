@@ -6,7 +6,6 @@ import { supabase } from './lib/supabase';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { Dashboard } from './components/Dashboard';
-import { TriageView } from './components/TriageView';
 import { OnboardingModal } from './components/OnboardingModal';
 
 // User Management & Requests Module Views
@@ -393,8 +392,8 @@ export default function App() {
             )
           )}
 
-          {/* Requests Module */}
-          {store.activeView === 'requests' && (
+          {/* Requests & Activity Module (Unified with Triage Engine) */}
+          {(store.activeView === 'requests' || store.activeView === 'triage') && (
             <ResidentRequestsView 
               requests={filteredRequests}
               onSubmitRequest={store.submitResidentRequest}
@@ -408,6 +407,8 @@ export default function App() {
               onUpdatePriority={store.updateActivityPriority}
               onAssignActivity={store.assignActivity}
               onReopenActivity={store.reopenActivity}
+              onTriageCase={store.triageRequest}
+              initialFilter={store.activeView === 'triage' ? 'needs_triage' : undefined}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
               activePersonaEmail={store.activePersona.email}
@@ -418,16 +419,6 @@ export default function App() {
                 store.members.find(m => m.schemeId === store.activeScheme.id && (m.role.includes('Manager') || m.role.includes('Admin')) && m.email !== store.activePersona.email)?.email ||
                 (store.activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com')
               }
-            />
-          )}
-
-          {/* Manager Triage View */}
-          {store.activeView === 'triage' && (
-            <TriageView 
-              cases={filteredRequests as any}
-              onSubmitCase={store.submitResidentRequest as any}
-              onTriageCase={store.triageRequest}
-              activePersonaRole={store.activePersona.role}
             />
           )}
 

@@ -41,7 +41,12 @@ import {
   Pencil,
   Trash2,
   Download,
-  ExternalLink
+  ExternalLink,
+  Zap,
+  AlertTriangle,
+  Building2,
+  Home,
+  HelpCircle
 } from 'lucide-react';
 
 interface ResidentRequestsViewProps {
@@ -59,10 +64,12 @@ interface ResidentRequestsViewProps {
   onDeleteComment?: (requestId: string, commentId: string) => void;
   onSimulateManagerReply?: (requestId: string, replyText: string, managerName?: string) => void;
   onAddInternalNote?: (requestId: string, text: string) => void;
-  onUpdateStatus?: (requestId: string, status: CaseStatus) => void;
+  onUpdateStatus?: (requestId: string, status: CaseStatus, reason?: string) => void;
   onUpdatePriority?: (requestId: string, priority: any) => void;
   onAssignActivity?: (requestId: string, assigneeName: string, assigneeRole: string, assigneeEmail?: string) => void;
   onReopenActivity?: (requestId: string, reason: string) => void;
+  onTriageCase?: (caseId: string, action: 'approve' | 'reject', rejectionReason?: string) => void;
+  initialFilter?: string;
   activePersonaName: string;
   activePersonaRole: string;
   activePersonaEmail?: string;
@@ -85,6 +92,8 @@ export function ResidentRequestsView({
   onUpdatePriority,
   onAssignActivity,
   onReopenActivity,
+  onTriageCase,
+  initialFilter,
   activePersonaName,
   activePersonaRole,
   activePersonaEmail,
@@ -93,7 +102,18 @@ export function ResidentRequestsView({
   activeSchemeName,
   activeManagerEmail,
 }: ResidentRequestsViewProps) {
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
+  const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
+
+  const pendingTriageRequests = requests.filter(r => r.status === 'pending_triage' || r.status === 'new');
+
+  const [filterStatus, setFilterStatus] = useState<string>(
+    initialFilter || (isManagerOrCommittee && pendingTriageRequests.length > 0 ? 'needs_triage' : 'all')
+  );
+  const [filterStream, setFilterStream] = useState<string>('all');
+  const [rejectModalRequest, setRejectModalRequest] = useState<ResidentRequest | null>(null);
+  const [rejectionReasonText, setRejectionReasonText] = useState('');
+
   const [viewScope, setViewScope] = useState<'my' | 'all'>('all');
   const [selectedRequest, setSelectedRequest] = useState<ResidentRequest | null>(null);
   const [closeModalRequest, setCloseModalRequest] = useState<ResidentRequest | null>(null);
@@ -108,6 +128,28 @@ export function ResidentRequestsView({
   const [activeMenuCommentId, setActiveMenuCommentId] = useState<string | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
+
+  const handleQuickApprove = (requestId: string) => {
+    if (onTriageCase) {
+      onTriageCase(requestId, 'approve');
+    } else if (onUpdateStatus) {
+      onUpdateStatus(requestId, 'approved');
+    }
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectModalRequest || !rejectionReasonText.trim()) return;
+    if (onTriageCase) {
+      onTriageCase(rejectModalRequest.id, 'reject', rejectionReasonText.trim());
+    } else if (onUpdateStatus) {
+      onUpdateStatus(rejectModalRequest.id, 'rejected', rejectionReasonText.trim());
+    }
+    setRejectModalRequest(null);
+    setRejectionReasonText('');
+    if (selectedRequest?.id === rejectModalRequest.id) {
+      setSelectedRequest(null);
+    }
+  };
 
   const toggleLikeComment = (commentId: string) => {
     const isLiked = likedByUser[commentId];
@@ -124,7 +166,17 @@ export function ResidentRequestsView({
 
   const filteredRequests = requests.filter(r => {
     if (viewScope === 'my' && r.requestorName !== activePersonaName) return false;
-    if (filterStatus !== 'all' && r.status !== filterStatus) return false;
+    if (filterStatus === 'needs_triage') {
+      if (!(r.status === 'pending_triage' || r.status === 'new')) return false;
+    } else if (filterStatus !== 'all' && r.status !== filterStatus) {
+      return false;
+    }
+    if (filterStream !== 'all') {
+      const streamInfo = getRequestStreamInfo(r);
+      if (streamInfo.id !== filterStream) {
+        return false;
+      }
+    }
     return true;
   });
 
@@ -158,8 +210,6 @@ export function ResidentRequestsView({
   };
 
   const [internalNoteInput, setInternalNoteInput] = useState('');
-  const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
-  const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
   const [reopenModalRequest, setReopenModalRequest] = useState<ResidentRequest | null>(null);
   const [reopenReason, setReopenReason] = useState('');
 
@@ -324,150 +374,269 @@ export function ResidentRequestsView({
       </div>
 
       {/* Filter & View Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+      <div className="space-y-3 bg-white dark:bg-[#0d1117] p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
         
-        {/* Status Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusPill label="All" active={filterStatus === 'all'} onClick={() => setFilterStatus('all')} count={requests.length} />
-          <StatusPill label="New" active={filterStatus === 'new'} onClick={() => setFilterStatus('new')} />
-          <StatusPill label="Acknowledged" active={filterStatus === 'acknowledged'} onClick={() => setFilterStatus('acknowledged')} />
-          <StatusPill label="In Progress" active={filterStatus === 'in_progress'} onClick={() => setFilterStatus('in_progress')} />
-          <StatusPill label="Waiting" active={filterStatus === 'waiting'} onClick={() => setFilterStatus('waiting')} />
-          <StatusPill label="Resolved" active={filterStatus === 'resolved'} onClick={() => setFilterStatus('resolved')} />
-          <StatusPill label="Pending Triage" active={filterStatus === 'pending_triage'} onClick={() => setFilterStatus('pending_triage')} />
-          <StatusPill label="Closed" active={filterStatus === 'closed'} onClick={() => setFilterStatus('closed')} />
+        {/* Status Filter Pills Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Primary Needs Triage Pill for Managers & Committee */}
+            {isManagerOrCommittee && (
+              <button
+                type="button"
+                onClick={() => setFilterStatus('needs_triage')}
+                className={`relative px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer border flex items-center gap-1.5 ${
+                  filterStatus === 'needs_triage'
+                    ? 'bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/20 scale-105'
+                    : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+                }`}
+              >
+                <Zap size={13} className={filterStatus === 'needs_triage' ? 'fill-black' : 'fill-amber-400'} />
+                <span>Needs Triage</span>
+                {pendingTriageRequests.length > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    filterStatus === 'needs_triage' ? 'bg-black text-amber-400' : 'bg-amber-500 text-black'
+                  }`}>
+                    {pendingTriageRequests.length}
+                  </span>
+                )}
+              </button>
+            )}
+
+            <StatusPill label="All" active={filterStatus === 'all'} onClick={() => setFilterStatus('all')} count={requests.length} />
+            <StatusPill label="New" active={filterStatus === 'new'} onClick={() => setFilterStatus('new')} />
+            <StatusPill label="Acknowledged" active={filterStatus === 'acknowledged'} onClick={() => setFilterStatus('acknowledged')} />
+            <StatusPill label="In Progress" active={filterStatus === 'in_progress'} onClick={() => setFilterStatus('in_progress')} />
+            <StatusPill label="Waiting" active={filterStatus === 'waiting'} onClick={() => setFilterStatus('waiting')} />
+            <StatusPill label="Resolved" active={filterStatus === 'resolved'} onClick={() => setFilterStatus('resolved')} />
+            <StatusPill label="Closed" active={filterStatus === 'closed'} onClick={() => setFilterStatus('closed')} />
+          </div>
+
+          {/* View Scope Toggle */}
+          <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0 self-start md:self-auto">
+            <button
+              onClick={() => setViewScope('all')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewScope === 'all' 
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              }`}
+            >
+              All Requests
+            </button>
+            <button
+              onClick={() => setViewScope('my')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewScope === 'my' 
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              }`}
+            >
+              My Requests Only
+            </button>
+          </div>
         </div>
 
-        {/* View Scope Toggle */}
-        <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
-          <button
-            onClick={() => setViewScope('all')}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewScope === 'all' 
-                ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-            }`}
-          >
-            All Requests
-          </button>
-          <button
-            onClick={() => setViewScope('my')}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewScope === 'my' 
-                ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-            }`}
-          >
-            My Requests Only
-          </button>
+        {/* Secondary Stream Filter Pills Row */}
+        <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100 dark:border-white/5 overflow-x-auto pb-1 text-xs">
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-2 shrink-0 flex items-center gap-1">
+            <Filter size={12} /> Strata Stream:
+          </span>
+          {[
+            { id: 'all', label: 'All Streams' },
+            { id: 'general_inquiry', label: 'General Inquiry', icon: HelpCircle },
+            { id: 'emergency_repair', label: 'Emergency Repair', icon: AlertTriangle },
+            { id: 'private_lot_repair', label: 'Private Lot Repair', icon: Home },
+            { id: 'common_area_repair', label: 'Common Area Repair', icon: Building2 },
+          ].map(s => {
+            const Icon = s.icon;
+            const active = filterStream === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setFilterStream(s.id)}
+                className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer border ${
+                  active
+                    ? 'bg-[#00D4B2]/15 text-[#00D4B2] border-[#00D4B2]/30'
+                    : 'bg-transparent text-gray-500 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                {Icon && <Icon size={12} />}
+                <span>{s.label}</span>
+              </button>
+            );
+          })}
         </div>
-
       </div>
 
       {/* Requests Grid with Fading & Shrinking Depth Exit Animation */}
       {filteredRequests.length === 0 ? (
-        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 mx-auto flex items-center justify-center">
-            <Inbox size={24} />
+        filterStatus === 'needs_triage' ? (
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
+              <CheckCircle2 size={32} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+                <span>🎉 Inbox Zero — All Requests Triaged!</span>
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-1.5 leading-relaxed">
+                There are no pending or un-triaged resident requests awaiting manager review in this scheme.
+              </p>
+            </div>
+            <button
+              onClick={() => setFilterStatus('all')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-xs font-bold text-gray-900 dark:text-white transition-colors cursor-pointer"
+            >
+              <span>View All Scheme Requests</span>
+            </button>
           </div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-            {filterStatus === 'all' 
-              ? "No activities have been recorded yet. Click '+ New Request' to submit an issue."
-              : `No activities found with status '${filterStatus}'. Try selecting 'All' or clearing filters.`}
-          </p>
-        </div>
+        ) : (
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 mx-auto flex items-center justify-center">
+              <Inbox size={24} />
+            </div>
+            <h3 className="text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              {filterStatus === 'all' 
+                ? "No activities have been recorded yet. Click '+ Create New Request' to submit an issue."
+                : `No activities found matching your active filters. Try selecting 'All' or clearing filters.`}
+            </p>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence mode="popLayout">
-            {filteredRequests.map(req => (
-            <motion.div
-              key={req.id}
-              layout
-              initial={{ opacity: 0, scale: 0.96, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 10, filter: 'blur(3px)' }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              onClick={() => setSelectedRequest(req)}
-              className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wider">
-                      {req.referenceId || req.id}
-                    </span>
-                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {req.buildingName ? `${req.buildingName} • ${req.unit}` : req.unit}
-                    </span>
+            {filteredRequests.map(req => {
+              const streamInfo = getRequestStreamInfo(req);
+              const StreamIconComp = streamInfo.icon;
+              return (
+                <motion.div
+                  key={req.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.93, y: 10, filter: 'blur(3px)' }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={() => setSelectedRequest(req)}
+                  className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wider">
+                          {req.referenceId || req.id}
+                        </span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {req.buildingName ? `${req.buildingName} • ${req.unit}` : req.unit}
+                        </span>
+                      </div>
+                      <StatusBadge status={req.status} />
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      {/* Strata Stream Badge */}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${streamInfo.badgeColor}`}>
+                        <StreamIconComp size={10} />
+                        <span>{streamInfo.label}</span>
+                      </span>
+
+                      <div className="text-xs font-extrabold text-[#0055FF] dark:text-[#66A3FF] uppercase tracking-wider capitalize">
+                        {req.requestType.replace(/_/g, ' ')}
+                      </div>
+
+                      {req.priority && (
+                        <span className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
+                          req.priority === 'Urgent' || req.priority === 'Emergency'
+                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                            : req.priority === 'High'
+                            ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                        }`}>
+                          {req.priority}
+                        </span>
+                      )}
+                    </div>
+
+                    {req.location && (
+                      <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mb-2 font-medium">
+                        <MapPin size={11} className="text-[#00D4B2] shrink-0" />
+                        <span>{req.location}</span>
+                      </div>
+                    )}
+
+                    {req.assignedToName && (
+                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full mb-2">
+                        <User size={10} />
+                        <span>Assigned: {req.assignedToName}</span>
+                      </div>
+                    )}
+
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{req.title}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
                   </div>
-                  <StatusBadge status={req.status} />
-                </div>
 
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="text-xs font-extrabold text-[#0055FF] dark:text-[#66A3FF] uppercase tracking-wider capitalize">
-                    {req.requestType.replace(/_/g, ' ')}
+                  <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span>By {req.requestorName}</span>
+                      <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
+                    </div>
+
+                    {/* Manager Quick-Triage Action Bar on Card */}
+                    {isManagerOrCommittee && (req.status === 'pending_triage' || req.status === 'new') && (
+                      <div className="pt-2 border-t border-amber-500/20 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRejectModalRequest(req);
+                          }}
+                          className="flex-1 py-1.5 px-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          title="Reject with statutory reason"
+                        >
+                          <XCircle size={13} />
+                          <span>Reject</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleQuickApprove(req.id);
+                          }}
+                          className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                          title="Approve and direct dispatch"
+                        >
+                          <CheckCircle2 size={13} />
+                          <span>Approve</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
+                        <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
+                      </span>
+
+                      {req.status !== 'closed' && req.requestorName === activePersonaName && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCloseModalRequest(req);
+                          }}
+                          className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer"
+                        >
+                          Close Request
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  {req.priority && (
-                    <span className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
-                      req.priority === 'Urgent' || req.priority === 'Emergency'
-                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                        : req.priority === 'High'
-                        ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
-                        : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                    }`}>
-                      {req.priority}
-                    </span>
-                  )}
-                </div>
-
-                {req.location && (
-                  <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mb-2 font-medium">
-                    <MapPin size={11} className="text-[#00D4B2] shrink-0" />
-                    <span>{req.location}</span>
-                  </div>
-                )}
-
-                {req.assignedToName && (
-                  <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full mb-2">
-                    <User size={10} />
-                    <span>Assigned: {req.assignedToName}</span>
-                  </div>
-                )}
-
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{req.title}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
-              </div>
-
-              <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>By {req.requestorName}</span>
-                  <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 flex items-center gap-1 font-semibold">
-                    <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
-                  </span>
-
-                  {req.status !== 'closed' && req.requestorName === activePersonaName && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCloseModalRequest(req);
-                      }}
-                      className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer"
-                    >
-                      Close Request
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
       )}
+
 
       {/* Details Drawer */}
       <AnimatePresence>
@@ -601,6 +770,45 @@ export function ResidentRequestsView({
                   ) : null}
                 </div>
               </div>
+
+              {/* Manager & Committee Triage Action Suite */}
+              {isManagerOrCommittee && (activeDetail.status === 'pending_triage' || activeDetail.status === 'new') && (
+                <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 rounded-2xl p-5 space-y-3 shadow-lg shadow-amber-500/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-black text-amber-400 uppercase tracking-wider">
+                      <Zap size={16} className="fill-amber-400 text-amber-400" />
+                      <span>Action Required: Strata Triage Assessment</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      Pending Manager Review
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    Under NSW Strata Schemes Management Act 2015 s 106, common property repairs are the statutory responsibility of the Owners Corporation. Verify whether this request falls under Common Property or Private Lot Owner fixtures.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickApprove(activeDetail.id)}
+                      className="py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                    >
+                      <CheckCircle2 size={16} />
+                      <span>Approve & Dispatch Work</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRejectModalRequest(activeDetail)}
+                      className="py-2.5 px-4 rounded-xl border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <XCircle size={16} />
+                      <span>Reject with Statutory Rationale</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Conduit Outbound Email Card */}
               <div className="bg-[#101726]/90 rounded-2xl p-4 border border-[#00D4B2]/20 space-y-2.5">
@@ -1587,6 +1795,99 @@ export function ResidentRequestsView({
         </div>
       )}
 
+      {/* Mandatory Rejection Reason Modal */}
+      <AnimatePresence>
+        {rejectModalRequest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setRejectModalRequest(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 12, filter: 'blur(3px)' }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-white dark:bg-[#0d1117] w-full max-w-lg rounded-3xl p-6 shadow-2xl z-10 border border-gray-100 dark:border-white/10 space-y-4"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 text-rose-500">
+                  <AlertCircle size={20} />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Reject Request with Statutory Rationale</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRejectModalRequest(null)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Under Australian Strata Governance, rejecting a resident's repair or service request requires a written statutory reason that will be logged in the immutable audit log and notified to <strong className="text-gray-800 dark:text-gray-200">{rejectModalRequest.requestorName}</strong> ({rejectModalRequest.unit}).
+              </p>
+
+              {/* Quick Strata Templates */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                  Quick Strata Templates:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "Private Lot Fixture: Under SSMA 2015 s 106, internal fixtures remain the Lot Owner's responsibility.",
+                    "By-law Application Required: Major renovations or structural alterations require prior General Meeting approval.",
+                    "Duplicate Request: An active work order is already underway for this issue.",
+                    "Insufficient Details: Please provide high-resolution photos and contractor access availability."
+                  ].map((tpl, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setRejectionReasonText(tpl)}
+                      className="text-[11px] text-left px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors border border-transparent dark:border-white/5 cursor-pointer"
+                    >
+                      {tpl.split(':')[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <textarea
+                required
+                rows={4}
+                placeholder="Type the statutory rejection explanation to be recorded and sent to the resident..."
+                value={rejectionReasonText}
+                onChange={e => setRejectionReasonText(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1a1d27] text-xs outline-none font-medium text-gray-900 dark:text-gray-100 focus:border-red-500/50"
+              />
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setRejectModalRequest(null)}
+                  className="px-4 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmReject}
+                  disabled={!rejectionReasonText.trim()}
+                  className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 transition-colors cursor-pointer shadow-md flex items-center gap-1.5"
+                >
+                  <XCircle size={14} />
+                  <span>Confirm Rejection</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
@@ -1634,9 +1935,43 @@ function StatusBadge({ status }: { status: CaseStatus }) {
   }
 }
 
-
-
-
+export function getRequestStreamInfo(req: ResidentRequest) {
+  const typeOrStream = `${req.stream || ''} ${req.requestType || ''} ${req.title || ''}`.toLowerCase();
+  if (typeOrStream.includes('emergency') || req.priority === 'Emergency' || req.priority === 'Urgent') {
+    return {
+      id: 'emergency_repair',
+      label: 'Emergency Repair',
+      icon: AlertTriangle,
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
+      badgeColor: 'text-rose-400 bg-rose-500/15 border-rose-500/30'
+    };
+  }
+  if (typeOrStream.includes('private') || typeOrStream.includes('unit') || typeOrStream.includes('lot') || typeOrStream.includes('tap') || typeOrStream.includes('dryer') || typeOrStream.includes('blind')) {
+    return {
+      id: 'private_lot_repair',
+      label: 'Private Lot Repair',
+      icon: Home,
+      color: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+      badgeColor: 'text-amber-400 bg-amber-500/15 border-amber-500/30'
+    };
+  }
+  if (typeOrStream.includes('common') || typeOrStream.includes('maintenance') || typeOrStream.includes('upgrade') || typeOrStream.includes('gate') || typeOrStream.includes('lift') || typeOrStream.includes('pool') || typeOrStream.includes('foyer')) {
+    return {
+      id: 'common_area_repair',
+      label: 'Common Area Repair',
+      icon: Building2,
+      color: 'text-[#00D4B2] bg-[#00D4B2]/10 border-[#00D4B2]/30',
+      badgeColor: 'text-[#00D4B2] bg-[#00D4B2]/15 border-[#00D4B2]/30'
+    };
+  }
+  return {
+    id: 'general_inquiry',
+    label: 'General Inquiry',
+    icon: HelpCircle,
+    color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+    badgeColor: 'text-blue-400 bg-blue-500/15 border-blue-500/30'
+  };
+}
 // End ResidentRequestsView
 
 // Subcomponent: Requests Filter Bar
