@@ -1,5 +1,4 @@
-// @smartlot/component
-﻿import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ResidentRequest, CaseStatus, AuditEvent } from '../store/smartLotStore';
 import { 
@@ -88,6 +87,7 @@ export function ResidentRequestsView({
   const [closeReason, setCloseReason] = useState('');
   const [commentInput, setCommentInput] = useState('');
   const [replyingToComment, setReplyingToComment] = useState<{ authorName: string; text: string } | null>(null);
+  const commentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [commentLikes, setCommentLikes] = useState<Record<string, number>>({ 'C-1': 2, 'C-2': 1 });
   const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
@@ -765,10 +765,10 @@ export function ResidentRequestsView({
 
                               <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4 border border-white/5 space-y-3 transition-colors shadow-xs">
                                 {c.replyTo && (
-                                  <div className="bg-black/30 border-l-2 border-[#00D4B2] px-3.5 py-2 rounded-2xl text-[11px] text-gray-300 flex items-center gap-2">
+                                  <div className="bg-white/[0.04] border-l-2 border-[#00D4B2] px-3 py-1.5 rounded-r-xl rounded-l-xs text-[11px] text-gray-300 flex items-center gap-2">
                                     <Reply size={12} className="text-[#00D4B2] shrink-0" />
-                                    <span className="font-bold text-white">@{c.replyTo.authorName}:</span>
-                                    <span className="truncate text-gray-400">{c.replyTo.text}</span>
+                                    <span className="font-semibold text-white/90">@{c.replyTo.authorName}:</span>
+                                    <span className="truncate text-gray-400 font-normal">{c.replyTo.text}</span>
                                   </div>
                                 )}
 
@@ -802,9 +802,9 @@ export function ResidentRequestsView({
                                       type="button"
                                       onClick={() => {
                                         setReplyingToComment({ authorName: c.authorName, text: c.text });
-                                        if (!commentInput.includes(`@${c.authorName}`)) {
-                                          setCommentInput(prev => `@${c.authorName} ${prev}`.trimStart());
-                                        }
+                                        setTimeout(() => {
+                                          commentTextareaRef.current?.focus();
+                                        }, 50);
                                       }}
                                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold hover:text-white hover:bg-white/5 transition-all cursor-pointer"
                                     >
@@ -833,26 +833,6 @@ export function ResidentRequestsView({
                   )}
                 </div>
 
-                {/* Reply To Preview Bar */}
-                {replyingToComment && (
-                  <div className="flex items-center justify-between bg-[#00D4B2]/10 border-l-4 border-[#00D4B2] px-4 py-2.5 rounded-3xl text-xs backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="flex items-center gap-2 truncate">
-                      <Reply size={14} className="text-[#00D4B2] shrink-0" />
-                      <div className="truncate">
-                        <span className="text-[#00D4B2] text-[10px] uppercase font-extrabold block">Replying to {replyingToComment.authorName}</span>
-                        <span className="text-gray-200 font-medium truncate block max-w-sm">{replyingToComment.text}</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setReplyingToComment(null)}
-                      className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
-
                 {/* Bottom Input Area matching reference screenshot */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3">
@@ -862,70 +842,99 @@ export function ResidentRequestsView({
                     </div>
 
                     {/* Input Field Container with smooth round border */}
-                    <div className="flex-1 bg-[#111726] rounded-3xl border border-white/10 focus-within:border-[#00D4B2]/60 transition-all p-3.5 space-y-2.5 relative shadow-md">
+                    <div className="flex-1 bg-[#111726] rounded-3xl border border-white/10 focus-within:border-[#00D4B2]/60 transition-all relative shadow-md">
                       
-                      {/* Mention Popover Suggestions */}
-                      {showMentionMenu && possibleTagTargets.length > 0 && (
-                        <div className="absolute bottom-full mb-2 left-0 right-0 z-30 bg-[#0E1524] border border-white/10 rounded-3xl shadow-2xl p-2 max-h-48 overflow-y-auto space-y-1 backdrop-blur-md">
-                          <div className="text-[10px] font-black uppercase text-[#00D4B2] px-3.5 py-1 tracking-wider">Mention Member</div>
-                          {possibleTagTargets.map(name => (
-                            <button
-                              key={name}
-                              type="button"
-                              onClick={() => handleSelectMention(name)}
-                              className="w-full text-left px-3.5 py-2 rounded-2xl text-xs font-bold text-gray-200 hover:bg-[#00D4B2]/15 hover:text-[#00D4B2] transition-colors flex items-center justify-between cursor-pointer"
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center text-[10px] font-black">
-                                  @
-                                </div>
-                                <span>{name}</span>
-                              </div>
-                              <span className="text-[10px] text-gray-400 font-normal">Tag</span>
-                            </button>
-                          ))}
+                      {/* Docked Reply Preview Header */}
+                      {replyingToComment && (
+                        <div className="flex items-center justify-between px-4 py-2.5 bg-[#00D4B2]/[0.08] border-b border-[#00D4B2]/20 text-xs rounded-t-3xl animate-in fade-in duration-150">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-1 h-5.5 rounded-full bg-[#00D4B2] shrink-0" />
+                            <Reply size={13} className="text-[#00D4B2] shrink-0" />
+                            <div className="min-w-0">
+                              <span className="text-[#00D4B2] text-[10px] uppercase font-extrabold tracking-wider block">
+                                Replying to {replyingToComment.authorName}
+                              </span>
+                              <span className="text-gray-300 text-xs font-normal truncate block max-w-md">
+                                "{replyingToComment.text}"
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setReplyingToComment(null)}
+                            className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2"
+                            title="Cancel reply"
+                          >
+                            <X size={14} />
+                          </button>
                         </div>
                       )}
 
-                      <textarea
-                        rows={2}
-                        placeholder="Write a comment... (Type @ to tag a person)"
-                        value={commentInput}
-                        onChange={(e: any) => {
-                          const val = e.target.value;
-                          setCommentInput(val);
-                          if (val.endsWith('@') || (val.includes('@') && !val.split('@').pop()?.includes(' '))) {
-                            setShowMentionMenu(true);
-                          } else {
-                            setShowMentionMenu(false);
-                          }
-                        }}
-                        className="w-full bg-transparent px-1 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
-                      />
+                      <div className="p-3.5 space-y-2.5">
+                        {/* Mention Popover Suggestions */}
+                        {showMentionMenu && possibleTagTargets.length > 0 && (
+                          <div className="absolute bottom-full mb-2 left-0 right-0 z-30 bg-[#0E1524] border border-white/10 rounded-2xl shadow-2xl p-2 max-h-48 overflow-y-auto space-y-1 backdrop-blur-md">
+                            <div className="text-[10px] font-black uppercase text-[#00D4B2] px-3.5 py-1 tracking-wider">Mention Member</div>
+                            {possibleTagTargets.map(name => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => handleSelectMention(name)}
+                                className="w-full text-left px-3.5 py-2 rounded-2xl text-xs font-bold text-gray-200 hover:bg-[#00D4B2]/15 hover:text-[#00D4B2] transition-colors flex items-center justify-between cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-5 h-5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center text-[10px] font-black">
+                                    @
+                                  </div>
+                                  <span>{name}</span>
+                                </div>
+                                <span className="text-[10px] text-gray-400 font-normal">Tag</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
 
-                      {/* Bottom action icons & Post Comment Button */}
-                      <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
-                            <Paperclip size={15} />
-                          </button>
-                          <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
-                            <ImageIcon size={15} />
-                          </button>
-                          <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
-                            <Smile size={15} />
+                        <textarea
+                          ref={commentTextareaRef}
+                          rows={2}
+                          placeholder="Write a comment... (Type @ to tag a person)"
+                          value={commentInput}
+                          onChange={(e: any) => {
+                            const val = e.target.value;
+                            setCommentInput(val);
+                            if (val.endsWith('@') || (val.includes('@') && !val.split('@').pop()?.includes(' '))) {
+                              setShowMentionMenu(true);
+                            } else {
+                              setShowMentionMenu(false);
+                            }
+                          }}
+                          className="w-full bg-transparent px-1 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
+                        />
+
+                        {/* Bottom action icons & Post Comment Button */}
+                        <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                              <Paperclip size={15} />
+                            </button>
+                            <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                              <ImageIcon size={15} />
+                            </button>
+                            <button type="button" className="p-1.5 rounded-full hover:bg-white/5 hover:text-white cursor-pointer transition-colors">
+                              <Smile size={15} />
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleSendComment}
+                            disabled={!commentInput.trim()}
+                            className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-4.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md active:scale-95"
+                          >
+                            <Send size={13} className="fill-[#070B14]" />
+                            <span>Post Comment</span>
                           </button>
                         </div>
-
-                        <button
-                          type="button"
-                          onClick={handleSendComment}
-                          disabled={!commentInput.trim()}
-                          className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-4.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md active:scale-95"
-                        >
-                          <Send size={13} className="fill-[#070B14]" />
-                          <span>Post Comment</span>
-                        </button>
                       </div>
                     </div>
                   </div>
