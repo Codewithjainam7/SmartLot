@@ -8,6 +8,9 @@ interface JoinSchemeViewProps {
   schemeId: string;
   inviteToken?: string;
   invitedEmail?: string;
+  invitedName?: string;
+  invitedRole?: string;
+  invitedUnit?: string;
   store?: any;
   onJoinSuccess: (role: string, name: string, siteInfo: { id: string; name: string; lots: number }) => void;
   onBackToLanding: () => void;
@@ -17,6 +20,9 @@ export function JoinSchemeView({
   schemeId, 
   inviteToken, 
   invitedEmail, 
+  invitedName,
+  invitedRole,
+  invitedUnit,
   store, 
   onJoinSuccess, 
   onBackToLanding 
@@ -34,11 +40,11 @@ export function JoinSchemeView({
 
   // Form states
   const [isLoginMode, setIsLoginMode] = useState(false);
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState(invitedName || '');
+  const [email, setEmail] = useState(invitedEmail || '');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<MemberRole>('Lot Owner');
-  const [unitNumber, setUnitNumber] = useState('Unit 1');
+  const [selectedRole, setSelectedRole] = useState<MemberRole>((invitedRole as MemberRole) || 'Lot Owner');
+  const [unitNumber, setUnitNumber] = useState(invitedUnit || 'Unit 1');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [joinedSuccessfully, setJoinedSuccessfully] = useState(false);
@@ -49,8 +55,9 @@ export function JoinSchemeView({
         setLoadingScheme(true);
         setSchemeError(null);
 
-        // 1. Check local store schemes
         const normalizedSchemeId = (schemeId || '').toUpperCase().trim();
+
+        // 1. Check local store schemes
         const localScheme = smartLotStore.schemes?.find((s: any) => s.id?.toUpperCase() === normalizedSchemeId);
         if (localScheme) {
           setSchemeName(localScheme.name);
@@ -58,22 +65,58 @@ export function JoinSchemeView({
         }
 
         // 2. Check for pending invited member in local store by token or email
-        const targetMember = smartLotStore.members?.find((m: Member) => 
+        let matchedMember = smartLotStore.members?.find((m: Member) => 
           (inviteToken && m.inviteToken === inviteToken) ||
           (invitedEmail && m.email?.toLowerCase() === invitedEmail.toLowerCase() && m.schemeId?.toUpperCase() === normalizedSchemeId)
         );
 
-        if (targetMember) {
-          setPendingMember(targetMember);
-          setFullName(targetMember.name || '');
-          setEmail(targetMember.email || '');
-          setSelectedRole(targetMember.role || 'Lot Owner');
-          setUnitNumber(targetMember.unitId || 'Unit 1');
-        } else if (invitedEmail) {
-          setEmail(invitedEmail);
+        // 3. If not found in local store, query Supabase directly for this member
+        if (!matchedMember && (inviteToken || invitedEmail)) {
+          try {
+            let memberQuery = supabase
+              .from('members')
+              .select('*')
+              .eq('scheme_id', normalizedSchemeId);
+
+            if (invitedEmail) {
+              memberQuery = memberQuery.ilike('email', invitedEmail.trim());
+            }
+
+            const { data: dbMembers } = await memberQuery;
+            if (dbMembers && dbMembers.length > 0) {
+              const dbM = dbMembers[0];
+              matchedMember = {
+                id: dbM.id,
+                name: dbM.name,
+                email: dbM.email,
+                phone: dbM.phone || '0400 000 000',
+                schemeId: dbM.scheme_id,
+                role: dbM.role as any,
+                unitId: dbM.unit_id || invitedUnit || 'Unit 1',
+                lotNumber: dbM.lot_number || 1,
+                status: dbM.status || 'Invited',
+                joinedAt: dbM.created_at || ''
+              };
+            }
+          } catch (dbErr) {
+            console.warn('Direct member lookup notice:', dbErr);
+          }
         }
 
-        // 3. If local scheme not found, query Supabase
+        if (matchedMember) {
+          setPendingMember(matchedMember);
+          setFullName(matchedMember.name || invitedName || '');
+          setEmail(matchedMember.email || invitedEmail || '');
+          setSelectedRole(matchedMember.role || (invitedRole as MemberRole) || 'Lot Owner');
+          setUnitNumber(matchedMember.unitId || invitedUnit || 'Unit 1');
+        } else {
+          if (invitedEmail) setEmail(invitedEmail);
+          if (invitedName) setFullName(invitedName);
+          if (invitedRole) setSelectedRole(invitedRole as MemberRole);
+          if (invitedUnit) setUnitNumber(invitedUnit);
+        }
+
+        // 4. If local scheme not found, query Supabase
         if (!localScheme) {
           const { data, error } = await supabase
             .from('schemes')
@@ -104,12 +147,22 @@ export function JoinSchemeView({
     if (schemeId) {
       fetchSchemeDetails();
     }
-  }, [schemeId, inviteToken, invitedEmail]);
+  }, [schemeId, inviteToken, invitedEmail, invitedName, invitedRole, invitedUnit]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    const activeRole = selectedRole || pendingMember?.role || (invitedRole as MemberRole) || 'Lot Owner';
+    const activeUnit = unitNumber || pendingMember?.unitId || invitedUnit || 'Unit 1';
+    const activeEmail = (email || invitedEmail || pendingMember?.email || '').trim();
+
+    if (!activeEmail) {
+      setError('No valid email address found for this invitation.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       let currentUser: any = null;
@@ -118,66 +171,66 @@ export function JoinSchemeView({
         // Authenticate existing user (e.g. Strata Manager or Lot Owner accepting access to an additional scheme)
         try {
           const { data, error: signInError } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
+            email: activeEmail,
             password,
           });
           if (signInError) {
             console.warn('Supabase signIn notice:', signInError.message);
           }
-          currentUser = data?.user || { id: `USR-${Date.now()}`, email: email.trim() };
+          currentUser = data?.user || { id: `USR-${Date.now()}`, email: activeEmail };
         } catch {
-          currentUser = { id: `USR-${Date.now()}`, email: email.trim() };
+          currentUser = { id: `USR-${Date.now()}`, email: activeEmail };
         }
       } else {
         // Register new user
         try {
           const { data, error: signUpError } = await supabase.auth.signUp({
-            email: email.trim(),
+            email: activeEmail,
             password,
             options: {
               data: {
                 full_name: fullName.trim(),
-                role: selectedRole,
+                role: activeRole,
               },
             },
           });
           if (signUpError) {
             console.warn('Supabase signUp notice:', signUpError.message);
           }
-          currentUser = data?.user || { id: `USR-${Date.now()}`, email: email.trim() };
+          currentUser = data?.user || { id: `USR-${Date.now()}`, email: activeEmail };
         } catch {
-          currentUser = { id: `USR-${Date.now()}`, email: email.trim() };
+          currentUser = { id: `USR-${Date.now()}`, email: activeEmail };
         }
       }
 
       const userDisplayName = isLoginMode 
-        ? (currentUser?.user_metadata?.full_name || pendingMember?.name || fullName || currentUser.email?.split('@')[0] || 'User') 
-        : fullName;
+        ? (currentUser?.user_metadata?.full_name || pendingMember?.name || fullName || activeEmail.split('@')[0] || 'User') 
+        : (fullName.trim() || pendingMember?.name || activeEmail.split('@')[0] || 'User');
 
       // ─── CRITICAL: Update Status to Active ONLY NOW in database and store ───
-      const tokenOrId = inviteToken || pendingMember?.id || email.trim();
+      const tokenOrId = inviteToken || pendingMember?.id || activeEmail;
       if (smartLotStore.acceptMemberInvite) {
         await smartLotStore.acceptMemberInvite(
           tokenOrId,
           currentUser?.id,
           { 
             name: userDisplayName, 
-            role: selectedRole, 
-            unitId: unitNumber,
+            role: activeRole, 
+            unitId: activeUnit,
             status: 'Active',
             joinedAt: new Date().toISOString().split('T')[0]
           }
         );
       } else {
         smartLotStore.setMembers((prev: any[]) => prev.map((m: any) => {
-          if (m.inviteToken === inviteToken || m.id === tokenOrId || m.email?.toLowerCase() === email.trim().toLowerCase()) {
+          if (m.inviteToken === inviteToken || m.id === tokenOrId || m.email?.toLowerCase() === activeEmail.toLowerCase()) {
             return { 
               ...m, 
               status: 'Active', 
               joinedAt: new Date().toISOString().split('T')[0], 
               name: userDisplayName,
-              role: selectedRole,
-              unitId: unitNumber
+              role: activeRole,
+              unitId: activeUnit
             };
           }
           return m;
@@ -192,11 +245,11 @@ export function JoinSchemeView({
             status: 'Active',
             user_id: currentUser?.id,
             name: userDisplayName,
-            role: selectedRole,
-            unit_id: unitNumber
+            role: activeRole,
+            unit_id: activeUnit
           })
           .eq('scheme_id', schemeId)
-          .eq('email', email.trim());
+          .eq('email', activeEmail);
 
         if (updateError) {
           console.warn('Supabase member activation notice:', updateError);
@@ -207,7 +260,7 @@ export function JoinSchemeView({
 
       setJoinedSuccessfully(true);
       setTimeout(() => {
-        onJoinSuccess(selectedRole, userDisplayName, { 
+        onJoinSuccess(activeRole, userDisplayName, { 
           id: schemeId, 
           name: schemeName || schemeId, 
           lots: lotsCount || 10 
@@ -288,31 +341,25 @@ export function JoinSchemeView({
           </p>
         </div>
 
-        {/* Pending Invite Status Pill */}
-        {pendingMember ? (
-          <div className="bg-blue-50/80 dark:bg-[#121826] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 rounded-2xl p-4 text-xs space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="font-extrabold uppercase text-[10px] text-[#0055FF] dark:text-[#00D4B2] tracking-wider flex items-center gap-1.5">
-                <ShieldCheck size={14} /> Token Verified
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-[10px] border border-amber-500/20 uppercase tracking-wide">
-                Pending Acceptance
-              </span>
-            </div>
-            <p className="text-gray-700 dark:text-gray-200 font-semibold">
-              Assigned Role: <strong className="text-gray-900 dark:text-white">{pendingMember.role}</strong> • Lot: <strong className="text-gray-900 dark:text-white">{pendingMember.unitId}</strong>
-            </p>
-            <p className="text-gray-500 dark:text-gray-400 text-[11px]">
-              {isLoginMode 
-                ? 'Sign in below to link this scheme to your existing SmartLot portfolio.' 
-                : 'Complete registration below to accept this invitation and activate your account.'}
-            </p>
+        {/* Invitation Status Banner */}
+        <div className="bg-blue-50/80 dark:bg-[#121826] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 rounded-2xl p-4 text-xs space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-extrabold uppercase text-[10px] text-[#0055FF] dark:text-[#00D4B2] tracking-wider flex items-center gap-1.5">
+              <ShieldCheck size={14} /> Official Scheme Invitation
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-[10px] border border-amber-500/20 uppercase tracking-wide">
+              Pending Activation
+            </span>
           </div>
-        ) : (
-          <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-2xl p-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-            Complete the form below to accept your scheme access credentials.
-          </div>
-        )}
+          <p className="text-gray-700 dark:text-gray-200 font-semibold">
+            Assigned to: <strong className="text-gray-900 dark:text-white">{email || invitedEmail || 'Pre-authorized invitee'}</strong>
+          </p>
+          <p className="text-gray-500 dark:text-gray-400 text-[11px]">
+            {isLoginMode 
+              ? 'Sign in below to link this scheme to your existing SmartLot account.' 
+              : 'Complete your registration below to accept your pre-assigned scheme access credentials.'}
+          </p>
+        </div>
 
         {error && (
           <div className="p-4 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-semibold rounded-2xl border border-red-200/50 dark:border-red-900/30 flex items-start gap-2">
@@ -326,98 +373,103 @@ export function JoinSchemeView({
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">Full Name</label>
               <div className="relative">
-                <User className="absolute left-4 top-3.5 text-gray-400" size={16} />
+                <User className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" size={16} />
                 <input
                   type="text"
                   required
                   placeholder="Enter your name"
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-900 dark:text-white text-sm outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10 transition-all font-bold"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-900 dark:text-white text-sm outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white dark:focus:bg-white/10 focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10 transition-all font-bold"
                 />
               </div>
             </div>
           )}
 
+          {/* Email Address - Visible Only, Never Editable */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-3.5 text-gray-400" size={16} />
-              <input
-                type="email"
-                required
-                placeholder="your.email@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                readOnly={Boolean(pendingMember?.email)}
-                className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 text-gray-900 dark:text-white text-sm outline-none transition-all font-bold ${
-                  pendingMember?.email 
-                    ? 'bg-gray-100 dark:bg-white/10 text-gray-500 cursor-not-allowed' 
-                    : 'bg-gray-50/50 dark:bg-white/5 focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10'
-                }`}
-              />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">
+                Email Address
+              </label>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
+                <Lock size={12} className="text-gray-400" /> Locked / Read-Only
+              </span>
             </div>
+            <div className="relative flex items-center">
+              <Mail className="absolute left-4 text-gray-400 dark:text-gray-500 pointer-events-none" size={16} />
+              <div 
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-100/90 dark:bg-white/5 text-gray-800 dark:text-gray-200 text-sm font-bold flex items-center justify-between cursor-default select-text"
+                title="This email is pre-assigned to your invitation and cannot be changed"
+              >
+                <span className="truncate">{email || invitedEmail || 'No email specified'}</span>
+                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-gray-200/80 dark:bg-white/10 text-gray-600 dark:text-gray-400 shrink-0 ml-2">
+                  Invited
+                </span>
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              This invitation is permanently assigned to this email address.
+            </p>
           </div>
 
+          {/* Password Input */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">
               {isLoginMode ? 'Your Password' : 'Create Password'}
             </label>
             <div className="relative">
-              <Lock className="absolute left-4 top-3.5 text-gray-400" size={16} />
+              <Lock className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" size={16} />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-900 dark:text-white text-sm outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10 transition-all font-bold"
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-900 dark:text-white text-sm outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white dark:focus:bg-white/10 focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10 transition-all font-bold"
               />
             </div>
           </div>
 
-          {!isLoginMode && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">Scheme Role</label>
-                {pendingMember ? (
-                  <div className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white text-xs font-bold flex items-center justify-between">
-                    <span>{selectedRole}</span>
-                    <span className="text-[10px] text-[#0055FF] dark:text-[#00D4B2] font-mono">Assigned</span>
-                  </div>
-                ) : (
-                  <select
-                    value={selectedRole}
-                    onChange={e => setSelectedRole(e.target.value as any)}
-                    className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-900 dark:text-white text-sm outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10 transition-all font-bold cursor-pointer"
-                  >
-                    <option value="Lot Owner">Lot Owner</option>
-                    <option value="Tenant">Tenant</option>
-                    <option value="Committee Member">Committee Member</option>
-                    <option value="Strata Manager">Strata Manager</option>
-                    <option value="Building Manager">Building Manager</option>
-                  </select>
-                )}
+          {/* Assigned Scheme Credentials Display (Read-Only Badges) */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">
+                Assigned Scheme Credentials
+              </label>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0055FF] dark:text-[#00D4B2] flex items-center gap-1">
+                <ShieldCheck size={12} /> Pre-Allocated
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl border border-blue-100 dark:border-blue-900/30 bg-blue-50/60 dark:bg-[#0055FF]/10 space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0055FF] dark:text-[#00D4B2] block">
+                  Scheme Role
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#0055FF] dark:bg-[#00D4B2] shrink-0"></span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                    {selectedRole || pendingMember?.role || (invitedRole as any) || 'Lot Owner'}
+                  </span>
+                </div>
               </div>
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block">Unit / Lot</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Unit 5"
-                  value={unitNumber}
-                  readOnly={Boolean(pendingMember?.unitId)}
-                  onChange={e => setUnitNumber(e.target.value)}
-                  className={`w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-white/5 text-gray-900 dark:text-white text-sm outline-none transition-all font-bold ${
-                    pendingMember?.unitId
-                      ? 'bg-gray-100 dark:bg-white/10 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-50/50 dark:bg-white/5 focus:border-[#0055FF] dark:focus:border-[#00D4B2] focus:bg-white focus:ring-2 focus:ring-[#0055FF]/10 dark:focus:ring-[#00D4B2]/10'
-                  }`}
-                />
+
+              <div className="p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/60 dark:bg-emerald-950/20 space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
+                  Unit / Lot
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                    {unitNumber || pendingMember?.unitId || invitedUnit || 'Unit 1'}
+                  </span>
+                </div>
               </div>
             </div>
-          )}
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              Role and lot number designated by scheme management for <strong className="text-gray-700 dark:text-gray-300">{schemeName || schemeId}</strong>.
+            </p>
+          </div>
 
           <button
             type="submit"

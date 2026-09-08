@@ -42,6 +42,9 @@ export default function App() {
   const [joinSchemeId, setJoinSchemeId] = useState<string | null>(null);
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
+  const [invitedName, setInvitedName] = useState<string | null>(null);
+  const [invitedRole, setInvitedRole] = useState<string | null>(null);
+  const [invitedUnit, setInvitedUnit] = useState<string | null>(null);
 
   useEffect(() => {
     const parseUrl = () => {
@@ -59,12 +62,17 @@ export default function App() {
       const params = new URLSearchParams(queryString);
       const token = params.get('token');
       const email = params.get('email');
+      const name = params.get('name');
+      const role = params.get('role');
+      const unit = params.get('unit');
       const schemeFromParam = params.get('scheme');
 
       // Match path or hash like #/join/SP101 or #/join?scheme=SP101 or /lander?scheme=SP101
-      const hashMatch = hashStr.match(/^#\/join(?:\/([A-Za-z0-9_-]+))?/);
-      const pathMatch = pathStr.match(/^\/join(?:\/([A-Za-z0-9_-]+))?/);
-      const isLander = hashStr.includes('lander') || pathStr.includes('lander');
+      const hashClean = hashStr.split('?')[0];
+      const pathClean = pathStr.split('?')[0];
+      const hashMatch = hashClean.match(/^#\/join(?:\/([A-Za-z0-9_-]+))?/);
+      const pathMatch = pathClean.match(/^\/join(?:\/([A-Za-z0-9_-]+))?/);
+      const isLander = hashClean.includes('lander') || pathClean.includes('lander');
 
       const extractedSchemeId = hashMatch?.[1] || pathMatch?.[1] || schemeFromParam || (isLander ? schemeFromParam : null);
 
@@ -72,10 +80,16 @@ export default function App() {
         setJoinSchemeId(extractedSchemeId || 'SP101');
         setInviteToken(token || null);
         setInvitedEmail(email || null);
+        setInvitedName(name || null);
+        setInvitedRole(role || null);
+        setInvitedUnit(unit || null);
       } else {
         setJoinSchemeId(null);
         setInviteToken(null);
         setInvitedEmail(null);
+        setInvitedName(null);
+        setInvitedRole(null);
+        setInvitedUnit(null);
       }
     };
     parseUrl();
@@ -247,6 +261,9 @@ export default function App() {
         schemeId={joinSchemeId}
         inviteToken={inviteToken || undefined}
         invitedEmail={invitedEmail || undefined}
+        invitedName={invitedName || undefined}
+        invitedRole={invitedRole || undefined}
+        invitedUnit={invitedUnit || undefined}
         store={store}
         onJoinSuccess={async (role, name, siteInfo) => {
           window.location.hash = '';
@@ -256,6 +273,9 @@ export default function App() {
           setJoinSchemeId(null);
           setInviteToken(null);
           setInvitedEmail(null);
+          setInvitedName(null);
+          setInvitedRole(null);
+          setInvitedUnit(null);
           await handleLoginSuccess(role, name, siteInfo);
         }}
         onBackToLanding={() => {
@@ -266,6 +286,9 @@ export default function App() {
           setJoinSchemeId(null);
           setInviteToken(null);
           setInvitedEmail(null);
+          setInvitedName(null);
+          setInvitedRole(null);
+          setInvitedUnit(null);
           setSessionState('landing');
         }}
       />

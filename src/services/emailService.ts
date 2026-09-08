@@ -66,7 +66,10 @@ function buildHtmlForType(body: Record<string, any>): { subject: string; html: s
     const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
     const tokenQuery = body.inviteToken ? `?token=${encodeURIComponent(body.inviteToken)}` : '';
     const emailQuery = body.toEmail ? `${tokenQuery ? '&' : '?'}email=${encodeURIComponent(body.toEmail)}` : '';
-    const joinUrl = body.joinUrl || `${origin}/#/join/${encodeURIComponent(body.schemeId || 'SP101')}${tokenQuery}${emailQuery}`;
+    const roleQuery = body.role ? `&role=${encodeURIComponent(body.role)}` : '';
+    const unitQuery = body.lotNumber ? `&unit=${encodeURIComponent(body.lotNumber)}` : '';
+    const nameQuery = body.toName ? `&name=${encodeURIComponent(body.toName)}` : '';
+    const joinUrl = body.joinUrl || `${origin}/#/join/${encodeURIComponent(body.schemeId || 'SP101')}${tokenQuery}${emailQuery}${roleQuery}${unitQuery}${nameQuery}`;
     const inviter = body.inviterName || 'Strata Administration';
 
     return {
