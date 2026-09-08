@@ -30,6 +30,11 @@ import {
   ContactPreference
 } from '../types';
 import { supabase } from '../lib/supabase';
+import { 
+  dispatchActivityConduitEmail, 
+  dispatchStatusUpdateEmail, 
+  dispatchCommentNotificationEmail 
+} from '../services/emailService';
 
 export type RequestStream = 
   | 'maintenance_upgrade' 
@@ -2211,6 +2216,21 @@ export function useSmartLotStore() {
         console.warn("Updated status in Supabase for request:", requestId);
       }
     });
+
+    // Dispatch status update email to resident
+    const targetTriageReq = residentRequests.find(r => r.id === requestId || r.referenceId === requestId);
+    if (targetTriageReq?.requestorEmail) {
+      dispatchStatusUpdateEmail({
+        toEmail: targetTriageReq.requestorEmail,
+        requestorName: targetTriageReq.requestorName || 'Resident',
+        referenceId: targetTriageReq.referenceId ? targetTriageReq.referenceId.replace('#', '') : targetTriageReq.id,
+        activityTitle: targetTriageReq.title,
+        oldStatus: 'pending_triage',
+        newStatus: nextStatus,
+        reason: rejectionReason,
+        actionType: action === 'reject' ? 'rejected' : 'approved',
+      }).catch(err => console.warn('Triage email notification note:', err));
+    }
   };
 
   const closeResidentRequest = (requestId: string, closeReason: string) => {
@@ -2242,10 +2262,28 @@ export function useSmartLotStore() {
     }).eq('id', requestId).then(({ error }) => {
       if (error) console.warn('[SmartLot] closeResidentRequest sync note:', error.message);
     });
+
+    // Dispatch closure email to resident
+    const targetCloseReq = residentRequests.find(r => r.id === requestId || r.referenceId === requestId);
+    if (targetCloseReq?.requestorEmail) {
+      dispatchStatusUpdateEmail({
+        toEmail: targetCloseReq.requestorEmail,
+        requestorName: targetCloseReq.requestorName || 'Resident',
+        referenceId: targetCloseReq.referenceId ? targetCloseReq.referenceId.replace('#', '') : targetCloseReq.id,
+        activityTitle: targetCloseReq.title,
+        oldStatus: targetCloseReq.status,
+        newStatus: 'closed',
+        reason: closeReason,
+        actionType: 'closed',
+      }).catch(err => console.warn('Closure email notification note:', err));
+    }
   };
 
   const updateActivityStatus = (requestId: string, newStatus: CaseStatus, reason?: string) => {
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const targetStatusReq = residentRequests.find(r => r.id === requestId || r.referenceId === requestId);
+    const oldStatus = targetStatusReq?.status || 'new';
+
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId && r.referenceId !== requestId) return r;
       const auditEntry: AuditEvent = {
@@ -2273,6 +2311,20 @@ export function useSmartLotStore() {
     }).eq('id', requestId).then(({ error }) => {
       if (error) console.warn('[SmartLot] updateActivityStatus sync note:', error.message);
     });
+
+    // Dispatch status change email if recipient email exists
+    if (targetStatusReq?.requestorEmail && oldStatus !== newStatus) {
+      dispatchStatusUpdateEmail({
+        toEmail: targetStatusReq.requestorEmail,
+        requestorName: targetStatusReq.requestorName || 'Resident',
+        referenceId: targetStatusReq.referenceId ? targetStatusReq.referenceId.replace('#', '') : targetStatusReq.id,
+        activityTitle: targetStatusReq.title,
+        oldStatus,
+        newStatus,
+        reason,
+        actionType: 'status_change',
+      }).catch(err => console.warn('Status change email notification note:', err));
+    }
   };
 
   const updateActivityPriority = (requestId: string, newPriority: 'Low' | 'Normal' | 'High' | 'Urgent') => {
@@ -2419,6 +2471,26 @@ export function useSmartLotStore() {
     }).then(({ error }) => {
       if (error) console.warn('[SmartLot] request_comments sync note:', error.message);
     });
+
+    // Dispatch email alert to other participant
+    const targetCommentReq = residentRequests.find(r => r.id === requestId || r.referenceId === requestId);
+    if (targetCommentReq) {
+      const isResidentRole = activePersona.role.includes('Resident') || activePersona.role.includes('Owner') || activePersona.role.includes('Tenant');
+      const notifyEmail = isResidentRole ? targetCommentReq.strataManagerEmail : targetCommentReq.requestorEmail;
+      const notifyName = isResidentRole ? 'Strata Manager' : targetCommentReq.requestorName;
+
+      if (notifyEmail) {
+        dispatchCommentNotificationEmail({
+          toEmail: notifyEmail,
+          recipientName: notifyName || 'Member',
+          referenceId: targetCommentReq.referenceId ? targetCommentReq.referenceId.replace('#', '') : targetCommentReq.id,
+          activityTitle: targetCommentReq.title,
+          commenterName: activePersona.name,
+          commenterRole: activePersona.role,
+          commentText: commentText.trim(),
+        }).catch(err => console.warn('Comment email notification note:', err));
+      }
+    }
   };
 
   const editCommentOnRequest = (requestId: string, commentId: string, newText: string) => {
