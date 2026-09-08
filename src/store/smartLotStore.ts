@@ -2123,39 +2123,23 @@ export function useSmartLotStore() {
         }
       });
 
-    // ── 4. Dispatch conduit email via Edge Function (fire-and-forget) ─────────
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-    fetch(`${supabaseUrl}/functions/v1/send-activity-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${anonKey}`,
-        'apikey':        anonKey,
-      },
-      body: JSON.stringify({
-        referenceId:   slRef,
-        activityTitle: newReq.title,
-        activityType:  newReq.requestType,
-        priority:      newReq.priority,
-        location,
-        buildingName,
-        unit,
-        description:   newReq.description,
-        requestorName: activePersona.name,
-        requestorEmail,
-        managerEmail,
-        attachmentUrls,
-      }),
+    // ── 4. Dispatch conduit email via emailService (supports local Mailtrap relay & edge functions) ─────────
+    dispatchActivityConduitEmail({
+      referenceId:   slRef,
+      activityTitle: newReq.title,
+      activityType:  String(newReq.requestType),
+      priority:      newReq.priority,
+      location,
+      buildingName,
+      unit,
+      description:   newReq.description,
+      requestorName: activePersona.name,
+      requestorEmail,
+      managerEmail,
+      attachmentUrls,
     })
-      .then(async res => {
-        if (!res.ok) {
-          const body = await res.text().catch(() => '');
-          console.warn(`[SmartLot] Conduit email partially failed (HTTP ${res.status}):`, body);
-        } else {
-          console.log(`[SmartLot] ✅ Conduit email dispatched for #${slRef}`);
-        }
+      .then(res => {
+        console.log(`[SmartLot] ✅ Conduit email dispatched for #${slRef}:`, res);
       })
       .catch(err => {
         // Never block the user flow — email failure is non-fatal

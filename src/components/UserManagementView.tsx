@@ -29,7 +29,13 @@ import {
   Save,
   Home,
   Activity,
-  RotateCcw
+  RotateCcw,
+  Users,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Filter,
+  Building2
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -88,10 +94,16 @@ export function UserManagementView({
 
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [permTab, setPermTab] = useState<'default' | 'individual'>('default');
-  const [filterRole, setFilterRole] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Column-Specific Search & Filter States (Enterprise AG-Grid style matching Global Platform Directory)
+  const [colSearchName, setColSearchName] = useState('');
+  const [colFilterRole, setColFilterRole] = useState('ALL');
+  const [colSearchUnit, setColSearchUnit] = useState('');
+  const [colSearchContact, setColSearchContact] = useState('');
+  const [colFilterStatus, setColFilterStatus] = useState('ALL');
+  const [sortField, setSortField] = useState<'name' | 'role' | 'unitId' | 'email' | 'status' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Edit Member Modal State
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -166,28 +178,105 @@ export function UserManagementView({
   const canManageUsers = true;
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
-  const activeFiltersCount = (filterRole !== 'all' ? 1 : 0) + (searchQuery.trim() !== '' ? 1 : 0);
-
-  const filteredMembers = members.filter(m => {
-    if (filterRole !== 'all') {
-      if (filterRole === 'Managers') {
-        if (m.role !== 'Strata Manager' && m.role !== 'Building Manager') return false;
-      } else if (m.role !== filterRole) {
-        return false;
+  const handleSort = (field: 'name' | 'role' | 'unitId' | 'email' | 'status') => {
+    if (sortField === field) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else {
+        setSortField(null);
+        setSortDirection('asc');
       }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
     }
-    if (filterStatus !== 'all' && m.status !== filterStatus) return false;
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
-      return (
-        m.name.toLowerCase().includes(q) ||
-        m.email.toLowerCase().includes(q) ||
-        m.unitId.toLowerCase().includes(q) ||
-        (m.role && m.role.toLowerCase().includes(q))
-      );
-    }
-    return true;
-  });
+  };
+
+  const handleResetFilters = () => {
+    setColSearchName('');
+    setColFilterRole('ALL');
+    setColSearchUnit('');
+    setColSearchContact('');
+    setColFilterStatus('ALL');
+    setSortField(null);
+    setSortDirection('asc');
+  };
+
+  const activeFiltersCount = [
+    colSearchName.trim() !== '',
+    colFilterRole !== 'ALL',
+    colSearchUnit.trim() !== '',
+    colSearchContact.trim() !== '',
+    colFilterStatus !== 'ALL',
+  ].filter(Boolean).length;
+
+  const filteredMembers = useMemo(() => {
+    return members
+      .filter(m => {
+        // Quick Role pill filter or column role filter (Managers matches Strata Manager or Building Manager)
+        if (colFilterRole !== 'ALL') {
+          if (colFilterRole === 'Strata Manager' || colFilterRole === 'Managers') {
+            if (m.role !== 'Strata Manager' && m.role !== 'Building Manager') return false;
+          } else if (m.role !== colFilterRole) {
+            return false;
+          }
+        }
+
+        // Column 1: Member Name / ID
+        if (colSearchName.trim()) {
+          const nameQ = colSearchName.toLowerCase().trim();
+          const matchesNameOrId = (
+            (m.name || '').toLowerCase().includes(nameQ) ||
+            (m.id || '').toLowerCase().includes(nameQ)
+          );
+          if (!matchesNameOrId) return false;
+        }
+
+        // Column 2: Unit Search
+        if (colSearchUnit.trim()) {
+          const unitQ = colSearchUnit.toLowerCase().trim();
+          const matchesUnit = (
+            (m.unitId || '').toLowerCase().includes(unitQ) ||
+            String(m.lotNumber ?? '').includes(unitQ)
+          );
+          if (!matchesUnit) return false;
+        }
+
+        // Column 3: Contact Search (Email or Phone)
+        if (colSearchContact.trim()) {
+          const contactQ = colSearchContact.toLowerCase().trim();
+          const matchesContact = (
+            (m.email || '').toLowerCase().includes(contactQ) ||
+            (m.phone || '').toLowerCase().includes(contactQ)
+          );
+          if (!matchesContact) return false;
+        }
+
+        // Column 4: Status Filter
+        if (colFilterStatus !== 'ALL') {
+          if (m.status !== colFilterStatus) return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (!sortField) return 0;
+        const valA = (a[sortField] || '').toString().toLowerCase();
+        const valB = (b[sortField] || '').toString().toLowerCase();
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [
+    members,
+    colSearchName,
+    colFilterRole,
+    colSearchUnit,
+    colSearchContact,
+    colFilterStatus,
+    sortField,
+    sortDirection
+  ]);
 
   return (
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
@@ -195,27 +284,38 @@ export function UserManagementView({
       {/* Morphing Popover Wrapper */}
       <MorphingPopover>
         
-        {/* Header Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
-          {/* Subtle glow in dark mode */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-3xl" />
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00D4B2]/10 dark:bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/20 text-xs font-bold uppercase tracking-wider mb-2">
-              Scheme Administration • Multi-Occupant Onboarding Zone
+        {/* Header with Title, Stats & Action Buttons (Identical to Admin View Global Directory) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-5 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                <Users size={18} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                    Team Access Directory
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[11px] font-extrabold font-mono">
+                    {filteredMembers.length} of {members.length} Members
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Strata Plan {activeSchemeId} • Manage strata council, lot owners, tenants, and scheme credentials.
+                </p>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management Directory</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Manage Lot Owners, On-Site Residents, Tenants, and multiple occupants per physical lot.</p>
           </div>
 
-          <div className="flex items-center gap-3 relative">
-            {/* Tab switcher */}
+          <div className="flex items-center gap-3">
+            {/* Tab switcher: Member Roster | Role Permissions */}
             <div className="flex bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl text-xs font-bold border border-gray-200 dark:border-white/5">
               <button
                 type="button"
                 onClick={() => setActiveTab('roster')}
-                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                   activeTab === 'roster'
-                    ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 text-white dark:text-[#00D4B2] shadow-sm'
+                    ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10 font-bold'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                 }`}
               >
@@ -224,9 +324,9 @@ export function UserManagementView({
               <button
                 type="button"
                 onClick={() => setActiveTab('permissions')}
-                className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                   activeTab === 'permissions'
-                    ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 text-white dark:text-[#00D4B2] shadow-sm'
+                    ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10 font-bold'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                 }`}
               >
@@ -239,26 +339,26 @@ export function UserManagementView({
                 <button
                   type="button"
                   onClick={handleCopyInviteLink}
-                  className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white px-5 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:bg-gray-200 dark:hover:bg-white/10 hover:scale-105 cursor-pointer"
+                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-[#151a28] hover:bg-gray-200/80 dark:hover:bg-white/10 text-gray-800 dark:text-white font-bold text-xs border border-gray-200/80 dark:border-white/10 transition-all cursor-pointer"
                 >
                   {copied ? (
                     <>
-                      <Check size={18} className="text-[#059669]" />
-                      <span>Copied Invite Link!</span>
+                      <Check size={14} className="text-[#059669]" />
+                      <span>Copied Link!</span>
                     </>
                   ) : (
                     <>
-                      <Link2 size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                      <span>Copy Invite Link</span>
+                      <Link2 size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                      <span>Copy Link</span>
                     </>
                   )}
                 </button>
                 <MorphingPopoverTrigger>
                   <div 
                     onClick={() => setPrefillLotData(null)}
-                    className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                   >
-                    <UserPlus size={18} className="text-[#00D4B2]" /> 
+                    <UserPlus size={15} /> 
                     <span>Invite Member</span>
                   </div>
                 </MorphingPopoverTrigger>
@@ -286,103 +386,87 @@ export function UserManagementView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="space-y-8"
+            className="space-y-4"
           >
-            {/* Filter & Search Bar - styled like Global Platform Directory */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-4 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
-                
-                {/* Search Input */}
-                <div className="flex items-center gap-2.5 bg-gray-50/80 dark:bg-[#151a28] border border-gray-200/80 dark:border-white/5 px-3.5 py-2.5 rounded-2xl text-xs flex-1 max-w-md focus-within:border-[#0055FF]/50 dark:focus-within:border-[#00D4B2]/50 transition-colors">
-                  <Search size={15} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                  <input
-                    type="text"
-                    aria-label="Search members by name, email, or unit number"
-                    placeholder="Search members by name, email, or unit..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 font-semibold"
-                  />
-                  {searchQuery && (
-                    <button 
+            {/* Quick Role Filter Preset Pills Row (identical to Admin Global Directory) */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
+                {[
+                  { label: 'All Roles', value: 'ALL', count: members.length },
+                  { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
+                  { label: 'Committee', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
+                  { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
+                  { label: 'Tenants', value: 'Tenant', count: members.filter(m => m.role === 'Tenant').length },
+                ].map(tab => {
+                  const isActive = tab.value === 'Strata Manager' 
+                    ? (colFilterRole === 'Strata Manager' || colFilterRole === 'Managers' || colFilterRole === 'Building Manager')
+                    : colFilterRole === tab.value;
+                  return (
+                    <button
+                      key={tab.label}
                       type="button"
-                      onClick={() => setSearchQuery('')} 
-                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                      onClick={() => {
+                        if (tab.value === 'Strata Manager') {
+                          setColFilterRole(isActive ? 'ALL' : 'Strata Manager');
+                        } else {
+                          setColFilterRole(isActive && tab.value !== 'ALL' ? 'ALL' : tab.value);
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isActive
+                          ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                      }`}
                     >
-                      <X size={14} />
+                      <span>{tab.label}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                        isActive 
+                          ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]' 
+                          : 'bg-gray-200/70 dark:bg-white/5 text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {tab.count}
+                      </span>
                     </button>
-                  )}
-                </div>
-
-                {/* Live Counter Badge */}
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1.5 rounded-xl bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[11px] font-extrabold font-mono flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0055FF] dark:bg-[#00D4B2] animate-pulse" />
-                    {filteredMembers.length} of {members.length} Members
-                  </span>
-                </div>
+                  );
+                })}
               </div>
 
-              {/* Quick Role Filter Preset Pills Row */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
-                  {[
-                    { label: 'All Roles', value: 'all', count: members.length },
-                    { label: 'Managers', value: 'Managers', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
-                    { label: 'Committee', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
-                    { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
-                    { label: 'Tenants', value: 'Tenant', count: members.filter(m => m.role === 'Tenant').length },
-                  ].map(tab => {
-                    const isActive = filterRole === tab.value;
-                    return (
-                      <button
-                        key={tab.label}
-                        type="button"
-                        onClick={() => setFilterRole(tab.value)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                          isActive
-                            ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
-                        }`}
-                      >
-                        <span>{tab.label}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                          isActive 
-                            ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]' 
-                            : 'bg-gray-200/70 dark:bg-white/5 text-gray-500 dark:text-gray-400'
-                        }`}>
-                          {tab.count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Reset Filters Button */}
-                {activeFiltersCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFilterRole('all');
-                      setSearchQuery('');
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-red-500/20 shadow-xs"
-                  >
-                    <RotateCcw size={12} /> Clear Filters ({activeFiltersCount})
-                  </button>
-                )}
-              </div>
+              {activeFiltersCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-red-500/20 shadow-xs"
+                >
+                  <RotateCcw size={12} /> Clear Filters ({activeFiltersCount})
+                </button>
+              )}
             </div>
 
             {/* Member Roster AG Grid */}
             <MemberRosterGrid
               members={filteredMembers}
+              allMembersCount={members.length}
               activePersonaName={activePersonaName}
               activeSchemeId={activeSchemeId}
               onViewDetails={setSelectedMember}
               onEditMember={handleOpenEdit}
               onUpdateStatus={onUpdateStatus}
               onDeleteMember={onDeleteMember}
+              colSearchName={colSearchName}
+              setColSearchName={setColSearchName}
+              colFilterRole={colFilterRole}
+              setColFilterRole={setColFilterRole}
+              colSearchUnit={colSearchUnit}
+              setColSearchUnit={setColSearchUnit}
+              colSearchContact={colSearchContact}
+              setColSearchContact={setColSearchContact}
+              colFilterStatus={colFilterStatus}
+              setColFilterStatus={setColFilterStatus}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              activeFiltersCount={activeFiltersCount}
+              onResetFilters={handleResetFilters}
             />
           </motion.div>
         ) : (
@@ -915,22 +999,54 @@ export function UserManagementView({
 
 interface MemberRosterGridProps {
   members: Member[];
+  allMembersCount: number;
   activePersonaName: string;
   activeSchemeId: string;
   onViewDetails: (m: Member) => void;
   onEditMember: (m: Member) => void;
   onUpdateStatus: (id: string, status: 'Active' | 'Invited' | 'Restricted') => void;
   onDeleteMember: (id: string) => void;
+  colSearchName: string;
+  setColSearchName: (val: string) => void;
+  colFilterRole: string;
+  setColFilterRole: (val: string) => void;
+  colSearchUnit: string;
+  setColSearchUnit: (val: string) => void;
+  colSearchContact: string;
+  setColSearchContact: (val: string) => void;
+  colFilterStatus: string;
+  setColFilterStatus: (val: string) => void;
+  sortField: 'name' | 'role' | 'unitId' | 'email' | 'status' | null;
+  sortDirection: 'asc' | 'desc';
+  onSort: (field: 'name' | 'role' | 'unitId' | 'email' | 'status') => void;
+  activeFiltersCount: number;
+  onResetFilters: () => void;
 }
 
 function MemberRosterGrid({ 
   members, 
+  allMembersCount,
   activePersonaName, 
   activeSchemeId, 
   onViewDetails, 
   onEditMember, 
   onUpdateStatus, 
-  onDeleteMember 
+  onDeleteMember,
+  colSearchName,
+  setColSearchName,
+  colFilterRole,
+  setColFilterRole,
+  colSearchUnit,
+  setColSearchUnit,
+  colSearchContact,
+  setColSearchContact,
+  colFilterStatus,
+  setColFilterStatus,
+  sortField,
+  sortDirection,
+  onSort,
+  activeFiltersCount,
+  onResetFilters
 }: MemberRosterGridProps) {
   const roleColors: Record<string, string> = {
     'Lot Owner':        'bg-[#0055FF]/10 text-[#0055FF] border-[#0055FF]/20',
@@ -943,133 +1059,399 @@ function MemberRosterGrid({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
-      {/* Table Header */}
-      <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-          Member Roster <span className="text-[#00D4B2] ml-1">({members.length})</span>
-        </h3>
-      </div>
-
-      {members.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4 border border-gray-100">
-            <UserPlus size={22} className="text-gray-400 dark:text-gray-500" />
-          </div>
-          <p className="text-sm font-bold text-gray-900 dark:text-white">No members found</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Try adjusting your filters or add a new member.</p>
-        </div>
-      ) : (
-        <table className="w-full text-left">
+    <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left text-xs border-collapse font-sans table-auto">
           <thead>
-            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
-              <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Member Name</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Role</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Unit / Lot</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Contact</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Occupants</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Status</th>
-              <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Actions</th>
+            {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
+            <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+              {/* Col 0: Index */}
+              <th className="py-3.5 px-2.5 w-10 text-center border-r border-gray-200 dark:border-white/10 text-gray-400">
+                #
+              </th>
+
+              {/* Col 1: Member Name & ID */}
+              <th className="py-3.5 px-3.5 w-[22%] border-r border-gray-200 dark:border-white/10">
+                <div 
+                  onClick={() => onSort('name')}
+                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                  title="Click to sort by Name"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Users size={13} className="text-gray-400" /> Member Details
+                  </span>
+                  <span className="text-gray-400">
+                    {sortField === 'name' ? (
+                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                    ) : (
+                      <ArrowUpDown size={11} className="opacity-30" />
+                    )}
+                  </span>
+                </div>
+              </th>
+
+              {/* Col 2: Role */}
+              <th className="py-3.5 px-3.5 w-[14%] border-r border-gray-200 dark:border-white/10">
+                <div 
+                  onClick={() => onSort('role')}
+                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                  title="Click to sort by Role"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Shield size={13} className="text-gray-400" /> Role
+                  </span>
+                  <span className="text-gray-400">
+                    {sortField === 'role' ? (
+                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                    ) : (
+                      <ArrowUpDown size={11} className="opacity-30" />
+                    )}
+                  </span>
+                </div>
+              </th>
+
+              {/* Col 3: Unit / Lot */}
+              <th className="py-3.5 px-3 w-[12%] border-r border-gray-200 dark:border-white/10">
+                <div 
+                  onClick={() => onSort('unitId')}
+                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                  title="Click to sort by Unit"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Home size={13} className="text-gray-400" /> Unit / Lot
+                  </span>
+                  <span className="text-gray-400">
+                    {sortField === 'unitId' ? (
+                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                    ) : (
+                      <ArrowUpDown size={11} className="opacity-30" />
+                    )}
+                  </span>
+                </div>
+              </th>
+
+              {/* Col 4: Contact Details (Email + Phone) */}
+              <th className="py-3.5 px-3.5 w-[20%] border-r border-gray-200 dark:border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <Mail size={13} className="text-gray-400" /> Contact Details
+                </div>
+              </th>
+
+              {/* Col 5: Occupants */}
+              <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <Users size={13} className="text-gray-400" /> Occupants
+                </div>
+              </th>
+
+              {/* Col 6: Status */}
+              <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                <div 
+                  onClick={() => onSort('status')}
+                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                  title="Click to sort by Status"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Activity size={13} className="text-gray-400" /> Status
+                  </span>
+                  <span className="text-gray-400">
+                    {sortField === 'status' ? (
+                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                    ) : (
+                      <ArrowUpDown size={11} className="opacity-30" />
+                    )}
+                  </span>
+                </div>
+              </th>
+
+              {/* Col 7: Actions */}
+              <th className="py-3.5 px-3 text-right w-[12%]">
+                <span>Actions</span>
+              </th>
+            </tr>
+
+            {/* AG-GRID INLINE FILTER ROW */}
+            <tr className="bg-gray-50/95 dark:bg-[#181d2c] border-b border-gray-200 dark:border-white/10">
+              {/* Col 0: Index Filter Space */}
+              <th className="py-2 px-2 text-center border-r border-gray-200 dark:border-white/10">
+                <Filter size={11} className="mx-auto text-gray-400" />
+              </th>
+
+              {/* Col 1: Name / ID Search Input */}
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Filter name/ID..."
+                    value={colSearchName}
+                    onChange={e => setColSearchName(e.target.value)}
+                    className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                  />
+                  {colSearchName ? (
+                    <button
+                      type="button"
+                      onClick={() => setColSearchName('')}
+                      className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                    >
+                      <X size={11} />
+                    </button>
+                  ) : (
+                    <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                  )}
+                </div>
+              </th>
+
+              {/* Col 2: Role Dropdown Filter (NO Resident!) */}
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                <div className="relative flex items-center">
+                  <select
+                    value={colFilterRole}
+                    onChange={e => setColFilterRole(e.target.value)}
+                    className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
+                  >
+                    <option value="ALL">All Roles</option>
+                    <option value="Strata Manager">Strata Manager</option>
+                    <option value="Building Manager">Building Manager</option>
+                    <option value="Committee Member">Committee</option>
+                    <option value="Lot Owner">Lot Owner</option>
+                    <option value="Tenant">Tenant</option>
+                  </select>
+                  <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                </div>
+              </th>
+
+              {/* Col 3: Unit / Lot Filter */}
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Filter unit..."
+                    value={colSearchUnit}
+                    onChange={e => setColSearchUnit(e.target.value)}
+                    className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                  />
+                  {colSearchUnit ? (
+                    <button
+                      type="button"
+                      onClick={() => setColSearchUnit('')}
+                      className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                    >
+                      <X size={10} />
+                    </button>
+                  ) : (
+                    <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                  )}
+                </div>
+              </th>
+
+              {/* Col 4: Contact Details Filter */}
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    placeholder="Filter email/phone..."
+                    value={colSearchContact}
+                    onChange={e => setColSearchContact(e.target.value)}
+                    className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                  />
+                  {colSearchContact ? (
+                    <button
+                      type="button"
+                      onClick={() => setColSearchContact('')}
+                      className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                    >
+                      <X size={10} />
+                    </button>
+                  ) : (
+                    <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                  )}
+                </div>
+              </th>
+
+              {/* Col 5: Occupants Filter Space */}
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 text-center text-gray-400 text-[10px]">
+                -
+              </th>
+
+              {/* Col 6: Status Dropdown Filter */}
+              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                <div className="relative flex items-center">
+                  <select
+                    value={colFilterStatus}
+                    onChange={e => setColFilterStatus(e.target.value)}
+                    className="w-full h-8 pl-2 pr-4 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-semibold cursor-pointer appearance-none shadow-2xs"
+                  >
+                    <option value="ALL">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Invited">Invited</option>
+                    <option value="Restricted">Restricted</option>
+                  </select>
+                  <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                </div>
+              </th>
+
+              {/* Col 7: Reset Filter Button */}
+              <th className="py-2 px-2 text-right">
+                {activeFiltersCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={onResetFilters}
+                    className="w-full h-8 px-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-red-500/20 shadow-2xs"
+                    title="Reset all filters"
+                  >
+                    <RotateCcw size={10} />
+                    <span>Reset</span>
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-gray-400 pr-2">Filter</span>
+                )}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {members.map((m) => (
-              <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors group">
-                <td className="px-6 py-4">
-                  <span className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</span>
-                </td>
-                <td className="px-4 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
-                    {m.role}
-                  </span>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="leading-tight">
-                    <div className="font-semibold text-gray-900 dark:text-white text-xs">
-                      {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
-                        ? (m.unitId && !m.unitId.startsWith('Unit 1') ? m.unitId : 'HQ / Management')
-                        : m.unitId}
-                    </div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
-                        ? 'Staff / Admin'
-                        : (m.lotNumber ? `Lot ${m.lotNumber}` : 'No Lot Assigned')}
-                    </div>
+            {members.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-16 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4 border border-gray-100 mx-auto">
+                    <Users size={22} className="text-gray-400 dark:text-gray-500" />
                   </div>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="leading-tight">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
-                      <Mail size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                      <span className="truncate max-w-[160px]">{m.email}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                      <Phone size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                      {m.phone}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-4">
-                  {m.role && (m.role.includes('Manager') || m.role.includes('Admin')) ? (
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500">-</span>
-                  ) : m.additionalOccupants && m.additionalOccupants.length > 0 ? (
-                    <span className="text-[10px] font-bold text-[#0055FF] bg-[#0055FF]/10 px-2 py-0.5 rounded-full border border-[#0055FF]/20">
-                      {m.additionalOccupants.length + 1} Occupants
-                    </span>
-                  ) : (
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400">1 Occupant</span>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">No members match your criteria</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">Try clearing one of your column filters.</p>
+                  {activeFiltersCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={onResetFilters}
+                      className="px-4 py-2 rounded-xl bg-[#0055FF] text-white text-xs font-bold shadow-md hover:bg-blue-600 cursor-pointer transition-all"
+                    >
+                      Reset All Filters
+                    </button>
                   )}
                 </td>
-                <td className="px-4 py-4">
-                  <MemberStatusBadge status={m.status} />
-                </td>
-                <td className="px-4 py-4">
-                  <div className="flex items-center gap-2 justify-end">
-                    <button
-                      onClick={() => onEditMember(m)}
-                      className="px-3 py-1.5 rounded-xl border border-[#0055FF]/30 dark:border-[#00D4B2]/30 bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF] hover:text-white dark:hover:bg-[#00D4B2] dark:hover:text-[#0B1121] cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105"
-                      title="Edit Member (Email, Phone, Role, Unit)"
-                    >
-                      <Edit3 size={12} />
-                      <span>Edit</span>
-                    </button>
-                    {m.name !== activePersonaName && (
-                      m.status === 'Active' ? (
-                        <button
-                          onClick={() => onUpdateStatus(m.id, 'Restricted')}
-                          className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-all"
-                        >
-                          Restrict
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => onUpdateStatus(m.id, 'Active')}
-                          className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00D4B2] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
-                        >
-                          Activate
-                        </button>
-                      )
-                    )}
-                    {m.name !== activePersonaName && (
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to remove ${m.name} (${m.email}) from scheme ${activeSchemeId}?`)) {
-                            onDeleteMember(m.id);
-                          }
-                        }}
-                        className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 border border-transparent hover:border-[#FF4757]/20 transition-all cursor-pointer hover:scale-105"
-                        title={`Delete Member ${m.name}`}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                  </div>
-                </td>
               </tr>
-            ))}
+            ) : (
+              members.map((m, index) => (
+                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors group">
+                  {/* Col 0: Row index */}
+                  <td className="py-4 px-2.5 text-center border-r border-gray-100 dark:border-white/5 font-mono text-[11px] text-gray-400">
+                    {index + 1}
+                  </td>
+
+                  {/* Col 1: Member Name & ID */}
+                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</span>
+                      <span className="text-[10px] font-mono text-gray-400">{m.id}</span>
+                    </div>
+                  </td>
+
+                  {/* Col 2: Role */}
+                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
+                      {m.role}
+                    </span>
+                  </td>
+
+                  {/* Col 3: Unit / Lot */}
+                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                    <div className="leading-tight">
+                      <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                        {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                          ? (m.unitId && !m.unitId.startsWith('Unit 1') ? m.unitId : 'HQ / Management')
+                          : m.unitId}
+                      </div>
+                      <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                        {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                          ? 'Staff / Admin'
+                          : (m.lotNumber ? `Lot ${m.lotNumber}` : 'No Lot Assigned')}
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Col 4: Contact Details */}
+                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                    <div className="leading-tight">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
+                        <Mail size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                        <span className="truncate max-w-[160px]">{m.email}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        <Phone size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                        {m.phone}
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Col 5: Occupants */}
+                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                    {m.role && (m.role.includes('Manager') || m.role.includes('Admin')) ? (
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500">-</span>
+                    ) : m.additionalOccupants && m.additionalOccupants.length > 0 ? (
+                      <span className="text-[10px] font-bold text-[#0055FF] bg-[#0055FF]/10 px-2 py-0.5 rounded-full border border-[#0055FF]/20">
+                        {m.additionalOccupants.length + 1} Occupants
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">1 Occupant</span>
+                    )}
+                  </td>
+
+                  {/* Col 6: Status */}
+                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                    <MemberStatusBadge status={m.status} />
+                  </td>
+
+                  {/* Col 7: Actions */}
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => onEditMember(m)}
+                        className="px-3 py-1.5 rounded-xl border border-[#0055FF]/30 dark:border-[#00D4B2]/30 bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF] hover:text-white dark:hover:bg-[#00D4B2] dark:hover:text-[#0B1121] cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105"
+                        title="Edit Member (Email, Phone, Role, Unit)"
+                      >
+                        <Edit3 size={12} />
+                        <span>Edit</span>
+                      </button>
+                      {m.name !== activePersonaName && (
+                        m.status === 'Active' ? (
+                          <button
+                            type="button"
+                            onClick={() => onUpdateStatus(m.id, 'Restricted')}
+                            className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-all"
+                          >
+                            Restrict
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onUpdateStatus(m.id, 'Active')}
+                            className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00D4B2] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
+                          >
+                            Activate
+                          </button>
+                        )
+                      )}
+                      {m.name !== activePersonaName && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to remove ${m.name} (${m.email}) from scheme ${activeSchemeId}?`)) {
+                              onDeleteMember(m.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 border border-transparent hover:border-[#FF4757]/20 transition-all cursor-pointer hover:scale-105"
+                          title={`Delete Member ${m.name}`}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-      )}
+      </div>
     </div>
   );
 }
