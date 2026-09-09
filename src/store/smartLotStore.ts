@@ -2848,3 +2848,5 @@ export function useSmartLotStore() {
 // UI: End of Store UI Bindings
 // Core Pipeline: Strict membership synchronization from database public.members
 // Perf: Memoized active scheme filtering evaluation
+
+// Types: Streamline comment attachment schema definitions
