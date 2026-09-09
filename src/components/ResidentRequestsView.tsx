@@ -2001,3 +2001,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Docs: 4-stream statutory triage criteria under NSW SSMA
 
 // Style: Polish contrast ratios for badge micro-indicators
+
+// Conduit: Detail outbound email conduit dispatch protocol
