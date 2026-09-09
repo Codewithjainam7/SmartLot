@@ -213,7 +213,21 @@ export function SettingsView({
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex items-center justify-between pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setName(activePersonaName || '');
+                setEmail(activePersonaEmail || '');
+                setPhone(activePersonaPhone || '0400 000 000');
+                setPassword('');
+                setConfirmPassword('');
+                setErrorMessage('');
+              }}
+              className="px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 font-semibold text-xs hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+            >
+              Discard Changes
+            </button>
             <button
               type="submit"
               disabled={isSaving}
