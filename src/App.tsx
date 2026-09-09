@@ -485,6 +485,31 @@ export default function App() {
               setTheme={store.setTheme}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
+              activePersonaEmail={store.activePersona.email || ''}
+              activePersonaPhone="0400 000 000"
+              activePersonaUnit={store.activePersona.context || ''}
+              onUpdateProfile={async (updates) => {
+                store.setActivePersona(prev => ({
+                  ...prev,
+                  name: updates.name,
+                  email: updates.email,
+                }));
+                const existingMember = store.members.find(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
+                if (existingMember) {
+                  await store.updateMember(existingMember.id, {
+                    name: updates.name,
+                    email: updates.email,
+                    phone: updates.phone,
+                  });
+                }
+                if (updates.password) {
+                  try {
+                    await supabase.auth.updateUser({ password: updates.password });
+                  } catch (pwErr) {
+                    console.warn("Could not update auth password:", pwErr);
+                  }
+                }
+              }}
             />
           )}
 
