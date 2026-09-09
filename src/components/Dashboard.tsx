@@ -568,3 +568,5 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 // Subcomponent: Scheme Information Bar
 // UI Optimization: Enhanced card shadow transitions and glowing metric borders
 // Style: Polish metric tile elevation and corner radius
+
+// Perf: Optimize vacant units count evaluation
