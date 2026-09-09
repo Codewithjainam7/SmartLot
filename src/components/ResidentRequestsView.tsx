@@ -2011,3 +2011,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Refactor: Clarify statutory rejection reason categories
 
 // Style: Align lucide icon sizes across activity headers
+
+// Style: Improve input field placeholder contrast
