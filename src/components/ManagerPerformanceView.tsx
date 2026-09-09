@@ -512,3 +512,5 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Style: Enhance CSAT rating distribution spacing
 
 // Style: Polish testimonial card quote styling
+
+// SLA: Detail emergency repair response time targets
