@@ -238,3 +238,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // Refactor: Enhance activity location enum definitions
 
 // Docs: Add strata committee statutory duty notes
+
+// Types: Streamline circular import references in store types
