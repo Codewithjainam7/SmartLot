@@ -333,6 +333,7 @@ export default function App() {
         }}
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
+        onDeleteResidentRequest={store.deleteResidentRequest}
         onAddScheme={store.addScheme}
         onAddMember={store.addMember}
         onAddResidentRequest={store.createMasterRequest}

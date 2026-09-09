@@ -22,6 +22,7 @@ interface AdminViewProps {
   onBackToLanding: () => void;
   onDeleteMember: (id: string) => void;
   onDeleteScheme: (id: string) => void;
+  onDeleteResidentRequest?: (id: string) => void;
   onAddScheme?: (id: string, name: string, lots: number) => Promise<any>;
   onAddMember?: (memberData: {
     name: string;
