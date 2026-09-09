@@ -749,4 +749,5 @@ export function CreateRequestModal({
       </div>
     </div>
   );
-}
+}
+// Style: Harmonize hover scale transforms across modals
