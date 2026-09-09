@@ -498,3 +498,5 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
     </div>
   );
 }
+
+// Refactor: Improve resident portal contact card fallbacks
