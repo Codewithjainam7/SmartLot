@@ -318,6 +318,27 @@ export const INITIAL_VENDORS: Vendor[] = [
   }
 ];
 
+
+export const INITIAL_MOTIONS: Motion[] = [
+  {
+    id: 'MOT-001',
+    caseId: 'REQ-101',
+    title: 'Common Area Main Water Line Replacement',
+    summary: 'Resolution to accept contractor tender for replacing damaged 50mm copper hydraulic supply line servicing Lots 1-6.',
+    quotes: [
+      { vendorId: 'VND-001', vendorName: 'Sydney Apex Plumbing & Gas', amount: 3450, gstIncluded: true, recommended: true },
+      { vendorId: 'VND-004', vendorName: 'Citywide Commercial Hydraulics', amount: 4100, gstIncluded: true },
+    ],
+    quorumTarget: 3,
+    deadline: '2026-09-30',
+    status: 'active',
+    ballots: [
+      { voterName: 'Sarah Jones', voterRole: 'Strata Admin', vote: 'YES', votedAt: '2026-09-08' },
+      { voterName: 'Michael Chen', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-09' }
+    ]
+  }
+];
+
 const INITIAL_MEMBERS: Member[] = [
   // 1. Roman Joe (Strata Manager for Spear Empire SP823)
   {
@@ -1541,6 +1562,7 @@ export function useSmartLotStore() {
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
+  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v8`, INITIAL_MOTIONS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 
   const addCustomPersona = (p: Persona) => {
@@ -2784,6 +2806,44 @@ export function useSmartLotStore() {
     setVendors(prev => prev.filter(v => v.id !== vendorId));
   };
 
+
+  const createMotion = (payload: CreateMotionPayload) => {
+    const newMotion: Motion = {
+      id: `MOT-${Date.now()}`,
+      caseId: payload.caseId,
+      title: payload.title,
+      summary: payload.summary,
+      quotes: payload.quotes,
+      quorumTarget: payload.quorumTarget,
+      deadline: payload.deadline,
+      status: 'active',
+      ballots: [],
+    };
+    setMotions(prev => [newMotion, ...prev]);
+  };
+
+  const castBallot = (motionId: string, vote: MotionVote) => {
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      const alreadyVoted = m.ballots.some(b => b.voterName === activePersona.name);
+      const filtered = m.ballots.filter(b => b.voterName !== activePersona.name);
+      const newBallot = {
+        voterName: activePersona.name,
+        voterRole: activePersona.role,
+        vote,
+        votedAt: new Date().toISOString().split('T')[0],
+      };
+      const updatedBallots = [...filtered, newBallot];
+      const yesVotes = updatedBallots.filter(b => b.vote === 'YES').length;
+      const newStatus = yesVotes >= m.quorumTarget ? 'passed' : m.status;
+      return { ...m, ballots: updatedBallots, status: newStatus };
+    }));
+  };
+
+  const deleteMotion = (motionId: string) => {
+    setMotions(prev => prev.filter(m => m.id !== motionId));
+  };
+
   const addResidentToUnit = (
     schemeId: string, 
     unitId: string, 
@@ -2902,7 +2962,10 @@ export function useSmartLotStore() {
     setMembers,
     residentRequests,
     cases: residentRequests,
-    motions: [],
+    motions,
+    setMotions,
+    createMotion,
+    deleteMotion,
     vendors,
     setVendors,
     addVendor,
@@ -2947,7 +3010,7 @@ export function useSmartLotStore() {
     setActiveRoles,
     submitCase: submitResidentRequest,
     triageCase: triageRequest,
-    castBallot: () => {},
+    castBallot,
     submitGuestWorkOrderCompletion: () => {},
     verifyWorkOrder: () => {},
     refreshData,
