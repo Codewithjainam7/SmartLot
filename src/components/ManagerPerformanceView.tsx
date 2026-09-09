@@ -510,3 +510,5 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // SLA: Document statutory response time benchmarks
 
 // Style: Enhance CSAT rating distribution spacing
+
+// Style: Polish testimonial card quote styling
