@@ -339,6 +339,22 @@ export const INITIAL_MOTIONS: Motion[] = [
   }
 ];
 
+
+export const INITIAL_WORK_ORDERS: WorkOrder[] = [
+  {
+    id: 'WO-10482',
+    caseId: 'REQ-101',
+    schemeId: 'SP101',
+    vendorId: 'VND-001',
+    vendorName: 'Sydney Apex Plumbing & Gas',
+    scopeOfWork: 'Replace damaged 50mm hydraulic isolation valve in basement riser B.',
+    budgetCap: 1200,
+    siteAccessPin: '4829',
+    guestMagicToken: 'tok_sp101_wo10482_live',
+    status: 'issued',
+  }
+];
+
 const INITIAL_MEMBERS: Member[] = [
   // 1. Roman Joe (Strata Manager for Spear Empire SP823)
   {
@@ -1563,6 +1579,7 @@ export function useSmartLotStore() {
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
   const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v8`, INITIAL_MOTIONS);
+  const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 
   const addCustomPersona = (p: Persona) => {
@@ -2844,6 +2861,46 @@ export function useSmartLotStore() {
     setMotions(prev => prev.filter(m => m.id !== motionId));
   };
 
+
+  const createWorkOrder = (payload: CreateWorkOrderPayload) => {
+    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
+    const token = `tok_${payload.schemeId.toLowerCase()}_${Date.now()}`;
+    const newWo: WorkOrder = {
+      ...payload,
+      id: `WO-${Date.now()}`,
+      siteAccessPin: randomPin,
+      guestMagicToken: token,
+      status: 'issued',
+    };
+    setWorkOrders(prev => [newWo, ...prev]);
+    return newWo;
+  };
+
+  const submitGuestWorkOrderCompletion = (workOrderId: string, photoUrl: string, finalCost: number, invoicePdf?: string) => {
+    setWorkOrders(prev => prev.map(wo => {
+      if (wo.id !== workOrderId) return wo;
+      return {
+        ...wo,
+        status: 'completion_submitted',
+        completionPhoto: photoUrl,
+        finalCost,
+        invoicePdf,
+        submittedAt: new Date().toISOString(),
+      };
+    }));
+  };
+
+  const verifyWorkOrder = (workOrderId: string) => {
+    setWorkOrders(prev => prev.map(wo => {
+      if (wo.id !== workOrderId) return wo;
+      return { ...wo, status: 'completed' };
+    }));
+  };
+
+  const deleteWorkOrder = (workOrderId: string) => {
+    setWorkOrders(prev => prev.filter(wo => wo.id !== workOrderId));
+  };
+
   const addResidentToUnit = (
     schemeId: string, 
     unitId: string, 
@@ -2970,7 +3027,10 @@ export function useSmartLotStore() {
     setVendors,
     addVendor,
     deleteVendor,
-    workOrders: [],
+    workOrders,
+    setWorkOrders,
+    createWorkOrder,
+    deleteWorkOrder,
     units,
     customPersonas,
     addCustomPersona,
@@ -3011,8 +3071,8 @@ export function useSmartLotStore() {
     submitCase: submitResidentRequest,
     triageCase: triageRequest,
     castBallot,
-    submitGuestWorkOrderCompletion: () => {},
-    verifyWorkOrder: () => {},
+    submitGuestWorkOrderCompletion,
+    verifyWorkOrder,
     refreshData,
     isLoading,
   };
