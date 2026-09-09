@@ -516,3 +516,4 @@ export default function App() {
 }
 
 // End of App component
+// Style: Apply custom scrollbar track styling for dark mode
