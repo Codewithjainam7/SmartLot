@@ -226,3 +226,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // JSDoc: Strata activity lifecycle and governance model
 
 // Types: Refine persona membership role typing definitions
+
+// Security: Document role-based access permission matrix
