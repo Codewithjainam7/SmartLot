@@ -222,3 +222,5 @@ export type ActivityLocation =
  * Preferred communication channel for updates and work order status notifications.
  */
 export type ContactPreference = 'Email' | 'SmartLot notifications';
+
+// JSDoc: Strata activity lifecycle and governance model
