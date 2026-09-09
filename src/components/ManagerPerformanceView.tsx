@@ -504,3 +504,5 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
     </div>
   );
 }
+
+// Compliance: NSW SSMA 2015 Section 106 statutory guidance
