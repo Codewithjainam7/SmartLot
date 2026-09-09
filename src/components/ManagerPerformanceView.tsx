@@ -1,6 +1,6 @@
-﻿import React, { useState } from 'react';
+// @smartlot/component
+import React, { useState, useMemo } from 'react';
 import { SmartLotStore, ResidentRequest } from '../store/smartLotStore';
-import { motion } from 'motion/react';
 import { 
   Award, 
   Clock, 
@@ -23,35 +23,101 @@ import {
   Check,
   ChevronRight,
   HelpCircle,
-  Home
+  Home,
+  Printer,
+  X,
+  FileCheck,
+  History,
+  Send
 } from 'lucide-react';
 
 interface ManagerPerformanceViewProps {
-  store: any;
+  store: SmartLotStore;
 }
+
+interface ResidentFeedback {
+  id: string;
+  author: string;
+  unit: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+const INITIAL_FEEDBACK: ResidentFeedback[] = [
+  {
+    id: 'FB-1',
+    author: 'Sarah J.',
+    unit: 'Unit 1',
+    rating: 5,
+    date: '2 days ago',
+    comment: 'Front security gate repair was quoted and contractor dispatched within 24 hours. Very transparent communication.'
+  },
+  {
+    id: 'FB-2',
+    author: 'Marcus S.',
+    unit: 'Unit 3',
+    rating: 5,
+    date: '5 days ago',
+    comment: 'Water penetration report was acknowledged in 20 minutes and contractor was onsite the same afternoon. Stellar.'
+  },
+  {
+    id: 'FB-3',
+    author: 'Elena R.',
+    unit: 'Unit 1',
+    rating: 5,
+    date: '1 week ago',
+    comment: 'Clear guidance on bylaw responsibilities under Section 106. Always friendly and responsive via email.'
+  }
+];
 
 export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
   const activeScheme = store.activeScheme;
   const activePersona = store.activePersona;
   const requests = store.residentRequests || [];
 
-  // Filter requests for the current scheme or portfolio
+  // Filter scopes
   const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<'current' | 'all'>('current');
-  
-  const relevantRequests = selectedSchemeFilter === 'current'
-    ? requests.filter((r: ResidentRequest) => 
-        r.schemeId === activeScheme.id || 
-        (r.buildingName && activeScheme.name && r.buildingName.toLowerCase() === activeScheme.name.toLowerCase())
-      )
-    : requests;
+  const [timeframe, setTimeframe] = useState<'30d' | '90d' | 'ytd' | 'all'>('30d');
+
+  // Feedback & Review Modal State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [userRating, setUserRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [feedbackList, setFeedbackList] = useState<ResidentFeedback[]>(INITIAL_FEEDBACK);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  // Filter requests for the current scheme or portfolio
+  const relevantRequests = useMemo(() => {
+    return selectedSchemeFilter === 'current'
+      ? requests.filter((r: ResidentRequest) => 
+          r.schemeId === activeScheme.id || 
+          (r.buildingName && activeScheme.name && r.buildingName.toLowerCase() === activeScheme.name.toLowerCase())
+        )
+      : requests;
+  }, [requests, selectedSchemeFilter, activeScheme]);
 
   // Real data calculations
-  const totalCount = Math.max(relevantRequests.length, 6);
-  const resolvedRequests = relevantRequests.filter((r: ResidentRequest) => r.status === 'resolved' || r.status === 'closed');
-  const openRequests = relevantRequests.filter((r: ResidentRequest) => r.status !== 'resolved' && r.status !== 'closed');
+  const resolvedRequests = relevantRequests.filter(r => r.status === 'resolved' || r.status === 'closed');
+  const openRequests = relevantRequests.filter(r => r.status !== 'resolved' && r.status !== 'closed');
   const resolvedCount = Math.max(resolvedRequests.length, 5);
   const openCount = openRequests.length;
   const resolutionRate = Math.round((resolvedCount / (resolvedCount + openCount)) * 100);
+
+  // Timeframe-adjusted metrics multiplier
+  const tfMetrics = useMemo(() => {
+    switch (timeframe) {
+      case '30d':
+        return { responseTime: '1.8 hrs', fasterBy: '2.2 hrs faster', count: 18, rate: resolutionRate, speed: '1.6 days' };
+      case '90d':
+        return { responseTime: '2.1 hrs', fasterBy: '1.9 hrs faster', count: 42, rate: Math.max(resolutionRate - 1, 92), speed: '1.8 days' };
+      case 'ytd':
+        return { responseTime: '2.4 hrs', fasterBy: '1.6 hrs faster', count: 86, rate: Math.max(resolutionRate - 2, 91), speed: '2.0 days' };
+      case 'all':
+      default:
+        return { responseTime: '2.2 hrs', fasterBy: '1.8 hrs faster', count: 114, rate: resolutionRate, speed: '1.9 days' };
+    }
+  }, [timeframe, resolutionRate]);
 
   // Active Manager Info Resolution
   const activeManagerName = activeScheme.id === 'SP103'
@@ -74,11 +140,40 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
     ? 'Spear Empire Strata Services'
     : 'Apex Strata Management Australia';
 
+  // Calculate dynamic CSAT from feedback
+  const avgRating = (feedbackList.reduce((acc, f) => acc + f.rating, 0) / feedbackList.length).toFixed(1);
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewComment.trim()) return;
+
+    const newFb: ResidentFeedback = {
+      id: `FB-${Date.now()}`,
+      author: activePersona.name || 'Verified Resident',
+      unit: activePersona.context || 'Lot Owner',
+      rating: userRating,
+      date: 'Just now',
+      comment: reviewComment.trim(),
+    };
+
+    setFeedbackList([newFb, ...feedbackList]);
+    setReviewComment('');
+    setFeedbackSubmitted(true);
+    setTimeout(() => {
+      setFeedbackSubmitted(false);
+      setShowReviewModal(false);
+    }, 1500);
+  };
+
+  const handlePrintReport = () => {
+    window.print();
+  };
+
   return (
-    <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] text-gray-900 dark:text-gray-100">
+    <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] text-gray-900 dark:text-gray-100 print:p-0 print:bg-white print:text-black">
       
       {/* Top Banner & Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden print:border-none print:shadow-none">
         <div className="absolute inset-0 bg-gradient-to-r from-[#00D4B2]/5 via-transparent to-[#0055FF]/5 pointer-events-none" />
         
         <div className="relative">
@@ -92,30 +187,78 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           </p>
         </div>
 
-        {/* Scheme Scope Filter Toggle */}
-        <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1.5 rounded-2xl border border-transparent dark:border-white/5 shrink-0 self-start md:self-auto">
+        {/* Action Controls: Scheme Scope, Time Horizon & Report Export */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto print:hidden">
+          
+          {/* Timeframe Filter */}
+          <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl border border-transparent dark:border-white/5">
+            {[
+              { id: '30d', label: '30D' },
+              { id: '90d', label: '90D' },
+              { id: 'ytd', label: 'YTD' },
+              { id: 'all', label: 'All' },
+            ].map(tf => (
+              <button
+                key={tf.id}
+                type="button"
+                onClick={() => setTimeframe(tf.id as any)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  timeframe === tf.id
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+              >
+                {tf.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Scheme Filter */}
+          <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl border border-transparent dark:border-white/5">
+            <button
+              type="button"
+              onClick={() => setSelectedSchemeFilter('current')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                selectedSchemeFilter === 'current'
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              }`}
+            >
+              Scheme: {activeScheme.id}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedSchemeFilter('all')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                selectedSchemeFilter === 'all'
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              }`}
+            >
+              All Portfolio
+            </button>
+          </div>
+
+          {/* Rate Manager Action */}
           <button
             type="button"
-            onClick={() => setSelectedSchemeFilter('current')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              selectedSchemeFilter === 'current'
-                ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-            }`}
+            onClick={() => setShowReviewModal(true)}
+            className="px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 hover:bg-amber-500/20 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
           >
-            Scheme: {activeScheme.id}
+            <Star size={14} className="fill-amber-400" />
+            <span>Rate Manager</span>
           </button>
+
+          {/* Export AGM Report */}
           <button
             type="button"
-            onClick={() => setSelectedSchemeFilter('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              selectedSchemeFilter === 'all'
-                ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-            }`}
+            onClick={handlePrintReport}
+            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-[#00D4B2] to-[#0055FF] text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:opacity-95 transition-all cursor-pointer"
           >
-            All Portfolio
+            <Printer size={14} />
+            <span>Export AGM Report</span>
           </button>
+
         </div>
       </div>
 
@@ -154,7 +297,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           <div className="flex items-center gap-4 bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/60 dark:border-white/5 w-full lg:w-auto justify-between lg:justify-start">
             <div>
               <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Overall Assessment</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Based on 28 activities evaluated</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Based on {tfMetrics.count} activities evaluated</div>
               <div className="flex items-center gap-1.5 text-xs text-emerald-500 font-bold mt-1">
                 <ShieldCheck size={14} />
                 <span>Statutory Compliance: 100%</span>
@@ -170,10 +313,10 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
         </div>
       </div>
 
-      {/* Top 5 Key Performance Metrics Grid (As requested by Sir) */}
+      {/* Top 5 Key Performance Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         
-        {/* Metric 1: Responsiveness / First Response Time */}
+        {/* Metric 1: Responsiveness */}
         <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">1. Responsiveness</span>
@@ -182,10 +325,10 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">2.1 hrs</div>
+            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{tfMetrics.responseTime}</div>
             <div className="text-[11px] font-semibold text-emerald-500 flex items-center gap-1 mt-1">
               <ArrowUpRight size={13} />
-              <span>1.9 hrs faster than SLA target</span>
+              <span>{tfMetrics.fasterBy}</span>
             </div>
           </div>
           <div className="pt-2 border-t border-gray-100 dark:border-white/5 text-[10px] text-gray-400">
@@ -193,7 +336,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           </div>
         </div>
 
-        {/* Metric 2: Open vs Resolved Items */}
+        {/* Metric 2: Backlog Health */}
         <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">2. Backlog Health</span>
@@ -202,7 +345,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{resolutionRate}%</div>
+            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{tfMetrics.rate}%</div>
             <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <span>{resolvedCount} Resolved</span>
               <span>•</span>
@@ -214,7 +357,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           </div>
         </div>
 
-        {/* Metric 3: Average Resolution Speed */}
+        {/* Metric 3: Resolution Speed */}
         <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">3. Resolution Speed</span>
@@ -223,7 +366,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">1.8 days</div>
+            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{tfMetrics.speed}</div>
             <div className="text-[11px] font-semibold text-emerald-500 flex items-center gap-1 mt-1">
               <ArrowUpRight size={13} />
               <span>-0.6 days turnaround</span>
@@ -234,7 +377,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           </div>
         </div>
 
-        {/* Metric 4: Resident Satisfaction (CSAT) */}
+        {/* Metric 4: Satisfaction (CSAT) */}
         <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">4. Satisfaction (CSAT)</span>
@@ -243,14 +386,14 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">4.8 / 5.0</div>
+            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{avgRating} / 5.0</div>
             <div className="text-[11px] font-semibold text-amber-500 flex items-center gap-1 mt-1">
               <span>★★★★★</span>
-              <span className="text-gray-400">(96% positive)</span>
+              <span className="text-gray-400">({Math.round(Number(avgRating) * 20)}% positive)</span>
             </div>
           </div>
           <div className="pt-2 border-t border-gray-100 dark:border-white/5 text-[10px] text-gray-400">
-            24 ratings from owners & tenants
+            {feedbackList.length} verified ratings
           </div>
         </div>
 
@@ -263,9 +406,9 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
             </div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">96.4%</div>
+            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">96.8%</div>
             <div className="text-[11px] font-semibold text-emerald-500 flex items-center gap-1 mt-1">
-              <span>27 of 28 on-time</span>
+              <span>{Math.max(tfMetrics.count - 1, 1)} of {tfMetrics.count} on-time</span>
             </div>
           </div>
           <div className="pt-2 border-t border-gray-100 dark:border-white/5 text-[10px] text-gray-400">
@@ -273,6 +416,42 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           </div>
         </div>
 
+      </div>
+
+      {/* Monthly Response Velocity Trend (NEW Visual Sparkline / Trend Cards) */}
+      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <History size={18} className="text-[#00D4B2]" /> Monthly Resolution Velocity Trend
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Continuous response speed acceleration tracked month-over-month across this scheme.</p>
+          </div>
+          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 self-start sm:self-auto">
+            +47% Velocity Gain
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { month: '3 Months Ago', time: '3.4 hrs', sla: '91.2%', bar: 'w-[45%]', color: 'bg-gray-400 dark:bg-gray-600' },
+            { month: '2 Months Ago', time: '2.8 hrs', sla: '93.5%', bar: 'w-[62%]', color: 'bg-blue-500' },
+            { month: 'Last Month', time: '2.1 hrs', sla: '95.8%', bar: 'w-[80%]', color: 'bg-[#00D4B2]' },
+            { month: 'Current Month', time: tfMetrics.responseTime, sla: '96.8%', bar: 'w-[96%]', color: 'bg-emerald-400' },
+          ].map(m => (
+            <div key={m.month} className="bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-2">
+              <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{m.month}</div>
+              <div className="text-xl font-black text-gray-900 dark:text-white">{m.time}</div>
+              <div className="w-full bg-gray-200 dark:bg-white/5 h-2 rounded-full overflow-hidden">
+                <div className={`${m.color} h-full rounded-full ${m.bar}`} />
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-gray-400">
+                <span>On-time SLA</span>
+                <span className="font-bold text-emerald-500">{m.sla}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Middle Grid: Stream SLA Breakdown & Resident Feedback Deep-Dive */}
@@ -381,17 +560,26 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 
         {/* Right Column (5 cols): Resident Sentiment & Testimonials */}
         <div className="lg:col-span-5 bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Resident Sentiment & Ratings</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Direct feedback and comment helpfulness from lot owners and tenants.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Resident Sentiment & Ratings</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Verified feedback from lot owners and tenants.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowReviewModal(true)}
+              className="text-xs font-bold text-[#00D4B2] hover:underline cursor-pointer"
+            >
+              + Add Review
+            </button>
           </div>
 
           {/* Rating Distribution */}
           <div className="space-y-2 bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/50 dark:border-white/5">
             {[
-              { stars: '5 ★', pct: 84, color: 'bg-[#00D4B2]' },
-              { stars: '4 ★', pct: 12, color: 'bg-emerald-400' },
-              { stars: '3 ★', pct: 4, color: 'bg-amber-400' },
+              { stars: '5 ★', pct: 88, color: 'bg-[#00D4B2]' },
+              { stars: '4 ★', pct: 10, color: 'bg-emerald-400' },
+              { stars: '3 ★', pct: 2, color: 'bg-amber-400' },
               { stars: '2 ★', pct: 0, color: 'bg-gray-500' },
               { stars: '1 ★', pct: 0, color: 'bg-red-500' },
             ].map(r => (
@@ -406,112 +594,245 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
           </div>
 
           {/* Verified Resident Quotes */}
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
             <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-              Verified Resident Feedback Quotes:
+              Verified Resident Feedback ({feedbackList.length}):
             </div>
 
-            <div className="bg-gray-50 dark:bg-[#121620] p-3.5 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">Sarah J. • Unit 1</span>
-                <span className="text-[10px] text-amber-400 font-bold">★★★★★</span>
+            {feedbackList.map(fb => (
+              <div key={fb.id} className="bg-gray-50 dark:bg-[#121620] p-3.5 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{fb.author} • {fb.unit}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-amber-400 font-bold">
+                      {'★'.repeat(fb.rating)}{'☆'.repeat(5 - fb.rating)}
+                    </span>
+                    <span className="text-[10px] text-gray-400">{fb.date}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-300 italic leading-relaxed">
+                  "{fb.comment}"
+                </p>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300 italic leading-relaxed">
-                "Front security gate repair was quoted and contractor dispatched within 24 hours. Very transparent communication."
-              </p>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-[#121620] p-3.5 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">Marcus S. • Unit 3</span>
-                <span className="text-[10px] text-amber-400 font-bold">★★★★★</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300 italic leading-relaxed">
-                "Water penetration report was acknowledged in 20 minutes and contractor was onsite the same afternoon. Stellar."
-              </p>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-[#121620] p-3.5 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">Elena R. • Unit 1</span>
-                <span className="text-[10px] text-amber-400 font-bold">★★★★★</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300 italic leading-relaxed">
-                "Clear guidance on bylaw responsibilities under Section 106. Always friendly and responsive via email."
-              </p>
-            </div>
+            ))}
           </div>
 
         </div>
 
       </div>
 
-      {/* Live Manager Activity & Intervention Audit Stream */}
-      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
+      {/* NSW SSMA 2015 Statutory Compliance Governance Matrix (NEW) */}
+      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Manager Interventions & Dispatches</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Timestamped operational log of manager actions, vendor bookings, and resident communications.</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <FileCheck size={18} className="text-emerald-500" /> NSW Strata Schemes Management Act (SSMA 2015) Compliance Matrix
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Statutory benchmarks tracking compliance with Australian legal obligations for managing agents.
+            </p>
           </div>
-          <span className="text-xs font-bold text-[#0055FF] dark:text-[#66A3FF] flex items-center gap-1 cursor-pointer">
-            View All Audit Logs <ChevronRight size={14} />
+          <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase tracking-wider self-start sm:self-auto">
+            100% Audit Passed
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-          
-          <div className="bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/50 dark:border-white/5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/20">
-                #SL-10452
-              </span>
-              <span className="text-[10px] text-gray-400">Today, 2:15 PM</span>
+              <span className="text-xs font-bold text-gray-900 dark:text-white">Section 106</span>
+              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Compliant</span>
             </div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">Apex Gate & Security Dispatched</h4>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-              Assigned contractor for front entrance security gate latch failure. Resident notified via conduit email.
+              Mandatory duty to maintain and repair common property fixtures. Zero statutory breach notices recorded.
             </p>
+            <div className="text-[10px] text-gray-400 pt-1 border-t border-gray-100 dark:border-white/5">
+              Resolution SLA: &lt; 24h for urgent repairs
+            </div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-2">
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/50 dark:border-white/5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                #SL-10448
-              </span>
-              <span className="text-[10px] text-gray-400">Yesterday, 4:40 PM</span>
+              <span className="text-xs font-bold text-gray-900 dark:text-white">Section 108</span>
+              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Compliant</span>
             </div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">Common Area Lighting Resolved</h4>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-              Rapid Response Electrical completed replacement of car park sensor battens. Work certified.
+              Capital works expenditure approval thresholds and competitive quote rules. 2+ quotes tendered per major work.
             </p>
+            <div className="text-[10px] text-gray-400 pt-1 border-t border-gray-100 dark:border-white/5">
+              Quote Polls: Live digital committee voting
+            </div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-2">
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/50 dark:border-white/5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                #SL-10439
-              </span>
-              <span className="text-[10px] text-gray-400">3 days ago</span>
+              <span className="text-xs font-bold text-gray-900 dark:text-white">Section 110</span>
+              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Compliant</span>
             </div>
-            <h4 className="text-xs font-bold text-gray-900 dark:text-white">Emergency Water Ingress Actioned</h4>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-              Bright Water Plumbing isolated main line and replaced pressure relief valve. Triage closed.
+              Owner minor renovation application triage and approval protocol. Average approval within 5.2 business days.
             </p>
+            <div className="text-[10px] text-gray-400 pt-1 border-t border-gray-100 dark:border-white/5">
+              Statutory window: &lt; 14 days
+            </div>
           </div>
 
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/50 dark:border-white/5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-900 dark:text-white">Section 232</span>
+              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Zero Disputes</span>
+            </div>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+              Proactive complaint mediation and informal resolution pipeline. Zero active NCAT tribunal referrals across scheme.
+            </p>
+            <div className="text-[10px] text-gray-400 pt-1 border-t border-gray-100 dark:border-white/5">
+              Escalation mediation: 100% resolved in-house
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Live Manager Activity & Intervention Audit Stream (CONNECTED TO REAL REQUESTS) */}
+      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Live Manager Interventions & Dispatches</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Real-time operational stream of manager actions, vendor bookings, and resident updates.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => store.setActiveView('requests')}
+            className="text-xs font-bold text-[#0055FF] dark:text-[#66A3FF] flex items-center gap-1 cursor-pointer hover:underline"
+          >
+            Open Requests View <ChevronRight size={14} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          {relevantRequests.slice(0, 6).map((req, idx) => {
+            const ref = req.referenceId || req.id || `REQ-${100 + idx}`;
+            const badgeColor = req.priority === 'Emergency'
+              ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+              : req.priority === 'High'
+              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+              : 'bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/20';
+
+            return (
+              <div key={req.id || idx} className="bg-gray-50 dark:bg-[#121620] p-4 rounded-2xl border border-gray-200/50 dark:border-white/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${badgeColor}`}>
+                    #{ref}
+                  </span>
+                  <span className="text-[10px] text-gray-400">
+                    {req.status.replace(/_/g, ' ').toUpperCase()}
+                  </span>
+                </div>
+                <h4 className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{req.title}</h4>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">
+                  {req.description}
+                </p>
+                <div className="text-[10px] text-gray-400 pt-1 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+                  <span>Unit: {req.unit || 'Common Area'}</span>
+                  <span className="font-semibold text-[#0055FF] dark:text-[#66A3FF]">{req.requestorName || 'Resident'}</span>
+                </div>
+              </div>
+            );
+          })}
+
+          {relevantRequests.length === 0 && (
+            <div className="col-span-3 text-center py-8 text-gray-400 text-xs">
+              No recent requests logged in this scheme yet. Newly created requests will appear here dynamically.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Rate Strata Manager Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
+              <div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Rate Strata Manager</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Submit verified resident CSAT feedback for {activeManagerName}.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(false)}
+                className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {feedbackSubmitted ? (
+              <div className="p-6 text-center space-y-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+                  <Check size={24} />
+                </div>
+                <h4 className="font-bold text-sm text-gray-900 dark:text-white">Review Submitted!</h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Thank you for rating your strata managing agent. The CSAT score has updated.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                    Select Star Rating
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setUserRating(star)}
+                        className="p-2 rounded-xl text-amber-400 hover:scale-110 transition-transform cursor-pointer"
+                      >
+                        <Star size={24} className={star <= userRating ? 'fill-amber-400' : 'text-gray-300 dark:text-gray-600'} />
+                      </button>
+                    ))}
+                    <span className="text-xs font-bold text-amber-500 ml-2">
+                      {userRating === 5 ? '5.0 - Exceptional' : userRating === 4 ? '4.0 - Good' : `${userRating}.0`}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                    Review Comments
+                  </label>
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    required
+                    rows={3}
+                    placeholder="Describe the manager's responsiveness, communication, and repair resolution quality..."
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-3 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/50 transition-all resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewModal(false)}
+                    className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00D4B2] to-[#0055FF] text-white text-xs font-bold shadow-md hover:opacity-95 cursor-pointer transition-all flex items-center gap-1.5"
+                  >
+                    <Send size={14} />
+                    <span>Submit Rating</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
 }
-
-// Compliance: NSW SSMA 2015 Section 106 statutory guidance
-
-// SLA: Document statutory response time benchmarks
-
-// Style: Enhance CSAT rating distribution spacing
-
-// Style: Polish testimonial card quote styling
-
-// SLA: Detail emergency repair response time targets
