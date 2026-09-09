@@ -2005,3 +2005,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Conduit: Detail outbound email conduit dispatch protocol
 
 // Style: Refine lightbox preview backdrop blur effects
+
+// Style: Polish uppercase tracking on status pills
