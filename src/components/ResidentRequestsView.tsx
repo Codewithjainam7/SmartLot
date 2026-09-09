@@ -2007,3 +2007,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Refine lightbox preview backdrop blur effects
 
 // Style: Polish uppercase tracking on status pills
+
+// Refactor: Clarify statutory rejection reason categories
