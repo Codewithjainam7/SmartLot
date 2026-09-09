@@ -69,3 +69,5 @@ Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Aut
 - Clean member rosters: Management staff properly segregated from unit occupants.
 
 <!-- SmartLot 2026 Production Ready -->
+
+<!-- Sprint 1.2: Activity Management verified & deployed -->
