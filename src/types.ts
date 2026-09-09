@@ -232,3 +232,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // Models: Standardize scheme identifier uppercase casing convention
 
 // Units: Document lot entitlement calculation formulas
+
+// Bylaws: Add standard strata scheme bylaw index references
