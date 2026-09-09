@@ -230,3 +230,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // Security: Document role-based access permission matrix
 
 // Models: Standardize scheme identifier uppercase casing convention
+
+// Units: Document lot entitlement calculation formulas
