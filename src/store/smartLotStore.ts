@@ -1469,7 +1469,7 @@ export function useSmartLotStore() {
   }, [user?.id, session]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v8`, ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings' | 'performance'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
   const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v8`, false);
   const [theme, setThemeRaw] = useState<'light' | 'dark'>(() => {
     try {

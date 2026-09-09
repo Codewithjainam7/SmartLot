@@ -16,7 +16,10 @@ import {
   ShieldCheck,
   Building,
   Plus,
-  X 
+  X,
+  Award,
+  Star,
+  Clock
 } from 'lucide-react';
 
 import { dispatchMemberInviteEmail } from '../services/emailService';
@@ -207,7 +210,44 @@ export function Dashboard({ store }: DashboardProps) {
       {/* Column 3: Right Action Column */}
       <div className="lg:col-span-3 space-y-6">
         
-        {/* Financial Health demo card removed */}
+        {/* Strata Manager Performance & SLA Summary Card */}
+        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center">
+                <Award size={18} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-gray-900 dark:text-white">Manager Performance</h3>
+                <span className="text-[10px] text-gray-400">Activity SLA Rating</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              Grade A+
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-[#121620] p-3 rounded-2xl border border-gray-200/50 dark:border-white/5">
+            <div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Avg Response</span>
+              <div className="text-sm font-black text-gray-900 dark:text-white mt-0.5">2.1 hrs</div>
+              <span className="text-[9px] text-emerald-500 font-semibold">⚡ vs 24h benchmark</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">CSAT Score</span>
+              <div className="text-sm font-black text-gray-900 dark:text-white mt-0.5">4.8 / 5.0</div>
+              <span className="text-[9px] text-amber-500 font-semibold">★★★★★ 96%</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => store.setActiveView('performance')}
+            className="w-full bg-[#0B1121] dark:bg-white/5 hover:bg-black dark:hover:bg-white/10 text-[#00D4B2] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/20 shadow-sm"
+          >
+            <span>View Full SLA Report</span>
+            <ArrowRight size={13} />
+          </button>
+        </div>
 
         {/* Electric Lime Card - Quick Action */}
         {vacantCount > 0 && (

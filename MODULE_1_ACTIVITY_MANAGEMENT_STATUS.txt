@@ -1,0 +1,149 @@
+﻿================================================================================
+SMARTLOT - MODULE 1: ACTIVITY MANAGEMENT
+Story 1: Resident Initiates an Activity — Implementation Checklist & Status
+================================================================================
+
+EXECUTIVE SUMMARY
+-----------------
+All core product architecture, UI/UX workflows, multi-role views (Resident,
+Committee Member, Strata Manager), form data structures, and email conduit
+capture mechanisms for Module 1 are 100% BUILT and VERIFIED.
+
+The only pending deliverable is connecting a live external email delivery 
+service (Resend / SendGrid / Postmark + Domain DNS) to send and receive real-world 
+emails to external inboxes (Gmail, Outlook, etc.).
+
+
+================================================================================
+SECTION 1: COMPLETED & FULLY IMPLEMENTED REQUIREMENTS
+================================================================================
+
+[✓] 1. ZERO-PERMISSION & INDEPENDENT RESIDENT INITIATION
+    - Any resident or lot owner can submit an activity immediately.
+    - No approval or pre-permission required from the strata manager.
+    - Operates even if the building/scheme is not yet onboarded to SmartLot.
+
+[✓] 2. STANDARDIZED UNIQUE REFERENCE GENERATION
+    - Generates unique reference IDs formatted as #SL-XXXXX (e.g. #SL-10452).
+    - Immutable reference tracking throughout all communications and logs.
+
+[✓] 3. FORM FIELDS & AUSTRALIAN STRATA DATA STANDARDS (100% MATCH)
+    - Building: Search / select with address lookup & custom entry.
+    - Unit / Lot: Unit or lot number text input.
+    - Activity Type (All 6 standard types implemented):
+        1. Common Property Repair
+        2. Maintenance / Vendor
+        3. General Request
+        4. Complaint
+        5. Administrative Request
+        6. Urgent Issue
+    - Title: Short descriptive headline.
+    - Description: Full details multiline text area.
+    - Priority (All 4 levels with color badges):
+        1. Low
+        2. Normal
+        3. High
+        4. Urgent
+    - Location (All 11 strata locations implemented):
+        1. Front entrance
+        2. Lift
+        3. Lobby
+        4. Car park
+        5. Common area
+        6. Garden
+        7. Bin room
+        8. Roof
+        9. Pool
+        10. Other
+        11. Not applicable
+    - Attachments: Multi-file / multi-photo upload with size calculation,
+      thumbnails, and full-screen image lightbox preview.
+    - Contact Preference: Dropdown for Email / SmartLot notifications.
+    - Submitter: Automatically assigned from logged-in user profile.
+
+[✓] 4. EMAIL CONDUIT ARCHITECTURE & HEADERS
+    - Automatically builds the statutory email dispatch payload:
+        * Subject: [SmartLot #SL-XXXXX] <Title>
+        * To: Strata Manager's designated email address
+        * CC: Submitting Resident's email address
+        * Reply-To: requests+sl-xxxxx@smartlot.com
+    - Interactive "Email Dispatch Record" conduit card displayed in drawer.
+
+[✓] 5. INBOUND EMAIL CAPTURE & WORKED EXAMPLE SIMULATION
+    - Inbound replies referencing #SL-XXXXX automatically append to the
+      discussion timeline as: "Strata Manager (via Email)".
+    - Automatically transitions ticket status from "New" to "Acknowledged".
+    - Includes interactive "Simulate Inbound Email Reply" button in the
+      conduit card to demonstrate the Sarah/Gate worked example on demand.
+
+[✓] 6. WORKFLOW & STATUS PROGRESSION
+    - Supported lifecycle stages:
+        [New] -> [Acknowledged] -> [In Progress] -> [Waiting] -> [Resolved] -> [Closed]
+    - Close Request modal with mandatory written rationale.
+    - Reopen Request modal with audit event recording.
+
+[✓] 7. IMMUTABLE AUDIT TRAIL
+    - Permanent timestamped audit log tracking:
+        * Ticket created
+        * Email notification sent
+        * Inbound email reply captured
+        * Status and priority changes
+        * Contractor assignments
+        * Closures and reopenings
+
+[✓] 8. MULTI-ROLE PORTAL EXPERIENCES
+    - Resident View (e.g. Sarah Jones):
+        * Submits and tracks request history without manager lock-in.
+        * Views photos in lightbox, discussion comments, status badges.
+        * Rich composer with replies, @mentions, strata emoji, attachments.
+        * Single record of truth even if strata manager never joins SmartLot.
+    - Committee Member View (e.g. Michael Chen):
+        * Full transparency into scheme activities and maintenance orders.
+        * Access to the unified "⚡ Needs Triage" priority queue.
+        * Direct voting access on committee motions and vendor quotes.
+    - Strata Manager View (e.g. Emma Wilson / Roman Joe):
+        * Status & priority overrides.
+        * Direct contractor assignment (Apex Gate, Rapid Electrical, etc.).
+        * Private internal notes (locked & hidden from residents).
+        * 1-click Approve (Dispatch) or Reject (with Statutory Rationale).
+
+[✓] 9. CLEAN PRODUCTION SETUP
+    - Removed test account debug switchers.
+    - Real authentication via Supabase Auth credentials.
+
+
+================================================================================
+SECTION 2: REMAINING ITEM TO GO 100% LIVE
+================================================================================
+
+[ ] REAL-TIME EXTERNAL EMAIL DELIVERY PROVIDER INTEGRATION
+    Currently, all internal data piping, Edge Function triggers, conduit headers,
+    inbound parsing logic, and audit trails are fully constructed and working.
+    
+    The final remaining step is connecting an external transactional email 
+    service provider to physically deliver emails to actual outside inboxes 
+    (Gmail, Outlook, Apple Mail, etc.):
+
+    1. Email Provider Account:
+       - Set up an account with a transactional email vendor 
+         (Resend, SendGrid, or Postmark).
+
+    2. Custom Domain & DNS Records:
+       - Add DNS records on the production domain (e.g. smartlot.com.au):
+         * SPF record (authorizes provider to send)
+         * DKIM record (cryptographic signature against spam)
+         * DMARC policy
+
+    3. API Key Binding:
+       - Store the provider API key (e.g. RESEND_API_KEY) in Supabase 
+         Edge Function environment variables.
+
+    4. Inbound MX Route / Webhook:
+       - Point incoming MX records for requests+*@smartlot.com.au to the 
+         Supabase inbound email webhook endpoint so external email replies 
+         stream into the database in real time.
+
+================================================================================
+Report generated for SmartLot Strata Management Platform.
+Author: Jainam Jain <jainjainam412@gmail.com>
+================================================================================

@@ -9,13 +9,14 @@ import {
   UserCheck,
   FileText,
   Settings,
-  ClipboardList
+  ClipboardList,
+  Award
 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings';
-  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings') => void;
+  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings' | 'performance';
+  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings' | 'performance') => void;
   pendingTriageCount?: number;
   activePersonaName?: string;
   activePersonaRole?: string;
@@ -97,6 +98,14 @@ export function Sidebar({
               active={activeView === 'requests' || activeView === 'triage'} 
               onClick={() => setActiveView('requests')}
               badge={pendingTriageCount && pendingTriageCount > 0 && (activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? String(pendingTriageCount) : undefined}
+              isCollapsed={isCollapsed} 
+            />
+            {/* Strata Manager Performance Dashboard (Accessible to everyone) */}
+            <NavItem 
+              icon={<Award size={18} />} 
+              label="Manager Performance" 
+              active={activeView === 'performance'} 
+              onClick={() => setActiveView('performance')}
               isCollapsed={isCollapsed} 
             />
             <NavItem 

@@ -23,6 +23,7 @@ import { SettingsView } from './components/SettingsView';
 import { JoinSchemeView } from './components/JoinSchemeView';
 import { DashboardSkeleton } from './components/core/DashboardSkeleton';
 import { ResidentPortalView } from './components/ResidentPortalView';
+import { ManagerPerformanceView } from './components/ManagerPerformanceView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -485,6 +486,11 @@ export default function App() {
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
             />
+          )}
+
+          {/* Strata Manager Performance View */}
+          {store.activeView === 'performance' && (
+            <ManagerPerformanceView store={store} />
           )}
           </>
           )}
