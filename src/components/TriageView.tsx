@@ -46,7 +46,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Clean Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 dark:border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-xs font-bold uppercase tracking-wider mb-2">
             Deterministic Triage Engine
@@ -87,7 +87,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
         {filteredCases.map((item) => (
           <div 
             key={item.id} 
-            className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 dark:border-white/5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[320px]"
+            className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[320px]"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -101,7 +101,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               </div>
 
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{item.title}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 leading-relaxed mb-4">{item.description}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">{item.description}</p>
               
               {item.rejectionReason && (
                 <div className="bg-[#FF4757]/10 border border-[#FF4757]/20 p-3 rounded-xl text-xs text-red-700 font-medium">
@@ -110,7 +110,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               )}
             </div>
 
-            <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-white/5 space-y-3 mt-auto">
+            <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-3 mt-auto">
               <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
                 <span>Reported by {item.reportedBy}</span>
                 <span className="flex items-center gap-1"><Clock size={12} /> {item.createdAt}</span>
@@ -162,7 +162,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               <XCircle size={24} />
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Mandatory Rejection Reason</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-4">You are rejecting <span className="font-bold">{selectedCaseForRejection.id}</span>. Written rationale is required for resident transparency (Max 50 words).</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">You are rejecting <span className="font-bold">{selectedCaseForRejection.id}</span>. Written rationale is required for resident transparency (Max 50 words).</p>
 
             <textarea
               required
@@ -171,7 +171,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
               placeholder="State reason (e.g. Internal unit fixture is the responsibility of the Lot Owner, not Common Area funds)..."
               value={rejectionReasonText}
               onChange={e => setRejectionReasonText(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] dark:bg-[#1a1d27] text-sm outline-none text-gray-900 dark:text-white dark:text-white focus:bg-white dark:focus:bg-[#252836] mb-4 focus:ring-2 focus:ring-red-200"
+              className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/8 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27] dark:bg-[#1a1d27] text-sm outline-none text-gray-900 dark:text-white focus:bg-white dark:focus:bg-[#252836] mb-4 focus:ring-2 focus:ring-red-200"
             />
 
             <div className="flex justify-end gap-3">
@@ -226,7 +226,7 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 
 function StreamIcon({ stream }: { stream: RequestStream }) {
   switch (stream) {
-    case 'general_inquiry': return <HelpCircle size={16} className="text-gray-500 dark:text-gray-400 dark:text-gray-500" />;
+    case 'general_inquiry': return <HelpCircle size={16} className="text-gray-500 dark:text-gray-400" />;
     case 'emergency_repair': return <AlertTriangle size={16} className="text-[#FF6B6B]" />;
     case 'private_lot_repair': return <Home size={16} className="text-[#00A38C]" />;
     case 'common_area_repair': return <Building2 size={16} className="text-[#0055FF]" />;

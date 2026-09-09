@@ -18,10 +18,10 @@ import {
   User,
   Sparkles
 } from 'lucide-react';
-import { ResidentRequest } from '../store/smartLotStore';
+import { ResidentRequest, SmartLotStore, Member } from '../store/smartLotStore';
 
 interface ResidentPortalViewProps {
-  store: any;
+  store: SmartLotStore;
   onOpenCreateRequest: () => void;
 }
 
@@ -40,8 +40,8 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
   );
 
   // Filter members of this scheme to identify the Strata Manager / Contacts
-  const schemeMembers = (store.members || []).filter((m: any) => m.schemeId === activeScheme.id);
-  const strataManager = schemeMembers.find((m: any) => m.role === 'Strata Manager' || m.role === 'Strata Admin') || {
+  const schemeMembers = (store.members || []).filter((m: Member) => m.schemeId === activeScheme.id);
+  const strataManager = schemeMembers.find((m: Member) => m.role === 'Strata Manager' || (m.role as string) === 'Strata Admin') || {
     name: 'Strata Management Desk',
     email: 'help@smartlot.com.au',
     phone: '1300 888 777'

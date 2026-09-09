@@ -205,7 +205,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
             <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
               {authMode === "signin" ? "Welcome back" : "Create account"}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-8 font-medium">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 font-medium">
               {authMode === "signin" 
                 ? "Enter your details to access your dashboard." 
                 : "Join your strata community and manage your property."}
@@ -279,7 +279,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                       type="text" 
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="John Doe"
                       required
                     />
@@ -294,7 +294,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                       type="email" 
                       value={signupEmail}
                       onChange={e => setSignupEmail(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white rounded-2xl py-3 pl-12 pr-4 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="john@example.com"
                       required
                     />
@@ -309,7 +309,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                       type={showSignupPassword ? "text" : "password"} 
                       value={signupPassword}
                       onChange={e => setSignupPassword(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white dark:text-white rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/8 text-gray-900 dark:text-white rounded-2xl py-3 pl-12 pr-12 text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/30 focus:border-[#00D4B2] transition-all"
                       placeholder="••••••••"
                       required
                     />

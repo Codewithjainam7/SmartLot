@@ -20,7 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-import { getDefaultPermissionsForRole } from '../store/smartLotStore';
+import { getDefaultPermissionsForRole, SmartLotStore } from '../store/smartLotStore';
 
 interface UnitDetailCardProps {
   store: any;
@@ -28,7 +28,7 @@ interface UnitDetailCardProps {
 
 export function UnitDetailCard({ store }: UnitDetailCardProps) {
   const activeScheme = store.activeScheme;
-  const activeUnits = store.units.filter((u: any) => u.schemeId === activeScheme.id);
+  const activeUnits = store.units.filter((u) => u.schemeId === activeScheme.id);
 
   const [selectedUnitIndex, setSelectedUnitIndex] = useState(0);
 
@@ -47,7 +47,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
   if (activeUnits.length === 0 || activeScheme.id === 'NO_SCHEME') {
     return (
       <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-4 min-h-[350px]">
-        <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 dark:text-gray-400 flex items-center justify-center">
           <Home size={32} />
         </div>
         <div>
@@ -220,7 +220,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       <div className="p-5 space-y-4">
         
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white dark:text-white uppercase tracking-wider">Access Matrix</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Access Matrix</h3>
           {canManage && (
             <button
               onClick={() => {
@@ -494,11 +494,11 @@ function ActorSection({ icon, role, name, email, phone, agency, color, permissio
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">{role}</span>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{role}</span>
               {verified && <CheckCircle2 size={12} className="text-[#059669]" />}
             </div>
-            <div className="font-bold text-gray-900 dark:text-white dark:text-white mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300 dark:text-gray-300">You</span>}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">{email} {phone && `• ${phone}`} {agency && `• Agency: ${agency}`}</div>
+            <div className="font-bold text-gray-900 dark:text-white mt-0.5">{name} {isSelf && <span className="ml-2 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300 dark:text-gray-300">You</span>}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{email} {phone && `• ${phone}`} {agency && `• Agency: ${agency}`}</div>
           </div>
         </div>
 
@@ -536,7 +536,7 @@ function PermissionToggle({ label, active, locked, onToggle }: { key?: React.Key
     <div className="flex items-center justify-between group">
       <div className="flex items-center gap-2">
         <Key size={12} className={active ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-400 dark:text-gray-500'} />
-        <span className={`text-xs font-medium ${active ? 'text-gray-900 dark:text-white dark:text-white' : 'text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500'}`}>{label}</span>
+        <span className={`text-xs font-medium ${active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{label}</span>
       </div>
       <button 
         onClick={() => !locked && onToggle && onToggle()}

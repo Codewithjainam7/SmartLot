@@ -171,7 +171,7 @@ export function ResidentDashboardView({
             <div>
               <span className="text-xs font-extrabold text-[#0055FF] uppercase tracking-wider">Service & Repairs</span>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">Requests Module</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1 leading-relaxed">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                 Log requests across 5 categories, track real-time manager triage status (New, Approved, Rejected), and manage your lot issues.
               </p>
             </div>
@@ -213,7 +213,7 @@ export function ResidentDashboardView({
               </div>
               <div>
                 <div className="font-bold text-gray-900 dark:text-white text-sm">Unit 10 (Lot 10)</div>
-                <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Strata Scheme SP10482</div>
+                <div className="text-gray-500 dark:text-gray-400">Strata Scheme SP10482</div>
               </div>
             </div>
 
@@ -400,11 +400,11 @@ export function ResidentDashboardView({
                       onChange={e => setNewLotsCount(parseInt(e.target.value) || 2)}
                       className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none font-bold transition-all ${
                         buildingType !== 'custom'
-                          ? 'border-white/5 bg-white/5 text-gray-500 dark:text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                          ? 'border-white/5 bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                           : 'border-white/10 bg-white/5 text-white focus:border-[#00D4B2]/50 focus:bg-white/10'
                       }`}
                     />
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2 block">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-2 block">
                       {buildingType !== 'custom'
                         ? `Lots size is preset to ${newLotsCount} for this Australian strata template.`
                         : 'Enter the total number of lots in this strata scheme.'}

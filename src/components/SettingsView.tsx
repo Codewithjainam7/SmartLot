@@ -260,7 +260,7 @@ export function SettingsView({
             className={`group p-5 rounded-[28px] border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[160px] ${
               theme === 'light' 
                 ? 'border-indigo-500 bg-white ring-1 ring-indigo-500/50 shadow-md scale-[1.01]' 
-                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0d1117] dark:bg-[#0d1117] hover:bg-gray-50 dark:hover:bg-white/5 opacity-75 hover:opacity-100'
+                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0d1117] hover:bg-gray-50 dark:hover:bg-white/5 opacity-75 hover:opacity-100'
             }`}
           >
             <div className="flex items-center justify-between">

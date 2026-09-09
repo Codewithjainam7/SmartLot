@@ -1696,7 +1696,7 @@ export function ResidentRequestsView({
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="relative bg-white dark:bg-[#0d1117] w-full max-w-md rounded-3xl p-6 shadow-2xl z-10 border dark:border-white/5 space-y-4"
             >
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white dark:text-white">Close Request & Notify Manager</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Close Request & Notify Manager</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">State your rationale for closing <span className="font-bold">{closeModalRequest.referenceId || closeModalRequest.id}</span> (Required):</p>
 
               <textarea

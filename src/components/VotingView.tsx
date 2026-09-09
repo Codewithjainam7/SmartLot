@@ -74,7 +74,7 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{motion.title}</h2>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-[#1a1d27] px-4 py-2 rounded-2xl border border-gray-200 dark:border-white/8">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-[#1a1d27] px-4 py-2 rounded-2xl border border-gray-200 dark:border-white/8">
                   <Clock size={16} className="text-[#FF6B6B]" />
                   <span>{motion.deadline}</span>
                 </div>
@@ -109,7 +109,7 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
                       </div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-black text-gray-900 dark:text-white">${quote.amount.toLocaleString()}</span>
-                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500">ex GST</span>
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">ex GST</span>
                       </div>
                     </div>
                   ))}
@@ -132,7 +132,7 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
                   />
                 </div>
 
-                <div className="flex items-center gap-6 text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 pt-1">
+                <div className="flex items-center gap-6 text-xs font-semibold text-gray-500 dark:text-gray-400 pt-1">
                   <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#10B981]" /> {yesVotes} YES</span>
                   <span className="flex items-center gap-1.5"><XCircle size={14} className="text-[#FF6B6B]" /> {noVotes} NO</span>
                   <span className="flex items-center gap-1.5"><MinusCircle size={14} className="text-gray-400 dark:text-gray-500" /> {abstainVotes} ABSTAIN</span>

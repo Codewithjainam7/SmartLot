@@ -3085,6 +3085,8 @@ export function useSmartLotStore() {
   };
 }
 
+export type SmartLotStore = ReturnType<typeof useSmartLotStore>;
+
 // End of SmartLot store hook
 
 // Module: Store State Hooks

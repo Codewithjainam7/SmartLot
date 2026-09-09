@@ -1,4 +1,5 @@
 ﻿import React, { useState } from 'react';
+import { SmartLotStore, ResidentRequest } from '../store/smartLotStore';
 import { motion } from 'motion/react';
 import { 
   Award, 
@@ -38,7 +39,7 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
   const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<'current' | 'all'>('current');
   
   const relevantRequests = selectedSchemeFilter === 'current'
-    ? requests.filter((r: any) => 
+    ? requests.filter((r: ResidentRequest) => 
         r.schemeId === activeScheme.id || 
         (r.buildingName && activeScheme.name && r.buildingName.toLowerCase() === activeScheme.name.toLowerCase())
       )
@@ -46,8 +47,8 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 
   // Real data calculations
   const totalCount = Math.max(relevantRequests.length, 6);
-  const resolvedRequests = relevantRequests.filter((r: any) => r.status === 'resolved' || r.status === 'closed');
-  const openRequests = relevantRequests.filter((r: any) => r.status !== 'resolved' && r.status !== 'closed');
+  const resolvedRequests = relevantRequests.filter((r: ResidentRequest) => r.status === 'resolved' || r.status === 'closed');
+  const openRequests = relevantRequests.filter((r: ResidentRequest) => r.status !== 'resolved' && r.status !== 'closed');
   const resolvedCount = Math.max(resolvedRequests.length, 5);
   const openCount = openRequests.length;
   const resolutionRate = Math.round((resolvedCount / (resolvedCount + openCount)) * 100);

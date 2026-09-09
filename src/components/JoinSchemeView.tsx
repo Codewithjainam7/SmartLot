@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Building2, User, Mail, Lock, ShieldAlert, CheckCircle2, ChevronRight, LogIn, Sparkles, Home, ShieldCheck } from 'lucide-react';
-import { Member, MemberRole, useSmartLotStore } from '../store/smartLotStore';
+import { Member, MemberRole, useSmartLotStore, SmartLotStore } from '../store/smartLotStore';
 
 interface JoinSchemeViewProps {
   schemeId: string;

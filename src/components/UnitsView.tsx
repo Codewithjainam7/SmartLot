@@ -58,7 +58,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
             Multi-Actor Identity Architecture
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Units & Occupant Directory</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Each physical lot supports 3 distinct mapped actors with independent login credentials.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Each physical lot supports 3 distinct mapped actors with independent login credentials.</p>
         </div>
 
         <button
@@ -84,12 +84,12 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                   aria-label={`Select unit ${u.unitId} (Lot ${u.lotNumber})`}
                   onClick={() => setSelectedUnit(u)}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer ${
-                    currentUnit.unitId === u.unitId ? 'bg-[#0B1121] dark:bg-white/10 text-white dark:text-[#00D4B2] border-black dark:border-[#00D4B2]/30 shadow-md font-bold' : 'text-gray-900 dark:text-white dark:text-white font-semibold hover:text-black dark:hover:text-[#00D4B2]'
+                    currentUnit.unitId === u.unitId ? 'bg-[#0B1121] dark:bg-white/10 text-white dark:text-[#00D4B2] border-black dark:border-[#00D4B2]/30 shadow-md font-bold' : 'text-gray-900 dark:text-white font-semibold hover:text-black dark:hover:text-[#00D4B2]'
                   }`}
                 >
                   <div className="text-left">
                     <div className="text-base font-bold">{u.unitId} (Lot {u.lotNumber})</div>
-                    <div className={`text-xs mt-0.5 ${currentUnit.unitId === u.unitId ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400 dark:text-gray-500'}`}>
+                    <div className={`text-xs mt-0.5 ${currentUnit.unitId === u.unitId ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>
                       Entitlement: {u.entitlement} • {u.actors.length} Mapped Actors
                     </div>
                   </div>
@@ -106,7 +106,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
 
         {/* Right Column: Detailed Actor Cards for Selected Unit */}
         <div className="lg:col-span-8 bg-white dark:bg-[#0d1117] rounded-3xl p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 dark:border-white/5 pb-4">
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
             <div>
               <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Active Unit Profile</span>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{currentUnit.unitId} • Lot {currentUnit.lotNumber}</h2>
@@ -143,7 +143,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
                         {actor.verified && <CheckCircle2 size={14} className="text-[#10B981]" />}
                       </div>
                       <h4 className="text-lg font-bold text-gray-900 dark:text-white">{actor.name}</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{actor.email} {actor.agency && `• ${actor.agency}`}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{actor.email} {actor.agency && `• ${actor.agency}`}</p>
                     </div>
                   </div>
 
@@ -188,7 +188,7 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
               <X size={18} />
             </button>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Add Resident Login</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-6">Create sub-occupant login credentials mapped to {currentUnit.unitId}.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">Create sub-occupant login credentials mapped to {currentUnit.unitId}.</p>
 
             <form onSubmit={handleAddSubmit} className="space-y-4">
               <div>

@@ -34,7 +34,7 @@ export const BackgroundRippleEffect = ({
       const col = Math.floor(x / cellSize);
       const row = Math.floor(y / cellSize);
       
-      console.log('Ripple Click Captured:', { clientX: e.clientX, clientY: e.clientY, rect, x, y, row, col });
+      
       
       if (row >= 0 && row < rows && col >= 0 && col < cols) {
         setClickedCell({ row, col });

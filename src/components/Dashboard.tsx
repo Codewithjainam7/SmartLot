@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { dispatchMemberInviteEmail } from '../services/emailService';
+import { SmartLotStore } from '../store/smartLotStore';
 
 interface DashboardProps {
   store: any;
@@ -33,7 +34,7 @@ export function Dashboard({ store }: DashboardProps) {
   const members = store.members.filter(m => m.schemeId === activeScheme.id);
   const residents = members.filter(m => m.unitId !== 'HQ / Management' && !['Strata Manager', 'Building Manager'].includes(m.role));
   const pendingRequests = store.residentRequests.filter(r => r.status === 'pending_triage' && r.schemeId === activeScheme.id);
-  const vacantCount = store.units.filter((u: any) => u.status === 'Vacant' && u.schemeId === activeScheme.id).length;
+  const vacantCount = store.units.filter((u) => u.status === 'Vacant' && u.schemeId === activeScheme.id).length;
 
   // Setup Popup states
   const [showSetupPopup, setShowSetupPopup] = useState(false);

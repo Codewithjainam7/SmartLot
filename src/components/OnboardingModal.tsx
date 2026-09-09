@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, Sparkles, Building, ArrowRight } from 'lucide-react';
+import { SmartLotStore } from '../store/smartLotStore';
 
 interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  store: any;
+  store: SmartLotStore;
 }
 
 export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps) {

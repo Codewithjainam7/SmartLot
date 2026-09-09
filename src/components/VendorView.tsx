@@ -30,7 +30,7 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
             Vendor Mini-CRM & Work Orders
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Verified Contractor Directory</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Track ABN, trade licenses, insurance compliance badges, and dispatch digital work orders.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Track ABN, trade licenses, insurance compliance badges, and dispatch digital work orders.</p>
         </div>
       </div>
 
@@ -49,11 +49,11 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {vendors.map(v => (
-            <div key={v.id} className="bg-white dark:bg-[#0d1117] rounded-2xl p-5 border border-gray-100 dark:border-white/5 dark:border-white/5 shadow-sm space-y-3 hover:shadow-md transition-shadow">
+            <div key={v.id} className="bg-white dark:bg-[#0d1117] rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div>
                   <h4 className="font-bold text-gray-900 dark:text-white">{v.name}</h4>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium">{v.category}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{v.category}</span>
                 </div>
                 {v.insuranceStatus === 'Active' ? (
                   <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase flex items-center gap-1">
@@ -66,12 +66,12 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
                 )}
               </div>
 
-              <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1 pt-2 border-t border-gray-100 dark:border-white/5 dark:border-white/5">
+              <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1 pt-2 border-t border-gray-100 dark:border-white/5">
                 <div><span className="font-bold text-gray-850 dark:text-gray-200">ABN:</span> {v.abn}</div>
                 <div><span className="font-bold text-gray-850 dark:text-gray-200">License:</span> {v.licenseNo}</div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 pt-2">
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2">
                 <span className="flex items-center gap-1"><Phone size={12} /> {v.phone}</span>
                 <span className="flex items-center gap-1 text-[#FFB020] font-bold"><Star size={12} fill="currentColor" /> {v.rating}</span>
               </div>

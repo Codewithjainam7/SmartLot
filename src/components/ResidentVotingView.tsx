@@ -83,7 +83,7 @@ export function ResidentVotingView({
                   </span>
                 </div>
                 <h4 className="font-bold text-base mb-1">{req.title}</h4>
-                <p className={`text-xs line-clamp-2 ${activeDetail?.id === req.id ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400 dark:text-gray-500'}`}>{req.description}</p>
+                <p className={`text-xs line-clamp-2 ${activeDetail?.id === req.id ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>{req.description}</p>
               </button>
             ))}
           </div>
@@ -92,7 +92,7 @@ export function ResidentVotingView({
         {/* Right Column: Selected Request Details, Comments & Ballot */}
         {activeDetail && (
           <div className="lg:col-span-7 bg-white dark:bg-[#0d1117] rounded-3xl p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 dark:border-white/5 pb-4">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
               <div>
                 <span className="text-xs font-bold text-[#0055FF] uppercase tracking-wider">{activeDetail.unit}</span>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{activeDetail.title}</h2>
@@ -157,7 +157,7 @@ export function ResidentVotingView({
             </div>
 
             {/* Comments Section (Add Comments flow from Miro diagram) */}
-            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/5 dark:border-white/5">
+            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/5">
               <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-2">
                 <MessageSquare size={16} className="text-[#0055FF]" /> Discussion & Comments ({activeDetail.comments.length})
               </h4>
