@@ -1998,3 +1998,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Requests: Request Status Timeline and Badges
 // Animation: Request Timeline Step Indicator
 // Animation: Filter Drawer Slide Animation
+// Docs: 4-stream statutory triage criteria under NSW SSMA
