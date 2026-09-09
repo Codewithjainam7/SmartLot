@@ -2870,3 +2870,5 @@ export function useSmartLotStore() {
 // Perf: Streamline role permissions lookup cache
 
 // Docs: Document vendor quote evaluation criteria
+
+// Helpers: Improve formatRelativeTime helper precision
