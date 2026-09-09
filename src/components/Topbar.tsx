@@ -168,3 +168,4 @@ function MetricPill({ label }: { label: string }) {
 }
 
 // UI Optimization: Interactive scheme dropdown with active badge status
+// Theme: Annotate dark mode tokens and surface contrasts
