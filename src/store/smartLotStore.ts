@@ -278,6 +278,46 @@ export type UnitData = {
 };
 
 // Initial Seed Members across Duplex, Coronation, Cavalier, and Spear Empire
+
+export const INITIAL_VENDORS: Vendor[] = [
+  {
+    id: 'VND-001',
+    name: 'Sydney Apex Plumbing & Gas',
+    category: 'Plumbing & Drainage',
+    abn: '51 824 931 002',
+    licenseNo: 'LIC-NSW-39812A',
+    phone: '02 9844 2001',
+    email: 'dispatch@apexplumbing.com.au',
+    insuranceStatus: 'Active',
+    insuranceExpiry: '2027-04-30',
+    rating: 4.9,
+  },
+  {
+    id: 'VND-002',
+    name: 'ElectroPro Strata Services',
+    category: 'Electrical & Lighting',
+    abn: '32 901 445 119',
+    licenseNo: 'LIC-NSW-84729E',
+    phone: '02 9512 8820',
+    email: 'service@electropro.com.au',
+    insuranceStatus: 'Active',
+    insuranceExpiry: '2026-11-15',
+    rating: 4.8,
+  },
+  {
+    id: 'VND-003',
+    name: 'Kone Elevator Maintenance NSW',
+    category: 'Lift & Vertical Transport',
+    abn: '18 003 728 991',
+    licenseNo: 'LIC-NSW-10492L',
+    phone: '1300 362 473',
+    email: 'maintenance.sydney@kone.com',
+    insuranceStatus: 'Active',
+    insuranceExpiry: '2028-01-01',
+    rating: 4.7,
+  }
+];
+
 const INITIAL_MEMBERS: Member[] = [
   // 1. Roman Joe (Strata Manager for Spear Empire SP823)
   {
@@ -1500,6 +1540,7 @@ export function useSmartLotStore() {
   const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v8`, INITIAL_MEMBERS);
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
+  const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 
   const addCustomPersona = (p: Persona) => {
@@ -2722,6 +2763,27 @@ export function useSmartLotStore() {
     }
   };
 
+
+  const addVendor = (payload: CreateVendorPayload) => {
+    const newVendor: Vendor = {
+      id: payload.id || `VND-${Date.now()}`,
+      name: payload.name,
+      category: payload.category,
+      abn: payload.abn,
+      licenseNo: payload.licenseNo,
+      phone: payload.phone,
+      email: payload.email,
+      insuranceStatus: payload.insuranceStatus,
+      insuranceExpiry: payload.insuranceExpiry,
+      rating: payload.rating || 5.0,
+    };
+    setVendors(prev => [newVendor, ...prev]);
+  };
+
+  const deleteVendor = (vendorId: string) => {
+    setVendors(prev => prev.filter(v => v.id !== vendorId));
+  };
+
   const addResidentToUnit = (
     schemeId: string, 
     unitId: string, 
@@ -2841,7 +2903,10 @@ export function useSmartLotStore() {
     residentRequests,
     cases: residentRequests,
     motions: [],
-    vendors: [],
+    vendors,
+    setVendors,
+    addVendor,
+    deleteVendor,
     workOrders: [],
     units,
     customPersonas,
