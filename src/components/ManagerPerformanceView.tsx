@@ -508,3 +508,5 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Compliance: NSW SSMA 2015 Section 106 statutory guidance
 
 // SLA: Document statutory response time benchmarks
+
+// Style: Enhance CSAT rating distribution spacing
