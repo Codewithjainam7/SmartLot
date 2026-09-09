@@ -35,7 +35,16 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
 
       {/* Motions Grid */}
       <div className="space-y-6">
-        {motions.map(motion => {
+        {motions.length === 0 ? (
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 shadow-sm text-center">
+            <Vote size={40} className="mx-auto text-gray-400 dark:text-gray-500 mb-3 opacity-60" />
+            <h3 className="text-base font-bold text-gray-900 dark:text-white">No Active Committee Motions</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
+              There are currently no open voting motions or contractor tenders awaiting digital ballots for this scheme.
+            </p>
+          </div>
+        ) : (
+          motions.map(motion => {
           const yesVotes = motion.ballots.filter(b => b.vote === 'YES').length;
           const noVotes = motion.ballots.filter(b => b.vote === 'NO').length;
           const abstainVotes = motion.ballots.filter(b => b.vote === 'ABSTAIN').length;
@@ -190,7 +199,8 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
 
             </div>
           );
-        })}
+        })
+        )}
       </div>
 
     </div>
