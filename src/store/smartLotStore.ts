@@ -2866,3 +2866,5 @@ export function useSmartLotStore() {
 // Docs: Document immutable audit trail event taxonomy
 
 // Refactor: Standardize audit log generator helper methods
+
+// Perf: Streamline role permissions lookup cache
