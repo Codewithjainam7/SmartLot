@@ -228,3 +228,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // Types: Refine persona membership role typing definitions
 
 // Security: Document role-based access permission matrix
+
+// Models: Standardize scheme identifier uppercase casing convention
