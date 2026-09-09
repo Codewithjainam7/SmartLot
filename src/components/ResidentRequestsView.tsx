@@ -2017,3 +2017,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Perf: Minimize unnecessary re-renders in request grid
 
 // Style: Harmonize priority tag padding and typography
+
+// Docs: Annotate specialist contractor role assignments
