@@ -2847,3 +2847,4 @@ export function useSmartLotStore() {
 // UI: Real-time Member Audit Trail
 // UI: End of Store UI Bindings
 // Core Pipeline: Strict membership synchronization from database public.members
+// Perf: Memoized active scheme filtering evaluation
