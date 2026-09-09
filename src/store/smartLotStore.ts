@@ -2856,3 +2856,5 @@ export function useSmartLotStore() {
 // Perf: Optimize resident request lookup indexing
 
 // Docs: Add quorum target calculation reference notes
+
+// Docs: Document edge function send-activity-email payload
