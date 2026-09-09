@@ -2862,3 +2862,5 @@ export function useSmartLotStore() {
 // Docs: Annotate profile syncing triggers in supabase
 
 // Perf: Streamline internal notes state mutations
+
+// Docs: Document immutable audit trail event taxonomy
