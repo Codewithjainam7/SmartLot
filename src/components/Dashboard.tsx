@@ -572,3 +572,5 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 // Perf: Optimize vacant units count evaluation
 
 // Style: Refine border contrast on dark mode container panels
+
+// Docs: Document 5-second rapid scheme setup flow
