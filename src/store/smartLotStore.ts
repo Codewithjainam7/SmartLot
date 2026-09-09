@@ -2690,6 +2690,38 @@ export function useSmartLotStore() {
     }
   };
 
+  const addUnit = async (unitData: { schemeId: string; unitId: string; lotNumber?: number; entitlement?: string; status?: 'Occupied' | 'Vacant' }) => {
+    const lotNo = unitData.lotNumber ?? (parseInt(unitData.unitId.replace(/\D/g, '')) || 1);
+    const newUnit: UnitData = {
+      schemeId: unitData.schemeId,
+      unitId: unitData.unitId,
+      lotNumber: lotNo,
+      entitlement: unitData.entitlement || '10% (100/1000)',
+      status: unitData.status || 'Vacant',
+      actors: [],
+    };
+    setUnits(prev => [...prev, newUnit]);
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('units').insert({
+        scheme_id: unitData.schemeId,
+        unit_id: unitData.unitId,
+        entitlement: newUnit.entitlement,
+        status: newUnit.status,
+      });
+      if (error) console.error("Error inserting unit in Supabase:", error);
+    }
+  };
+
+  const deleteUnit = async (schemeId: string, unitId: string) => {
+    setUnits(prev => prev.filter(u => !(u.schemeId === schemeId && u.unitId === unitId)));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase.from('units').delete().match({ scheme_id: schemeId, unit_id: unitId });
+      if (error) console.error("Error deleting unit in Supabase:", error);
+    }
+  };
+
   const addResidentToUnit = (
     schemeId: string, 
     unitId: string, 
@@ -2834,6 +2866,8 @@ export function useSmartLotStore() {
     addResidentToUnit,
     offboardActor,
     updateUnitMetadata,
+    addUnit,
+    deleteUnit,
     updateScheme,
     updateMember,
     updateResidentRequest,
