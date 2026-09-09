@@ -211,6 +211,18 @@ export type WorkOrder = {
   submittedAt?: string;
 };
 
+export type CreateVendorPayload = Omit<Vendor, 'id'> & { id?: string };
+export type CreateWorkOrderPayload = Omit<WorkOrder, 'id' | 'siteAccessPin' | 'guestMagicToken' | 'status'>;
+export type CreateMotionPayload = {
+  caseId: string;
+  title: string;
+  summary: string;
+  quotes: Motion['quotes'];
+  quorumTarget: number;
+  deadline: string;
+};
+
+
 export type MemberRole = 
   | 'Strata Manager' 
   | 'Building Manager' 
