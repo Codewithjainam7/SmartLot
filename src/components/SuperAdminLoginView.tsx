@@ -234,3 +234,4 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
 // Animation: Interactive Auto-Fill Pill Action
 // Animation: Form Input Focus Ring Elevation
 // Animation: Submit Button Shimmer Effect
+// Docs: Document super administrator security boundaries
