@@ -570,3 +570,5 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 // Style: Polish metric tile elevation and corner radius
 
 // Perf: Optimize vacant units count evaluation
+
+// Style: Refine border contrast on dark mode container panels
