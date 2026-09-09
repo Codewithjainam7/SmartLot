@@ -234,3 +234,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // Units: Document lot entitlement calculation formulas
 
 // Bylaws: Add standard strata scheme bylaw index references
+
+// Refactor: Enhance activity location enum definitions
