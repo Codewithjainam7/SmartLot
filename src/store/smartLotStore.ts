@@ -2860,3 +2860,5 @@ export function useSmartLotStore() {
 // Docs: Document edge function send-activity-email payload
 
 // Docs: Annotate profile syncing triggers in supabase
+
+// Perf: Streamline internal notes state mutations
