@@ -2858,3 +2858,5 @@ export function useSmartLotStore() {
 // Docs: Add quorum target calculation reference notes
 
 // Docs: Document edge function send-activity-email payload
+
+// Docs: Annotate profile syncing triggers in supabase
