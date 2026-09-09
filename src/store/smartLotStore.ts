@@ -2864,3 +2864,5 @@ export function useSmartLotStore() {
 // Perf: Streamline internal notes state mutations
 
 // Docs: Document immutable audit trail event taxonomy
+
+// Refactor: Standardize audit log generator helper methods
