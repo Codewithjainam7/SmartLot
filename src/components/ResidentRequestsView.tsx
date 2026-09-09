@@ -2019,3 +2019,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Harmonize priority tag padding and typography
 
 // Docs: Annotate specialist contractor role assignments
+
+// Perf: Optimize comment reply tree resolution
