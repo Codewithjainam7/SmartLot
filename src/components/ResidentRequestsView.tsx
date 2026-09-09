@@ -2003,3 +2003,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Polish contrast ratios for badge micro-indicators
 
 // Conduit: Detail outbound email conduit dispatch protocol
+
+// Style: Refine lightbox preview backdrop blur effects
