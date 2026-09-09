@@ -1940,6 +1940,21 @@ export function useSmartLotStore() {
     setResidentRequests(prev => prev.map(r => r.id === requestId ? { ...r, ...updates } : r));
   };
 
+  const deleteResidentRequest = async (requestId: string) => {
+    setResidentRequests(prev => prev.filter(r => r.id !== requestId));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user) {
+      const { error } = await supabase
+        .from('resident_requests')
+        .delete()
+        .eq('id', requestId);
+      if (error) {
+        console.error("Error deleting resident request from Supabase:", error);
+      }
+    }
+  };
+
+
   const deleteMember = async (idOrEmail: string) => {
     setMembers(prev => prev.filter(m => m.id !== idOrEmail && m.email.toLowerCase() !== idOrEmail.toLowerCase()));
 
@@ -2822,6 +2837,7 @@ export function useSmartLotStore() {
     updateScheme,
     updateMember,
     updateResidentRequest,
+    deleteResidentRequest,
     addScheme,
     deleteScheme,
     togglePermission,
