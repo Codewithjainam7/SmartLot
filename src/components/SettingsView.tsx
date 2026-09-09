@@ -1,20 +1,65 @@
 // @smartlot/component
 import React from 'react';
-import { Moon, Sun, Monitor, Shield, Sparkles, Check } from 'lucide-react';
+import { useState } from 'react';
+import { Moon, Sun, Monitor, Shield, Sparkles, Check, User, Mail, Phone, Lock, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface SettingsViewProps {
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
   activePersonaName: string;
   activePersonaRole: string;
+  activePersonaEmail?: string;
+  activePersonaPhone?: string;
+  activePersonaUnit?: string;
+  onUpdateProfile?: (updates: { name: string; email: string; phone: string; password?: string }) => Promise<void> | void;
 }
 
 export function SettingsView({ 
   theme, 
   setTheme, 
   activePersonaName, 
-  activePersonaRole 
+  activePersonaRole,
+  activePersonaEmail = '',
+  activePersonaPhone = '',
+  activePersonaUnit = '',
+  onUpdateProfile
 }: SettingsViewProps) {
+  const [name, setName] = useState(activePersonaName || '');
+  const [email, setEmail] = useState(activePersonaEmail || '');
+  const [phone, setPhone] = useState(activePersonaPhone || '0400 000 000');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password && password !== confirmPassword) {
+      setErrorMessage('Passwords do not match');
+      return;
+    }
+    setErrorMessage('');
+    setIsSaving(true);
+    try {
+      if (onUpdateProfile) {
+        await onUpdateProfile({
+          name,
+          email,
+          phone,
+          password: password || undefined,
+        });
+      }
+      setIsSaved(true);
+      setPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Failed to update account details');
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return (
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       {/* Header Banner */}
@@ -44,6 +89,147 @@ export function SettingsView({
             </div>
           </div>
         </div>
+      </div>
+
+      
+      {/* Account Details & Personal Information Form */}
+      <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
+        <div>
+          <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+            <User size={18} className="text-[#00D4B2]" /> Account Details & Personal Information
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">
+            Update your registered account credentials, contact information, and security password.
+          </p>
+        </div>
+
+        {errorMessage && (
+          <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2 font-medium">
+            <AlertCircle size={16} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {isSaved && (
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2 font-medium">
+            <CheckCircle2 size={16} />
+            <span>Account preferences and personal details updated successfully!</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSaveProfile} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Full Name */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                Full Legal Name
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="e.g. Sarah Jones"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/50 transition-all pl-10"
+                />
+                <User size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                Registered Email Address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="name@strata.com.au"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/50 transition-all pl-10"
+                />
+                <Mail size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                Mobile Phone Number
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="0400 000 000"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/50 transition-all pl-10"
+                />
+                <Phone size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Role & Unit Context (Read-Only) */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                Assigned Role & Unit
+              </label>
+              <div className="flex items-center gap-2 bg-gray-50/50 dark:bg-[#1a1d27]/50 border border-gray-200/60 dark:border-white/5 rounded-2xl px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                <Shield size={16} className="text-[#00D4B2]" />
+                <span>{activePersonaRole} {activePersonaUnit ? '• ' + activePersonaUnit : ''}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Password Update Fields */}
+          <div className="pt-4 border-t border-gray-100 dark:border-white/5">
+            <h4 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Lock size={14} className="text-gray-400" /> Change Password (Optional)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="New password (leave blank to keep current)"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/50 transition-all pl-10"
+                />
+                <Lock size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
+              </div>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/50 transition-all pl-10"
+                />
+                <Lock size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#00D4B2] to-[#0055FF] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isSaving ? (
+                <span>Saving Changes...</span>
+              ) : (
+                <>
+                  <Save size={16} />
+                  <span>Save Profile Changes</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Theme Selection Grid */}
