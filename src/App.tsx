@@ -46,6 +46,7 @@ export default function App() {
   const [invitedName, setInvitedName] = useState<string | null>(null);
   const [invitedRole, setInvitedRole] = useState<string | null>(null);
   const [invitedUnit, setInvitedUnit] = useState<string | null>(null);
+  const [invitedLot, setInvitedLot] = useState<string | null>(null);
 
   useEffect(() => {
     const parseUrl = () => {
@@ -66,6 +67,7 @@ export default function App() {
       const name = params.get('name');
       const role = params.get('role');
       const unit = params.get('unit');
+      const lot = params.get('lot');
       const schemeFromParam = params.get('scheme');
 
       // Match path or hash like #/join/SP101 or #/join?scheme=SP101 or /lander?scheme=SP101
@@ -84,6 +86,7 @@ export default function App() {
         setInvitedName(name || null);
         setInvitedRole(role || null);
         setInvitedUnit(unit || null);
+        setInvitedLot(lot || null);
       } else {
         setJoinSchemeId(null);
         setInviteToken(null);
@@ -91,6 +94,7 @@ export default function App() {
         setInvitedName(null);
         setInvitedRole(null);
         setInvitedUnit(null);
+        setInvitedLot(null);
       }
     };
     parseUrl();
@@ -239,8 +243,10 @@ export default function App() {
           phone: '0400 000 000',
           schemeId: scheme.id,
           role: (userRole === 'Strata Admin' ? 'Strata Manager' : userRole) as any,
-          unitId: (userRole.includes('Manager') || userRole.includes('Admin')) ? 'HQ / Management' : 'Unit 1',
-          lotNumber: (userRole.includes('Manager') || userRole.includes('Admin')) ? 0 : 1,
+          unitId: (siteInfo as any)?.unit || ((userRole.includes('Manager') || userRole.includes('Admin')) ? 'HQ / Management' : 'Unit 1'),
+          lotNumber: (siteInfo as any)?.lotNumber !== undefined
+            ? Number((siteInfo as any).lotNumber)
+            : ((userRole.includes('Manager') || userRole.includes('Admin')) ? 0 : 1),
           status: 'Active' as const,
           joinedAt: new Date().toISOString().split('T')[0],
         },
@@ -265,6 +271,7 @@ export default function App() {
         invitedName={invitedName || undefined}
         invitedRole={invitedRole || undefined}
         invitedUnit={invitedUnit || undefined}
+        invitedLot={invitedLot || undefined}
         store={store}
         onJoinSuccess={async (role, name, siteInfo) => {
           window.location.hash = '';
@@ -277,6 +284,7 @@ export default function App() {
           setInvitedName(null);
           setInvitedRole(null);
           setInvitedUnit(null);
+          setInvitedLot(null);
           await handleLoginSuccess(role, name, siteInfo);
         }}
         onBackToLanding={() => {
@@ -290,6 +298,7 @@ export default function App() {
           setInvitedName(null);
           setInvitedRole(null);
           setInvitedUnit(null);
+          setInvitedLot(null);
           setSessionState('landing');
         }}
       />

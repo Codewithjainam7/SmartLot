@@ -1598,7 +1598,7 @@ function AddMemberFormContent({
     setIsSubmitting(true);
 
     const primaryToken = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const primaryJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${primaryToken}&email=${encodeURIComponent(formEmail.trim())}&role=${encodeURIComponent(formRole)}&unit=${encodeURIComponent(formLot)}&name=${encodeURIComponent(formName.trim())}`;
+    const primaryJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${primaryToken}&email=${encodeURIComponent(formEmail.trim())}&role=${encodeURIComponent(formRole)}&unit=${encodeURIComponent(formUnit)}&lot=${encodeURIComponent(formLot)}&name=${encodeURIComponent(formName.trim())}`;
 
     try {
       // 1. Dispatch invite email to primary member
@@ -1618,7 +1618,7 @@ function AddMemberFormContent({
       const validOccupants = additionalOccupants.filter(o => o.name.trim() && o.email.trim());
       for (const occ of validOccupants) {
         const occToken = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-        const occJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${occToken}&email=${encodeURIComponent(occ.email.trim())}&role=${encodeURIComponent(occ.role)}&unit=${encodeURIComponent(formLot)}&name=${encodeURIComponent(occ.name.trim())}`;
+        const occJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${occToken}&email=${encodeURIComponent(occ.email.trim())}&role=${encodeURIComponent(occ.role)}&unit=${encodeURIComponent(formUnit)}&lot=${encodeURIComponent(formLot)}&name=${encodeURIComponent(occ.name.trim())}`;
         await dispatchMemberInviteEmail({
           toEmail: occ.email.trim(),
           toName: occ.name.trim(),
