@@ -209,3 +209,5 @@ function NavItem({
 
 // Navigation: Team Access unlocked for Lot Owners and Committee Members
 // Style: Standardize active tab transition indicators
+
+// Style: Refine mobile viewport sidebar collapse behavior
