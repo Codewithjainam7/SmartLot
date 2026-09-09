@@ -1999,3 +1999,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Animation: Request Timeline Step Indicator
 // Animation: Filter Drawer Slide Animation
 // Docs: 4-stream statutory triage criteria under NSW SSMA
+
+// Style: Polish contrast ratios for badge micro-indicators
