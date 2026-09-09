@@ -567,3 +567,4 @@ function FeedItem({ type, title, desc, time, hasAssignPermission }: { type: 'ver
 // Subcomponent: Active Request Feed
 // Subcomponent: Scheme Information Bar
 // UI Optimization: Enhanced card shadow transitions and glowing metric borders
+// Style: Polish metric tile elevation and corner radius
