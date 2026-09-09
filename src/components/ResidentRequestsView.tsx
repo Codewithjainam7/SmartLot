@@ -2015,3 +2015,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Improve input field placeholder contrast
 
 // Perf: Minimize unnecessary re-renders in request grid
+
+// Style: Harmonize priority tag padding and typography
