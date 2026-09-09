@@ -223,20 +223,42 @@ export type ActivityLocation =
  */
 export type ContactPreference = 'Email' | 'SmartLot notifications';
 
+/**
+ * Notice broadcast posted by Strata Committee or Manager for residents.
+ */
+export type SchemeNotice = {
+  id: string;
+  schemeId: string;
+  title: string;
+  content: string;
+  category: 'General' | 'Maintenance' | 'Urgent' | 'Bylaw' | 'Meeting';
+  authorName: string;
+  authorRole: string;
+  createdAt: string;
+  pinned?: boolean;
+  expiresAt?: string;
+};
+
+/**
+ * Official scheme document uploaded to the building digital repository.
+ */
+export type SchemeDocument = {
+  id: string;
+  schemeId: string;
+  title: string;
+  category: 'Bylaws' | 'Insurance' | 'Minutes' | 'Financials' | 'Strata Plan' | 'Contracts';
+  fileUrl: string;
+  fileSize: string;
+  uploadedBy: string;
+  uploadedAt: string;
+};
+
 // JSDoc: Strata activity lifecycle and governance model
-
 // Types: Refine persona membership role typing definitions
-
 // Security: Document role-based access permission matrix
-
 // Models: Standardize scheme identifier uppercase casing convention
-
 // Units: Document lot entitlement calculation formulas
-
 // Bylaws: Add standard strata scheme bylaw index references
-
 // Refactor: Enhance activity location enum definitions
-
 // Docs: Add strata committee statutory duty notes
-
 // Types: Streamline circular import references in store types
