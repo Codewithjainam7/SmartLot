@@ -2852,3 +2852,5 @@ export function useSmartLotStore() {
 // Types: Streamline comment attachment schema definitions
 
 // Perf: Enhance audit log timestamp parsing accuracy
+
+// Perf: Optimize resident request lookup indexing
