@@ -2009,3 +2009,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Polish uppercase tracking on status pills
 
 // Refactor: Clarify statutory rejection reason categories
+
+// Style: Align lucide icon sizes across activity headers
