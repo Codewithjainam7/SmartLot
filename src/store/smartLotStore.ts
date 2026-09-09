@@ -2868,3 +2868,5 @@ export function useSmartLotStore() {
 // Refactor: Standardize audit log generator helper methods
 
 // Perf: Streamline role permissions lookup cache
+
+// Docs: Document vendor quote evaluation criteria
