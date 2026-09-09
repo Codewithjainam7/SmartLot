@@ -125,3 +125,4 @@ export function SettingsView({
 // Subcomponent: Account Preferences Form
 // Settings: Notification Preferences and Themes
 // Animation: Toggle Switch Smooth Slide
+// Refactor: Refine settings theme toggle state persistence
