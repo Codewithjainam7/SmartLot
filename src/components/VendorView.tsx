@@ -38,8 +38,17 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
       <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-4">
         <h3 className="text-base font-bold text-gray-900 dark:text-white">Verified Local Trades</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {vendors.map(v => (
+        {vendors.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl p-6">
+            <ShieldCheck size={36} className="mx-auto text-gray-400 dark:text-gray-500 mb-3 opacity-60" />
+            <h4 className="text-sm font-bold text-gray-900 dark:text-white">No Registered Contractors Found</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
+              Contractor mini-CRM registry is currently empty for this scheme. Verified trades will appear here once added.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {vendors.map(v => (
             <div key={v.id} className="bg-white dark:bg-[#0d1117] rounded-2xl p-5 border border-gray-100 dark:border-white/5 dark:border-white/5 shadow-sm space-y-3 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div>
@@ -68,7 +77,8 @@ export function VendorView({ vendors, workOrders, onOpenGuestPortal, onVerifyWor
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Active Work Orders */}
