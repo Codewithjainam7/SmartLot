@@ -2013,3 +2013,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Align lucide icon sizes across activity headers
 
 // Style: Improve input field placeholder contrast
+
+// Perf: Minimize unnecessary re-renders in request grid
