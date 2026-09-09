@@ -1,3 +1,10 @@
+// JSDoc: Removes resident request or maintenance ticket permanently
+// JSDoc: Creates new physical unit or lot entitlement record
+// JSDoc: Deletes unit record with scheme cascade
+// JSDoc: Registers certified contractor in scheme trade directory
+// JSDoc: Removes contractor vendor from trade directory
+// JSDoc: Creates formal committee motion with linked quotes and quorum target
+// JSDoc: Dispatches digital trade work order with access pin and token
 // JSDoc: Returns default permission flags for specified strata role
 // JSDoc: Configures individual user permission overrides
 // JSDoc: Toggles specific permission flag for a role in target scheme
