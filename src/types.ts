@@ -236,3 +236,5 @@ export type ContactPreference = 'Email' | 'SmartLot notifications';
 // Bylaws: Add standard strata scheme bylaw index references
 
 // Refactor: Enhance activity location enum definitions
+
+// Docs: Add strata committee statutory duty notes
