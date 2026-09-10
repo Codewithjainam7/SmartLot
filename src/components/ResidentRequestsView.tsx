@@ -1402,26 +1402,26 @@ export function ResidentRequestsView({
               animate={{ x: 0 }}
               exit={{ x: '100%', opacity: 0.5, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-              className="relative bg-[#090D16] dark:bg-[#070B14] w-full max-w-xl h-full shadow-2xl z-10 p-5 sm:p-7 overflow-y-auto overflow-x-hidden space-y-6 text-white border-l border-white/10"
+              className="relative bg-white dark:bg-[#070B14] w-full max-w-xl h-full shadow-2xl z-10 p-5 sm:p-7 overflow-y-auto overflow-x-hidden space-y-6 text-gray-900 dark:text-white border-l border-gray-200 dark:border-white/10"
             >
               
               {/* Header: Unit Tag, Title, Close Button & Status Pill Bar */}
-              <div className="space-y-3 pb-2 border-b border-white/5">
+              <div className="space-y-3 pb-2 border-b border-gray-200 dark:border-white/5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-xs font-black text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full tracking-wider">
+                      <span className="text-xs font-black text-[#0055FF] dark:text-[#00D4B2] bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 border border-[#0055FF]/20 dark:border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full tracking-wider">
                         {activeDetail.referenceId || activeDetail.id}
                       </span>
-                      <span className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">
+                      <span className="text-[11px] font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {activeDetail.buildingName ? `${activeDetail.buildingName} • ${activeDetail.unit}` : activeDetail.unit || 'LOT REQUEST'}
                       </span>
                     </div>
-                    <h2 className="text-xl font-black text-white leading-tight">{activeDetail.title}</h2>
+                    <h2 className="text-xl font-black text-gray-900 dark:text-white leading-tight">{activeDetail.title}</h2>
                   </div>
                   <button 
                     onClick={() => setSelectedRequest(null)} 
-                    className="p-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                    className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer shrink-0"
                   >
                     <X size={18} />
                   </button>
@@ -1433,21 +1433,21 @@ export function ResidentRequestsView({
                     <select
                       value={activeDetail.status}
                       onChange={(e) => onUpdateStatus(activeDetail.id, e.target.value as CaseStatus)}
-                      className="h-7 px-2.5 rounded-full bg-[#0055FF]/20 text-[#60A5FA] border border-[#0055FF]/40 text-[11px] font-extrabold outline-none cursor-pointer hover:bg-[#0055FF]/30 transition-colors"
+                      className="h-7 px-2.5 rounded-full bg-[#0055FF]/10 dark:bg-[#0055FF]/20 text-[#0055FF] dark:text-[#60A5FA] border border-[#0055FF]/25 dark:border-[#0055FF]/40 text-[11px] font-extrabold outline-none cursor-pointer hover:bg-[#0055FF]/20 dark:hover:bg-[#0055FF]/30 transition-colors"
                       title="Manager quick status override"
                     >
-                      <option value="new" className="bg-[#0B1121] text-white">Status: New</option>
-                      <option value="acknowledged" className="bg-[#0B1121] text-white">Status: Acknowledged</option>
-                      <option value="in_progress" className="bg-[#0B1121] text-white">Status: In Progress</option>
-                      <option value="waiting" className="bg-[#0B1121] text-white">Status: Waiting</option>
-                      <option value="resolved" className="bg-[#0B1121] text-white">Status: Resolved</option>
-                      <option value="closed" className="bg-[#0B1121] text-white">Status: Closed</option>
+                      <option value="new" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Status: New</option>
+                      <option value="acknowledged" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Status: Acknowledged</option>
+                      <option value="in_progress" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Status: In Progress</option>
+                      <option value="waiting" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Status: Waiting</option>
+                      <option value="resolved" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Status: Resolved</option>
+                      <option value="closed" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Status: Closed</option>
                     </select>
                   ) : (
                     <StatusBadge status={activeDetail.status} />
                   )}
 
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px] font-semibold">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 text-[11px] font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                     <span className="capitalize">{activeDetail.requestType.replace(/_/g, ' ')}</span>
                   </div>
@@ -1456,30 +1456,30 @@ export function ResidentRequestsView({
                     <select
                       value={activeDetail.priority === 'Normal' ? 'Medium' : (activeDetail.priority || 'Medium')}
                       onChange={(e) => onUpdatePriority(activeDetail.id, e.target.value)}
-                      className="h-7 px-2.5 rounded-full bg-white/10 text-gray-200 border border-white/15 text-[11px] font-bold outline-none cursor-pointer hover:bg-white/15 transition-colors"
+                      className="h-7 px-2.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/15 text-[11px] font-bold outline-none cursor-pointer hover:bg-gray-200 dark:hover:bg-white/15 transition-colors"
                       title="Manager priority override"
                     >
-                      <option value="Low" className="bg-[#0B1121] text-white">Priority: Low</option>
-                      <option value="Medium" className="bg-[#0B1121] text-white">Priority: Medium</option>
-                      <option value="High" className="bg-[#0B1121] text-white">Priority: High</option>
-                      <option value="Urgent" className="bg-[#0B1121] text-white">Priority: Urgent</option>
-                      <option value="Emergency" className="bg-[#0B1121] text-white">Priority: Emergency</option>
+                      <option value="Low" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Priority: Low</option>
+                      <option value="Medium" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Priority: Medium</option>
+                      <option value="High" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Priority: High</option>
+                      <option value="Urgent" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Priority: Urgent</option>
+                      <option value="Emergency" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Priority: Emergency</option>
                     </select>
                   ) : activeDetail.priority ? (
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
                       activeDetail.priority === 'Urgent' || activeDetail.priority === 'Emergency'
-                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                        ? 'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/30'
                         : activeDetail.priority === 'High'
-                        ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
-                        : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                        ? 'bg-[#FFB020]/10 text-amber-600 dark:text-[#FFB020] border-[#FFB020]/30'
+                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30'
                     }`}>
                       Priority: {activeDetail.priority === 'Normal' ? 'Medium' : activeDetail.priority}
                     </span>
                   ) : null}
 
                   {activeDetail.location && (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10 text-[11px]">
-                      <MapPin size={11} className="text-[#00D4B2]" />
+                    <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 text-[11px]">
+                      <MapPin size={11} className="text-[#0055FF] dark:text-[#00D4B2]" />
                       <span>{activeDetail.location}</span>
                     </div>
                   )}
@@ -1497,19 +1497,19 @@ export function ResidentRequestsView({
                           onAssignActivity(activeDetail.id, name, role || 'Contractor');
                         }
                       }}
-                      className="h-7 px-2.5 rounded-full bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 text-[11px] font-bold outline-none cursor-pointer hover:bg-[#00D4B2]/25 transition-colors"
+                      className="h-7 px-2.5 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30 text-[11px] font-bold outline-none cursor-pointer hover:bg-[#0055FF]/15 dark:hover:bg-[#00D4B2]/25 transition-colors"
                       title="Assign activity to contractor or manager"
                     >
-                      <option value="" className="bg-[#0B1121] text-white">Select Assignee...</option>
-                      <option value="Apex Gate & Security Services|Specialist Contractor" className="bg-[#0B1121] text-white">Assign: Apex Gate & Security</option>
-                      <option value="Rapid Response Electrical|Certified Electrician" className="bg-[#0B1121] text-white">Assign: Rapid Response Electrical</option>
-                      <option value="Bright Water Plumbing Solutions|Licensed Plumber" className="bg-[#0B1121] text-white">Assign: Bright Water Plumbing</option>
-                      <option value="Emma Wilson|Strata Manager" className="bg-[#0B1121] text-white">Assign: Emma Wilson (Manager)</option>
-                      <option value="Roman Joe|Strata Manager" className="bg-[#0B1121] text-white">Assign: Roman Joe (Manager)</option>
-                      <option value="Alex Vance|Building Manager" className="bg-[#0B1121] text-white">Assign: Alex Vance (Building Mgr)</option>
+                      <option value="" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Select Assignee...</option>
+                      <option value="Apex Gate & Security Services|Specialist Contractor" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Assign: Apex Gate & Security</option>
+                      <option value="Rapid Response Electrical|Certified Electrician" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Assign: Rapid Response Electrical</option>
+                      <option value="Bright Water Plumbing Solutions|Licensed Plumber" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Assign: Bright Water Plumbing</option>
+                      <option value="Emma Wilson|Strata Manager" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Assign: Emma Wilson (Manager)</option>
+                      <option value="Roman Joe|Strata Manager" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Assign: Roman Joe (Manager)</option>
+                      <option value="Alex Vance|Building Manager" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Assign: Alex Vance (Building Mgr)</option>
                     </select>
                   ) : activeDetail.assignedToName ? (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 text-[11px] font-bold">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/25 text-[11px] font-bold">
                       <User size={11} />
                       <span>Assigned: {activeDetail.assignedToName}</span>
                     </div>
@@ -1519,18 +1519,18 @@ export function ResidentRequestsView({
 
               {/* Manager & Committee Triage Action Suite */}
               {isManagerOrCommittee && (activeDetail.status === 'pending_triage' || activeDetail.status === 'new') && (
-                <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 rounded-2xl p-5 space-y-3 shadow-lg shadow-amber-500/5">
+                <div className="bg-amber-500/10 dark:bg-gradient-to-r dark:from-amber-500/15 dark:via-amber-500/10 dark:to-transparent border border-amber-500/30 rounded-2xl p-5 space-y-3 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-black text-amber-400 uppercase tracking-wider">
-                      <Zap size={16} className="fill-amber-400 text-amber-400" />
+                    <div className="flex items-center gap-2 text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                      <Zap size={16} className="fill-amber-500 text-amber-500 dark:fill-amber-400 dark:text-amber-400" />
                       <span>Action Required: Strata Triage Assessment</span>
                     </div>
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                       Pending Manager Review
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-300 leading-relaxed">
+                  <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
                     Under NSW Strata Schemes Management Act 2015 s 106, common property repairs are the statutory responsibility of the Owners Corporation. Verify whether this request falls under Common Property or Private Lot Owner fixtures.
                   </p>
 
@@ -1538,7 +1538,7 @@ export function ResidentRequestsView({
                     <button
                       type="button"
                       onClick={() => handleQuickApprove(activeDetail.id)}
-                      className="py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                      className="py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                     >
                       <CheckCircle2 size={16} />
                       <span>Approve & Dispatch Work</span>
@@ -1547,7 +1547,7 @@ export function ResidentRequestsView({
                     <button
                       type="button"
                       onClick={() => setRejectModalRequest(activeDetail)}
-                      className="py-2.5 px-4 rounded-xl border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      className="py-2.5 px-4 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
                       <XCircle size={16} />
                       <span>Reject with Statutory Rationale</span>
@@ -1557,43 +1557,43 @@ export function ResidentRequestsView({
               )}
 
               {/* Conduit Outbound Email Card */}
-              <div className="bg-[#101726]/90 rounded-2xl p-4 border border-[#00D4B2]/20 space-y-2.5">
+              <div className="bg-gray-50 dark:bg-[#101726]/90 rounded-2xl p-4 border border-gray-200 dark:border-[#00D4B2]/20 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-black text-[#00D4B2] uppercase tracking-wider">
+                  <div className="flex items-center gap-2 text-xs font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
                     <Mail size={15} />
                     <span>Email Dispatch Record</span>
                   </div>
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 flex items-center gap-1">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 dark:border-[#00D4B2]/25 flex items-center gap-1">
                     <Check size={11} className="stroke-[3]" />
                     <span>Dispatched via SmartLot</span>
                   </span>
                 </div>
-                <div className="text-[11px] font-mono text-gray-300 space-y-1.5 bg-black/40 rounded-xl p-3 border border-white/5">
+                <div className="text-[11px] font-mono text-gray-700 dark:text-gray-300 space-y-1.5 bg-white dark:bg-black/40 rounded-xl p-3 border border-gray-200 dark:border-white/5">
                   <div className="flex items-start gap-1">
-                    <span className="text-gray-400 font-bold min-w-[70px]">Subject:</span> 
-                    <span className="text-white font-semibold">[SmartLot {activeDetail.referenceId || activeDetail.id}] {activeDetail.title}</span>
+                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">Subject:</span> 
+                    <span className="text-gray-900 dark:text-white font-semibold">[SmartLot {activeDetail.referenceId || activeDetail.id}] {activeDetail.title}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-gray-400 font-bold min-w-[70px]">To:</span> 
-                    <span className="text-gray-200">{activeDetail.strataManagerEmail || 'emma.wilson@agency.com'} <span className="text-gray-500">(Strata Manager)</span></span>
+                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">To:</span> 
+                    <span className="text-gray-800 dark:text-gray-200">{activeDetail.strataManagerEmail || 'emma.wilson@agency.com'} <span className="text-gray-500">(Strata Manager)</span></span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-gray-400 font-bold min-w-[70px]">CC:</span> 
-                    <span className="text-gray-200">{activeDetail.requestorEmail} <span className="text-gray-500">({activeDetail.requestorName})</span></span>
+                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">CC:</span> 
+                    <span className="text-gray-800 dark:text-gray-200">{activeDetail.requestorEmail} <span className="text-gray-500">({activeDetail.requestorName})</span></span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-gray-400 font-bold min-w-[70px]">Reply-To:</span> 
-                    <span className="text-[#00D4B2] font-bold">requests+{(activeDetail.referenceId ? activeDetail.referenceId.replace('#', '') : activeDetail.id).toLowerCase()}@smartlot.com</span>
+                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">Reply-To:</span> 
+                    <span className="text-[#0055FF] dark:text-[#00D4B2] font-bold">requests+{(activeDetail.referenceId ? activeDetail.referenceId.replace('#', '') : activeDetail.id).toLowerCase()}@smartlot.com</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-gray-400 pt-0.5">
-                  <span className="text-gray-400">Status: Notification dispatched</span>
-                  <span className="text-gray-500">Preference: {activeDetail.contactPreference || 'Email'}</span>
+                <div className="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 pt-0.5">
+                  <span>Status: Notification dispatched</span>
+                  <span>Preference: {activeDetail.contactPreference || 'Email'}</span>
                 </div>
 
                 {onSimulateManagerReply && activeDetail.status !== 'closed' && (
-                  <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-[10px] text-gray-400">Strata Manager responding via email?</span>
+                  <div className="pt-2 border-t border-gray-200 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Strata Manager responding via email?</span>
                     <button
                       type="button"
                       onClick={() => onSimulateManagerReply(
@@ -1601,7 +1601,7 @@ export function ResidentRequestsView({
                         "Thanks. I've contacted the security gate contractor. They will attend tomorrow to inspect.",
                         activeDetail.strataManagerEmail ? (activeDetail.strataManagerEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())) : 'Emma Wilson'
                       )}
-                      className="px-3 py-1.5 rounded-xl bg-[#00D4B2]/15 hover:bg-[#00D4B2]/25 text-[#00D4B2] border border-[#00D4B2]/30 text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 self-end sm:self-auto"
+                      className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-[#00D4B2]/15 hover:bg-blue-100 dark:hover:bg-[#00D4B2]/25 text-[#0055FF] dark:text-[#00D4B2] border border-blue-200 dark:border-[#00D4B2]/30 text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 self-end sm:self-auto"
                       title="Simulate manager replying via email to test automatic capture"
                     >
                       <Mail size={12} />
@@ -1612,12 +1612,12 @@ export function ResidentRequestsView({
               </div>
 
               {/* Description Card */}
-              <div className="bg-[#101726]/80 rounded-2xl p-5 border border-white/5 space-y-2.5">
-                <div className="flex items-center gap-2 text-xs font-black text-[#00D4B2] uppercase tracking-wider">
+              <div className="bg-gray-50 dark:bg-[#101726]/80 rounded-2xl p-5 border border-gray-200/80 dark:border-white/5 space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
                   <FileText size={15} />
                   <span>Description</span>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed font-normal">
+                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-normal">
                   {activeDetail.description}
                 </p>
               </div>
@@ -1625,7 +1625,7 @@ export function ResidentRequestsView({
               {/* Multi-Photo & Document Attachments */}
               {(activeDetail.attachmentUrls && activeDetail.attachmentUrls.length > 0) ? (
                 <div className="space-y-2">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">
                     Attached Files ({activeDetail.attachmentUrls.length})
                   </span>
                   <div className="grid grid-cols-2 gap-2">
@@ -1636,7 +1636,7 @@ export function ResidentRequestsView({
                           <div
                             key={i}
                             onClick={() => setPreviewModalImage(url)}
-                            className="relative group rounded-2xl overflow-hidden border border-white/10 shadow-sm cursor-pointer"
+                            className="relative group rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xs cursor-pointer"
                           >
                             <img src={url} alt={`Attachment ${i+1}`} className="w-full h-36 object-cover group-hover:scale-105 transition-transform" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
@@ -1652,16 +1652,16 @@ export function ResidentRequestsView({
                           download={`document_${i+1}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="col-span-2 flex items-center gap-3 p-3 bg-white/[0.04] hover:bg-white/[0.08] rounded-2xl border border-white/10 transition-colors group"
+                          className="col-span-2 flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/[0.04] hover:bg-gray-100 dark:hover:bg-white/[0.08] rounded-2xl border border-gray-200 dark:border-white/10 transition-colors group"
                         >
-                          <div className="w-9 h-9 rounded-xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0">
                             <FileText size={18} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-white truncate">Attached Document {i+1}</p>
-                            <p className="text-[10px] text-gray-400">Click to view / download file</p>
+                            <p className="text-xs font-bold text-gray-900 dark:text-white truncate">Attached Document {i+1}</p>
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Click to view / download file</p>
                           </div>
-                          <Download size={15} className="text-gray-400 group-hover:text-[#00D4B2] shrink-0" />
+                          <Download size={15} className="text-gray-400 group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] shrink-0" />
                         </a>
                       );
                     })}
@@ -1669,11 +1669,11 @@ export function ResidentRequestsView({
                 </div>
               ) : activeDetail.attachmentUrl ? (
                 <div className="space-y-2">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Attached File</span>
+                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Attached File</span>
                   {activeDetail.attachmentUrl.startsWith('data:image') || activeDetail.attachmentUrl.includes('unsplash.com') || activeDetail.attachmentUrl.match(/\.(jpg|jpeg|png|webp|gif|avif)/i) ? (
                     <div
                       onClick={() => setPreviewModalImage(activeDetail.attachmentUrl!)}
-                      className="relative group rounded-2xl overflow-hidden border border-white/10 shadow-sm cursor-pointer"
+                      className="relative group rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xs cursor-pointer"
                     >
                       <img src={activeDetail.attachmentUrl} alt="Attachment" className="w-full h-44 object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
@@ -1686,16 +1686,16 @@ export function ResidentRequestsView({
                       download="document"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-white/[0.04] hover:bg-white/[0.08] rounded-2xl border border-white/10 transition-colors group"
+                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/[0.04] hover:bg-gray-100 dark:hover:bg-white/[0.08] rounded-2xl border border-gray-200 dark:border-white/10 transition-colors group"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0">
                         <FileText size={18} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-white truncate">Attached Document</p>
-                        <p className="text-[10px] text-gray-400">Click to view / download file</p>
+                        <p className="text-xs font-bold text-gray-900 dark:text-white truncate">Attached Document</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Click to view / download file</p>
                       </div>
-                      <Download size={15} className="text-gray-400 group-hover:text-[#00D4B2] shrink-0" />
+                      <Download size={15} className="text-gray-400 group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] shrink-0" />
                     </a>
                   )}
                 </div>
@@ -1703,27 +1703,27 @@ export function ResidentRequestsView({
 
               {activeDetail.status === 'closed' && activeDetail.closeReason && (
                 <div className="bg-[#FF4757]/10 border border-[#FF4757]/30 p-4 rounded-2xl text-xs space-y-1">
-                  <div className="font-bold text-red-400 flex items-center gap-1.5"><AlertCircle size={14} /> Closed with Rationale:</div>
-                  <p className="text-red-300">{activeDetail.closeReason}</p>
+                  <div className="font-bold text-red-500 dark:text-red-400 flex items-center gap-1.5"><AlertCircle size={14} /> Closed with Rationale:</div>
+                  <p className="text-red-600 dark:text-red-300">{activeDetail.closeReason}</p>
                 </div>
               )}
 
               {/* Internal Strata Manager Notes (Visible to Strata Managers, Admins, and Committee Members) */}
               {isManagerOrCommittee && (
-                <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-[#13110d] to-[#0a0f1d] p-4.5 space-y-3 shadow-lg relative overflow-hidden">
+                <div className="rounded-3xl border border-amber-500/30 bg-amber-50/50 dark:bg-gradient-to-br dark:from-amber-500/10 dark:via-[#13110d] dark:to-[#0a0f1d] p-4.5 space-y-3 shadow-xs relative overflow-hidden">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/15 dark:bg-amber-500/20 border border-amber-500/30 dark:border-amber-500/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
                         <Lock size={15} />
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-black text-white">Internal Staff & Committee Notes</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                          <span className="text-xs font-black text-gray-900 dark:text-white">Internal Staff & Committee Notes</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
                             <Shield size={10} /> Private
                           </span>
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-0.5">
+                        <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
                           Visible to Strata Managers, Building Admins, and Committee Members. Completely hidden from regular residents and lot owners.
                         </p>
                       </div>
@@ -1733,20 +1733,20 @@ export function ResidentRequestsView({
                   {/* Existing Notes List */}
                   <div className="space-y-2 pt-1">
                     {(!activeDetail.internalNotes || activeDetail.internalNotes.length === 0) ? (
-                      <div className="bg-black/30 rounded-2xl p-3 border border-white/5 text-[11px] text-gray-500 italic">
+                      <div className="bg-white dark:bg-black/30 rounded-2xl p-3 border border-amber-200/60 dark:border-white/5 text-[11px] text-gray-500 italic">
                         No internal notes recorded. Use this space for contractor quotes, committee memos, or private follow-ups.
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                         {activeDetail.internalNotes.map((note) => (
-                          <div key={note.id} className="bg-black/40 rounded-2xl p-3 border border-amber-500/20 space-y-1 text-xs">
-                            <div className="flex items-center justify-between text-[10px] text-gray-400">
-                              <span className="font-bold text-amber-300">
-                                {note.authorName} <span className="text-gray-500">({note.authorRole})</span>
+                          <div key={note.id} className="bg-white dark:bg-black/40 rounded-2xl p-3 border border-amber-200 dark:border-amber-500/20 space-y-1 text-xs">
+                            <div className="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
+                              <span className="font-bold text-amber-700 dark:text-amber-300">
+                                {note.authorName} <span className="text-gray-400">({note.authorRole})</span>
                               </span>
                               <span>{note.createdAt}</span>
                             </div>
-                            <p className="text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">{note.text}</p>
+                            <p className="text-gray-700 dark:text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">{note.text}</p>
                           </div>
                         ))}
                       </div>
@@ -1759,7 +1759,7 @@ export function ResidentRequestsView({
                         value={internalNoteInput}
                         onChange={(e) => setInternalNoteInput(e.target.value)}
                         placeholder="Type private manager note (not visible to residents)..."
-                        className="w-full bg-[#070B14] border border-amber-500/30 rounded-2xl p-3 text-xs text-white placeholder-gray-500 outline-none focus:border-amber-400 resize-none font-medium leading-relaxed"
+                        className="w-full bg-white dark:bg-[#070B14] border border-amber-500/30 rounded-2xl p-3 text-xs text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-amber-500 resize-none font-medium leading-relaxed"
                       />
                       <div className="flex justify-end">
                         <button
@@ -1779,11 +1779,11 @@ export function ResidentRequestsView({
               {/* Activity Timeline */}
               <div className="space-y-5 pt-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-black text-white">
-                    <MessageSquare size={16} className="text-[#00D4B2]" /> 
+                  <div className="flex items-center gap-2 text-xs font-black text-gray-900 dark:text-white">
+                    <MessageSquare size={16} className="text-[#0055FF] dark:text-[#00D4B2]" /> 
                     <span>Activity Timeline ({activeDetail.comments.length + (activeDetail.auditLog?.length || 0)})</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-gray-400 font-bold">
+                  <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 font-bold">
                     <span>Oldest first</span>
                     <ChevronDown size={13} />
                   </div>
@@ -1792,7 +1792,7 @@ export function ResidentRequestsView({
                 {/* Unified Timeline: Audit Events + Comments merged and sorted */}
                 <div className="space-y-3 relative">
                   {activeDetail.comments.length === 0 && !(activeDetail.auditLog?.length) ? (
-                    <div className="text-center py-8 border border-dashed border-white/10 rounded-2xl text-xs text-gray-400">
+                    <div className="text-center py-8 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl text-xs text-gray-400">
                       No activity yet.
                     </div>
                   ) : (
@@ -1813,14 +1813,14 @@ export function ResidentRequestsView({
 
                           // Icon + color per event type
                           const auditMeta: Record<string, { icon: React.ReactNode; bg: string; border: string; label: string }> = {
-                            created:        { icon: <Plus size={11} />, bg: 'bg-[#0055FF]/15', border: 'border-[#0055FF]/30', label: 'Activity Created' },
-                            status_change:  { icon: <ChevronDown size={11} />, bg: 'bg-white/5', border: 'border-white/10', label: 'Status Updated' },
-                            triage_approved:{ icon: <CheckCircle2 size={11} />, bg: 'bg-[#10B981]/15', border: 'border-[#10B981]/30', label: 'Approved' },
-                            triage_rejected:{ icon: <XCircle size={11} />, bg: 'bg-[#FF4757]/15', border: 'border-[#FF4757]/30', label: 'Rejected' },
-                            comment_added:  { icon: <MessageSquare size={11} />, bg: 'bg-purple-900/20', border: 'border-purple-500/20', label: 'Comment Added' },
-                            closed:         { icon: <XCircle size={11} />, bg: 'bg-gray-800/60', border: 'border-gray-600/40', label: 'Activity Closed' },
-                            email_sent:     { icon: <AtSign size={11} />, bg: 'bg-[#00D4B2]/10', border: 'border-[#00D4B2]/25', label: 'Email Sent' },
-                            email_received: { icon: <Reply size={11} />, bg: 'bg-[#00D4B2]/10', border: 'border-[#00D4B2]/25', label: 'Email Reply Captured' },
+                            created:        { icon: <Plus size={11} />, bg: 'bg-[#0055FF]/10 dark:bg-[#0055FF]/15', border: 'border-[#0055FF]/20 dark:border-[#0055FF]/30', label: 'Activity Created' },
+                            status_change:  { icon: <ChevronDown size={11} />, bg: 'bg-gray-100 dark:bg-white/5', border: 'border-gray-200 dark:border-white/10', label: 'Status Updated' },
+                            triage_approved:{ icon: <CheckCircle2 size={11} />, bg: 'bg-emerald-500/10 dark:bg-[#10B981]/15', border: 'border-emerald-500/20 dark:border-[#10B981]/30', label: 'Approved' },
+                            triage_rejected:{ icon: <XCircle size={11} />, bg: 'bg-[#FF4757]/10 dark:bg-[#FF4757]/15', border: 'border-[#FF4757]/20 dark:border-[#FF4757]/30', label: 'Rejected' },
+                            comment_added:  { icon: <MessageSquare size={11} />, bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-500/20', label: 'Comment Added' },
+                            closed:         { icon: <XCircle size={11} />, bg: 'bg-gray-100 dark:bg-gray-800/60', border: 'border-gray-200 dark:border-gray-600/40', label: 'Activity Closed' },
+                            email_sent:     { icon: <AtSign size={11} />, bg: 'bg-blue-50 dark:bg-[#00D4B2]/10', border: 'border-blue-200 dark:border-[#00D4B2]/25', label: 'Email Sent' },
+                            email_received: { icon: <Reply size={11} />, bg: 'bg-blue-50 dark:bg-[#00D4B2]/10', border: 'border-blue-200 dark:border-[#00D4B2]/25', label: 'Email Reply Captured' },
                             priority_change:{ icon: <AlertCircle size={11} />, bg: 'bg-[#FFB020]/10', border: 'border-[#FFB020]/20', label: 'Priority Changed' },
                           };
                           const meta = auditMeta[ev.type] || auditMeta.status_change;
@@ -1829,11 +1829,11 @@ export function ResidentRequestsView({
                             <div key={ev.id} className="flex items-start gap-3">
                               {/* Timeline line connector */}
                               <div className="relative flex flex-col items-center shrink-0">
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${meta.bg} border ${meta.border} text-white`}>
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${meta.bg} border ${meta.border} text-gray-800 dark:text-white`}>
                                   {meta.icon}
                                 </div>
                                 {tIdx < items.length - 1 && (
-                                  <div className="w-[1.5px] flex-1 min-h-[12px] mt-1 bg-white/8" />
+                                  <div className="w-[1.5px] flex-1 min-h-[12px] mt-1 bg-gray-200 dark:bg-white/8" />
                                 )}
                               </div>
 
@@ -1841,24 +1841,24 @@ export function ResidentRequestsView({
                               <div className={`flex-1 min-w-0 mb-3 rounded-2xl px-3.5 py-2.5 border ${meta.bg} ${meta.border} text-[11px]`}>
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-wrap min-w-0">
-                                    <span className="font-bold text-white">{meta.label}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white">{meta.label}</span>
                                     {ev.fromStatus && ev.toStatus && (
-                                      <span className="flex items-center gap-1 text-gray-400 min-w-0">
-                                        <span className="px-1.5 py-0.5 rounded bg-white/8 capitalize">{ev.fromStatus.replace(/_/g, ' ')}</span>
-                                        <span className="text-gray-500">→</span>
-                                        <span className="px-1.5 py-0.5 rounded bg-white/8 capitalize">{ev.toStatus.replace(/_/g, ' ')}</span>
+                                      <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 min-w-0">
+                                        <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/8 capitalize">{ev.fromStatus.replace(/_/g, ' ')}</span>
+                                        <span className="text-gray-400">→</span>
+                                        <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/8 capitalize">{ev.toStatus.replace(/_/g, ' ')}</span>
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-gray-500 shrink-0">{ev.timestamp}</span>
+                                  <span className="text-gray-400 shrink-0">{ev.timestamp}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 mt-1 text-gray-400">
-                                  <span className="font-semibold text-gray-300">{ev.actor}</span>
-                                  <span className="text-gray-600">·</span>
+                                <div className="flex items-center gap-1.5 mt-1 text-gray-500 dark:text-gray-400">
+                                  <span className="font-semibold text-gray-700 dark:text-gray-300">{ev.actor}</span>
+                                  <span className="text-gray-400">·</span>
                                   <span>{ev.actorRole}</span>
                                 </div>
                                 {ev.note && (
-                                  <p className="mt-1 text-gray-400 leading-relaxed">{ev.note}</p>
+                                  <p className="mt-1 text-gray-600 dark:text-gray-400 leading-relaxed">{ev.note}</p>
                                 )}
                               </div>
                             </div>
@@ -1873,8 +1873,8 @@ export function ResidentRequestsView({
                         const isAuthor = c.authorName === activePersonaName;
                         const canEditOrDelete = isAuthor || isManagerOrAdmin;
                         const isEditingThis = editingCommentId === c.id;
-                        const roleBadgeBg = isManager ? 'bg-[#0055FF]/20 text-[#66A3FF] border border-[#0055FF]/40' : 'bg-purple-900/30 text-purple-300 border border-purple-500/30';
-                        const avatarBg = commentIdx % 2 === 0 ? 'bg-[#2A4365] text-[#90CDF4]' : 'bg-[#44337A] text-[#D6BCFA]';
+                        const roleBadgeBg = isManager ? 'bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#0055FF]/20 dark:text-[#66A3FF] border border-[#0055FF]/20 dark:border-[#0055FF]/40' : 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30';
+                        const avatarBg = commentIdx % 2 === 0 ? 'bg-blue-100 text-blue-800 dark:bg-[#2A4365] dark:text-[#90CDF4]' : 'bg-purple-100 text-purple-800 dark:bg-[#44337A] dark:text-[#D6BCFA]';
                         const likesCount = commentLikes[c.id] || 0;
                         const isLiked = likedByUser[c.id];
                         const isHelpful = helpfulComments[c.id];
@@ -1883,11 +1883,11 @@ export function ResidentRequestsView({
                           <div key={c.id} className="flex items-start gap-3 w-full min-w-0">
                             {/* Avatar */}
                             <div className="relative flex flex-col items-center shrink-0">
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${avatarBg} border border-white/10 shadow-sm`}>
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${avatarBg} border border-gray-200 dark:border-white/10 shadow-xs`}>
                                 {authorInitials}
                               </div>
                               {tIdx < items.length - 1 && (
-                                <div className="w-[1.5px] flex-1 min-h-[12px] mt-1 bg-white/8" />
+                                <div className="w-[1.5px] flex-1 min-h-[12px] mt-1 bg-gray-200 dark:bg-white/8" />
                               )}
                             </div>
 
@@ -1895,14 +1895,14 @@ export function ResidentRequestsView({
                             <div className="flex-1 min-w-0 mb-3 space-y-1.5">
                               <div className="flex items-center justify-between gap-2 text-xs w-full">
                                 <div className="flex items-center gap-2 flex-wrap min-w-0">
-                                  <span className="font-bold text-white text-xs truncate">{c.authorName}</span>
+                                  <span className="font-bold text-gray-900 dark:text-white text-xs truncate">{c.authorName}</span>
                                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${roleBadgeBg}`}>
                                     {c.authorRole}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400 text-[11px] shrink-0">
                                   {c.isEdited && (
-                                    <span className="text-[10px] text-gray-500 font-medium italic">
+                                    <span className="text-[10px] text-gray-400 font-medium italic">
                                       (edited)
                                     </span>
                                   )}
@@ -1913,7 +1913,7 @@ export function ResidentRequestsView({
                                       <button
                                         type="button"
                                         onClick={() => setActiveMenuCommentId(activeMenuCommentId === c.id ? null : c.id)}
-                                        className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                                        className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
                                         title="More options"
                                       >
                                         <MoreVertical size={13} />
@@ -1922,7 +1922,7 @@ export function ResidentRequestsView({
                                       {activeMenuCommentId === c.id && (
                                         <>
                                           <div className="fixed inset-0 z-20" onClick={() => setActiveMenuCommentId(null)} />
-                                          <div className="absolute right-0 top-full mt-1 z-30 bg-[#0E1524] border border-white/10 rounded-2xl shadow-2xl py-1 min-w-[110px] backdrop-blur-md animate-in fade-in duration-150">
+                                          <div className="absolute right-0 top-full mt-1 z-30 bg-white dark:bg-[#0E1524] border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl py-1 min-w-[110px] backdrop-blur-md animate-in fade-in duration-150">
                                             <button
                                               type="button"
                                               onClick={() => {
@@ -1930,17 +1930,17 @@ export function ResidentRequestsView({
                                                 setEditingCommentText(c.text);
                                                 setActiveMenuCommentId(null);
                                               }}
-                                              className="w-full text-left px-3.5 py-1.5 text-xs text-gray-200 hover:text-white hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors"
+                                              className="w-full text-left px-3.5 py-1.5 text-xs text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors"
                                             >
-                                              <Pencil size={12} className="text-[#00D4B2]" />
+                                              <Pencil size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
                                               <span>Edit</span>
                                             </button>
                                             <button
                                               type="button"
                                               onClick={() => handleDeleteComment(c.id)}
-                                              className="w-full text-left px-3.5 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2 cursor-pointer transition-colors"
+                                              className="w-full text-left px-3.5 py-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 cursor-pointer transition-colors"
                                             >
-                                              <Trash2 size={12} className="text-red-400" />
+                                              <Trash2 size={12} className="text-red-500" />
                                               <span>Delete</span>
                                             </button>
                                           </div>
@@ -1951,12 +1951,12 @@ export function ResidentRequestsView({
                                 </div>
                               </div>
 
-                              <div className="bg-[#111726] hover:bg-[#131b2e] rounded-3xl p-4 border border-white/5 space-y-3 transition-colors shadow-xs w-full overflow-hidden">
+                              <div className="bg-gray-50 dark:bg-[#111726] hover:bg-gray-100/80 dark:hover:bg-[#131b2e] rounded-3xl p-4 border border-gray-200/80 dark:border-white/5 space-y-3 transition-colors shadow-xs w-full overflow-hidden">
                                 {c.replyTo && (
-                                  <div className="bg-white/[0.04] border-l-2 border-[#00D4B2] px-3 py-1.5 rounded-r-xl rounded-l-xs text-[11px] text-gray-300 flex items-center gap-2 min-w-0 w-full overflow-hidden">
-                                    <Reply size={12} className="text-[#00D4B2] shrink-0" />
-                                    <span className="font-semibold text-white/90 shrink-0">@{c.replyTo.authorName}:</span>
-                                    <span className="truncate text-gray-400 font-normal min-w-0 flex-1">{c.replyTo.text}</span>
+                                  <div className="bg-white dark:bg-white/[0.04] border-l-2 border-[#0055FF] dark:border-[#00D4B2] px-3 py-1.5 rounded-r-xl rounded-l-xs text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-2 min-w-0 w-full overflow-hidden">
+                                    <Reply size={12} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+                                    <span className="font-semibold text-gray-900 dark:text-white/90 shrink-0">@{c.replyTo.authorName}:</span>
+                                    <span className="truncate text-gray-500 dark:text-gray-400 font-normal min-w-0 flex-1">{c.replyTo.text}</span>
                                   </div>
                                 )}
 
@@ -1966,7 +1966,7 @@ export function ResidentRequestsView({
                                       rows={2}
                                       value={editingCommentText}
                                       onChange={(e) => setEditingCommentText(e.target.value)}
-                                      className="w-full bg-[#070B14] border border-[#00D4B2]/40 focus:border-[#00D4B2] rounded-2xl p-2.5 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
+                                      className="w-full bg-white dark:bg-[#070B14] border border-[#0055FF]/40 dark:border-[#00D4B2]/40 focus:border-[#0055FF] dark:focus:border-[#00D4B2] rounded-2xl p-2.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
                                       autoFocus
                                     />
                                     <div className="flex items-center justify-end gap-2">
@@ -1976,7 +1976,7 @@ export function ResidentRequestsView({
                                           setEditingCommentId(null);
                                           setEditingCommentText('');
                                         }}
-                                        className="px-3 py-1 rounded-full text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                                        className="px-3 py-1 rounded-full text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/5 transition-colors cursor-pointer"
                                       >
                                         Cancel
                                       </button>
@@ -1984,7 +1984,7 @@ export function ResidentRequestsView({
                                         type="button"
                                         onClick={() => handleSaveEditComment(c.id)}
                                         disabled={!editingCommentText.trim() || editingCommentText.trim() === c.text}
-                                        className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-3.5 py-1 rounded-full text-xs font-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-sm"
+                                        className="bg-[#0055FF] dark:bg-[#00D4B2] hover:bg-blue-600 dark:hover:bg-[#00BFA0] text-white dark:text-[#070B14] px-3.5 py-1 rounded-full text-xs font-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-sm"
                                       >
                                         Save
                                       </button>
@@ -1993,11 +1993,11 @@ export function ResidentRequestsView({
                                 ) : (
                                   <div className="space-y-2.5">
                                     {c.text && (
-                                      <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
+                                      <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-normal whitespace-pre-wrap">
                                         {c.text.split(/(@[A-Za-z0-9_ ]+)/g).map((part: string, i: number) => {
                                           if (part.startsWith('@')) {
                                             return (
-                                              <span key={i} className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
+                                              <span key={i} className="font-bold text-[#0055FF] dark:text-[#00D4B2] bg-blue-50 dark:bg-[#00D4B2]/10 px-2 py-0.5 rounded-full mr-1">
                                                 {part}
                                               </span>
                                             );
@@ -2019,7 +2019,7 @@ export function ResidentRequestsView({
                                                 <div
                                                   key={idx}
                                                   onClick={() => setPreviewModalImage(att.url)}
-                                                  className="relative group rounded-xl overflow-hidden border border-white/10 hover:border-[#00D4B2]/50 transition-all cursor-pointer shadow-xs"
+                                                  className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 hover:border-[#0055FF]/50 dark:hover:border-[#00D4B2]/50 transition-all cursor-pointer shadow-xs"
                                                   title={`${att.name} (${att.size || ''}) - Click to preview`}
                                                 >
                                                   <img
@@ -2047,16 +2047,16 @@ export function ResidentRequestsView({
                                                   download={att.name}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
-                                                  className="inline-flex items-center gap-2.5 px-3 py-2 rounded-xl bg-black/30 hover:bg-black/50 border border-white/10 hover:border-[#00D4B2]/40 transition-all text-xs text-gray-200 group w-fit max-w-full"
+                                                  className="inline-flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-black/30 hover:bg-gray-100 dark:hover:bg-black/50 border border-gray-200 dark:border-white/10 hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 transition-all text-xs text-gray-800 dark:text-gray-200 group w-fit max-w-full"
                                                 >
-                                                  <div className="w-7 h-7 rounded-lg bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                                                  <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0">
                                                     <FileText size={14} />
                                                   </div>
                                                   <div className="min-w-0 flex-1">
-                                                    <p className="font-semibold text-white truncate max-w-[180px] sm:max-w-xs">{att.name}</p>
-                                                    <p className="text-[10px] text-gray-400">{att.size || 'Document'} • Click to download</p>
+                                                    <p className="font-semibold text-gray-900 dark:text-white truncate max-w-[180px] sm:max-w-xs">{att.name}</p>
+                                                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{att.size || 'Document'} • Click to download</p>
                                                   </div>
-                                                  <Download size={13} className="text-gray-400 group-hover:text-[#00D4B2] shrink-0 ml-1" />
+                                                  <Download size={13} className="text-gray-400 group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] shrink-0 ml-1" />
                                                 </a>
                                               ))}
                                           </div>
@@ -2066,16 +2066,16 @@ export function ResidentRequestsView({
                                   </div>
                                 )}
 
-                                <div className="flex items-center justify-between pt-1.5 border-t border-white/5 text-xs text-gray-400">
+                                <div className="flex items-center justify-between pt-1.5 border-t border-gray-200/80 dark:border-white/5 text-xs text-gray-500 dark:text-gray-400">
                                   <div className="flex items-center gap-4">
                                     <button
                                       type="button"
                                       onClick={() => toggleLikeComment(c.id)}
                                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
-                                        isLiked ? 'text-[#00D4B2] bg-[#00D4B2]/10' : 'hover:text-white hover:bg-white/5 text-gray-400'
+                                        isLiked ? 'text-[#0055FF] bg-blue-50 dark:text-[#00D4B2] dark:bg-[#00D4B2]/10' : 'hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400'
                                       }`}
                                     >
-                                      <ThumbsUp size={13} className={isLiked ? 'fill-[#00D4B2]' : ''} />
+                                      <ThumbsUp size={13} className={isLiked ? 'fill-[#0055FF] dark:fill-[#00D4B2]' : ''} />
                                       <span>{likesCount}</span>
                                     </button>
 
@@ -2087,7 +2087,7 @@ export function ResidentRequestsView({
                                           commentTextareaRef.current?.focus();
                                         }, 50);
                                       }}
-                                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-white/5 transition-all cursor-pointer"
                                     >
                                       <Reply size={13} />
                                       <span>Reply</span>
@@ -2098,7 +2098,7 @@ export function ResidentRequestsView({
                                     <button
                                       type="button"
                                       onClick={() => toggleHelpfulComment(c.id)}
-                                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-3 py-1 rounded-full cursor-pointer hover:bg-[#00D4B2]/20 transition-all"
+                                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-[#00D4B2] bg-emerald-50 dark:bg-[#00D4B2]/10 border border-emerald-200 dark:border-[#00D4B2]/20 px-3 py-1 rounded-full cursor-pointer hover:bg-emerald-100 dark:hover:bg-[#00D4B2]/20 transition-all"
                                     >
                                       <Check size={12} className="stroke-[3]" />
                                       <span>Marked Helpful</span>
@@ -2118,24 +2118,24 @@ export function ResidentRequestsView({
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3">
                     {/* Active User Avatar */}
-                    <div className="w-9 h-9 rounded-full bg-[#0D3B36] text-[#00D4B2] border border-[#00D4B2]/30 flex items-center justify-center text-[11px] font-black shrink-0 mt-1 shadow-sm">
+                    <div className="w-9 h-9 rounded-full bg-blue-100 text-[#0055FF] dark:bg-[#0D3B36] dark:text-[#00D4B2] border border-blue-200 dark:border-[#00D4B2]/30 flex items-center justify-center text-[11px] font-black shrink-0 mt-1 shadow-xs">
                       {activePersonaName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                     </div>
 
                     {/* Input Field Container with smooth round border */}
-                    <div className="flex-1 min-w-0 bg-[#111726] rounded-3xl border border-white/10 focus-within:border-[#00D4B2]/60 transition-all relative shadow-md">
+                    <div className="flex-1 min-w-0 bg-gray-50 dark:bg-[#111726] rounded-3xl border border-gray-200 dark:border-white/10 focus-within:border-[#0055FF] dark:focus-within:border-[#00D4B2]/60 transition-all relative shadow-sm">
                       
                       {/* Docked Reply Preview Header */}
                       {replyingToComment && (
-                        <div className="flex items-center justify-between gap-2 px-3.5 py-2 bg-[#00D4B2]/[0.08] border-b border-[#00D4B2]/20 text-xs rounded-t-3xl min-w-0 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between gap-2 px-3.5 py-2 bg-blue-50 dark:bg-[#00D4B2]/[0.08] border-b border-blue-100 dark:border-[#00D4B2]/20 text-xs rounded-t-3xl min-w-0 animate-in fade-in duration-150">
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                            <div className="w-1 h-5.5 rounded-full bg-[#00D4B2] shrink-0" />
-                            <Reply size={13} className="text-[#00D4B2] shrink-0" />
+                            <div className="w-1 h-5.5 rounded-full bg-[#0055FF] dark:bg-[#00D4B2] shrink-0" />
+                            <Reply size={13} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <span className="text-[#00D4B2] text-[10px] uppercase font-extrabold tracking-wider block truncate">
+                              <span className="text-[#0055FF] dark:text-[#00D4B2] text-[10px] uppercase font-extrabold tracking-wider block truncate">
                                 Replying to {replyingToComment.authorName}
                               </span>
-                              <span className="text-gray-300 text-xs font-normal truncate block">
+                              <span className="text-gray-700 dark:text-gray-300 text-xs font-normal truncate block">
                                 "{replyingToComment.text}"
                               </span>
                             </div>
@@ -2143,7 +2143,7 @@ export function ResidentRequestsView({
                           <button
                             type="button"
                             onClick={() => setReplyingToComment(null)}
-                            className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-1"
+                            className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-full hover:bg-gray-200/60 dark:hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-1"
                             title="Cancel reply"
                           >
                             <X size={14} />
@@ -2153,15 +2153,15 @@ export function ResidentRequestsView({
 
                       {/* Selected Attachments Preview Chips */}
                       {commentAttachments.length > 0 && (
-                        <div className="px-3.5 py-2.5 bg-white/[0.03] border-b border-white/5 space-y-1.5">
-                          <div className="flex items-center justify-between text-[10px] font-bold text-gray-400">
-                            <span className="flex items-center gap-1.5 text-[#00D4B2]">
+                        <div className="px-3.5 py-2.5 bg-white dark:bg-white/[0.03] border-b border-gray-200 dark:border-white/5 space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                            <span className="flex items-center gap-1.5 text-[#0055FF] dark:text-[#00D4B2]">
                               <Paperclip size={11} /> Attached Files ({commentAttachments.length})
                             </span>
                             <button
                               type="button"
                               onClick={() => setCommentAttachments([])}
-                              className="text-gray-400 hover:text-red-400 text-[10px] font-medium transition-colors cursor-pointer"
+                              className="text-gray-400 hover:text-red-500 text-[10px] font-medium transition-colors cursor-pointer"
                             >
                               Remove all
                             </button>
@@ -2172,31 +2172,31 @@ export function ResidentRequestsView({
                               return (
                                 <div
                                   key={att.id}
-                                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl bg-[#070B14] border border-white/10 text-xs text-white shadow-xs max-w-full"
+                                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl bg-gray-50 dark:bg-[#070B14] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white shadow-xs max-w-full"
                                 >
                                   {isImage ? (
                                     <img
                                       src={att.url}
                                       alt={att.name}
-                                      className="w-7 h-7 rounded-lg object-cover border border-white/10 shrink-0"
+                                      className="w-7 h-7 rounded-lg object-cover border border-gray-200 dark:border-white/10 shrink-0"
                                     />
                                   ) : (
-                                    <div className="w-7 h-7 rounded-lg bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center shrink-0">
+                                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0">
                                       <FileText size={13} />
                                     </div>
                                   )}
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-[11px] font-bold text-gray-200 truncate max-w-[130px] leading-tight">
+                                    <p className="text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate max-w-[130px] leading-tight">
                                       {att.name}
                                     </p>
-                                    <p className="text-[9px] text-gray-400 leading-none">
+                                    <p className="text-[9px] text-gray-500 dark:text-gray-400 leading-none">
                                       {att.size}
                                     </p>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => handleRemoveAttachment(att.id)}
-                                    className="p-1 text-gray-400 hover:text-red-400 hover:bg-white/5 rounded-full transition-colors cursor-pointer ml-1 shrink-0"
+                                    className="p-1 text-gray-400 hover:text-red-500 hover:bg-gray-200/60 dark:hover:bg-white/5 rounded-full transition-colors cursor-pointer ml-1 shrink-0"
                                     title="Remove file"
                                   >
                                     <X size={12} />
@@ -2211,22 +2211,22 @@ export function ResidentRequestsView({
                       <div className="p-3.5 space-y-2.5">
                         {/* Mention Popover Suggestions */}
                         {showMentionMenu && possibleTagTargets.length > 0 && (
-                          <div className="absolute bottom-full mb-2 left-0 right-0 z-30 bg-[#0E1524] border border-white/10 rounded-2xl shadow-2xl p-2 max-h-48 overflow-y-auto space-y-1 backdrop-blur-md">
-                            <div className="text-[10px] font-black uppercase text-[#00D4B2] px-3.5 py-1 tracking-wider">Mention Member</div>
+                          <div className="absolute bottom-full mb-2 left-0 right-0 z-30 bg-white dark:bg-[#0E1524] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-2 max-h-48 overflow-y-auto space-y-1 backdrop-blur-md">
+                            <div className="text-[10px] font-black uppercase text-[#0055FF] dark:text-[#00D4B2] px-3.5 py-1 tracking-wider">Mention Member</div>
                             {possibleTagTargets.map(name => (
                               <button
                                 key={name}
                                 type="button"
                                 onClick={() => handleSelectMention(name)}
-                                className="w-full text-left px-3.5 py-2 rounded-2xl text-xs font-bold text-gray-200 hover:bg-[#00D4B2]/15 hover:text-[#00D4B2] transition-colors flex items-center justify-between cursor-pointer"
+                                className="w-full text-left px-3.5 py-2 rounded-2xl text-xs font-bold text-gray-800 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#00D4B2]/15 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors flex items-center justify-between cursor-pointer"
                               >
                                 <div className="flex items-center gap-2">
-                                  <div className="w-5 h-5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center text-[10px] font-black">
+                                  <div className="w-5 h-5 rounded-full bg-blue-50 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center text-[10px] font-black">
                                     @
                                   </div>
                                   <span>{name}</span>
                                 </div>
-                                <span className="text-[10px] text-gray-400 font-normal">Tag</span>
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal">Tag</span>
                               </button>
                             ))}
                           </div>
@@ -2246,7 +2246,7 @@ export function ResidentRequestsView({
                               setShowMentionMenu(false);
                             }
                           }}
-                          className="w-full bg-transparent px-1 text-xs text-white placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
+                          className="w-full bg-transparent px-1 text-xs text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none resize-none font-medium leading-relaxed"
                         />
 
                         {/* Hidden Real File Inputs */}
@@ -2268,7 +2268,7 @@ export function ResidentRequestsView({
                         />
 
                         {/* Bottom action icons & Post Comment Button */}
-                        <div className="flex items-center justify-between pt-1.5 border-t border-white/5 relative">
+                        <div className="flex items-center justify-between pt-1.5 border-t border-gray-200/80 dark:border-white/5 relative">
                           {/* Interactive Emoji Picker Popover */}
                           {showEmojiPicker && (
                             <>
@@ -2276,16 +2276,16 @@ export function ResidentRequestsView({
                                 className="fixed inset-0 z-30"
                                 onClick={() => setShowEmojiPicker(false)}
                               />
-                              <div className="absolute bottom-full mb-3 left-0 z-40 bg-[#0E1524] border border-[#00D4B2]/30 rounded-2xl shadow-2xl p-3 w-72 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 space-y-2.5">
-                                <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
-                                  <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-[#00D4B2] tracking-wider">
+                              <div className="absolute bottom-full mb-3 left-0 z-40 bg-white dark:bg-[#0E1524] border border-gray-200 dark:border-[#00D4B2]/30 rounded-2xl shadow-2xl p-3 w-72 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 space-y-2.5 text-gray-900 dark:text-white">
+                                <div className="flex items-center justify-between pb-1.5 border-b border-gray-200 dark:border-white/10">
+                                  <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-[#0055FF] dark:text-[#00D4B2] tracking-wider">
                                     <Smile size={13} />
                                     <span>Quick Emojis</span>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => setShowEmojiPicker(false)}
-                                    className="text-gray-400 hover:text-white p-0.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                                    className="text-gray-400 hover:text-gray-700 dark:hover:text-white p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
                                   >
                                     <X size={13} />
                                   </button>
@@ -2293,14 +2293,14 @@ export function ResidentRequestsView({
 
                                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                                   <div>
-                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1 block">Reactions</span>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 px-1 mb-1 block">Reactions</span>
                                     <div className="grid grid-cols-6 gap-1">
                                       {['👍', '👎', '❤️', '👏', '🎉', '🙌', '🤝', '🔥', '😊', '🙏', '💡', '💯'].map(emoji => (
                                         <button
                                           key={emoji}
                                           type="button"
                                           onClick={() => handleSelectEmoji(emoji)}
-                                          className="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
+                                          className="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
                                         >
                                           {emoji}
                                         </button>
@@ -2309,14 +2309,14 @@ export function ResidentRequestsView({
                                   </div>
 
                                   <div>
-                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1 block">Building & Strata</span>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 px-1 mb-1 block">Building & Strata</span>
                                     <div className="grid grid-cols-6 gap-1">
                                       {['🏢', '🚪', '🔑', '🪟', '🚿', '⚡', '🔧', '🔨', '🚨', '⚠️', '🛠️', '📦'].map(emoji => (
                                         <button
                                           key={emoji}
                                           type="button"
                                           onClick={() => handleSelectEmoji(emoji)}
-                                          className="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
+                                          className="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
                                         >
                                           {emoji}
                                         </button>
@@ -2325,14 +2325,14 @@ export function ResidentRequestsView({
                                   </div>
 
                                   <div>
-                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 px-1 mb-1 block">Tasks & Verification</span>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 px-1 mb-1 block">Tasks & Verification</span>
                                     <div className="grid grid-cols-6 gap-1">
                                       {['✅', '❌', '📋', '📝', '💬', '⏱️', '🔍', '📌', '👀', '🙋‍♂️', '⏳', '📢'].map(emoji => (
                                         <button
                                           key={emoji}
                                           type="button"
                                           onClick={() => handleSelectEmoji(emoji)}
-                                          className="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
+                                          className="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-all cursor-pointer"
                                         >
                                           {emoji}
                                         </button>
@@ -2344,12 +2344,12 @@ export function ResidentRequestsView({
                             </>
                           )}
 
-                          <div className="flex items-center gap-1 text-gray-400">
+                          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                             <button
                               type="button"
                               onClick={() => docInputRef.current?.click()}
                               title="Attach Document (.pdf, .doc, .xlsx, etc.)"
-                              className="p-1.5 rounded-full hover:bg-white/10 hover:text-[#00D4B2] cursor-pointer transition-colors"
+                              className="p-1.5 rounded-full hover:bg-gray-200/60 dark:hover:bg-white/10 hover:text-[#0055FF] dark:hover:text-[#00D4B2] cursor-pointer transition-colors"
                             >
                               <Paperclip size={15} />
                             </button>
@@ -2357,7 +2357,7 @@ export function ResidentRequestsView({
                               type="button"
                               onClick={() => imgInputRef.current?.click()}
                               title="Attach Photo / Image"
-                              className="p-1.5 rounded-full hover:bg-white/10 hover:text-[#00D4B2] cursor-pointer transition-colors"
+                              className="p-1.5 rounded-full hover:bg-gray-200/60 dark:hover:bg-white/10 hover:text-[#0055FF] dark:hover:text-[#00D4B2] cursor-pointer transition-colors"
                             >
                               <ImageIcon size={15} />
                             </button>
@@ -2366,7 +2366,7 @@ export function ResidentRequestsView({
                               onClick={() => setShowEmojiPicker(prev => !prev)}
                               title="Insert Emoji"
                               className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                                showEmojiPicker ? 'text-[#00D4B2] bg-white/10' : 'hover:bg-white/10 hover:text-white'
+                                showEmojiPicker ? 'text-[#0055FF] dark:text-[#00D4B2] bg-gray-200/60 dark:bg-white/10' : 'hover:bg-gray-200/60 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white'
                               }`}
                             >
                               <Smile size={15} />
@@ -2377,9 +2377,9 @@ export function ResidentRequestsView({
                             type="button"
                             onClick={handleSendComment}
                             disabled={!commentInput.trim() && commentAttachments.length === 0}
-                            className="bg-[#00D4B2] hover:bg-[#00BFA0] text-[#070B14] px-4.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md active:scale-95"
+                            className="bg-[#0055FF] dark:bg-[#00D4B2] hover:bg-blue-600 dark:hover:bg-[#00BFA0] text-white dark:text-[#070B14] px-4.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-sm active:scale-95"
                           >
-                            <Send size={13} className="fill-[#070B14]" />
+                            <Send size={13} className="fill-current" />
                             <span>Post Comment</span>
                           </button>
                         </div>
@@ -2390,7 +2390,7 @@ export function ResidentRequestsView({
               </div>
 
               {activeDetail.status !== 'closed' && (activeDetail.requestorName === activePersonaName || isManagerOrAdmin) && (
-                <div className="pt-4 border-t border-white/5">
+                <div className="pt-4 border-t border-gray-200 dark:border-white/5">
                   <button
                     type="button"
                     aria-label="Close activity and state rationale"
@@ -2404,13 +2404,13 @@ export function ResidentRequestsView({
               )}
 
               {activeDetail.status === 'closed' && (
-                <div className="pt-4 border-t border-white/5">
+                <div className="pt-4 border-t border-gray-200 dark:border-white/5">
                   <button
                     type="button"
                     aria-label="Reopen activity and notify team"
                     title="Reopen this activity with mandatory justification reason"
                     onClick={() => setReopenModalRequest(activeDetail)}
-                    className="w-full bg-[#00D4B2]/10 hover:bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    className="w-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 hover:bg-[#0055FF]/20 dark:hover:bg-[#00D4B2]/20 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/30 dark:border-[#00D4B2]/30 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
                     <RotateCcw size={14} />
                     <span>Reopen Activity & Add Reason</span>
