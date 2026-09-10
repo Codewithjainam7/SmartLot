@@ -46,8 +46,17 @@ import {
   AlertTriangle,
   Building2,
   Home,
-  HelpCircle
+  HelpCircle,
+  Table,
+  LayoutGrid,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  Layers,
+  Users
 } from 'lucide-react';
+import { CustomSelect } from './core/CustomSelect';
 
 interface ResidentRequestsViewProps {
   requests: ResidentRequest[];
@@ -115,6 +124,51 @@ export function ResidentRequestsView({
   const [rejectionReasonText, setRejectionReasonText] = useState('');
 
   const [viewScope, setViewScope] = useState<'my' | 'all'>('all');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+
+  // Table View column-specific search, filter and sort states
+  const [tableSearchText, setTableSearchText] = useState('');
+  const [tableFilterStream, setTableFilterStream] = useState('ALL');
+  const [tableSearchUnit, setTableSearchUnit] = useState('');
+  const [tableSearchRequestor, setTableSearchRequestor] = useState('');
+  const [tableFilterPriority, setTableFilterPriority] = useState('ALL');
+  const [tableFilterStatus, setTableFilterStatus] = useState('ALL');
+  const [tableSearchAssignee, setTableSearchAssignee] = useState('');
+
+  const [tableSortField, setTableSortField] = useState<'referenceId' | 'title' | 'unit' | 'requestorName' | 'priority' | 'status' | 'assignedToName' | 'createdAt' | null>(null);
+  const [tableSortDirection, setTableSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleTableSort = (field: 'referenceId' | 'title' | 'unit' | 'requestorName' | 'priority' | 'status' | 'assignedToName' | 'createdAt') => {
+    if (tableSortField === field) {
+      setTableSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setTableSortField(field);
+      setTableSortDirection('asc');
+    }
+  };
+
+  const handleResetTableFilters = () => {
+    setTableSearchText('');
+    setTableFilterStream('ALL');
+    setTableSearchUnit('');
+    setTableSearchRequestor('');
+    setTableFilterPriority('ALL');
+    setTableFilterStatus('ALL');
+    setTableSearchAssignee('');
+    setTableSortField(null);
+    setTableSortDirection('asc');
+  };
+
+  const activeTableFiltersCount = [
+    tableSearchText.trim() !== '',
+    tableFilterStream !== 'ALL',
+    tableSearchUnit.trim() !== '',
+    tableSearchRequestor.trim() !== '',
+    tableFilterPriority !== 'ALL',
+    tableFilterStatus !== 'ALL',
+    tableSearchAssignee.trim() !== '',
+  ].filter(Boolean).length;
+
   const [selectedRequest, setSelectedRequest] = useState<ResidentRequest | null>(null);
   const [closeModalRequest, setCloseModalRequest] = useState<ResidentRequest | null>(null);
   const [closeReason, setCloseReason] = useState('');
@@ -179,6 +233,81 @@ export function ResidentRequestsView({
     }
     return true;
   });
+
+  const priorityWeights: Record<string, number> = {
+    Emergency: 5,
+    Urgent: 4,
+    High: 3,
+    Normal: 2,
+    Medium: 2,
+    Low: 1,
+  };
+
+  const tableProcessedRequests = [...filteredRequests]
+    .filter(req => {
+      if (tableSearchText.trim()) {
+        const q = tableSearchText.toLowerCase();
+        const refMatch = (req.referenceId || req.id).toLowerCase().includes(q);
+        const titleMatch = req.title.toLowerCase().includes(q);
+        const descMatch = (req.description || '').toLowerCase().includes(q);
+        if (!refMatch && !titleMatch && !descMatch) return false;
+      }
+      if (tableFilterStream !== 'ALL') {
+        const sInfo = getRequestStreamInfo(req);
+        if (sInfo.id !== tableFilterStream) return false;
+      }
+      if (tableSearchUnit.trim()) {
+        const q = tableSearchUnit.toLowerCase();
+        const unitMatch = (req.unit || '').toLowerCase().includes(q);
+        const bldgMatch = (req.buildingName || '').toLowerCase().includes(q);
+        const locMatch = (req.location || '').toLowerCase().includes(q);
+        if (!unitMatch && !bldgMatch && !locMatch) return false;
+      }
+      if (tableSearchRequestor.trim()) {
+        const q = tableSearchRequestor.toLowerCase();
+        const nameMatch = (req.requestorName || '').toLowerCase().includes(q);
+        const roleMatch = (req.requestorRole || '').toLowerCase().includes(q);
+        if (!nameMatch && !roleMatch) return false;
+      }
+      if (tableFilterPriority !== 'ALL') {
+        if ((req.priority || 'Normal').toLowerCase() !== tableFilterPriority.toLowerCase()) return false;
+      }
+      if (tableFilterStatus !== 'ALL') {
+        if (req.status !== tableFilterStatus) return false;
+      }
+      if (tableSearchAssignee.trim()) {
+        const q = tableSearchAssignee.toLowerCase();
+        const assigneeMatch = (req.assignedToName || '').toLowerCase().includes(q);
+        if (!assigneeMatch) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (!tableSortField) return 0;
+      let comparison = 0;
+      if (tableSortField === 'referenceId') {
+        const refA = a.referenceId || a.id;
+        const refB = b.referenceId || b.id;
+        comparison = refA.localeCompare(refB);
+      } else if (tableSortField === 'title') {
+        comparison = a.title.localeCompare(b.title);
+      } else if (tableSortField === 'unit') {
+        comparison = (a.unit || '').localeCompare(b.unit || '');
+      } else if (tableSortField === 'requestorName') {
+        comparison = (a.requestorName || '').localeCompare(b.requestorName || '');
+      } else if (tableSortField === 'priority') {
+        const wA = priorityWeights[a.priority] || 0;
+        const wB = priorityWeights[b.priority] || 0;
+        comparison = wA - wB;
+      } else if (tableSortField === 'status') {
+        comparison = a.status.localeCompare(b.status);
+      } else if (tableSortField === 'assignedToName') {
+        comparison = (a.assignedToName || '').localeCompare(b.assignedToName || '');
+      } else if (tableSortField === 'createdAt') {
+        comparison = (a.createdAt || '').localeCompare(b.createdAt || '');
+      }
+      return tableSortDirection === 'asc' ? comparison : -comparison;
+    });
 
   // Extract unique authors from comments to suggest in @mention dropdown
   const activeDetail = selectedRequest ? requests.find(r => r.id === selectedRequest.id) || selectedRequest : null;
@@ -411,28 +540,63 @@ export function ResidentRequestsView({
             <StatusPill label="Closed" active={filterStatus === 'closed'} onClick={() => setFilterStatus('closed')} />
           </div>
 
-          {/* View Scope Toggle */}
-          <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0 self-start md:self-auto">
-            <button
-              onClick={() => setViewScope('all')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewScope === 'all' 
-                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-              }`}
-            >
-              All Requests
-            </button>
-            <button
-              onClick={() => setViewScope('my')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewScope === 'my' 
-                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-sm' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-              }`}
-            >
-              My Requests Only
-            </button>
+          {/* View Controls: Mode Toggle & Scope Toggle */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto">
+            {/* View Mode Switcher: Cards vs Table */}
+            <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'cards' 
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+                title="Card Grid View"
+              >
+                <LayoutGrid size={13} />
+                <span>Cards</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'table' 
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+                title="Enterprise Table View"
+              >
+                <Table size={13} />
+                <span>Table</span>
+              </button>
+            </div>
+
+            {/* View Scope Toggle */}
+            <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setViewScope('all')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewScope === 'all' 
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+              >
+                All Requests
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewScope('my')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewScope === 'my' 
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+              >
+                My Requests Only
+              </button>
+            </div>
           </div>
         </div>
 
@@ -469,171 +633,748 @@ export function ResidentRequestsView({
         </div>
       </div>
 
-      {/* Requests Grid with Fading & Shrinking Depth Exit Animation */}
-      {filteredRequests.length === 0 ? (
-        filterStatus === 'needs_triage' ? (
-          <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
-              <CheckCircle2 size={32} />
+      {/* Content Area: Cards Grid or Enterprise Table View */}
+      {viewMode === 'cards' ? (
+        /* Requests Grid with Fading & Shrinking Depth Exit Animation */
+        filteredRequests.length === 0 ? (
+          filterStatus === 'needs_triage' ? (
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
+                <CheckCircle2 size={32} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+                  <span>🎉 Inbox Zero — All Requests Triaged!</span>
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-1.5 leading-relaxed">
+                  There are no pending or un-triaged resident requests awaiting manager review in this scheme.
+                </p>
+              </div>
+              <button
+                onClick={() => setFilterStatus('all')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-xs font-bold text-gray-900 dark:text-white transition-colors cursor-pointer"
+              >
+                <span>View All Scheme Requests</span>
+              </button>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
-                <span>🎉 Inbox Zero — All Requests Triaged!</span>
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-1.5 leading-relaxed">
-                There are no pending or un-triaged resident requests awaiting manager review in this scheme.
+          ) : (
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 mx-auto flex items-center justify-center">
+                <Inbox size={24} />
+              </div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                {filterStatus === 'all' 
+                  ? "No activities have been recorded yet. Click '+ Create New Request' to submit an issue."
+                  : `No activities found matching your active filters. Try selecting 'All' or clearing filters.`}
               </p>
             </div>
-            <button
-              onClick={() => setFilterStatus('all')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-xs font-bold text-gray-900 dark:text-white transition-colors cursor-pointer"
-            >
-              <span>View All Scheme Requests</span>
-            </button>
-          </div>
+          )
         ) : (
-          <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 mx-auto flex items-center justify-center">
-              <Inbox size={24} />
-            </div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-              {filterStatus === 'all' 
-                ? "No activities have been recorded yet. Click '+ Create New Request' to submit an issue."
-                : `No activities found matching your active filters. Try selecting 'All' or clearing filters.`}
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredRequests.map(req => {
+                const streamInfo = getRequestStreamInfo(req);
+                const StreamIconComp = streamInfo.icon;
+                return (
+                  <motion.div
+                    key={req.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.93, y: 10, filter: 'blur(3px)' }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    onClick={() => setSelectedRequest(req)}
+                    className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wider">
+                            {req.referenceId || req.id}
+                          </span>
+                          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            {req.buildingName ? `${req.buildingName} • ${req.unit}` : req.unit}
+                          </span>
+                        </div>
+                        <StatusBadge status={req.status} />
+                      </div>
+
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {/* Strata Stream Badge */}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${streamInfo.badgeColor}`}>
+                          <StreamIconComp size={10} />
+                          <span>{streamInfo.label}</span>
+                        </span>
+
+                        <div className="text-xs font-extrabold text-[#0055FF] dark:text-[#66A3FF] uppercase tracking-wider capitalize">
+                          {req.requestType.replace(/_/g, ' ')}
+                        </div>
+
+                        {req.priority && (
+                          <span className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
+                            req.priority === 'Urgent' || req.priority === 'Emergency'
+                              ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                              : req.priority === 'High'
+                              ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
+                              : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                          }`}>
+                            {req.priority}
+                          </span>
+                        )}
+                      </div>
+
+                      {req.location && (
+                        <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mb-2 font-medium">
+                          <MapPin size={11} className="text-[#00D4B2] shrink-0" />
+                          <span>{req.location}</span>
+                        </div>
+                      )}
+
+                      {req.assignedToName && (
+                        <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full mb-2">
+                          <User size={10} />
+                          <span>Assigned: {req.assignedToName}</span>
+                        </div>
+                      )}
+
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{req.title}</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span>By {req.requestorName}</span>
+                        <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
+                      </div>
+
+                      {/* Manager Quick-Triage Action Bar on Card */}
+                      {isManagerOrCommittee && (req.status === 'pending_triage' || req.status === 'new') && (
+                        <div className="pt-2 border-t border-amber-500/20 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRejectModalRequest(req);
+                            }}
+                            className="flex-1 py-1.5 px-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            title="Reject with statutory reason"
+                          >
+                            <XCircle size={13} />
+                            <span>Reject</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuickApprove(req.id);
+                            }}
+                            className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                            title="Approve and direct dispatch"
+                          >
+                            <CheckCircle2 size={13} />
+                            <span>Approve</span>
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
+                          <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
+                        </span>
+
+                        {req.status !== 'closed' && req.requestorName === activePersonaName && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCloseModalRequest(req);
+                            }}
+                            className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer"
+                          >
+                            Close Request
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredRequests.map(req => {
-              const streamInfo = getRequestStreamInfo(req);
-              const StreamIconComp = streamInfo.icon;
-              return (
-                <motion.div
-                  key={req.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.96, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.93, y: 10, filter: 'blur(3px)' }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  onClick={() => setSelectedRequest(req)}
-                  className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wider">
-                          {req.referenceId || req.id}
-                        </span>
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {req.buildingName ? `${req.buildingName} • ${req.unit}` : req.unit}
-                        </span>
-                      </div>
-                      <StatusBadge status={req.status} />
-                    </div>
+        /* Enterprise Table View */
+        <div className="space-y-3">
+          {/* Table Header Meta Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-gray-700 dark:text-gray-300">
+                Showing {tableProcessedRequests.length} of {requests.length} requests
+              </span>
+              {activeTableFiltersCount > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] font-bold text-[11px] border border-[#0055FF]/20 dark:border-[#00D4B2]/25">
+                  {activeTableFiltersCount} active filter{activeTableFiltersCount > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
 
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      {/* Strata Stream Badge */}
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${streamInfo.badgeColor}`}>
-                        <StreamIconComp size={10} />
-                        <span>{streamInfo.label}</span>
+            {activeTableFiltersCount > 0 && (
+              <button
+                type="button"
+                onClick={handleResetTableFilters}
+                className="text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-1.5 cursor-pointer transition-colors px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/20"
+              >
+                <RotateCcw size={12} />
+                <span>Reset Column Filters</span>
+              </button>
+            )}
+          </div>
+
+          {/* Table Container */}
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
+            <table className="w-full text-left text-xs border-collapse font-sans table-auto">
+              <thead>
+                {/* Column Headers */}
+                <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                  {/* Col 0: Index */}
+                  <th className="py-3.5 px-3 w-10 text-center border-r border-gray-200 dark:border-white/10 text-gray-400">
+                    #
+                  </th>
+
+                  {/* Col 1: Reference ID */}
+                  <th className="py-3.5 px-3.5 w-[11%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('referenceId')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Reference ID"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <FileText size={13} className="text-gray-400" /> Ref ID
                       </span>
-
-                      <div className="text-xs font-extrabold text-[#0055FF] dark:text-[#66A3FF] uppercase tracking-wider capitalize">
-                        {req.requestType.replace(/_/g, ' ')}
-                      </div>
-
-                      {req.priority && (
-                        <span className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
-                          req.priority === 'Urgent' || req.priority === 'Emergency'
-                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                            : req.priority === 'High'
-                            ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
-                            : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                        }`}>
-                          {req.priority}
-                        </span>
-                      )}
+                      <span className="text-gray-400">
+                        {tableSortField === 'referenceId' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
                     </div>
+                  </th>
 
-                    {req.location && (
-                      <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mb-2 font-medium">
-                        <MapPin size={11} className="text-[#00D4B2] shrink-0" />
-                        <span>{req.location}</span>
-                      </div>
-                    )}
-
-                    {req.assignedToName && (
-                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2.5 py-0.5 rounded-full mb-2">
-                        <User size={10} />
-                        <span>Assigned: {req.assignedToName}</span>
-                      </div>
-                    )}
-
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{req.title}</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span>By {req.requestorName}</span>
-                      <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
+                  {/* Col 2: Title & Stream */}
+                  <th className="py-3.5 px-3.5 w-[25%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('title')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Title"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Layers size={13} className="text-gray-400" /> Request & Stream
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'title' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
                     </div>
+                  </th>
 
-                    {/* Manager Quick-Triage Action Bar on Card */}
-                    {isManagerOrCommittee && (req.status === 'pending_triage' || req.status === 'new') && (
-                      <div className="pt-2 border-t border-amber-500/20 flex items-center gap-2">
+                  {/* Col 3: Unit & Location */}
+                  <th className="py-3.5 px-3 w-[12%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('unit')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Unit"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Home size={13} className="text-gray-400" /> Unit / Lot
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'unit' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 4: Requestor */}
+                  <th className="py-3.5 px-3 w-[12%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('requestorName')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Requestor"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Users size={13} className="text-gray-400" /> Requestor
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'requestorName' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 5: Priority */}
+                  <th className="py-3.5 px-3 w-[9%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('priority')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Priority"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <AlertCircle size={13} className="text-gray-400" /> Priority
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'priority' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 6: Status */}
+                  <th className="py-3.5 px-3 w-[11%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('status')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Status"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <CheckCircle2 size={13} className="text-gray-400" /> Status
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'status' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 7: Assigned To */}
+                  <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('assignedToName')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Assignee"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <User size={13} className="text-gray-400" /> Assigned
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'assignedToName' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 8: Date */}
+                  <th className="py-3.5 px-3 w-[9%] border-r border-gray-200 dark:border-white/10">
+                    <div
+                      onClick={() => handleTableSort('createdAt')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Sort by Date"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Clock size={13} className="text-gray-400" /> Date
+                      </span>
+                      <span className="text-gray-400">
+                        {tableSortField === 'createdAt' ? (
+                          tableSortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 9: Actions */}
+                  <th className="py-3.5 px-3 text-right w-[10%]">
+                    <span>Actions</span>
+                  </th>
+                </tr>
+
+                {/* Inline Column Filter Row */}
+                <tr className="bg-gray-50/95 dark:bg-[#181d2c] border-b border-gray-200 dark:border-white/10">
+                  {/* Col 0: Filter indicator */}
+                  <th className="py-2 px-2 text-center border-r border-gray-200 dark:border-white/10">
+                    <Filter size={11} className="mx-auto text-gray-400" />
+                  </th>
+
+                  {/* Col 1: Ref ID search */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Filter Ref..."
+                        value={tableSearchText}
+                        onChange={e => setTableSearchText(e.target.value)}
+                        className="w-full h-8 pl-2 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {tableSearchText && (
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setRejectModalRequest(req);
-                          }}
-                          className="flex-1 py-1.5 px-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                          title="Reject with statutory reason"
+                          onClick={() => setTableSearchText('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
                         >
-                          <XCircle size={13} />
-                          <span>Reject</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleQuickApprove(req.id);
-                          }}
-                          className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-                          title="Approve and direct dispatch"
-                        >
-                          <CheckCircle2 size={13} />
-                          <span>Approve</span>
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
-                        <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
-                      </span>
-
-                      {req.status !== 'closed' && req.requestorName === activePersonaName && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCloseModalRequest(req);
-                          }}
-                          className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer"
-                        >
-                          Close Request
+                          <X size={10} />
                         </button>
                       )}
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                  </th>
+
+                  {/* Col 2: Stream Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                    <CustomSelect
+                      size="sm"
+                      options={[
+                        { value: 'ALL', label: 'All Streams' },
+                        { value: 'general_inquiry', label: 'General Inquiry' },
+                        { value: 'emergency_repair', label: 'Emergency Repair' },
+                        { value: 'private_lot_repair', label: 'Private Lot' },
+                        { value: 'common_area_repair', label: 'Common Area' },
+                      ]}
+                      value={tableFilterStream}
+                      onChange={setTableFilterStream}
+                      placeholder="All Streams"
+                    />
+                  </th>
+
+                  {/* Col 3: Unit Search */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Filter unit / bldg..."
+                        value={tableSearchUnit}
+                        onChange={e => setTableSearchUnit(e.target.value)}
+                        className="w-full h-8 pl-2 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {tableSearchUnit && (
+                        <button
+                          type="button"
+                          onClick={() => setTableSearchUnit('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Col 4: Requestor Search */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Filter resident..."
+                        value={tableSearchRequestor}
+                        onChange={e => setTableSearchRequestor(e.target.value)}
+                        className="w-full h-8 pl-2 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {tableSearchRequestor && (
+                        <button
+                          type="button"
+                          onClick={() => setTableSearchRequestor('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Col 5: Priority Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                    <CustomSelect
+                      size="sm"
+                      options={[
+                        { value: 'ALL', label: 'All Priorities' },
+                        { value: 'Emergency', label: 'Emergency' },
+                        { value: 'Urgent', label: 'Urgent' },
+                        { value: 'High', label: 'High' },
+                        { value: 'Normal', label: 'Normal' },
+                        { value: 'Low', label: 'Low' },
+                      ]}
+                      value={tableFilterPriority}
+                      onChange={setTableFilterPriority}
+                      placeholder="All Priorities"
+                    />
+                  </th>
+
+                  {/* Col 6: Status Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
+                    <CustomSelect
+                      size="sm"
+                      options={[
+                        { value: 'ALL', label: 'All Status' },
+                        { value: 'new', label: 'New' },
+                        { value: 'pending_triage', label: 'Pending Triage' },
+                        { value: 'acknowledged', label: 'Acknowledged' },
+                        { value: 'in_progress', label: 'In Progress' },
+                        { value: 'waiting', label: 'Waiting' },
+                        { value: 'in_voting', label: 'In Voting' },
+                        { value: 'resolved', label: 'Resolved' },
+                        { value: 'closed', label: 'Closed' },
+                      ]}
+                      value={tableFilterStatus}
+                      onChange={setTableFilterStatus}
+                      placeholder="All Status"
+                    />
+                  </th>
+
+                  {/* Col 7: Assignee Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Filter assignee..."
+                        value={tableSearchAssignee}
+                        onChange={e => setTableSearchAssignee(e.target.value)}
+                        className="w-full h-8 pl-2 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {tableSearchAssignee && (
+                        <button
+                          type="button"
+                          onClick={() => setTableSearchAssignee('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Col 8: Date Column Space */}
+                  <th className="py-2 px-2 text-center text-gray-400 text-[10px] font-mono border-r border-gray-200 dark:border-white/10">
+                    -
+                  </th>
+
+                  {/* Col 9: Reset Button / Row Count */}
+                  <th className="py-2 px-2 text-right">
+                    {activeTableFiltersCount > 0 ? (
+                      <button
+                        type="button"
+                        onClick={handleResetTableFilters}
+                        className="w-full h-8 px-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-red-500/20 shadow-2xs"
+                        title="Reset all table filters"
+                      >
+                        <RotateCcw size={10} />
+                        <span>Reset</span>
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 font-semibold block text-center">
+                        {tableProcessedRequests.length} rows
+                      </span>
+                    )}
+                  </th>
+                </tr>
+              </thead>
+
+              {/* Table Body */}
+              <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                {tableProcessedRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-16 px-4 text-center">
+                      <div className="space-y-3 max-w-sm mx-auto">
+                        <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 flex items-center justify-center mx-auto">
+                          <Inbox size={24} />
+                        </div>
+                        <div className="font-bold text-gray-900 dark:text-white text-sm">No requests match your filters</div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Try adjusting your search criteria or reset column filters to view all requests.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleResetTableFilters}
+                          className="mt-2 px-3.5 py-2 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] font-bold text-xs inline-flex items-center gap-1.5 hover:bg-[#0055FF]/20 transition-colors cursor-pointer border border-[#0055FF]/20 dark:border-[#00D4B2]/20"
+                        >
+                          <RotateCcw size={13} /> Reset Column Filters
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  tableProcessedRequests.map((req, idx) => {
+                    const streamInfo = getRequestStreamInfo(req);
+                    const StreamIcon = streamInfo.icon;
+                    const isPendingTriage = req.status === 'pending_triage' || req.status === 'new';
+
+                    return (
+                      <tr
+                        key={req.id}
+                        onClick={() => setSelectedRequest(req)}
+                        className="group hover:bg-blue-50/50 dark:hover:bg-[#151c2c] transition-colors border-b border-gray-100 dark:border-white/5 cursor-pointer"
+                      >
+                        {/* Col 0: Index */}
+                        <td className="py-3 px-3 text-center text-gray-400 font-mono text-[11px] border-r border-gray-100 dark:border-white/5">
+                          {idx + 1}
+                        </td>
+
+                        {/* Col 1: Reference ID */}
+                        <td className="py-3 px-3.5 border-r border-gray-100 dark:border-white/5 whitespace-nowrap">
+                          <span className="font-mono text-[11px] font-black px-2.5 py-1 rounded-lg bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wide">
+                            {req.referenceId || req.id}
+                          </span>
+                        </td>
+
+                        {/* Col 2: Title & Stream */}
+                        <td className="py-3 px-3.5 border-r border-gray-100 dark:border-white/5 max-w-[280px]">
+                          <div className="space-y-1">
+                            <div className="font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors text-xs">
+                              {req.title}
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border flex items-center gap-1 ${streamInfo.badgeColor}`}>
+                                <StreamIcon size={10} />
+                                <span>{streamInfo.label}</span>
+                              </span>
+                              {req.comments.length > 0 && (
+                                <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                                  <MessageSquare size={10} className="text-[#0055FF]" /> {req.comments.length}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Col 3: Unit & Location */}
+                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 whitespace-nowrap">
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-gray-900 dark:text-gray-200 text-xs">
+                              {req.unit || 'Common Area'}
+                            </div>
+                            {req.buildingName && (
+                              <div className="text-[10px] text-gray-400 line-clamp-1">
+                                {req.buildingName}
+                              </div>
+                            )}
+                            {req.location && (
+                              <div className="text-[10px] text-[#00D4B2] flex items-center gap-1">
+                                <MapPin size={9} />
+                                <span className="truncate max-w-[120px]">{req.location}</span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Col 4: Requestor */}
+                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 whitespace-nowrap">
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-gray-900 dark:text-white text-xs">
+                              {req.requestorName}
+                            </div>
+                            <div className="text-[10px] text-gray-400">
+                              {req.requestorRole}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Col 5: Priority */}
+                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 whitespace-nowrap">
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border inline-block ${
+                            req.priority === 'Urgent' || req.priority === 'Emergency'
+                              ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                              : req.priority === 'High'
+                              ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
+                              : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                          }`}>
+                            {req.priority || 'Normal'}
+                          </span>
+                        </td>
+
+                        {/* Col 6: Status */}
+                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 whitespace-nowrap">
+                          <StatusBadge status={req.status} />
+                        </td>
+
+                        {/* Col 7: Assigned To */}
+                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 whitespace-nowrap">
+                          {req.assignedToName ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/20 px-2 py-0.5 rounded-full">
+                              <User size={10} />
+                              <span className="truncate max-w-[100px]">{req.assignedToName}</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 italic">Unassigned</span>
+                          )}
+                        </td>
+
+                        {/* Col 8: Date */}
+                        <td className="py-3 px-3 border-r border-gray-100 dark:border-white/5 whitespace-nowrap text-gray-500 dark:text-gray-400 text-[11px]">
+                          <div className="flex items-center gap-1 font-mono">
+                            <Clock size={11} className="text-gray-400" />
+                            <span>{req.createdAt}</span>
+                          </div>
+                        </td>
+
+                        {/* Col 9: Actions */}
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+                            {/* View Drawer Button */}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRequest(req)}
+                              className="p-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#0055FF]/10 dark:hover:bg-[#00D4B2]/10 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer border border-transparent hover:border-[#0055FF]/20 dark:hover:border-[#00D4B2]/20"
+                              title="View Details"
+                            >
+                              <Eye size={13} />
+                            </button>
+
+                            {/* Quick Triage Buttons for Managers */}
+                            {isManagerOrCommittee && isPendingTriage && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setRejectModalRequest(req)}
+                                  className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer border border-red-500/20"
+                                  title="Reject"
+                                >
+                                  <XCircle size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickApprove(req.id)}
+                                  className="p-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-colors cursor-pointer border border-emerald-500/20"
+                                  title="Approve"
+                                >
+                                  <CheckCircle2 size={13} />
+                                </button>
+                              </>
+                            )}
+
+                            {/* Close button for resident */}
+                            {req.status !== 'closed' && req.requestorName === activePersonaName && (
+                              <button
+                                type="button"
+                                onClick={() => setCloseModalRequest(req)}
+                                className="px-2 py-1 rounded-lg text-[10px] font-bold text-[#FF4757] bg-[#FF4757]/10 hover:bg-[#FF4757]/20 border border-[#FF4757]/30 transition-colors cursor-pointer"
+                              >
+                                Close
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
