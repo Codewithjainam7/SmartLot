@@ -1556,60 +1556,7 @@ export function ResidentRequestsView({
                 </div>
               )}
 
-              {/* Conduit Outbound Email Card */}
-              <div className="bg-gray-50 dark:bg-[#101726]/90 rounded-2xl p-4 border border-gray-200 dark:border-[#00D4B2]/20 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
-                    <Mail size={15} />
-                    <span>Email Dispatch Record</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 dark:border-[#00D4B2]/25 flex items-center gap-1">
-                    <Check size={11} className="stroke-[3]" />
-                    <span>Dispatched via SmartLot</span>
-                  </span>
-                </div>
-                <div className="text-[11px] font-mono text-gray-700 dark:text-gray-300 space-y-1.5 bg-white dark:bg-black/40 rounded-xl p-3 border border-gray-200 dark:border-white/5">
-                  <div className="flex items-start gap-1">
-                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">Subject:</span> 
-                    <span className="text-gray-900 dark:text-white font-semibold">[SmartLot {activeDetail.referenceId || activeDetail.id}] {activeDetail.title}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">To:</span> 
-                    <span className="text-gray-800 dark:text-gray-200">{activeDetail.strataManagerEmail || 'emma.wilson@agency.com'} <span className="text-gray-500">(Strata Manager)</span></span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">CC:</span> 
-                    <span className="text-gray-800 dark:text-gray-200">{activeDetail.requestorEmail} <span className="text-gray-500">({activeDetail.requestorName})</span></span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500 dark:text-gray-400 font-bold min-w-[70px]">Reply-To:</span> 
-                    <span className="text-[#0055FF] dark:text-[#00D4B2] font-bold">requests+{(activeDetail.referenceId ? activeDetail.referenceId.replace('#', '') : activeDetail.id).toLowerCase()}@smartlot.com</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 pt-0.5">
-                  <span>Status: Notification dispatched</span>
-                  <span>Preference: {activeDetail.contactPreference || 'Email'}</span>
-                </div>
 
-                {onSimulateManagerReply && activeDetail.status !== 'closed' && (
-                  <div className="pt-2 border-t border-gray-200 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Strata Manager responding via email?</span>
-                    <button
-                      type="button"
-                      onClick={() => onSimulateManagerReply(
-                        activeDetail.id,
-                        "Thanks. I've contacted the security gate contractor. They will attend tomorrow to inspect.",
-                        activeDetail.strataManagerEmail ? (activeDetail.strataManagerEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())) : 'Emma Wilson'
-                      )}
-                      className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-[#00D4B2]/15 hover:bg-blue-100 dark:hover:bg-[#00D4B2]/25 text-[#0055FF] dark:text-[#00D4B2] border border-blue-200 dark:border-[#00D4B2]/30 text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 self-end sm:self-auto"
-                      title="Simulate manager replying via email to test automatic capture"
-                    >
-                      <Mail size={12} />
-                      <span>Simulate Inbound Email Reply</span>
-                    </button>
-                  </div>
-                )}
-              </div>
 
               {/* Description Card */}
               <div className="bg-gray-50 dark:bg-[#101726]/80 rounded-2xl p-5 border border-gray-200/80 dark:border-white/5 space-y-2.5">
