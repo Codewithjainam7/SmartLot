@@ -37,7 +37,7 @@ export function Sidebar({
 
   return (
     <div 
-      className={`relative flex flex-col h-screen shrink-0 border-r shadow-2xl z-40 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white dark:bg-[#050505] text-gray-900 dark:text-white border-gray-200 dark:border-gray-900 bg-gradient-to-l from-black/[0.01] dark:from-white/[0.04] to-transparent ${
+      className={`relative flex flex-col h-full shrink-0 border-r shadow-2xl z-40 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white dark:bg-[#050505] text-gray-900 dark:text-white border-gray-200 dark:border-gray-900 bg-gradient-to-l from-black/[0.01] dark:from-white/[0.04] to-transparent ${
         isCollapsed ? 'w-[80px]' : 'w-[280px]'
       }`}
     >

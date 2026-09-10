@@ -1,7 +1,8 @@
 // @smartlot/core
 import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
-import { PERSONAS, Persona } from './types';
+import { PERSONAS, Persona, Scheme } from './types';
+import { ShieldAlert, ArrowLeft, Building2, User, Eye, Zap } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -38,7 +39,14 @@ export default function App() {
     }
   );
 
-  // Pre-fill parameters when redirecting from landing page simulating a persona
+  // Remote Inspection Session state for Super Admin
+  const [inspectingSession, setInspectingSession] = useState<{
+    scheme: Scheme;
+    previousPersona: Persona;
+    originalRole: string;
+  } | null>(null);
+
+    // Pre-fill parameters when redirecting from landing page simulating a persona
   const [prefillPersona, setPrefillPersona] = useState<string | null>(null);
   const [joinSchemeId, setJoinSchemeId] = useState<string | null>(null);
   const [inviteToken, setInviteToken] = useState<string | null>(null);
@@ -109,6 +117,10 @@ export default function App() {
   // Separate Admin console hash router trigger
   useEffect(() => {
     const checkHash = () => {
+      if (inspectingSession) {
+        // Active remote inspection session: do not let hash router disrupt inspection view
+        return;
+      }
       if (window.location.hash === '#/admin' && sessionState !== 'admin_console') {
         setSessionState('admin_login');
       } else if (sessionState === 'admin_login' || sessionState === 'admin_console') {
@@ -120,7 +132,7 @@ export default function App() {
     checkHash();
     window.addEventListener('hashchange', checkHash);
     return () => window.removeEventListener('hashchange', checkHash);
-  }, [sessionState]);
+  }, [sessionState, inspectingSession]);
 
   // Handle theme state preferences dynamically
   useEffect(() => {
@@ -137,20 +149,26 @@ export default function App() {
   const userMemberRows = store.members.filter(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
   const userSchemeIds = new Set(userMemberRows.map(m => m.schemeId));
   
-  // If user is website administrator, they can see all schemes; otherwise strictly their own scheme(s)
+  // If user is website administrator or inspecting, they can see all schemes or the inspected scheme; otherwise strictly their own scheme(s)
   const isWebAdmin = store.activePersona.role === 'Website Administrator' || (store.activePersona as any).isSystemAdmin;
-  const userSchemes = isWebAdmin
-    ? store.schemes 
+  const userSchemes = (isWebAdmin || inspectingSession)
+    ? (inspectingSession ? [inspectingSession.scheme, ...store.schemes.filter(s => s.id !== inspectingSession.scheme.id)] : store.schemes)
     : (userSchemeIds.size > 0 
         ? store.schemes.filter(s => userSchemeIds.has(s.id))
         : (store.activeScheme && store.activeScheme.id !== 'NO_SCHEME' ? [store.activeScheme] : store.schemes.filter(s => s.id === 'SP101')));
 
   // Ensure activeScheme is strictly one of the user's valid schemes
   useEffect(() => {
+    if (inspectingSession) {
+      if (store.activeScheme.id !== inspectingSession.scheme.id) {
+        store.setActiveScheme(inspectingSession.scheme);
+      }
+      return;
+    }
     if (userSchemes.length > 0 && !userSchemes.some(s => s.id === store.activeScheme.id)) {
       store.setActiveScheme(userSchemes[0]);
     }
-  }, [userSchemes, store.activeScheme?.id]);
+  }, [userSchemes, store.activeScheme?.id, inspectingSession]);
 
   useEffect(() => {
     if (store.isLoggedIn) {
@@ -255,7 +273,114 @@ export default function App() {
     });
   };
 
+  const handleInspectScheme = (targetScheme: Scheme, targetPersona?: Persona) => {
+    let inspectionPersona: Persona;
+
+    if (targetPersona) {
+      inspectionPersona = targetPersona;
+    } else {
+      // Find existing manager or member in this scheme
+      const schemeMembers = store.members.filter(m => m.schemeId === targetScheme.id);
+      const managerMember = schemeMembers.find(m => m.role.includes('Manager') || m.role.includes('Admin'));
+      const residentMember = schemeMembers[0];
+
+      if (managerMember) {
+        inspectionPersona = {
+          id: managerMember.id || `member_${managerMember.email}`,
+          name: managerMember.name,
+          role: managerMember.role,
+          context: managerMember.unitId || targetScheme.name,
+          email: managerMember.email,
+          memberships: [{ schemeId: targetScheme.id, roles: [managerMember.role as any] }]
+        };
+      } else if (residentMember) {
+        inspectionPersona = {
+          id: residentMember.id || `member_${residentMember.email}`,
+          name: residentMember.name,
+          role: residentMember.role,
+          context: residentMember.unitId || 'Unit 1',
+          email: residentMember.email,
+          memberships: [{ schemeId: targetScheme.id, roles: [residentMember.role as any] }]
+        };
+      } else {
+        inspectionPersona = {
+          id: `inspect_manager_${targetScheme.id}`,
+          name: `${targetScheme.name} Manager`,
+          role: 'Strata Manager',
+          context: targetScheme.name,
+          email: `manager@${targetScheme.id.toLowerCase().replace(/[^a-z0-9]/g, '')}.com.au`,
+          memberships: [{ schemeId: targetScheme.id, roles: ['Strata Manager'] }]
+        };
+      }
+    }
+
+    setInspectingSession({
+      scheme: targetScheme,
+      previousPersona: store.activePersona,
+      originalRole: store.activePersona.role,
+    });
+
+    store.setActiveScheme(targetScheme);
+    store.setActivePersona(inspectionPersona);
+    store.setIsLoggedIn(true);
+    store.setActiveView('dashboard');
+    setSessionState('dashboard');
+  };
+
+  const handleExitInspection = () => {
+    if (inspectingSession) {
+      store.setActivePersona(inspectingSession.previousPersona);
+    }
+    setInspectingSession(null);
+    window.location.hash = '#/admin';
+    setSessionState('admin_console');
+  };
+
+  const handleSwitchInspectionRole = (newRole: string, memberId?: string) => {
+    if (!inspectingSession) return;
+    
+    if (memberId) {
+      const targetMember = store.members.find(m => m.id === memberId);
+      if (targetMember) {
+        store.setActivePersona({
+          id: targetMember.id,
+          name: targetMember.name,
+          role: targetMember.role,
+          context: targetMember.unitId,
+          email: targetMember.email,
+          memberships: [{ schemeId: inspectingSession.scheme.id, roles: [targetMember.role as any] }]
+        });
+        return;
+      }
+    }
+
+    const roleMember = store.members.find(m => m.schemeId === inspectingSession.scheme.id && m.role === newRole);
+    if (roleMember) {
+      store.setActivePersona({
+        id: roleMember.id,
+        name: roleMember.name,
+        role: roleMember.role,
+        context: roleMember.unitId,
+        email: roleMember.email,
+        memberships: [{ schemeId: inspectingSession.scheme.id, roles: [newRole as any] }]
+      });
+    } else {
+      store.setActivePersona(prev => ({
+        ...prev,
+        id: `inspect_${newRole.toLowerCase().replace(/\s+/g, '_')}`,
+        role: newRole,
+        name: `${inspectingSession.scheme.name} ${newRole}`,
+        context: newRole.includes('Resident') || newRole.includes('Tenant') || newRole.includes('Owner') ? 'Unit 1' : inspectingSession.scheme.name,
+        memberships: [{ schemeId: inspectingSession.scheme.id, roles: [newRole as any] }]
+      }));
+    }
+  };
+
   const handleLogout = async () => {
+    if (inspectingSession) {
+      handleExitInspection();
+      return;
+    }
     await supabase.auth.signOut();
     store.setIsLoggedIn(false);
     setSessionState('landing');
@@ -340,6 +465,7 @@ export default function App() {
           window.location.hash = '';
           setSessionState('landing');
         }}
+        onInspectScheme={handleInspectScheme}
         onDeleteMember={store.deleteMember}
         onDeleteScheme={store.deleteScheme}
         onDeleteResidentRequest={store.deleteResidentRequest}
@@ -386,33 +512,140 @@ export default function App() {
   });
 
   return (
-    <div className="flex h-screen bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100 overflow-hidden relative">
+    <div className="flex flex-col h-screen bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100 overflow-hidden relative">
       
-      {/* Main Sidebar */}
-      <Sidebar 
-        activeView={store.activeView}
-        setActiveView={store.setActiveView}
-        pendingTriageCount={pendingTriageCount}
-        activePersonaName={store.activePersona.name}
-        activePersonaRole={store.activePersona.role}
-        hasPermission={store.hasPermission}
-        onLogout={handleLogout}
-      />
-      
-      {/* Content Area */}
-      <div className="flex-1 flex flex-col h-full relative overflow-hidden">
-        <Topbar 
-          schemes={userSchemes}
-          activeScheme={store.activeScheme} 
-          setActiveScheme={store.setActiveScheme}
-          personas={PERSONAS}
-          activePersona={store.activePersona}
-          setActivePersona={store.setActivePersona}
-          onAddSchemeClick={() => setShowOnboarding(true)}
-          activeRoles={store.activeRoles}
-          setActiveRoles={store.setActiveRoles}
+      {/* Super Admin Remote Inspection Banner */}
+      {inspectingSession && (
+        <aside 
+          aria-label="Super Admin Remote Inspection Banner"
+          className="w-full bg-gradient-to-r from-red-950 via-[#18090d] to-[#0f0c1a] border-b-2 border-red-500/40 px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-white z-50 shadow-2xl shrink-0 backdrop-blur-md animate-in slide-in-from-top duration-200"
+        >
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Pulsing Inspection Badge */}
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-red-500/25 text-red-300 border border-red-500/40 text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                <ShieldAlert size={13} className="text-red-400" />
+                Remote Inspection Active
+              </span>
+            </div>
+
+            <div className="h-4 w-px bg-white/20 hidden sm:block" />
+
+            {/* Scheme Indicator */}
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="text-gray-400 font-medium">Scheme:</span>
+              <span className="font-extrabold text-white bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5">
+                <Building2 size={13} className="text-[#00D4B2]" />
+                <span>{inspectingSession.scheme.name}</span>
+                <span className="text-gray-400 font-mono text-[10px]">({inspectingSession.scheme.id})</span>
+              </span>
+            </div>
+
+            <div className="h-4 w-px bg-white/20 hidden md:block" />
+
+            {/* Viewing As & Perspective Switcher */}
+            <div className="flex items-center gap-2 text-xs flex-wrap">
+              <span className="text-gray-400 font-medium">Viewing as:</span>
+              <span className="font-bold text-[#00D4B2] bg-[#00D4B2]/10 border border-[#00D4B2]/30 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                <User size={12} />
+                <span>{store.activePersona.name}</span>
+                <span className="text-gray-400 font-normal">({store.activePersona.role})</span>
+              </span>
+
+              {/* Perspective Role Switcher Buttons */}
+              <div className="hidden lg:flex items-center gap-1 bg-black/40 p-0.5 rounded-xl border border-white/10 text-[11px]">
+                {(['Strata Manager', 'Lot Owner', 'Resident', 'Tenant'] as const).map(role => {
+                  const isActiveRole = store.activePersona.role === role;
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => handleSwitchInspectionRole(role)}
+                      className={`px-2.5 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                        isActiveRole
+                          ? 'bg-[#0055FF] text-white shadow-sm'
+                          : 'text-gray-400 hover:text-white hover:bg-white/10'
+                      }`}
+                      title={`Simulate what a ${role} experiences in this building`}
+                    >
+                      {role}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Scheme Member Dropdown */}
+              {store.members.filter(m => m.schemeId === inspectingSession.scheme.id).length > 0 && (
+                <select
+                  value={store.members.find(m => m.email === store.activePersona.email)?.id || ''}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleSwitchInspectionRole('', e.target.value);
+                    }
+                  }}
+                  aria-label="Switch scheme member persona"
+                  className="bg-black/60 border border-white/15 rounded-lg px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-[#00D4B2] cursor-pointer"
+                  title="Switch to specific user profile in this building"
+                >
+                  <option value="" disabled>Specific Member...</option>
+                  {store.members
+                    .filter(m => m.schemeId === inspectingSession.scheme.id)
+                    .map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.role} - {m.unitId})
+                      </option>
+                    ))}
+                </select>
+              )}
+            </div>
+          </div>
+
+          {/* Right Action: Back to Super Admin Button */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleExitInspection}
+              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs shadow-lg shadow-red-600/30 flex items-center gap-2 cursor-pointer transition-all hover:scale-105 active:scale-95 border border-red-400/40"
+              title="End remote inspection and return to Super Admin Console"
+            >
+              <ArrowLeft size={14} className="stroke-[3]" />
+              <span>Back to Super Admin</span>
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* Main Inner Application Area */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Main Sidebar */}
+        <Sidebar 
+          activeView={store.activeView}
+          setActiveView={store.setActiveView}
+          pendingTriageCount={pendingTriageCount}
+          activePersonaName={store.activePersona.name}
+          activePersonaRole={store.activePersona.role}
+          hasPermission={store.hasPermission}
           onLogout={handleLogout}
         />
+        
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+          <Topbar 
+            schemes={userSchemes}
+            activeScheme={store.activeScheme} 
+            setActiveScheme={store.setActiveScheme}
+            personas={PERSONAS}
+            activePersona={store.activePersona}
+            setActivePersona={store.setActivePersona}
+            onAddSchemeClick={() => setShowOnboarding(true)}
+            activeRoles={store.activeRoles}
+            setActiveRoles={store.setActiveRoles}
+            onLogout={handleLogout}
+          />
         
         {/* Dynamic View Rendering */}
         <div className="flex-1 overflow-hidden relative">
@@ -532,6 +765,7 @@ export default function App() {
 
         </div>
         
+      </div>
       </div>
 
       {/* Onboarding Provisioning Modal */}

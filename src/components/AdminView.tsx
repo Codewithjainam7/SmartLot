@@ -54,6 +54,7 @@ interface AdminViewProps {
   onToggleGlobalPermission?: (role: string, permissionLabel: string) => void;
   onToggleIndividualPermission?: (memberId: string, permissionLabel: string) => void;
   onRefreshData?: () => Promise<void>;
+  onInspectScheme?: (scheme: Scheme, targetPersona?: any) => void;
 }
 
 const formatTimestamp = (dateStr?: string) => {
@@ -92,7 +93,8 @@ export function AdminView({
   globalRolePermissions = {}, 
   onToggleGlobalPermission,
   onToggleIndividualPermission,
-  onRefreshData
+  onRefreshData,
+  onInspectScheme
 }: AdminViewProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'schemes' | 'users' | 'permissions'>('overview');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -940,9 +942,15 @@ export function AdminView({
                           <Edit3 size={13} />
                         </button>
                         <button
-                          onClick={() => setSelectedSchemeForAudit(s)}
+                          onClick={() => {
+                            if (onInspectScheme) {
+                              onInspectScheme(s);
+                            } else {
+                              setSelectedSchemeForAudit(s);
+                            }
+                          }}
                           className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
-                          title="Audit Scheme Details"
+                          title="Remote Login & Inspect Scheme"
                         >
                           <Eye size={12} />
                           <span>Inspect</span>
@@ -1271,11 +1279,26 @@ export function AdminView({
 
                     <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between gap-2">
                       <button
-                        onClick={() => setSelectedSchemeForAudit(s)}
+                        onClick={() => {
+                          if (onInspectScheme) {
+                            onInspectScheme(s);
+                          } else {
+                            setSelectedSchemeForAudit(s);
+                          }
+                        }}
                         className="flex-1 py-2 rounded-xl bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] text-xs font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        title="Remote Login & Inspect Scheme"
                       >
                         <Eye size={14} />
                         <span>Inspect Scheme</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedSchemeForAudit(s)}
+                        className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 text-xs font-medium transition-all cursor-pointer"
+                        title="Audit Scheme Details & Members"
+                      >
+                        <Building2 size={14} />
                       </button>
 
                       <button
@@ -2729,6 +2752,20 @@ export function AdminView({
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                {onInspectScheme && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onInspectScheme(selectedSchemeForAudit);
+                      setSelectedSchemeForAudit(null);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA3] text-[#0B1121] text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02]"
+                    title="Launch remote session into this scheme"
+                  >
+                    <Eye size={14} />
+                    <span>Remote Inspect</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -2794,14 +2831,37 @@ export function AdminView({
                   <div className="text-xs text-gray-400 py-3 text-center">No members assigned to this building yet.</div>
                 ) : (
                   members.filter(m => m.schemeId === selectedSchemeForAudit.id).map(m => (
-                    <div key={m.id} className="py-2.5 flex items-center justify-between text-xs">
+                    <div key={m.id} className="py-2.5 flex items-center justify-between text-xs gap-3">
                       <div>
                         <span className="font-bold text-gray-900 dark:text-white">{m.name}</span>
                         <span className="text-gray-400 ml-2">({m.email})</span>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">
-                        {m.role} • {m.unitId}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300">
+                          {m.role} • {m.unitId}
+                        </span>
+                        {onInspectScheme && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onInspectScheme(selectedSchemeForAudit, {
+                                id: m.id || `member_${m.email}`,
+                                name: m.name,
+                                role: m.role,
+                                context: m.unitId || selectedSchemeForAudit.name,
+                                email: m.email,
+                                memberships: [{ schemeId: selectedSchemeForAudit.id, roles: [m.role as any] }]
+                              });
+                              setSelectedSchemeForAudit(null);
+                            }}
+                            className="px-2 py-1 rounded-lg bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                            title={`Inspect scheme directly as ${m.name} (${m.role})`}
+                          >
+                            <Eye size={10} />
+                            <span>Inspect as {m.role}</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
