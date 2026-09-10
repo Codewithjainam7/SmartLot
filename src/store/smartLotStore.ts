@@ -1525,7 +1525,7 @@ export function useSmartLotStore() {
             description: r.description,
             requestType: r.request_type || stream,
             stream: stream,
-            priority: r.priority || 'Normal',
+            priority: r.priority === 'Normal' ? 'Medium' : (r.priority || 'Medium'),
             location: r.location || 'Common area',
             contactPreference: r.contact_preference || 'Email',
             strataManagerEmail: r.strata_manager_email,
@@ -2475,7 +2475,7 @@ export function useSmartLotStore() {
     }
   };
 
-  const updateActivityPriority = (requestId: string, newPriority: 'Low' | 'Normal' | 'High' | 'Urgent') => {
+  const updateActivityPriority = (requestId: string, newPriority: 'Low' | 'Medium' | 'Normal' | 'High' | 'Urgent') => {
     const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
     setResidentRequests(prev => prev.map(r => {
       if (r.id !== requestId && r.referenceId !== requestId) return r;

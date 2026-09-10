@@ -200,7 +200,7 @@ export type ActivityType =
 /**
  * Priority classification determining dispatch urgency and committee SLA escalation.
  */
-export type ActivityPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
+export type ActivityPriority = 'Low' | 'Medium' | 'Normal' | 'High' | 'Urgent';
 
 /**
  * Standard common property architectural zones within Australian strata building plans.

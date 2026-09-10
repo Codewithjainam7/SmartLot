@@ -177,7 +177,7 @@ function buildHtmlForType(body: Record<string, any>): { subject: string; html: s
           <div style="padding:28px 36px">
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:16px">
               <p style="margin:0 0 4px;color:#64748B;font-size:12px"><strong>Building:</strong> ${body.buildingName || 'N/A'} • <strong>Unit:</strong> ${body.unit || 'N/A'}</p>
-              <p style="margin:0;color:#64748B;font-size:12px"><strong>Priority:</strong> <span style="color:#FF4757;font-weight:700">${body.priority || 'Normal'}</span> • <strong>Type:</strong> ${body.activityType || 'General'}</p>
+              <p style="margin:0;color:#64748B;font-size:12px"><strong>Priority:</strong> <span style="color:#FF4757;font-weight:700">${body.priority || 'Medium'}</span> • <strong>Type:</strong> ${body.activityType || 'General'}</p>
             </div>
             <p style="margin:0 0 6px;color:#94A3B8;font-size:10px;font-weight:700;text-transform:uppercase">Description</p>
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:20px">

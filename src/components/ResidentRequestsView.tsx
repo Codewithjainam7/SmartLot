@@ -270,7 +270,13 @@ export function ResidentRequestsView({
         if (!nameMatch && !roleMatch) return false;
       }
       if (tableFilterPriority !== 'ALL') {
-        if ((req.priority || 'Normal').toLowerCase() !== tableFilterPriority.toLowerCase()) return false;
+        const p = (req.priority || 'Medium').toLowerCase();
+        const filterP = tableFilterPriority.toLowerCase();
+        if (filterP === 'medium' || filterP === 'normal') {
+          if (p !== 'medium' && p !== 'normal') return false;
+        } else {
+          if (p !== filterP) return false;
+        }
       }
       if (tableFilterStatus !== 'ALL') {
         if (req.status !== tableFilterStatus) return false;
@@ -487,7 +493,7 @@ export function ResidentRequestsView({
               </div>
             </MorphingPopoverTrigger>
 
-            <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <MorphingPopoverContent className="w-full max-w-lg max-h-[92vh] overflow-y-auto">
               <CreateRequestFormContent 
                 onSubmit={onSubmitRequest}
                 requestorName={activePersonaName}
@@ -719,7 +725,7 @@ export function ResidentRequestsView({
                               ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
                               : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                           }`}>
-                            {req.priority}
+                            {req.priority === 'Normal' ? 'Medium' : req.priority}
                           </span>
                         )}
                       </div>
@@ -1106,7 +1112,7 @@ export function ResidentRequestsView({
                         { value: 'Emergency', label: 'Emergency' },
                         { value: 'Urgent', label: 'Urgent' },
                         { value: 'High', label: 'High' },
-                        { value: 'Normal', label: 'Normal' },
+                        { value: 'Medium', label: 'Medium' },
                         { value: 'Low', label: 'Low' },
                       ]}
                       value={tableFilterPriority}
@@ -1292,7 +1298,7 @@ export function ResidentRequestsView({
                               ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
                               : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                           }`}>
-                            {req.priority || 'Normal'}
+                            {req.priority === 'Normal' ? 'Medium' : (req.priority || 'Medium')}
                           </span>
                         </td>
 
@@ -1448,13 +1454,12 @@ export function ResidentRequestsView({
 
                   {isManagerOrAdmin && onUpdatePriority ? (
                     <select
-                      value={activeDetail.priority || 'Normal'}
+                      value={activeDetail.priority === 'Normal' ? 'Medium' : (activeDetail.priority || 'Medium')}
                       onChange={(e) => onUpdatePriority(activeDetail.id, e.target.value)}
                       className="h-7 px-2.5 rounded-full bg-white/10 text-gray-200 border border-white/15 text-[11px] font-bold outline-none cursor-pointer hover:bg-white/15 transition-colors"
                       title="Manager priority override"
                     >
                       <option value="Low" className="bg-[#0B1121] text-white">Priority: Low</option>
-                      <option value="Normal" className="bg-[#0B1121] text-white">Priority: Normal</option>
                       <option value="Medium" className="bg-[#0B1121] text-white">Priority: Medium</option>
                       <option value="High" className="bg-[#0B1121] text-white">Priority: High</option>
                       <option value="Urgent" className="bg-[#0B1121] text-white">Priority: Urgent</option>
@@ -1468,7 +1473,7 @@ export function ResidentRequestsView({
                         ? 'bg-[#FFB020]/10 text-[#FFB020] border-[#FFB020]/30'
                         : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                     }`}>
-                      Priority: {activeDetail.priority}
+                      Priority: {activeDetail.priority === 'Normal' ? 'Medium' : activeDetail.priority}
                     </span>
                   ) : null}
 
