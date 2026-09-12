@@ -788,3 +788,4 @@ export default function App() {
 // Style: Apply custom scrollbar track styling for dark mode
 
 // Style: Polish remote inspection sticky banner indicator and contrast
+// Navigation: Clean session exit on popstate and hash change events
