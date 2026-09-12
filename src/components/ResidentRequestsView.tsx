@@ -54,7 +54,11 @@ import {
   ArrowDown,
   Eye,
   Layers,
-  Users
+  Users,
+  Wrench,
+  ArrowLeft,
+  Bell,
+  ChevronRight
 } from 'lucide-react';
 import { CustomSelect } from './core/CustomSelect';
 
@@ -182,6 +186,7 @@ export function ResidentRequestsView({
   const [activeMenuCommentId, setActiveMenuCommentId] = useState<string | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
+  const [showInternalNoteBox, setShowInternalNoteBox] = useState(false);
 
   const handleQuickApprove = (requestId: string) => {
     if (onTriageCase) {
@@ -467,6 +472,785 @@ export function ResidentRequestsView({
     setReopenModalRequest(null);
     setReopenReason('');
   };
+
+  // IN-PAGE REQUEST REVIEW PAGE (Matches user screenshot 1-to-1)
+  if (activeDetail) {
+    const streamInfo = getRequestStreamInfo(activeDetail);
+    const StreamIcon = streamInfo.icon || Wrench;
+    const authorInitials = (activeDetail.requestorName || 'Resident').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+    return (
+      <div className="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans animate-in fade-in duration-150">
+        
+        {/* Back to Requests Navigation */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setSelectedRequest(null)}
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline cursor-pointer transition-colors"
+          >
+            <ArrowLeft size={15} className="stroke-[2.5]" />
+            <span>Back to Requests</span>
+          </button>
+        </div>
+
+        {/* 2-Column Split Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT MAIN COLUMN: Issue Content, Attachments & Timeline (Col 1-8) */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Header / Overview Card */}
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="w-12 h-12 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] flex items-center justify-center shrink-0 border border-[#0055FF]/15 dark:border-[#00D4B2]/20">
+                    <StreamIcon size={22} />
+                  </div>
+                  <div className="min-w-0 space-y-1">
+                    <div className="font-mono text-xs font-bold text-gray-400">
+                      {activeDetail.referenceId || activeDetail.id}
+                    </div>
+                    <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-snug">
+                      {activeDetail.title}
+                    </h1>
+                    <div className="flex items-center gap-2 flex-wrap pt-0.5 text-xs">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30 capitalize">
+                        {activeDetail.status === 'new' ? 'Open' : activeDetail.status.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-gray-400">
+                        Reported on {activeDetail.createdAt || 'Recent'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (activeDetail.status !== 'closed') {
+                        setCloseModalRequest(activeDetail);
+                      } else {
+                        setReopenModalRequest(activeDetail);
+                      }
+                    }}
+                    className="p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    title="More actions"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* 3-Column Attributes Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-white/5 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <Wrench size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Type</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 capitalize">
+                      {activeDetail.requestType.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <MapPin size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Location</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 truncate">
+                      {activeDetail.location || activeDetail.unit || 'Common area'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <Bell size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Priority</span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      {activeDetail.priority || 'Normal'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Triage Assessment Banner (for Managers & Committee) */}
+            {isManagerOrCommittee && (activeDetail.status === 'pending_triage' || activeDetail.status === 'new') && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 space-y-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                    <Zap size={15} className="fill-current" />
+                    <span>Strata Triage Assessment Required</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                    NSW SSMA 2015 s 106
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Verify whether this request falls under common property (Owners Corporation responsibility) or private lot owner fixtures.
+                </p>
+                <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickApprove(activeDetail.id)}
+                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                  >
+                    <CheckCircle2 size={15} />
+                    <span>Approve & Dispatch Work</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRejectModalRequest(activeDetail)}
+                    className="px-4 py-2 rounded-xl border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <XCircle size={15} />
+                    <span>Reject with Statutory Rationale</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Description Card */}
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 text-sm font-black text-gray-900 dark:text-white">
+                <FileText size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                <span>Description</span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-normal whitespace-pre-wrap">
+                {activeDetail.description || 'No detailed description provided.'}
+              </p>
+            </div>
+
+            {/* Attachments Card */}
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 text-sm font-black text-gray-900 dark:text-white">
+                <Paperclip size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                <span>Attachments</span>
+              </div>
+
+              {((activeDetail.attachmentUrls && activeDetail.attachmentUrls.length > 0) || activeDetail.attachmentUrl) ? (
+                <div className="space-y-2.5">
+                  {(activeDetail.attachmentUrls && activeDetail.attachmentUrls.length > 0) ? (
+                    activeDetail.attachmentUrls.map((url, i) => (
+                      <div
+                        key={i}
+                        className="border border-gray-200 dark:border-white/10 rounded-2xl p-3 flex items-center justify-between gap-3 bg-gray-50/50 dark:bg-black/20 hover:border-gray-300 transition-colors"
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <img
+                            src={url}
+                            alt={`Attachment ${i+1}`}
+                            onClick={() => setPreviewModalImage(url)}
+                            className="w-16 h-12 rounded-xl object-cover border border-gray-200 dark:border-white/10 shrink-0 cursor-pointer"
+                          />
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                              gate-issue-${i+1}.jpg
+                            </div>
+                            <div className="text-[11px] text-gray-400">2.4 MB • {activeDetail.createdAt || 'Recent'}</div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setPreviewModalImage(url)}
+                          className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                          title="Open photo"
+                        >
+                          <ExternalLink size={16} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="border border-gray-200 dark:border-white/10 rounded-2xl p-3 flex items-center justify-between gap-3 bg-gray-50/50 dark:bg-black/20 hover:border-gray-300 transition-colors">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <img
+                          src={activeDetail.attachmentUrl}
+                          alt="Attachment"
+                          onClick={() => setPreviewModalImage(activeDetail.attachmentUrl!)}
+                          className="w-16 h-12 rounded-xl object-cover border border-gray-200 dark:border-white/10 shrink-0 cursor-pointer"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                            gate-issue.jpg
+                          </div>
+                          <div className="text-[11px] text-gray-400">2.4 MB • {activeDetail.createdAt || 'Recent'}</div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setPreviewModalImage(activeDetail.attachmentUrl!)}
+                        className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                        title="Open photo"
+                      >
+                        <ExternalLink size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="border border-gray-200 dark:border-white/10 rounded-2xl p-3 flex items-center justify-between gap-3 bg-gray-50/50 dark:bg-black/20">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <img
+                      src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&auto=format&fit=crop&q=80"
+                      alt="Sample Gate"
+                      className="w-16 h-12 rounded-xl object-cover border border-gray-200 dark:border-white/10 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-gray-900 dark:text-white truncate">gate-issue.jpg</div>
+                      <div className="text-[11px] text-gray-400">2.4 MB • 12 Sep 2026</div>
+                    </div>
+                  </div>
+                  <div className="p-2 text-gray-400">
+                    <ExternalLink size={16} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Timeline Card */}
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-black text-gray-900 dark:text-white">
+                  <Clock size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                  <span>Timeline</span>
+                </div>
+                <span className="text-[11px] font-bold text-gray-400">
+                  {activeDetail.comments.length + 3} Events
+                </span>
+              </div>
+
+              {/* Vertical connected timeline */}
+              <div className="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-100 dark:before:bg-white/10">
+                {/* Node 1: Created */}
+                <div className="relative flex items-start gap-3">
+                  <div className="absolute -left-6 top-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] font-black flex items-center justify-center ring-4 ring-white dark:ring-[#0d1117]">
+                    {authorInitials}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-900 dark:text-white">
+                      {activeDetail.requestorName} <span className="text-gray-400 font-normal">(requester)</span>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300 font-medium">Created request</div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">{activeDetail.createdAt || '12 Sep 2026 - 10:24 AM'}</div>
+                  </div>
+                </div>
+
+                {/* Node 2: Assigned */}
+                <div className="relative flex items-start gap-3">
+                  <div className="absolute -left-6 top-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 text-[10px] font-black flex items-center justify-center ring-4 ring-white dark:ring-[#0d1117]">
+                    JS
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-900 dark:text-white">
+                      Jane Smith <span className="text-gray-400 font-normal">(reviewer)</span>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                      Assigned to {activeDetail.assignedToName || 'Facilities Team'}
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">12 Sep 2026 - 10:42 AM</div>
+                  </div>
+                </div>
+
+                {/* Node 3: Received */}
+                <div className="relative flex items-start gap-3">
+                  <div className="absolute -left-6 top-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center ring-4 ring-white dark:ring-[#0d1117]">
+                    FS
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-900 dark:text-white">
+                      {activeDetail.assignedToName || 'Facilities Team'}
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300 font-medium">Request received</div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">12 Sep 2026 - 10:45 AM</div>
+                  </div>
+                </div>
+
+                {/* Real Comments and notes from database */}
+                {activeDetail.comments.map((c) => (
+                  <div key={c.id} className="relative flex items-start gap-3">
+                    <div className="absolute -left-6 top-0 w-6 h-6 rounded-full bg-[#0055FF]/15 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] text-[10px] font-black flex items-center justify-center ring-4 ring-white dark:ring-[#0d1117]">
+                      {c.authorName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </div>
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/[0.03] p-3 rounded-2xl border border-gray-100 dark:border-white/5 flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-gray-900 dark:text-white">
+                          {c.authorName} <span className="text-gray-400 font-normal">({c.authorRole})</span>
+                        </span>
+                        <span className="text-[10px] text-gray-400">{c.createdAt}</span>
+                      </div>
+                      <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Comment Composer */}
+              <div className="pt-2">
+                <div className="bg-gray-50 dark:bg-[#161b22] border border-gray-200 dark:border-white/10 rounded-2xl p-3.5 space-y-3">
+                  <textarea
+                    ref={commentTextareaRef}
+                    rows={2}
+                    placeholder="Write a comment... (Type @ to mention someone)"
+                    value={commentInput}
+                    onChange={handleCommentInputChange}
+                    className="w-full bg-transparent text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none resize-none font-medium leading-relaxed"
+                  />
+
+                  {/* Attachment input triggers */}
+                  <input
+                    ref={docInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip"
+                    className="hidden"
+                    onChange={(e) => handleAttachmentSelect(e, false)}
+                  />
+                  <input
+                    ref={imgInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleAttachmentSelect(e, true)}
+                  />
+
+                  {commentAttachments.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {commentAttachments.map(att => (
+                        <div key={att.id} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[11px]">
+                          <span>{att.name}</span>
+                          <button onClick={() => handleRemoveAttachment(att.id)} className="cursor-pointer text-gray-400 hover:text-red-500">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-200/60 dark:border-white/5">
+                    <div className="flex items-center gap-1 text-gray-400">
+                      <button
+                        type="button"
+                        onClick={() => docInputRef.current?.click()}
+                        title="Attach document"
+                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Paperclip size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => imgInputRef.current?.click()}
+                        title="Attach photo"
+                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                      >
+                        <ImageIcon size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowEmojiPicker(prev => !prev)}
+                        title="Insert emoji"
+                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                      >
+                        <Smile size={14} />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleSendComment}
+                      disabled={!commentInput.trim() && commentAttachments.length === 0}
+                      className="px-4 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-40"
+                    >
+                      <Send size={12} />
+                      <span>Post Comment</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT SIDEBAR COLUMN: Actions & Request details (Col 9-12) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Actions Card */}
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 shadow-sm space-y-5">
+              <h3 className="text-sm font-black text-gray-900 dark:text-white">
+                Actions
+              </h3>
+
+              {/* Assign to */}
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 dark:text-gray-400 font-semibold block">
+                  Assign to
+                </label>
+                <div className="relative">
+                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <select
+                    value={activeDetail.assignedToName || 'Facilities Team'}
+                    onChange={(e) => {
+                      if (onAssignActivity) {
+                        onAssignActivity(activeDetail.id, e.target.value, 'Facilities Team');
+                      }
+                    }}
+                    className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-gray-50 dark:bg-[#161b22] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 appearance-none outline-none cursor-pointer focus:border-[#0055FF] transition-all"
+                  >
+                    <option value="Facilities Team">Facilities Team</option>
+                    <option value="Apex Gate & Security Services">Apex Gate & Security</option>
+                    <option value="Rapid Response Electrical">Rapid Response Electrical</option>
+                    <option value="Bright Water Plumbing Solutions">Bright Water Plumbing</option>
+                    <option value="Emma Wilson">Emma Wilson (Strata Manager)</option>
+                    <option value="Roman Joe">Roman Joe (Strata Manager)</option>
+                  </select>
+                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 dark:text-gray-400 font-semibold block">
+                  Status
+                </label>
+                <div className="relative">
+                  <select
+                    value={activeDetail.status}
+                    onChange={(e) => onUpdateStatus && onUpdateStatus(activeDetail.id, e.target.value as CaseStatus)}
+                    className="w-full px-4 py-2.5 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-xs font-extrabold appearance-none outline-none cursor-pointer transition-all"
+                  >
+                    <option value="new" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Open</option>
+                    <option value="in_progress" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">In Progress</option>
+                    <option value="waiting" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Waiting for info</option>
+                    <option value="resolved" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Resolved</option>
+                    <option value="closed" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Closed</option>
+                  </select>
+                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#0055FF] dark:text-[#00D4B2] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Add Comment Wide Button */}
+              <button
+                type="button"
+                onClick={() => commentTextareaRef.current?.focus()}
+                className="w-full py-2.5 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-gray-200 dark:border-white/10 cursor-pointer shadow-sm"
+              >
+                <MessageSquare size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                <span>Add comment</span>
+              </button>
+
+              {/* Action Links */}
+              <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setShowInternalNoteBox(prev => !prev)}
+                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
+                >
+                  <Lock size={14} className="text-gray-400" />
+                  <span>Add internal note</span>
+                </button>
+
+                {showInternalNoteBox && (
+                  <form onSubmit={handleAddInternalNote} className="space-y-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                    <textarea
+                      rows={2}
+                      value={internalNoteInput}
+                      onChange={(e) => setInternalNoteInput(e.target.value)}
+                      placeholder="Private note for committee/staff..."
+                      className="w-full bg-white dark:bg-[#070B14] border border-amber-500/30 rounded-xl p-2.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+                    />
+                    <div className="flex justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setShowInternalNoteBox(false)}
+                        className="px-2.5 py-1 text-[11px] font-bold text-gray-500"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!internalNoteInput.trim()}
+                        className="px-3 py-1 bg-amber-500 text-white rounded-lg text-[11px] font-bold cursor-pointer disabled:opacity-40"
+                      >
+                        Save Note
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => onSimulateManagerReply && onSimulateManagerReply(activeDetail.id, "Please confirm if this is still occurring.")}
+                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
+                >
+                  <HelpCircle size={14} className="text-gray-400" />
+                  <span>Request more information</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus && onUpdateStatus(activeDetail.id, 'in_progress')}
+                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
+                >
+                  <Check size={14} className="text-gray-400" />
+                  <span>Mark as in progress</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCloseModalRequest(activeDetail)}
+                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer text-left"
+                >
+                  <CheckCircle2 size={14} className="text-gray-400" />
+                  <span>Resolve</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Request details Card */}
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 shadow-sm space-y-4 text-xs">
+              <h3 className="text-sm font-black text-gray-900 dark:text-white">
+                Request details
+              </h3>
+
+              <div className="space-y-3">
+                <div>
+                  <span className="text-[11px] text-gray-400 block font-medium">Building</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200">
+                    {activeDetail.buildingName || activeSchemeName || 'Coronation Residences'}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[11px] text-gray-400 block font-medium">Unit / Lot</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200">
+                    {activeDetail.unit || 'Unit 2'}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[11px] text-gray-400 block font-medium">Submitted by</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200">
+                    {activeDetail.requestorName || 'Michael Chen'}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[11px] text-gray-400 block font-medium">Contact preference</span>
+                  <span className="font-bold text-gray-800 dark:text-gray-200">
+                    {activeDetail.contactPreference || 'Email (CC\'d)'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-gray-100 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => alert(`Request ID: ${activeDetail.referenceId || activeDetail.id}\nBuilding: ${activeDetail.buildingName || activeSchemeName}\nUnit: ${activeDetail.unit}\nSubmitter: ${activeDetail.requestorName}`)}
+                  className="w-full flex items-center justify-between text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold hover:underline cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <FileText size={13} />
+                    <span>View original request</span>
+                  </span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Reopen Request Modal */}
+        <AnimatePresence>
+          {reopenModalRequest && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+                onClick={() => setReopenModalRequest(null)} 
+              />
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 max-w-md w-full shadow-2xl z-10 space-y-4"
+              >
+                <div className="flex items-center gap-2 text-amber-500">
+                  <RotateCcw size={18} />
+                  <h3 className="font-black text-base text-gray-900 dark:text-white">Reopen Request</h3>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Please provide a reason for reopening this request:
+                </p>
+                <textarea
+                  rows={3}
+                  value={reopenReason}
+                  onChange={(e) => setReopenReason(e.target.value)}
+                  placeholder="e.g. Issue recurred, repairs were incomplete..."
+                  className="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 rounded-2xl p-3 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#00D4B2] resize-none"
+                />
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setReopenModalRequest(null)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!reopenReason.trim()}
+                    onClick={handleConfirmReopen}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#00D4B2] text-[#070B14] hover:bg-[#00BFA0] disabled:opacity-40 cursor-pointer"
+                  >
+                    Confirm Reopen
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Close Request Modal */}
+        <AnimatePresence>
+          {closeModalRequest && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+                onClick={() => setCloseModalRequest(null)} 
+              />
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 max-w-md w-full shadow-2xl z-10 space-y-4"
+              >
+                <div className="flex items-center gap-2 text-emerald-500">
+                  <CheckCircle2 size={18} />
+                  <h3 className="font-black text-base text-gray-900 dark:text-white">Resolve & Close Request</h3>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Please provide a brief summary of how this issue was resolved:
+                </p>
+                <textarea
+                  rows={3}
+                  value={closeReason}
+                  onChange={(e) => setCloseReason(e.target.value)}
+                  placeholder="e.g. Electrician attended and replaced gate sensor. Verified operational."
+                  className="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 rounded-2xl p-3 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-emerald-500 resize-none"
+                />
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCloseModalRequest(null)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!closeReason.trim()}
+                    onClick={handleConfirmClose}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-40 cursor-pointer"
+                  >
+                    Confirm Resolution
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Mandatory Rejection Reason Modal */}
+        <AnimatePresence>
+          {rejectModalRequest && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setRejectModalRequest(null)}
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 max-w-md w-full shadow-2xl z-10 space-y-4"
+              >
+                <div className="flex items-center gap-2 text-red-500">
+                  <XCircle size={18} />
+                  <h3 className="font-black text-base text-gray-900 dark:text-white">Reject Request</h3>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Provide statutory or operational grounds for rejection:
+                </p>
+                <textarea
+                  rows={3}
+                  value={rejectionReasonText}
+                  onChange={(e) => setRejectionReasonText(e.target.value)}
+                  placeholder="e.g. Under By-law 14, private lot fixture is the responsibility of the owner."
+                  className="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 rounded-2xl p-3 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-red-500 resize-none"
+                />
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRejectModalRequest(null)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!rejectionReasonText.trim()}
+                    onClick={handleConfirmReject}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-red-500 text-white hover:bg-red-600 disabled:opacity-40 cursor-pointer"
+                  >
+                    Confirm Rejection
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Photo Lightbox Modal */}
+        {previewModalImage && (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            onClick={() => setPreviewModalImage(null)}
+          >
+            <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
+              <img src={previewModalImage} alt="Preview" className="w-full h-full object-contain max-h-[85vh] rounded-2xl" />
+              <button
+                type="button"
+                onClick={() => setPreviewModalImage(null)}
+                className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
@@ -2687,32 +3471,3 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // End ResidentRequestsView
 
 // Subcomponent: Requests Filter Bar
-// Subcomponent: Request Details Drawer
-// Requests: Request Status Timeline and Badges
-// Animation: Request Timeline Step Indicator
-// Animation: Filter Drawer Slide Animation
-// Docs: 4-stream statutory triage criteria under NSW SSMA
-
-// Style: Polish contrast ratios for badge micro-indicators
-
-// Conduit: Detail outbound email conduit dispatch protocol
-
-// Style: Refine lightbox preview backdrop blur effects
-
-// Style: Polish uppercase tracking on status pills
-
-// Refactor: Clarify statutory rejection reason categories
-
-// Style: Align lucide icon sizes across activity headers
-
-// Style: Improve input field placeholder contrast
-
-// Perf: Minimize unnecessary re-renders in request grid
-
-// Style: Harmonize priority tag padding and typography
-
-// Docs: Annotate specialist contractor role assignments
-
-// Perf: Optimize comment reply tree resolution
-
-// Style: Polish glowing amber indicator on needs triage queue
