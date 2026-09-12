@@ -3491,3 +3491,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Rejection: Mandatory statutory grounds input for by-law or private fixture disallowance
 // Navigation: Escape key and back button return user seamlessly to requests list
 // Accessibility: ARIA attributes for screen readers across request review actions
+// Theme: Standardize border-white/5 and dark:bg-[#0d1117] surface tokens
