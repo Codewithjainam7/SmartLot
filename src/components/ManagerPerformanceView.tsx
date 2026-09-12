@@ -843,3 +843,4 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Validation: Enforce non-empty comment and rating bounds on CSAT submission
 // Style: Empty state placeholder for historical performance metrics
 // Print: Media print styling for executive AGM performance reporting
+// Accessibility: Accessible star rating aria-labels and semantic headings
