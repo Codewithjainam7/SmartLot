@@ -75,3 +75,5 @@ Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Aut
 
 ### 🚀 Jira-Style In-Page Request Review
 - Replaced modal and drawer popups with a focused, in-page 2-column ticket review layout matching standard Jira service management patterns.
+
+- Included top back navigation (`← Back to Requests`), 3-column attribute bar, statutory triage banner, timeline event track, and quick action controls.
