@@ -844,3 +844,4 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Style: Empty state placeholder for historical performance metrics
 // Print: Media print styling for executive AGM performance reporting
 // Accessibility: Accessible star rating aria-labels and semantic headings
+// Optimization: Optimized time horizon state updates to eliminate unnecessary re-renders
