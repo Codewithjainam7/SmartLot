@@ -275,3 +275,13 @@ export interface RequestTimelineNode {
   timestamp: string;
   initials: string;
 }
+
+
+/**
+ * SLA compliance tracking metrics for strata requests.
+ */
+export interface RequestSLAMetrics {
+  targetHours: number;
+  elapsedHours: number;
+  isBreached: boolean;
+}
