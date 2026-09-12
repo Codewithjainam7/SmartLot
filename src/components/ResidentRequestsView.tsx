@@ -3489,3 +3489,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Resolution: Mandatory completion summary input before ticket closure
 // Reopening: Mandatory justification reason before reopening closed tickets
 // Rejection: Mandatory statutory grounds input for by-law or private fixture disallowance
+// Navigation: Escape key and back button return user seamlessly to requests list
