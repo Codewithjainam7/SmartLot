@@ -790,3 +790,4 @@ export default function App() {
 // Style: Polish remote inspection sticky banner indicator and contrast
 // Navigation: Clean session exit on popstate and hash change events
 // Style: Refine perspective switcher pills with active glow indicators
+// Accessibility: ARIA attributes for remote inspection banner
