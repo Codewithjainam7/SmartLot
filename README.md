@@ -71,3 +71,7 @@ Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Aut
 <!-- SmartLot 2026 Production Ready -->
 
 <!-- Sprint 1.2: Activity Management verified & deployed -->
+
+
+### 🚀 Jira-Style In-Page Request Review
+- Replaced modal and drawer popups with a focused, in-page 2-column ticket review layout matching standard Jira service management patterns.
