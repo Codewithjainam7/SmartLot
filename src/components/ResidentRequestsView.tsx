@@ -3479,3 +3479,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Governance: NSW SSMA 2015 s 106 common property statutory triage criteria
 // Style: Optimize responsive card styling for request description body
 // Style: Polish attachment gallery card with lightbox hover effects and preview thumbnails
+// Style: Polish vertical connected timeline track with user avatar nodes
