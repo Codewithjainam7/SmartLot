@@ -3471,3 +3471,5 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // End ResidentRequestsView
 
 // Subcomponent: Requests Filter Bar
+
+// JSDoc: ResidentRequestsView renders unified requests feed and in-page Jira-style ticket review layout
