@@ -3483,3 +3483,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Timeline: Merge audit log history events and comment streams with relative timestamps
 // Composer: Expandable Jira-style comment input with file attachments and emoji triggers
 // Actions: Quick status transitions and contractor assignment dropdown selector
+// Metadata: Structured key-value details for building, unit, reporter, and contact preference
