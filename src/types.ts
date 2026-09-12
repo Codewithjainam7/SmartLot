@@ -262,3 +262,16 @@ export type SchemeDocument = {
 // Refactor: Enhance activity location enum definitions
 // Docs: Add strata committee statutory duty notes
 // Types: Streamline circular import references in store types
+
+
+/**
+ * Interface representing a node in the Jira-style request timeline track.
+ */
+export interface RequestTimelineNode {
+  id: string;
+  actor: string;
+  role: string;
+  action: string;
+  timestamp: string;
+  initials: string;
+}
