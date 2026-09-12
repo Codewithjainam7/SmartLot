@@ -228,3 +228,6 @@ html {
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
+
+
+/* Style: Polish custom scrollbar track colors in dark and light modes */
