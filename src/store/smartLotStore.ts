@@ -3140,3 +3140,5 @@ export const calculateRequestAgeHours = (createdAt?: string): number => {
   if (isNaN(created)) return 0;
   return Math.max(0, Math.round((Date.now() - created) / (1000 * 60 * 60)));
 };
+
+// JSDoc: SmartLotStore centralized state management and sync engine
