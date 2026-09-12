@@ -3481,3 +3481,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Polish attachment gallery card with lightbox hover effects and preview thumbnails
 // Style: Polish vertical connected timeline track with user avatar nodes
 // Timeline: Merge audit log history events and comment streams with relative timestamps
+// Composer: Expandable Jira-style comment input with file attachments and emoji triggers
