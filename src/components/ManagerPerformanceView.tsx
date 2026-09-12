@@ -846,3 +846,4 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Accessibility: Accessible star rating aria-labels and semantic headings
 // Optimization: Optimized time horizon state updates to eliminate unnecessary re-renders
 // Style: Standardized badge colors for statutory duty compliance checklist
+// Robustness: Null-safe checks for resident testimonial author names and avatars
