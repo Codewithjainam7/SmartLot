@@ -2909,3 +2909,4 @@ export function AdminView({
 // Animation: Modal Backdrop Blur Layering
 // Animation: Live KPI Pulse Indicators
 // Tooltips: Descriptive hover titles for scheme card remote inspection and audit actions
+// Style: Improve audit modal member list spacing and inspect buttons
