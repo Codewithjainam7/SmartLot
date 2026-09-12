@@ -285,3 +285,5 @@ export interface RequestSLAMetrics {
   elapsedHours: number;
   isBreached: boolean;
 }
+
+// Performance: Stream metadata lookup helper functions
