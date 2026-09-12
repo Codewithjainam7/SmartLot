@@ -3131,3 +3131,12 @@ export type SmartLotStore = ReturnType<typeof useSmartLotStore>;
 // Docs: Document vendor quote evaluation criteria
 
 // Helpers: Improve formatRelativeTime helper precision
+
+
+// SLA Helper: Calculate elapsed hours between creation and current date
+export const calculateRequestAgeHours = (createdAt?: string): number => {
+  if (!createdAt) return 0;
+  const created = new Date(createdAt).getTime();
+  if (isNaN(created)) return 0;
+  return Math.max(0, Math.round((Date.now() - created) / (1000 * 60 * 60)));
+};
