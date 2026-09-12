@@ -171,3 +171,5 @@ function MetricPill({ label }: { label: string }) {
 // Theme: Annotate dark mode tokens and surface contrasts
 
 // Style: Polish accessible title attributes across buttons
+
+// Refactor: Ensure scheme selector stays synchronized during inspection
