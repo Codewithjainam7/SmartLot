@@ -842,3 +842,4 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Governance: NSW SSMA 2015 Sections 106, 108, 110, 232 statutory matrix
 // Validation: Enforce non-empty comment and rating bounds on CSAT submission
 // Style: Empty state placeholder for historical performance metrics
+// Print: Media print styling for executive AGM performance reporting
