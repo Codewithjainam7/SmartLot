@@ -3480,3 +3480,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Optimize responsive card styling for request description body
 // Style: Polish attachment gallery card with lightbox hover effects and preview thumbnails
 // Style: Polish vertical connected timeline track with user avatar nodes
+// Timeline: Merge audit log history events and comment streams with relative timestamps
