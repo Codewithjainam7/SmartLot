@@ -292,3 +292,9 @@ export const isValidStatusTransition = (from: string, to: string): boolean => {
   if (from === 'closed' && to !== 'new') return false;
   return true;
 };
+
+
+export const getAvatarInitials = (name?: string): string => {
+  if (!name) return 'U';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+};
