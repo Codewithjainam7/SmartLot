@@ -211,3 +211,5 @@ function NavItem({
 // Style: Standardize active tab transition indicators
 
 // Style: Refine mobile viewport sidebar collapse behavior
+
+// Style: Refine active indicator transition animations across modules
