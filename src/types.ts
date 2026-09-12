@@ -287,3 +287,8 @@ export interface RequestSLAMetrics {
 }
 
 // Performance: Stream metadata lookup helper functions
+
+export const isValidStatusTransition = (from: string, to: string): boolean => {
+  if (from === 'closed' && to !== 'new') return false;
+  return true;
+};
