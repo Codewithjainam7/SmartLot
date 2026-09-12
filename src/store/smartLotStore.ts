@@ -3142,3 +3142,4 @@ export const calculateRequestAgeHours = (createdAt?: string): number => {
 };
 
 // JSDoc: SmartLotStore centralized state management and sync engine
+// Performance: Optimized filter predicate helpers
