@@ -836,3 +836,5 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
     </div>
   );
 }
+
+// Performance: Safe date parsing utility for SLA calculation
