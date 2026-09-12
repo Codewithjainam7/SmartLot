@@ -3484,3 +3484,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Composer: Expandable Jira-style comment input with file attachments and emoji triggers
 // Actions: Quick status transitions and contractor assignment dropdown selector
 // Metadata: Structured key-value details for building, unit, reporter, and contact preference
+// Internal Notes: Private staff and committee memos protected by role-based visibility
