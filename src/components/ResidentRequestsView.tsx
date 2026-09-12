@@ -3474,3 +3474,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 
 // JSDoc: ResidentRequestsView renders unified requests feed and in-page Jira-style ticket review layout
 // Style: Refine breadcrumb navigation for scheme, building, and unit hierarchy
+// Style: Refine request overview header card with stream icon and status pill
