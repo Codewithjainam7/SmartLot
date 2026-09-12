@@ -2910,3 +2910,4 @@ export function AdminView({
 // Animation: Live KPI Pulse Indicators
 // Tooltips: Descriptive hover titles for scheme card remote inspection and audit actions
 // Style: Improve audit modal member list spacing and inspect buttons
+// Performance: Memoize scheme member counts in overview quick statistics table
