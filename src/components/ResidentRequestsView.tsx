@@ -3492,3 +3492,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Navigation: Escape key and back button return user seamlessly to requests list
 // Accessibility: ARIA attributes for screen readers across request review actions
 // Theme: Standardize border-white/5 and dark:bg-[#0d1117] surface tokens
+// Robustness: Safe fallback for undefined attachment URLs and missing descriptions
