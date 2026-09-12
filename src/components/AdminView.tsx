@@ -2908,3 +2908,4 @@ export function AdminView({
 // Animation: Card Hover Transform and Scale
 // Animation: Modal Backdrop Blur Layering
 // Animation: Live KPI Pulse Indicators
+// Tooltips: Descriptive hover titles for scheme card remote inspection and audit actions
