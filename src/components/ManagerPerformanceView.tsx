@@ -840,3 +840,4 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
 // Performance: Safe date parsing utility for SLA calculation
 // Style: Refine monthly velocity bar graphs with dark mode gradients
 // Governance: NSW SSMA 2015 Sections 106, 108, 110, 232 statutory matrix
+// Validation: Enforce non-empty comment and rating bounds on CSAT submission
