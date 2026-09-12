@@ -3477,3 +3477,4 @@ export function getRequestStreamInfo(req: ResidentRequest) {
 // Style: Refine request overview header card with stream icon and status pill
 // Style: Polish 3-column attribute strip for request type, location, and priority
 // Governance: NSW SSMA 2015 s 106 common property statutory triage criteria
+// Style: Optimize responsive card styling for request description body
