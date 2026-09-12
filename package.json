@@ -1,7 +1,7 @@
 {
   "name": "smartlot",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
@@ -39,3 +39,4 @@
   },
   "description": "SmartLot - Next-Generation AI-Powered Multi-Scheme Strata Management Platform"
 }
+
