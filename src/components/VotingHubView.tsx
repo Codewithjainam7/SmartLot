@@ -433,7 +433,7 @@ export function VotingHubView({
             {activeSchemeId || activeMotion?.strataPlan || 'SP 52042'}
           </span>
           <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-            Quorum: {quorumTarget} of {totalCommitteeSize} Votes
+            Target: {quorumTarget} of {totalCommitteeSize} Votes to Pass
           </span>
           <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block" />
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
@@ -521,7 +521,7 @@ export function VotingHubView({
                   )}
                 </div>
                 <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                  {canCastVote ? 'Awaiting Your Vote' : 'Awaiting Quorum'}
+                  {canCastVote ? 'Awaiting Your Vote' : 'Votes Needed'}
                 </div>
               </div>
             </div>
@@ -718,7 +718,7 @@ export function VotingHubView({
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                             <Vote size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                            <span>Quorum Progress:</span>
+                            <span>Voting Progress:</span>
                           </span>
                           <span className="font-mono font-black text-gray-900 dark:text-white">
                             {mYes} / {mTarget} Votes to Pass
@@ -1029,7 +1029,7 @@ export function VotingHubView({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Live Quorum & Voting Progress
+                          Live Voting Progress
                         </div>
                         <div className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2 mt-0.5">
                           <span>{yesVotes} Yes votes cast</span>
@@ -1306,8 +1306,8 @@ export function VotingHubView({
                     </span>
                     <div className={`text-[10px] font-bold ${isPassed ? 'text-emerald-500 dark:text-emerald-400' : 'text-[#0055FF] dark:text-[#00D4B2]'}`}>
                       {isPassed 
-                        ? `✓ Quorum Met (${yesVotes}/${quorumTarget})` 
-                        : `${yesVotes}/${quorumTarget} to Quorum`}
+                        ? `✓ Target Reached (${yesVotes}/${quorumTarget})` 
+                        : `${yesVotes}/${quorumTarget} Votes Reached`}
                     </div>
                   </div>
                 </div>
@@ -1442,7 +1442,7 @@ export function VotingHubView({
                 <div className="font-mono font-bold">{activeMotion.id}</div>
               </div>
               <div>
-                <div className="text-[10px] text-gray-400 uppercase font-bold">Quorum Target</div>
+                <div className="text-[10px] text-gray-400 uppercase font-bold">Votes Needed to Pass</div>
                 <div className="font-bold">{quorumTarget} of {totalCommitteeSize} Votes</div>
               </div>
               <div>

@@ -349,7 +349,7 @@ export function Dashboard({ store }: DashboardProps) {
                     <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
                       <div className="flex items-center gap-3">
                         <span className="font-semibold text-gray-700 dark:text-gray-300">
-                          Quorum: <strong className="text-gray-900 dark:text-white">{yesVotes}/{quorumTarget} YES</strong>
+                          Votes: <strong className="text-gray-900 dark:text-white">{yesVotes} of {quorumTarget} needed</strong>
                         </span>
                         {noVotes > 0 && (
                           <span className="text-red-500 font-semibold">
