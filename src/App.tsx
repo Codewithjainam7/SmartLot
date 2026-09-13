@@ -769,6 +769,7 @@ export default function App() {
             <VotingHubView 
               motions={store.motions}
               requests={store.residentRequests}
+              onCreateMotion={store.createMotion}
               onCastBallot={store.castBallot}
               onRequestRFI={store.requestMotionRFI}
               onSubmitRevisedProposal={store.submitRevisedProposal}

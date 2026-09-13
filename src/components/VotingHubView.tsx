@@ -103,6 +103,16 @@ export function VotingHubView({
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'passed' | 'unresolved'>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Create New Vote Modal (Strata Manager)
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createTitle, setCreateTitle] = useState('');
+  const [createSummary, setCreateSummary] = useState('');
+  const [createCategory, setCreateCategory] = useState('Repairs & Maintenance');
+  const [createLinkedRequestId, setCreateLinkedRequestId] = useState('');
+  const [createDeadlineDays, setCreateDeadlineDays] = useState(7);
+  const [createVendorName, setCreateVendorName] = useState('');
+  const [createEstimatedCost, setCreateEstimatedCost] = useState('');
   const [selectedMotionId, setSelectedMotionId] = useState<string>(
     schemeMotions.find(m => m.id === 'MOT-CAV-501')?.id || schemeMotions[0]?.id || ''
   );
@@ -266,6 +276,47 @@ export function VotingHubView({
     setShowExtendModal(false);
     setExtendReasonInput('');
     showToast(`📅 Deadline extended by ${extendDaysInput} days.`);
+  };
+
+  const handleConfirmCreateMotion = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createTitle.trim() || !createSummary.trim()) {
+      showToast('⚠️ Please enter a title and description for the vote.');
+      return;
+    }
+
+    const deadlineDate = new Date(Date.now() + createDeadlineDays * 24 * 60 * 60 * 1000);
+    const deadlineStr = `${deadlineDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })} at 5:00 PM`;
+
+    const quotes = createVendorName.trim() && createEstimatedCost ? [{
+      vendorId: `VEND-${Date.now()}`,
+      vendorName: createVendorName.trim(),
+      amount: parseFloat(createEstimatedCost.replace(/[^0-9.]/g, '')) || 0,
+      gstIncluded: true,
+      recommended: true
+    }] : [];
+
+    const payload: CreateMotionPayload = {
+      caseId: createLinkedRequestId || undefined,
+      title: createTitle.trim(),
+      summary: createSummary.trim(),
+      quorumTarget: 4,
+      deadline: deadlineStr,
+      schemeId: activeSchemeId || 'SP52042',
+      quotes
+    };
+
+    if (onCreateMotion) {
+      onCreateMotion(payload);
+    }
+
+    setShowCreateModal(false);
+    setCreateTitle('');
+    setCreateSummary('');
+    setCreateLinkedRequestId('');
+    setCreateVendorName('');
+    setCreateEstimatedCost('');
+    showToast('🚀 New vote started! Committee members can now cast their votes.');
   };
 
   const handleConfirmCloseEarly = () => {
@@ -943,7 +994,7 @@ export function VotingHubView({
                   <div className="flex items-center gap-2.5">
                     <Vote size={20} className="text-[#0055FF] dark:text-[#00D4B2]" />
                     <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                      Cast Official Strata Committee Ballot
+                      Cast Your Vote
                     </h2>
                   </div>
 
@@ -1028,7 +1079,7 @@ export function VotingHubView({
                 )}
               </div>
 
-              {/* ── Proposal Documents & Media Comparison (Post-RFI Acceptance Criteria) ── */}
+              {/* ── Plans & Attachments (Post-RFI Acceptance Criteria) ── */}
               <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
                   <div className="flex items-center gap-2.5">
@@ -1045,13 +1096,13 @@ export function VotingHubView({
                       className="px-3.5 py-1.5 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/20 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all border border-[#0055FF]/20"
                     >
                       <UploadCloud size={13} />
-                      <span>Upload Revised Attachment</span>
+                      <span>Upload Updated Plan</span>
                     </button>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Section A: Original Submission Attachments */}
+                  {/* Section A: Original Documents */}
                   <div className="bg-gray-50 dark:bg-[#080B12] border border-gray-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase text-gray-400 tracking-wider flex items-center gap-1.5">
@@ -1092,7 +1143,7 @@ export function VotingHubView({
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Revised Resubmission (Post-RFI v2)
+                        Updated Version (v2)
                       </span>
                       <span className="px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black">
                         NEW REVISED
@@ -1143,7 +1194,7 @@ export function VotingHubView({
                 </div>
               </div>
 
-              {/* ── Tender Quotes & Contractor Comparison ── */}
+              {/* ── Contractor Quotes ── */}
               {activeMotion.quotes && activeMotion.quotes.length > 0 && (
                 <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
                   <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-white/5 pb-4">
@@ -1170,7 +1221,7 @@ export function VotingHubView({
                           </div>
                           {q.recommended && (
                             <span className="px-2.5 py-0.5 rounded-full bg-[#0055FF]/20 text-[#0055FF] dark:text-[#60A5FA] text-[10px] font-black uppercase">
-                              Recommended Tender
+                              Recommended Quote
                             </span>
                           )}
                         </div>
@@ -1193,7 +1244,7 @@ export function VotingHubView({
                   <div className="flex items-center gap-2.5">
                     <MessageSquare size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
                     <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                      In-Context Motion Discussion & Manager Conduit
+                      Comments & Discussion
                     </h2>
                   </div>
 
@@ -1205,7 +1256,7 @@ export function VotingHubView({
                       className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-amber-500/20 transition-all"
                     >
                       <HelpCircle size={13} />
-                      <span>Request Clarification (RFI)</span>
+                      <span>Ask for More Info</span>
                     </button>
                   )}
                 </div>
