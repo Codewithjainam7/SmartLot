@@ -3,6 +3,7 @@ export type Scheme = {
   name: string;
   lots: number;
   active: boolean;
+  address?: string;
 };
 
 export type Persona = {

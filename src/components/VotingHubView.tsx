@@ -57,7 +57,7 @@ import {
 interface VotingHubViewProps {
   motions: Motion[];
   requests: ResidentRequest[];
-  onCreateMotion?: (payload: CreateMotionPayload) => void;
+  onCreateMotion?: (payload: CreateMotionPayload) => Motion | void;
   onCastBallot: (motionId: string, vote: MotionVote, comment?: string) => void;
   onRequestRFI?: (motionId: string, question: string, extendedDays: number) => void;
   onSubmitRevisedProposal?: (motionId: string, note: string, attachments?: MotionAttachment[]) => void;
@@ -1968,7 +1968,7 @@ export function VotingHubView({
                     <option value="">-- None (Standalone Committee Motion) --</option>
                     {requests.map(r => (
                       <option key={r.id} value={r.id}>
-                        {r.referenceId || r.id} — {r.title} ({r.category || 'General'})
+                        {r.referenceId || r.id} — {r.title} ({r.requestType || 'General'})
                       </option>
                     ))}
                   </select>
