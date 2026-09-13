@@ -1011,6 +1011,59 @@ export function VotingHubView({
                 </div>
               )}
 
+              {/* ── Committee Member Voting Action: Vote - Approve or Reject ── */}
+              {canCastVote && !isLocked && (
+                <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <Vote size={20} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-black text-gray-900 dark:text-white">
+                        Vote — Approve or Reject
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {userBallot ? (
+                          <span>
+                            You voted <strong className={userBallot.vote === 'YES' ? 'text-emerald-500' : 'text-red-500'}>{userBallot.vote === 'YES' ? 'Approve' : 'Reject'}</strong>. You can change your vote anytime before voting closes.
+                          </span>
+                        ) : (
+                          <span>Cast your committee vote on this motion.</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleVoteSubmit('YES')}
+                      className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
+                        userBallot?.vote === 'YES'
+                          ? 'bg-emerald-500 text-white ring-2 ring-emerald-400/50 shadow-emerald-500/20 shadow-md'
+                          : 'bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white border border-emerald-500/20'
+                      }`}
+                    >
+                      <Check size={14} strokeWidth={3} />
+                      <span>Approve</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleVoteSubmit('NO')}
+                      className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
+                        userBallot?.vote === 'NO'
+                          ? 'bg-red-500 text-white ring-2 ring-red-400/50 shadow-red-500/20 shadow-md'
+                          : 'bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20'
+                      }`}
+                    >
+                      <X size={14} strokeWidth={3} />
+                      <span>Reject</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* ── Official Committee Discussion & Comments ── */}
               <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
