@@ -1,5 +1,5 @@
 // @smartlot/component
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Motion, 
   MotionVote, 
@@ -101,6 +101,7 @@ export function VotingHubView({
   // View state: 'list' (Executive Motions Hub) or 'detail' (Full-Page Motion Governance Workspace)
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'passed' | 'unresolved'>('all');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMotionId, setSelectedMotionId] = useState<string>(
     schemeMotions.find(m => m.id === 'MOT-CAV-501')?.id || schemeMotions[0]?.id || ''
@@ -329,7 +330,7 @@ export function VotingHubView({
   };
 
   return (
-    <div className="flex-1 w-full min-h-screen overflow-y-auto bg-[#F8FAFC] dark:bg-[#07090E] text-gray-900 dark:text-gray-100 font-sans transition-colors relative pb-20">
+    <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto bg-[#F8FAFC] dark:bg-[#07090E] text-gray-900 dark:text-gray-100 font-sans transition-colors pb-16">
       
       {/* ── Toast Notification ────────────────────────────────── */}
       {actionNotification && (
@@ -339,46 +340,46 @@ export function VotingHubView({
         </div>
       )}
 
-      {/* ── Role Gate Advisory Banner (Spreadsheet Permission Matrix) ── */}
-      <div className="bg-white/80 dark:bg-[#0B0F17]/90 backdrop-blur-md border-b border-gray-200/80 dark:border-white/10 px-6 lg:px-8 py-2.5 shrink-0 text-xs sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="font-bold text-gray-500 dark:text-gray-400">Your Perspective:</span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 font-black">
-              <Shield size={11} />
-              <span>{activePersonaName} ({activePersonaRole})</span>
+      {/* ── Sleek Executive Header (Action-Oriented, No Book Fluff) ── */}
+      <div className="border-b border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#0C1017] px-6 lg:px-8 py-3.5 shrink-0 sticky top-0 z-30 shadow-2xs backdrop-blur-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Vote size={20} className="text-[#0055FF] dark:text-[#00D4B2]" />
+              <span>Committee Voting</span>
+            </h1>
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
+              {activeMotion?.strataPlan || 'SP 52042'}
             </span>
-
-            {/* Permission Matrix Clarification Pill */}
-            {isStrataManager && (
-              <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1">
-                <Info size={12} className="text-blue-400 shrink-0" />
-                <span><strong>Strata Manager:</strong> Administrative executive. Extends, restarts, & issues work orders. <em>Non-voting under NSW Law.</em></span>
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+              Quorum: 4 of 6 Votes
+            </span>
+            <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block" />
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span>{activePersonaName}</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                isSCM 
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
+                  : isStrataManager 
+                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                  : 'bg-gray-500/15 text-gray-500 dark:text-gray-400 border border-gray-500/30'
+              }`}>
+                {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : 'Observer'}
               </span>
-            )}
-            {isBuildingManager && (
-              <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1">
-                <Info size={12} className="text-amber-400 shrink-0" />
-                <span><strong>Building Manager:</strong> Technical advisor for facility reports & scope verification. <em>Non-voting role.</em></span>
-              </span>
-            )}
-            {isSCM && (
-              <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1">
-                <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                <span><strong>Strata Committee Member (SCM):</strong> Official voter. 4 affirmative votes required to form a binding resolution.</span>
-              </span>
-            )}
-            {isLotOwnerOrResident && (
-              <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1">
-                <Eye size={12} className="text-purple-400 shrink-0" />
-                <span><strong>Lot Owner:</strong> Statutory Transparency View. You can track voting ballots and submit revised attachments upon RFI.</span>
-              </span>
-            )}
+            </div>
           </div>
 
-          <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-2">
-            <span>Scheme: <strong>Cavallo (SP 52042)</strong></span>
-            <span>• Quorum Rule: <strong>4 of 6 Votes</strong></span>
+          <div className="flex items-center gap-2 shrink-0">
+            {activeMotion && (
+              <button
+                type="button"
+                onClick={() => setShowReportModal(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Printer size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                <span>Certified Report</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -387,38 +388,8 @@ export function VotingHubView({
       {/* ── VIEW MODE 1: EXECUTIVE MOTIONS HUB (GALLERY / DIRECTORY) ── */}
       {/* ───────────────────────────────────────────────────────────── */}
       {viewMode === 'list' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           
-          {/* Hero Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-blue-950/20 via-blue-900/10 to-teal-950/20 dark:from-white/3 dark:to-white/1 p-6 sm:p-8 rounded-3xl border border-blue-500/20 dark:border-white/10 shadow-sm">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#0055FF]/20 text-[#0055FF] dark:text-[#60A5FA] border border-[#0055FF]/20 text-xs font-bold uppercase tracking-wider">
-                <Vote size={13} />
-                <span>NSW Strata Schemes Management Act 2015 s 106 • Committee Voting Engine</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                Strata Committee Online Voting Hub
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-                Review active motions, examine contractor tenders, verify statutory compliance, and cast binding committee votes for <strong>Cavallo, 1 Pitt Street Sydney (SP 52042)</strong>.
-              </p>
-            </div>
-
-            {/* Print / Report Global Trigger */}
-            <div className="shrink-0 flex items-center gap-3">
-              {activeMotion && (
-                <button
-                  type="button"
-                  onClick={() => setShowReportModal(true)}
-                  className="px-4 py-2.5 rounded-2xl bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs transition-all flex items-center gap-2 shadow-xs cursor-pointer"
-                >
-                  <Printer size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                  <span>Generate Formal Vote Report</span>
-                </button>
-              )}
-            </div>
-          </div>
-
           {/* ── Executive KPI Summary Grid ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-5 shadow-xs flex items-center gap-4">
@@ -710,7 +681,7 @@ export function VotingHubView({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => { setViewMode('list'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                onClick={handleBackToList}
                 className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all flex items-center gap-1.5 border border-gray-200 dark:border-white/10 shadow-2xs cursor-pointer"
               >
                 <ArrowLeft size={14} />
@@ -1453,20 +1424,15 @@ export function VotingHubView({
                 </div>
               </div>
 
-              {/* Statutory Compliance & Legal Reference Card */}
-              <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-3 text-xs text-gray-500 dark:text-gray-400">
+              {/* Statutory Compliance Card */}
+              <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-5 shadow-xs space-y-2 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-bold text-xs">
                   <Shield size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                  <span>Statutory Compliance Reference</span>
+                  <span>NSW SSMA 2015 Compliance</span>
                 </div>
-                <p className="leading-relaxed">
-                  Under Schedule 2 of the <strong>NSW Strata Schemes Management Act 2015</strong>, an online resolution of the strata committee is validly made if:
+                <p className="text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                  Resolutions require a minimum of 4 affirmative votes from elected committee members before the statutory deadline to become legally binding.
                 </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Notice of the motion was given to each committee member.</li>
-                  <li>At least 4 affirmative votes are recorded before the statutory deadline.</li>
-                  <li>Decisions are entered into official owners corporation records.</li>
-                </ul>
               </div>
 
             </div>
