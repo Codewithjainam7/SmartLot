@@ -10,14 +10,16 @@ import {
   FileText,
   Settings,
   ClipboardList,
-  Award
+  Award,
+  Vote
 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings' | 'performance';
-  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings' | 'performance') => void;
+  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance';
+  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance') => void;
   pendingTriageCount?: number;
+  activeMotionsCount?: number;
   activePersonaName?: string;
   activePersonaRole?: string;
   hasPermission: (perm: string) => boolean;
@@ -28,6 +30,7 @@ export function Sidebar({
   activeView, 
   setActiveView, 
   pendingTriageCount = 2,
+  activeMotionsCount = 0,
   activePersonaName = 'Alex Vance',
   activePersonaRole = 'Strata Manager',
   hasPermission,
@@ -98,6 +101,15 @@ export function Sidebar({
               active={activeView === 'requests' || activeView === 'triage'} 
               onClick={() => setActiveView('requests')}
               badge={pendingTriageCount && pendingTriageCount > 0 && (activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? String(pendingTriageCount) : undefined}
+              isCollapsed={isCollapsed} 
+            />
+            {/* Voting Hub for Community & Committee Motions */}
+            <NavItem 
+              icon={<Vote size={18} />} 
+              label="Voting Hub" 
+              active={activeView === 'voting'} 
+              onClick={() => setActiveView('voting')}
+              badge={activeMotionsCount && activeMotionsCount > 0 ? String(activeMotionsCount) : undefined}
               isCollapsed={isCollapsed} 
             />
             {/* Strata Manager Performance Dashboard (Accessible to everyone) */}

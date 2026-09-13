@@ -25,6 +25,7 @@ import { JoinSchemeView } from './components/JoinSchemeView';
 import { DashboardSkeleton } from './components/core/DashboardSkeleton';
 import { ResidentPortalView } from './components/ResidentPortalView';
 import { ManagerPerformanceView } from './components/ManagerPerformanceView';
+import { VotingHubView } from './components/VotingHubView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -511,6 +512,10 @@ export default function App() {
     return isAuthor || isAssigned || isMatchingScheme;
   });
 
+  const activeMotionsCount = store.motions.filter(
+    m => (!m.schemeId || m.schemeId === store.activeScheme.id) && m.status === 'active'
+  ).length;
+
   return (
     <div className="flex flex-col h-screen bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100 overflow-hidden relative">
       
@@ -557,26 +562,52 @@ export default function App() {
               </span>
 
               {/* Perspective Role Switcher Buttons */}
-              <div className="hidden lg:flex items-center gap-1 bg-black/40 p-0.5 rounded-xl border border-white/10 text-[11px]">
-                {(['Strata Manager', 'Lot Owner', 'Resident', 'Tenant'] as const).map(role => {
-                  const isActiveRole = store.activePersona.role === role;
-                  return (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => handleSwitchInspectionRole(role)}
-                      className={`px-2.5 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
-                        isActiveRole
-                          ? 'bg-[#0055FF] text-white shadow-sm'
-                          : 'text-gray-400 hover:text-white hover:bg-white/10'
-                      }`}
-                      title={`Simulate what a ${role} experiences in this building`}
-                    >
-                      {role}
-                    </button>
-                  );
-                })}
+              <div className="flex items-center gap-1 ml-1 bg-black/40 p-1 rounded-xl border border-white/10">
+                {PERSONAS
+                  .filter(p => p.role !== 'Super Admin' && p.role !== 'Service Provider')
+                  .slice(0, 5)
+                  .map(p => {
+                    const isCurrent = store.activePersona.name === p.name;
+                    return (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => store.setActivePersona(p)}
+                        className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                          isCurrent 
+                            ? 'bg-[#00D4B2] text-black shadow-xs' 
+                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                        }`}
+                        title={`Quick Switch to ${p.name} (${p.role})`}
+                      >
+                        {p.role.replace('Strata ', '').replace('Building ', 'Bldg ')}
+                      </button>
+                    );
+                  })}
               </div>
+
+              {/* Additional Personas Dropdown for overflow */}
+              {PERSONAS.filter(p => p.role !== 'Super Admin').length > 5 && (
+                <select
+                  value={store.activePersona.name}
+                  onChange={(e) => {
+                    const found = PERSONAS.find(p => p.name === e.target.value);
+                    if (found) store.setActivePersona(found);
+                  }}
+                  className="bg-black/50 border border-white/20 rounded-lg text-white text-[11px] font-bold px-2 py-0.5 outline-none cursor-pointer hover:border-white/40"
+                  title="More personas"
+                >
+                  <option value="" disabled className="bg-gray-900 text-gray-400">More roles...</option>
+                  {PERSONAS
+                    .filter(p => p.role !== 'Super Admin' && p.role !== 'Service Provider')
+                    .slice(5)
+                    .map(p => (
+                      <option key={p.name} value={p.name} className="bg-gray-900 text-white">
+                        {p.name} ({p.role})
+                      </option>
+                    ))}
+                </select>
+              )}
 
               {/* Scheme Member Dropdown */}
               {store.members.filter(m => m.schemeId === inspectingSession.scheme.id).length > 0 && (
@@ -626,6 +657,7 @@ export default function App() {
           activeView={store.activeView}
           setActiveView={store.setActiveView}
           pendingTriageCount={pendingTriageCount}
+          activeMotionsCount={activeMotionsCount}
           activePersonaName={store.activePersona.name}
           activePersonaRole={store.activePersona.role}
           hasPermission={store.hasPermission}
@@ -707,6 +739,13 @@ export default function App() {
               onAssignActivity={store.assignActivity}
               onReopenActivity={store.reopenActivity}
               onTriageCase={store.triageRequest}
+              onInitiateVotingFlow={(reqId, payload) => {
+                store.initiateVotingForRequest(reqId, { caseId: reqId, ...payload });
+                store.setActiveView('voting');
+              }}
+              onNavigateToVoting={() => {
+                store.setActiveView('voting');
+              }}
               initialFilter={store.activeView === 'triage' ? 'needs_triage' : undefined}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
@@ -718,6 +757,30 @@ export default function App() {
                 store.members.find(m => m.schemeId === store.activeScheme.id && (m.role.includes('Manager') || m.role.includes('Admin')) && m.email !== store.activePersona.email)?.email ||
                 (store.activeScheme.id === 'SP103' ? 'emma.wilson@agency.com' : 'romanjoe@gmail.com')
               }
+            />
+          )}
+
+          {/* Voting Hub: Community & Committee Motions Engine (Miro Workflow) */}
+          {store.activeView === 'voting' && (
+            <VotingHubView 
+              motions={store.motions}
+              requests={store.residentRequests}
+              onCastBallot={store.castBallot}
+              onRequestRFI={store.requestMotionRFI}
+              onSubmitRevisedProposal={store.submitRevisedProposal}
+              onRestartVoting={store.restartVoting}
+              onSendSCMReminder={store.sendSCMReminder}
+              onSendBlastReminder={store.sendBlastReminder}
+              onExtendDeadline={store.extendMotionDeadline}
+              onMarkUnresolved={store.markMotionUnresolved}
+              onCloseVotingEarly={store.closeVotingEarly}
+              onResolveMotion={store.resolveMotion}
+              onAddComment={store.addMotionComment}
+              onNavigateToRequest={() => store.setActiveView('requests')}
+              activePersonaName={store.activePersona.name}
+              activePersonaRole={store.activePersona.role}
+              activeSchemeName={store.activeScheme.name}
+              activeSchemeId={store.activeScheme.id}
             />
           )}
 
