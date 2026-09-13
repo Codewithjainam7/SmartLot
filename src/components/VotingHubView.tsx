@@ -424,13 +424,13 @@ export function VotingHubView({
                   ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
                   : 'bg-gray-500/15 text-gray-500 dark:text-gray-400 border border-gray-500/30'
               }`}>
-                {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : 'Observer'}
+                {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : isLotOwnerOrResident ? 'Resident (Discussion)' : 'Observer'}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {viewMode === 'list' && (
+            {viewMode === 'list' && canManageMotion && (
               <button
                 type="button"
                 onClick={() => setShowCreateModal(true)}
@@ -577,14 +577,16 @@ export function VotingHubView({
                 Under RFI ({statsUnresolved})
               </button>
 
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(true)}
-                className="px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer ml-auto"
-              >
-                <Plus size={13} strokeWidth={2.5} />
-                <span>+ Start Vote</span>
-              </button>
+              {canManageMotion && (
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(true)}
+                  className="px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer ml-auto"
+                >
+                  <Plus size={13} strokeWidth={2.5} />
+                  <span>+ Start Vote</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -736,7 +738,7 @@ export function VotingHubView({
                         </span>
                       ) : (
                         <span className="text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                          <span>Governance Hub →</span>
+                          <span>Open Details →</span>
                         </span>
                       )}
                     </div>
@@ -1114,7 +1116,7 @@ export function VotingHubView({
                 <form onSubmit={handleSendComment} className="flex gap-2.5 pt-2">
                   <input
                     type="text"
-                    placeholder="Contribute technical insight or ask a question..."
+                    placeholder="Add a comment or response..."
                     value={commentInput}
                     onChange={e => setCommentInput(e.target.value)}
                     className="flex-1 px-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
