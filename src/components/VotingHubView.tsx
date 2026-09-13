@@ -36,7 +36,6 @@ import {
   HelpCircle,
   TrendingUp,
   RotateCcw,
-  Bell,
   Printer,
   Sparkles,
   Lock,
@@ -368,14 +367,6 @@ export function VotingHubView({
       onSendSCMReminder(activeMotion.id, scmName);
     }
     showToast(`🔔 Reminder dispatched to ${scmName}.`);
-  };
-
-  const handleSendBlast = () => {
-    if (!activeMotion) return;
-    if (onSendBlastReminder) {
-      onSendBlastReminder(activeMotion.id);
-    }
-    showToast(`📢 Blast notification sent to all ${pendingVotesCount} unresponsive committee members.`);
   };
 
   const openMotionDetail = (motionId: string) => {
@@ -1182,17 +1173,6 @@ export function VotingHubView({
                         <Calendar size={14} />
                         <span>Extend Voting Deadline</span>
                       </button>
-
-                      {pendingVotesCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={handleSendBlast}
-                          className="w-full py-2.5 px-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500 text-amber-600 dark:text-amber-400 hover:text-black border border-amber-500/30 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <Bell size={14} />
-                          <span>Blast Remind Unresponsive ({pendingVotesCount})</span>
-                        </button>
-                      )}
 
                       <button
                         type="button"
