@@ -12,6 +12,14 @@
     <meta property="og:description" content="An application built with Google AI Studio." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <!-- Prevent Vite automated reload from resetting active user state -->
+    <script>
+      window.addEventListener('vite:beforeFullReload', function(e) {
+        if (e && typeof e.preventDefault === 'function') {
+          e.preventDefault();
+        }
+      });
+    </script>
     <!-- SmartLot Head --></head>
   <body>
     <div id="root"></div>

@@ -122,18 +122,20 @@ export default function App() {
         // Active remote inspection session: do not let hash router disrupt inspection view
         return;
       }
-      if (window.location.hash === '#/admin' && sessionState !== 'admin_console') {
-        setSessionState('admin_login');
-      } else if (sessionState === 'admin_login' || sessionState === 'admin_console') {
-        if (window.location.hash !== '#/admin') {
-          setSessionState('landing');
+      const hash = window.location.hash;
+      setSessionState(prev => {
+        if (hash === '#/admin' && prev !== 'admin_console') {
+          return 'admin_login';
+        } else if ((prev === 'admin_login' || prev === 'admin_console') && hash !== '#/admin') {
+          return 'landing';
         }
-      }
+        return prev;
+      });
     };
     checkHash();
     window.addEventListener('hashchange', checkHash);
     return () => window.removeEventListener('hashchange', checkHash);
-  }, [sessionState, inspectingSession]);
+  }, [inspectingSession]);
 
   // Handle theme state preferences dynamically
   useEffect(() => {
@@ -146,17 +148,19 @@ export default function App() {
 
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
 
-  // Isolate schemes strictly to the logged-in user's memberships (MUST be at top level of component)
-  const userMemberRows = store.members.filter(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
-  const userSchemeIds = new Set(userMemberRows.map(m => m.schemeId));
-  
   // If user is website administrator or inspecting, they can see all schemes or the inspected scheme; otherwise strictly their own scheme(s)
   const isWebAdmin = store.activePersona.role === 'Website Administrator' || (store.activePersona as any).isSystemAdmin;
-  const userSchemes = (isWebAdmin || inspectingSession)
-    ? (inspectingSession ? [inspectingSession.scheme, ...store.schemes.filter(s => s.id !== inspectingSession.scheme.id)] : store.schemes)
-    : (userSchemeIds.size > 0 
-        ? store.schemes.filter(s => userSchemeIds.has(s.id))
-        : (store.activeScheme && store.activeScheme.id !== 'NO_SCHEME' ? [store.activeScheme] : store.schemes.filter(s => s.id === 'SP101')));
+
+  // Isolate schemes strictly to the logged-in user's memberships (memoized to prevent re-render loops)
+  const userSchemes = React.useMemo(() => {
+    const userMemberRows = store.members.filter(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
+    const userSchemeIds = new Set(userMemberRows.map(m => m.schemeId));
+    return (isWebAdmin || inspectingSession)
+      ? (inspectingSession ? [inspectingSession.scheme, ...store.schemes.filter(s => s.id !== inspectingSession.scheme.id)] : store.schemes)
+      : (userSchemeIds.size > 0 
+          ? store.schemes.filter(s => userSchemeIds.has(s.id))
+          : (store.activeScheme && store.activeScheme.id !== 'NO_SCHEME' ? [store.activeScheme] : store.schemes.filter(s => s.id === 'SP101')));
+  }, [store.members, store.activePersona.email, isWebAdmin, inspectingSession, store.schemes, store.activeScheme]);
 
   // Ensure activeScheme is strictly one of the user's valid schemes
   useEffect(() => {
@@ -682,8 +686,8 @@ export default function App() {
         {/* Dynamic View Rendering */}
         <div className="flex-1 overflow-hidden relative">
           
-          {/* Shimmer Skeleton during async data fetching */}
-          {store.isLoading ? (
+          {/* Shimmer Skeleton during initial bootstrap only (prevents full unmount on background sync) */}
+          {store.isLoading && store.schemes.length === 0 ? (
             <DashboardSkeleton />
           ) : (
             <>

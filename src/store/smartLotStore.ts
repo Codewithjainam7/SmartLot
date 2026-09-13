@@ -1838,7 +1838,7 @@ export function useSmartLotStore() {
 
   useEffect(() => {
     refreshData();
-  }, [user?.id, session]);
+  }, [user?.id]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v8`, ['Strata Manager']);
   const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance'>(`smartlot_${pId}_activeView_v8`, 'dashboard');

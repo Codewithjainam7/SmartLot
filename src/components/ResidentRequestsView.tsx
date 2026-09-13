@@ -134,6 +134,11 @@ export function ResidentRequestsView({
 }: ResidentRequestsViewProps) {
   const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
   const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
+  // Strata Manager only: strictly excluded for tenant, lot owner, and committee member
+  const isStrataManager = (activePersonaRole.toLowerCase().includes('strata manager') || activePersonaRole.toLowerCase().includes('admin')) &&
+    !activePersonaRole.toLowerCase().includes('tenant') &&
+    !activePersonaRole.toLowerCase().includes('owner') &&
+    !activePersonaRole.toLowerCase().includes('committee');
 
   const pendingTriageRequests = requests.filter(r => r.status === 'pending_triage' || r.status === 'new');
 
@@ -680,8 +685,8 @@ export function ResidentRequestsView({
               </div>
             </div>
 
-            {/* Triage Assessment Banner (for Managers & Committee) */}
-            {isManagerOrCommittee && (activeDetail.status === 'pending_triage' || activeDetail.status === 'new') && (
+            {/* Triage Assessment Banner (for Strata Manager only) */}
+            {isStrataManager && (activeDetail.status === 'pending_triage' || activeDetail.status === 'new') && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">
@@ -982,137 +987,139 @@ export function ResidentRequestsView({
           {/* RIGHT SIDEBAR COLUMN: Actions & Request details (Col 9-12) */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Actions Card */}
-            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 shadow-sm space-y-5">
-              <h3 className="text-sm font-black text-gray-900 dark:text-white">
-                Actions
-              </h3>
+            {/* Actions Card (Strictly visible only to Strata Manager) */}
+            {isStrataManager && (
+              <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 shadow-sm space-y-5">
+                <h3 className="text-sm font-black text-gray-900 dark:text-white">
+                  Actions
+                </h3>
 
-              {/* Assign to */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 dark:text-gray-400 font-semibold block">
-                  Assign to
-                </label>
-                <div className="relative">
-                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <select
-                    value={activeDetail.assignedToName || 'Facilities Team'}
-                    onChange={(e) => {
-                      if (onAssignActivity) {
-                        onAssignActivity(activeDetail.id, e.target.value, 'Facilities Team');
-                      }
-                    }}
-                    className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-gray-50 dark:bg-[#161b22] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 appearance-none outline-none cursor-pointer focus:border-[#0055FF] transition-all"
+                {/* Assign to */}
+                <div className="space-y-1.5">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 font-semibold block">
+                    Assign to
+                  </label>
+                  <div className="relative">
+                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <select
+                      value={activeDetail.assignedToName || 'Facilities Team'}
+                      onChange={(e) => {
+                        if (onAssignActivity) {
+                          onAssignActivity(activeDetail.id, e.target.value, 'Facilities Team');
+                        }
+                      }}
+                      className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-gray-50 dark:bg-[#161b22] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 appearance-none outline-none cursor-pointer focus:border-[#0055FF] transition-all"
+                    >
+                      <option value="Facilities Team">Facilities Team</option>
+                      <option value="Apex Gate & Security Services">Apex Gate & Security</option>
+                      <option value="Rapid Response Electrical">Rapid Response Electrical</option>
+                      <option value="Bright Water Plumbing Solutions">Bright Water Plumbing</option>
+                      <option value="Emma Wilson">Emma Wilson (Strata Manager)</option>
+                      <option value="Roman Joe">Roman Joe (Strata Manager)</option>
+                    </select>
+                    <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="space-y-1.5">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 font-semibold block">
+                    Status
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={activeDetail.status}
+                      onChange={(e) => onUpdateStatus && onUpdateStatus(activeDetail.id, e.target.value as CaseStatus)}
+                      className="w-full px-4 py-2.5 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-xs font-extrabold appearance-none outline-none cursor-pointer transition-all"
+                    >
+                      <option value="new" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Open</option>
+                      <option value="in_progress" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">In Progress</option>
+                      <option value="waiting" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Waiting for info</option>
+                      <option value="resolved" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Resolved</option>
+                      <option value="closed" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Closed</option>
+                    </select>
+                    <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#0055FF] dark:text-[#00D4B2] pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Add Comment Wide Button */}
+                <button
+                  type="button"
+                  onClick={() => commentTextareaRef.current?.focus()}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-gray-200 dark:border-white/10 cursor-pointer shadow-sm"
+                >
+                  <MessageSquare size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                  <span>Add comment</span>
+                </button>
+
+                {/* Action Links */}
+                <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setShowInternalNoteBox(prev => !prev)}
+                    className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
                   >
-                    <option value="Facilities Team">Facilities Team</option>
-                    <option value="Apex Gate & Security Services">Apex Gate & Security</option>
-                    <option value="Rapid Response Electrical">Rapid Response Electrical</option>
-                    <option value="Bright Water Plumbing Solutions">Bright Water Plumbing</option>
-                    <option value="Emma Wilson">Emma Wilson (Strata Manager)</option>
-                    <option value="Roman Joe">Roman Joe (Strata Manager)</option>
-                  </select>
-                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <Lock size={14} className="text-gray-400" />
+                    <span>Add internal note</span>
+                  </button>
+
+                  {showInternalNoteBox && (
+                    <form onSubmit={handleAddInternalNote} className="space-y-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                      <textarea
+                        rows={2}
+                        value={internalNoteInput}
+                        onChange={(e) => setInternalNoteInput(e.target.value)}
+                        placeholder="Private note for committee/staff..."
+                        className="w-full bg-white dark:bg-[#070B14] border border-amber-500/30 rounded-xl p-2.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+                      />
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setShowInternalNoteBox(false)}
+                          className="px-2.5 py-1 text-[11px] font-bold text-gray-500"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={!internalNoteInput.trim()}
+                          className="px-3 py-1 bg-amber-500 text-white rounded-lg text-[11px] font-bold cursor-pointer disabled:opacity-40"
+                        >
+                          Save Note
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => onSimulateManagerReply && onSimulateManagerReply(activeDetail.id, "Please confirm if this is still occurring.")}
+                    className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
+                  >
+                    <HelpCircle size={14} className="text-gray-400" />
+                    <span>Request more information</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onUpdateStatus && onUpdateStatus(activeDetail.id, 'in_progress')}
+                    className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
+                  >
+                    <Check size={14} className="text-gray-400" />
+                    <span>Mark as in progress</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCloseModalRequest(activeDetail)}
+                    className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer text-left"
+                  >
+                    <CheckCircle2 size={14} className="text-gray-400" />
+                    <span>Resolve</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Status */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 dark:text-gray-400 font-semibold block">
-                  Status
-                </label>
-                <div className="relative">
-                  <select
-                    value={activeDetail.status}
-                    onChange={(e) => onUpdateStatus && onUpdateStatus(activeDetail.id, e.target.value as CaseStatus)}
-                    className="w-full px-4 py-2.5 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-xs font-extrabold appearance-none outline-none cursor-pointer transition-all"
-                  >
-                    <option value="new" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Open</option>
-                    <option value="in_progress" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">In Progress</option>
-                    <option value="waiting" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Waiting for info</option>
-                    <option value="resolved" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Resolved</option>
-                    <option value="closed" className="bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white">Closed</option>
-                  </select>
-                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#0055FF] dark:text-[#00D4B2] pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Add Comment Wide Button */}
-              <button
-                type="button"
-                onClick={() => commentTextareaRef.current?.focus()}
-                className="w-full py-2.5 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-gray-200 dark:border-white/10 cursor-pointer shadow-sm"
-              >
-                <MessageSquare size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                <span>Add comment</span>
-              </button>
-
-              {/* Action Links */}
-              <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setShowInternalNoteBox(prev => !prev)}
-                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
-                >
-                  <Lock size={14} className="text-gray-400" />
-                  <span>Add internal note</span>
-                </button>
-
-                {showInternalNoteBox && (
-                  <form onSubmit={handleAddInternalNote} className="space-y-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
-                    <textarea
-                      rows={2}
-                      value={internalNoteInput}
-                      onChange={(e) => setInternalNoteInput(e.target.value)}
-                      placeholder="Private note for committee/staff..."
-                      className="w-full bg-white dark:bg-[#070B14] border border-amber-500/30 rounded-xl p-2.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
-                    />
-                    <div className="flex justify-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setShowInternalNoteBox(false)}
-                        className="px-2.5 py-1 text-[11px] font-bold text-gray-500"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={!internalNoteInput.trim()}
-                        className="px-3 py-1 bg-amber-500 text-white rounded-lg text-[11px] font-bold cursor-pointer disabled:opacity-40"
-                      >
-                        Save Note
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => onSimulateManagerReply && onSimulateManagerReply(activeDetail.id, "Please confirm if this is still occurring.")}
-                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
-                >
-                  <HelpCircle size={14} className="text-gray-400" />
-                  <span>Request more information</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onUpdateStatus && onUpdateStatus(activeDetail.id, 'in_progress')}
-                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer text-left"
-                >
-                  <Check size={14} className="text-gray-400" />
-                  <span>Mark as in progress</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCloseModalRequest(activeDetail)}
-                  className="w-full flex items-center gap-2.5 py-1.5 text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer text-left"
-                >
-                  <CheckCircle2 size={14} className="text-gray-400" />
-                  <span>Resolve</span>
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* Request details Card */}
             <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 shadow-sm space-y-4 text-xs">
@@ -1768,8 +1775,8 @@ export function ResidentRequestsView({
                         <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
                       </div>
 
-                      {/* Manager Quick-Triage Action Bar on Card */}
-                      {isManagerOrCommittee && (req.status === 'pending_triage' || req.status === 'new') && (
+                      {/* Strata Manager Quick-Triage Action Bar on Card */}
+                      {isStrataManager && (req.status === 'pending_triage' || req.status === 'new') && (
                         <div className="pt-2 border-t border-amber-500/20 flex items-center gap-2">
                           <button
                             type="button"
@@ -2356,8 +2363,8 @@ export function ResidentRequestsView({
                               <Eye size={13} />
                             </button>
 
-                            {/* Quick Triage Buttons for Managers */}
-                            {isManagerOrCommittee && isPendingTriage && (
+                            {/* Quick Triage Buttons for Strata Manager */}
+                            {isStrataManager && isPendingTriage && (
                               <>
                                 <button
                                   type="button"
