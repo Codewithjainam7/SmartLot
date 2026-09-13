@@ -94,7 +94,6 @@ export default defineConfig(() => {
     server: {
       // Auto-reload disabled as requested to prevent page flickering and session resets.
       hmr: false,
-      watch: null,
     },
   };
 });
