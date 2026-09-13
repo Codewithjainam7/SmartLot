@@ -197,7 +197,7 @@ function ConfirmationScreen({
             bg: 'bg-[#00D4B2]/10 border-[#00D4B2]/20',
             label: managerEmail
               ? `Email dispatched to ${managerEmail}`
-              : 'Conduit email dispatched to strata manager',
+              : 'Email notification sent to strata manager',
           },
           {
             icon: <Check size={12} className="text-[#0055FF]" strokeWidth={3} />,
@@ -679,7 +679,7 @@ export function CreateRequestFormContent({
                     </div>
                     {strataManagerEmail && (
                       <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
-                        <span>Manager conduit:</span>
+                        <span>Manager email:</span>
                         <span className="font-mono text-gray-600 dark:text-gray-300">{strataManagerEmail}</span>
                       </div>
                     )}

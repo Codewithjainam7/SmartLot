@@ -156,7 +156,7 @@ export function ResidentVotingView({
               )}
             </div>
 
-            {/* Comments Section (Add Comments flow from Miro diagram) */}
+            {/* Comments Section */}
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-white/5">
               <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-2">
                 <MessageSquare size={16} className="text-[#0055FF]" /> Discussion & Comments ({activeDetail.comments.length})

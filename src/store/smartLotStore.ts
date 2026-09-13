@@ -1776,7 +1776,7 @@ export function useSmartLotStore() {
               timestamp: dateStr,
               fromStatus: 'new',
               toStatus: 'acknowledged',
-              note: 'Inbound email reply captured via Reply-To conduit.',
+              note: 'Inbound email reply captured via email notification.',
             });
           }
 
@@ -2566,7 +2566,7 @@ export function useSmartLotStore() {
         timestamp: `Today at ${nowStr}`,
         fromStatus: req.status,
         toStatus: 'acknowledged',
-        note: `Inbound email reply captured via Reply-To conduit: "${replyText.slice(0, 70)}..."`,
+        note: `Inbound email reply captured via email notification: "${replyText.slice(0, 70)}..."`,
       };
 
       return {

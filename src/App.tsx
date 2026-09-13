@@ -764,7 +764,7 @@ export default function App() {
             />
           )}
 
-          {/* Voting Hub: Community & Committee Motions Engine (Miro Workflow) */}
+          {/* Voting Hub: Community & Committee Motions */}
           {store.activeView === 'voting' && (
             <VotingHubView 
               motions={store.motions}

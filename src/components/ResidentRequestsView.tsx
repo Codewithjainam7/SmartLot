@@ -149,7 +149,7 @@ export function ResidentRequestsView({
   const [rejectModalRequest, setRejectModalRequest] = useState<ResidentRequest | null>(null);
   const [rejectionReasonText, setRejectionReasonText] = useState('');
 
-  // Initiate Voting Modal State (Miro Workflow)
+  // Initiate Voting Modal State
   const [votingModalRequest, setVotingModalRequest] = useState<ResidentRequest | null>(null);
   const [votingTitle, setVotingTitle] = useState('');
   const [votingSummary, setVotingSummary] = useState('');
@@ -3666,7 +3666,7 @@ export function ResidentRequestsView({
         )}
       </AnimatePresence>
 
-      {/* Initiate Voting Flow Modal (Miro Workflow) */}
+      {/* Initiate Voting Flow Modal */}
       <AnimatePresence>
         {votingModalRequest && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

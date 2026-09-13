@@ -5,7 +5,8 @@ import {
   MotionVote, 
   ResidentRequest, 
   SCMOffice,
-  MotionAttachment 
+  MotionAttachment,
+  CreateMotionPayload
 } from '../store/smartLotStore';
 import { 
   Vote, 
@@ -49,12 +50,14 @@ import {
   UploadCloud,
   CheckCircle,
   ArrowLeft,
-  Scale
+  Scale,
+  Plus
 } from 'lucide-react';
 
 interface VotingHubViewProps {
   motions: Motion[];
   requests: ResidentRequest[];
+  onCreateMotion?: (payload: CreateMotionPayload) => void;
   onCastBallot: (motionId: string, vote: MotionVote, comment?: string) => void;
   onRequestRFI?: (motionId: string, question: string, extendedDays: number) => void;
   onSubmitRevisedProposal?: (motionId: string, note: string, attachments?: MotionAttachment[]) => void;
@@ -77,6 +80,7 @@ interface VotingHubViewProps {
 export function VotingHubView({
   motions,
   requests,
+  onCreateMotion,
   onCastBallot,
   onRequestRFI,
   onSubmitRevisedProposal,
@@ -136,7 +140,7 @@ export function VotingHubView({
   const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [resubmitNote, setResubmitNote] = useState('');
 
-  // Close Voting Decision Engine Modal (Miro Flowchart)
+  // Close Voting Modal
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closeModalTab, setCloseModalTab] = useState<'before' | 'after'>('before');
   const [closeReasonInput, setCloseReasonInput] = useState('');
@@ -426,6 +430,14 @@ export function VotingHubView({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md"
+            >
+              <Plus size={14} strokeWidth={2.5} />
+              <span>+ Start New Vote</span>
+            </button>
             {activeMotion && (
               <button
                 type="button"
@@ -561,6 +573,15 @@ export function VotingHubView({
                 }`}
               >
                 Under RFI ({statsUnresolved})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer ml-auto"
+              >
+                <Plus size={13} strokeWidth={2.5} />
+                <span>+ Start Vote</span>
               </button>
             </div>
           </div>
@@ -988,257 +1009,7 @@ export function VotingHubView({
                 </div>
               )}
 
-              {/* ── Official SCM Ballot Box ── */}
-              <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <Vote size={20} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                      Cast Your Vote
-                    </h2>
-                  </div>
-
-                  {userBallot && (
-                    <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                      <CheckCircle2 size={14} />
-                      <span>Your Current Vote: <strong>{userBallot.vote}</strong></span>
-                      {!isLocked && <span className="text-gray-400 font-normal">(Amendable)</span>}
-                    </span>
-                  )}
-                </div>
-
-                {isLocked ? (
-                  <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-2xl text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3">
-                    <Lock size={16} className="text-emerald-500 shrink-0" />
-                    <span>Voting is officially finalized and locked per NSW SSMA 2015. No further amendments or ballots may be submitted.</span>
-                  </div>
-                ) : !canCastVote ? (
-                  <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl text-xs text-blue-500 dark:text-blue-300 flex items-center gap-3 leading-relaxed">
-                    <Info size={16} className="shrink-0" />
-                    <span>Under the NSW Strata Schemes Management Act 2015, only elected <strong>Strata Committee Members (SCM)</strong> possess statutory voting power on committee motions. You are currently logged in as <strong>{activePersonaName} ({activePersonaRole})</strong>.</span>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      As an elected committee member for SP 52042, cast your official ballot below. You may amend your vote anytime prior to the motion reaching 4 passing votes.
-                    </p>
-
-                    {/* Rationale Input */}
-                    <div>
-                      <input
-                        type="text"
-                        placeholder="Optional: Record committee rationale, by-law considerations, or conditions..."
-                        value={scmBallotComment}
-                        onChange={e => setScmBallotComment(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
-                      />
-                    </div>
-
-                    {/* Large Crisp Voting Buttons */}
-                    <div className="grid grid-cols-3 gap-4">
-                      <button
-                        type="button"
-                        onClick={() => handleVoteSubmit('YES')}
-                        className={`py-3.5 rounded-2xl font-black text-sm transition-all cursor-pointer flex items-center justify-center gap-2 border shadow-xs ${
-                          userBallot?.vote === 'YES'
-                            ? 'bg-emerald-500 text-black border-emerald-400 shadow-md shadow-emerald-500/20'
-                            : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
-                        }`}
-                      >
-                        <Check size={18} className="stroke-[3]" />
-                        <span>VOTE YES</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleVoteSubmit('NO')}
-                        className={`py-3.5 rounded-2xl font-black text-sm transition-all cursor-pointer flex items-center justify-center gap-2 border shadow-xs ${
-                          userBallot?.vote === 'NO'
-                            ? 'bg-red-500 text-white border-red-400 shadow-md shadow-red-500/20'
-                            : 'bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30'
-                        }`}
-                      >
-                        <X size={18} className="stroke-[3]" />
-                        <span>VOTE NO</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleVoteSubmit('ABSTAIN')}
-                        className={`py-3.5 rounded-2xl font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 border shadow-xs ${
-                          userBallot?.vote === 'ABSTAIN'
-                            ? 'bg-gray-400 text-black border-gray-300'
-                            : 'bg-gray-500/10 hover:bg-gray-500/20 text-gray-600 dark:text-gray-300 border-gray-500/30'
-                        }`}
-                      >
-                        <MinusCircle size={18} />
-                        <span>ABSTAIN</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* ── Plans & Attachments (Post-RFI Acceptance Criteria) ── */}
-              <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
-                <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <FileText size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                      Proposal Documents & Media Comparison
-                    </h2>
-                  </div>
-
-                  {canResubmitProposal && (
-                    <button
-                      type="button"
-                      onClick={() => setShowResubmitModal(true)}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/20 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all border border-[#0055FF]/20"
-                    >
-                      <UploadCloud size={13} />
-                      <span>Upload Updated Plan</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Section A: Original Documents */}
-                  <div className="bg-gray-50 dark:bg-[#080B12] border border-gray-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase text-gray-400 tracking-wider flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-gray-400" />
-                        Original Submission Attachments
-                      </span>
-                      <span className="text-[10px] text-gray-400 font-mono">10 Sep 2026</span>
-                    </div>
-
-                    <div className="space-y-2">
-                      {(activeMotion.attachments || []).map((att, idx) => (
-                        <div 
-                          key={idx}
-                          className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-white/4 border border-gray-200/80 dark:border-white/5 text-xs"
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <FileText size={15} className="text-gray-400 shrink-0" />
-                            <div className="truncate">
-                              <div className="font-bold text-gray-800 dark:text-gray-200 truncate">{att.name}</div>
-                              <div className="text-[10px] text-gray-400">{att.size || 'Original Mockup'} • {att.uploadedBy || 'Requester'}</div>
-                            </div>
-                          </div>
-                          <a 
-                            href={att.url} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 hover:text-gray-900 dark:hover:text-white"
-                          >
-                            <ExternalLink size={13} />
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Section B: Revised Resubmission Attachments (Post-RFI) */}
-                  <div className="bg-emerald-500/5 dark:bg-emerald-950/20 border-2 border-emerald-500/30 rounded-2xl p-4 sm:p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Updated Version (v2)
-                      </span>
-                      <span className="px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black">
-                        NEW REVISED
-                      </span>
-                    </div>
-
-                    {activeMotion.revisedAttachments && activeMotion.revisedAttachments.length > 0 ? (
-                      <div className="space-y-2">
-                        {activeMotion.revisedAttachments.map((att, idx) => (
-                          <div 
-                            key={idx}
-                            className="p-3 rounded-xl bg-white dark:bg-[#0c141d] border border-emerald-500/20 text-xs space-y-1.5"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 truncate">
-                                <Sparkles size={14} className="text-emerald-400 shrink-0" />
-                                <div className="truncate font-bold text-gray-900 dark:text-white">
-                                  {att.name}
-                                </div>
-                              </div>
-                              <span className="text-[10px] font-mono text-emerald-400">{att.uploadedAt}</span>
-                            </div>
-                            {att.note && (
-                              <p className="text-[11px] text-gray-600 dark:text-gray-300 italic pl-5">
-                                "{att.note}"
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 text-gray-400 text-xs">
-                        No revised attachments submitted yet.
-                        {canRequestRFI && (
-                          <div className="mt-2">
-                            <button
-                              type="button"
-                              onClick={() => setShowRfiModal(true)}
-                              className="text-xs font-bold text-blue-400 hover:underline cursor-pointer"
-                            >
-                              Raise RFI to request revised design
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Contractor Quotes ── */}
-              {activeMotion.quotes && activeMotion.quotes.length > 0 && (
-                <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
-                  <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-white/5 pb-4">
-                    <DollarSign size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                      Tender Quotes & Contractor Comparison
-                    </h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {activeMotion.quotes.map(q => (
-                      <div 
-                        key={q.vendorId}
-                        className={`p-5 rounded-2xl border transition-all ${
-                          q.recommended 
-                            ? 'bg-gradient-to-br from-[#0055FF]/5 to-transparent dark:from-[#0055FF]/10 border-[#0055FF]/40 shadow-xs' 
-                            : 'bg-gray-50/50 dark:bg-white/2 border-gray-200 dark:border-white/5'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div>
-                            <h4 className="font-extrabold text-sm text-gray-900 dark:text-white">{q.vendorName}</h4>
-                            <span className="text-[10px] text-gray-400">Licensed Strata Contractor</span>
-                          </div>
-                          {q.recommended && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-[#0055FF]/20 text-[#0055FF] dark:text-[#60A5FA] text-[10px] font-black uppercase">
-                              Recommended Quote
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="text-2xl font-black text-gray-900 dark:text-white font-mono mt-3">
-                          ${q.amount.toLocaleString()}
-                          <span className="text-xs font-normal text-gray-400 ml-1.5">
-                            {q.gstIncluded ? 'incl. GST' : 'ex. GST'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ── Official Committee Discussion & Manager Conduit ── */}
+              {/* ── Official Committee Discussion & Comments ── */}
               <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
                   <div className="flex items-center gap-2.5">
@@ -1320,6 +1091,16 @@ export function VotingHubView({
                 </div>
 
                 <div className="space-y-2">
+                  {/* Start New Vote Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(true)}
+                    className="w-full py-2.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <Plus size={14} strokeWidth={2.5} />
+                    <span>+ Start New Vote</span>
+                  </button>
+
                   {/* Formal Legal Vote Report Button */}
                   <button
                     type="button"
@@ -1333,7 +1114,7 @@ export function VotingHubView({
                   {/* Strata Manager Operational Controls (Strictly Role Gated) */}
                   {canManageMotion && (
                     <>
-                      {/* Close Voting Decision Engine Trigger (Miro Workflow) */}
+                      {/* Close Voting Trigger */}
                       <button
                         type="button"
                         onClick={() => {
@@ -1343,7 +1124,7 @@ export function VotingHubView({
                         className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                       >
                         <Scale size={14} />
-                        <span>Close Voting (Decision Engine)</span>
+                        <span>Close Vote</span>
                       </button>
 
                       <button
@@ -1873,7 +1654,7 @@ export function VotingHubView({
         </div>
       )}
 
-      {/* ── MODAL: Close Voting Decision Engine (Miro Flowchart Implementation) ── */}
+      {/* ── MODAL: Close Vote ── */}
       {showCloseModal && activeMotion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
           <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-xl w-full border border-gray-200 dark:border-white/15 p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white animate-in fade-in zoom-in duration-150">
@@ -1882,11 +1663,11 @@ export function VotingHubView({
             <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">
               <div>
                 <div className="text-[10px] font-mono font-bold text-red-500 uppercase tracking-widest mb-0.5">
-                  Miro Workflow Engine • Strata Manager Close Resolution
+                  Strata Manager Decision • SP 52042
                 </div>
                 <h3 className="text-base font-black flex items-center gap-2">
                   <Scale size={18} className="text-red-500" />
-                  <span>Close Voting Resolution Engine</span>
+                  <span>Close Vote</span>
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Motion: <strong>{activeMotion.id}</strong> — {activeMotion.title}
@@ -1912,7 +1693,7 @@ export function VotingHubView({
                     : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Path 1: Before Completion
+                Need More Details
               </button>
               <button
                 type="button"
@@ -1923,7 +1704,7 @@ export function VotingHubView({
                     : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Path 2: Output Achieved
+                Vote Completed
               </button>
             </div>
 
@@ -1932,7 +1713,7 @@ export function VotingHubView({
               <div className="space-y-4">
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs space-y-1">
                   <div className="font-black text-amber-600 dark:text-amber-400">
-                    Flowchart Rule: Additional Details Needed to Cast Vote
+                    Need More Information Before Deciding
                   </div>
                   <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                     Close voting early when the committee or strata manager requires missing specifications, additional engineering reports, or revised mockups. The case status will automatically revert back to <strong>Pending Triage</strong> and an email notification will be dispatched to the requestor.
@@ -1984,7 +1765,7 @@ export function VotingHubView({
               <div className="space-y-4">
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-xs space-y-1">
                   <div className="font-black text-emerald-600 dark:text-emerald-400">
-                    Flowchart Rule: Output Achieved • Request Status Changes as per Votes
+                    Final Resolution Outcome
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 font-mono text-[11px] pt-1 flex items-center gap-2">
                     <span>Live Quorum: <strong>{yesVotes} YES</strong> • <strong>{noVotes} NO</strong> • <strong>{abstainVotes} ABSTAIN</strong></span>
@@ -2001,28 +1782,28 @@ export function VotingHubView({
                     <div className="bg-blue-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-blue-500/30 space-y-2 flex flex-col justify-between">
                       <div>
                         <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                          Strata / Building-Level Scope
+                          Building Repairs
                         </span>
                         <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
-                          Motion Passed ➔ Dispatches notification to all participants ➔ <strong>Initiates Work Order Flow</strong>.
+                          Motion passed. Dispatches work order to contractor.
                         </p>
                       </div>
                       <button
                         type="button"
-                        onClick={() => handleConfirmResolveMotion('passed', '🚀 Motion Approved! Work Order flow initiated for contractor.')}
+                        onClick={() => handleConfirmResolveMotion('passed', '🚀 Motion Approved! Work order created for contractor.')}
                         className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
                       >
-                        Initiate Work Order Flow
+                        Create Work Order
                       </button>
                     </div>
 
                     <div className="bg-purple-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-purple-500/30 space-y-2 flex flex-col justify-between">
                       <div>
                         <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
-                          Resident-Level Scope
+                          Resident Request
                         </span>
                         <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
-                          Motion Passed ➔ Dispatches approval letter to resident ➔ <strong>Request Voting Closed & Approved</strong>.
+                          Motion passed. Sends formal approval notice to resident.
                         </p>
                       </div>
                       <button
@@ -2030,7 +1811,7 @@ export function VotingHubView({
                         onClick={() => handleConfirmResolveMotion('passed', '✅ Resident request approved and voting closed.')}
                         className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
                       >
-                        Close Ticket as Approved
+                        Approve & Close Request
                       </button>
                     </div>
                   </div>
@@ -2041,7 +1822,7 @@ export function VotingHubView({
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-bold text-red-600 dark:text-red-400">If Motion Rejected:</div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Send notification to requestor ➔ Request Voting Closed & Rejected.</div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Motion rejected. Sends rejection notice to resident.</div>
                     </div>
                     <button
                       type="button"
@@ -2061,7 +1842,7 @@ export function VotingHubView({
                       <span>If Tie / Inconclusive (Manager Review):</span>
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Committee votes are tied or inconclusive. Strata Manager exercises administrative casting determination.
+                      Committee votes are tied. Strata Manager casts the deciding vote.
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -2084,6 +1865,170 @@ export function VotingHubView({
 
               </div>
             )}
+
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Start New Committee Vote ── */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-lg w-full border border-gray-200 dark:border-white/15 p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">
+              <div>
+                <div className="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-0.5">
+                  Strata Committee Motion • {activeMotion?.strataPlan || 'SP 52042'}
+                </div>
+                <h3 className="text-base font-black flex items-center gap-2">
+                  <Vote size={18} className="text-blue-600 dark:text-[#00D4B2]" />
+                  <span>Start New Committee Vote</span>
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Create an official motion for strata committee members to review and vote on.
+                </p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleConfirmCreateMotion} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                  Motion Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Approve Commercial Solar Inverter Replacement"
+                  value={createTitle}
+                  onChange={e => setCreateTitle(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                    Category
+                  </label>
+                  <select
+                    value={createCategory}
+                    onChange={e => setCreateCategory(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="Repairs & Maintenance">Repairs & Maintenance</option>
+                    <option value="Major Works">Major Works</option>
+                    <option value="By-law Approval">By-law Approval</option>
+                    <option value="Financial">Financial Approval</option>
+                    <option value="General">General Resolution</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                    Voting Period
+                  </label>
+                  <select
+                    value={createDeadlineDays}
+                    onChange={e => setCreateDeadlineDays(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value={7}>7 Days (Standard)</option>
+                    <option value={14}>14 Days (Extended)</option>
+                    <option value={21}>21 Days (Statutory)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                  Summary & Motion Details *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Explain what the committee is voting on, why it is needed, and the proposed scope of work..."
+                  value={createSummary}
+                  onChange={e => setCreateSummary(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Optional: Link to Resident Request */}
+              {requests && requests.length > 0 && (
+                <div>
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                    Link to Resident Request (Optional)
+                  </label>
+                  <select
+                    value={createLinkedRequestId}
+                    onChange={e => setCreateLinkedRequestId(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="">-- None (Standalone Committee Motion) --</option>
+                    {requests.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.referenceId || r.id} — {r.title} ({r.category || 'General'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Optional: Contractor & Cost */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                    Contractor / Vendor (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Apex Solar Solutions"
+                    value={createVendorName}
+                    onChange={e => setCreateVendorName(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                    Estimated Cost (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. $4,200 AUD"
+                    value={createEstimatedCost}
+                    onChange={e => setCreateEstimatedCost(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Footer buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs cursor-pointer shadow-md transition-all flex items-center gap-1.5"
+                >
+                  <Vote size={14} />
+                  <span>Start Vote</span>
+                </button>
+              </div>
+            </form>
 
           </div>
         </div>
