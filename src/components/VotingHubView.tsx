@@ -326,7 +326,12 @@ export function VotingHubView({
   const openMotionDetail = (motionId: string) => {
     setSelectedMotionId(motionId);
     setViewMode('detail');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
