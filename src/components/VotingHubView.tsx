@@ -227,6 +227,9 @@ export function VotingHubView({
   const statsAwaitingUser = schemeMotions.filter(
     m => m.status === 'active' && canCastVote && !m.ballots?.some(b => b.voterName.toLowerCase() === activePersonaName.toLowerCase())
   ).length;
+  const statsAwaitingQuorum = schemeMotions.filter(
+    m => m.status === 'active' && (m.ballots?.filter(b => b.vote === 'YES').length || 0) < (m.quorumTarget || 4)
+  ).length;
 
   const handleVoteSubmit = (vote: MotionVote) => {
     if (!activeMotion) return;
@@ -472,12 +475,14 @@ export function VotingHubView({
               </div>
               <div>
                 <div className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <span>{canCastVote ? statsAwaitingUser : '—'}</span>
+                  <span>{canCastVote ? statsAwaitingUser : statsAwaitingQuorum}</span>
                   {canCastVote && statsAwaitingUser > 0 && (
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                   )}
                 </div>
-                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">Awaiting Your Vote</div>
+                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                  {canCastVote ? 'Awaiting Your Vote' : 'Awaiting Quorum'}
+                </div>
               </div>
             </div>
 
@@ -566,17 +571,6 @@ export function VotingHubView({
               >
                 Under RFI ({statsUnresolved})
               </button>
-
-              {canManageMotion && (
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(true)}
-                  className="px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer ml-auto"
-                >
-                  <Plus size={13} strokeWidth={2.5} />
-                  <span>Start Vote</span>
-                </button>
-              )}
             </div>
           </div>
 
