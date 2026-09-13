@@ -385,6 +385,30 @@ export const INITIAL_VENDORS: Vendor[] = [
     insuranceStatus: 'Active',
     insuranceExpiry: '2028-01-01',
     rating: 4.7,
+  },
+  {
+    id: 'VND-006',
+    name: 'SoundShield Acoustic Engineering NSW',
+    category: 'Acoustic & Vibration Engineering',
+    abn: '44 812 390 118',
+    licenseNo: 'LIC-NSW-99201S',
+    phone: '02 9188 4400',
+    email: 'tenders@soundshield.com.au',
+    insuranceStatus: 'Active',
+    insuranceExpiry: '2027-09-30',
+    rating: 4.9,
+  },
+  {
+    id: 'VND-007',
+    name: 'Aeroflow HVAC & Sound Dampeners Pty Ltd',
+    category: 'Mechanical & Acoustic Services',
+    abn: '71 630 449 201',
+    licenseNo: 'LIC-NSW-81042A',
+    phone: '02 9340 7711',
+    email: 'estimating@aeroflow.com.au',
+    insuranceStatus: 'Active',
+    insuranceExpiry: '2026-12-31',
+    rating: 4.6,
   }
 ];
 
@@ -467,57 +491,65 @@ export const INITIAL_MOTIONS: Motion[] = [
     ]
   },
   {
-    id: 'MOT-CAV-301',
-    caseId: 'REQ-CAV-303',
-    schemeId: 'SP103',
-    title: 'Rooftop Commercial Solar Inverter Replacement & Firmware Upgrade',
-    summary: 'Resolution under Special Motion 4B to approve contractor tender for decommissioning faulty Inverter 3 and installing an industrial 25kW Fronius Symo commercial solar inverter.',
+    id: 'MOT-CAV-502',
+    caseId: 'REQ-CAV-104',
+    schemeId: 'SP52042',
+    strataPlan: 'SP 52042',
+    propertyAddress: '1 Pitt Street, Sydney NSW 2000',
+    heading: 'Capital Works: Rooftop HVAC Acoustic Attenuation Baffle',
+    title: 'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Rooftop HVAC Plant Acoustic Baffle Installation & Vibration Dampening',
+    summary: 'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers following resident acoustic complaints.',
     voterGroup: 'committee_only',
-    committeeSize: 4,
-    quorumTarget: 3,
-    deadline: '2026-09-24',
-    status: 'active',
+    committeeSize: 6,
+    quorumTarget: 4,
+    deadline: '2026-10-08',
+    originalDeadline: '2026-09-24',
+    status: 'unresolved',
     committeeRoster: [
-      { id: 'scm-sp103-1', name: 'Arthur Pendelton', office: 'Chairperson', email: 'arthur.p@spearempire.com', unit: 'Unit 14' },
-      { id: 'scm-sp103-2', name: 'Sophia Zhang', office: 'Treasurer', email: 'sophia.z@spearempire.com', unit: 'Unit 8' },
-      { id: 'scm-sp103-3', name: 'Brandon Cole', office: 'Secretary', email: 'brandon.c@spearempire.com', unit: 'Unit 3' },
-      { id: 'scm-sp103-4', name: 'Oliver Vance', office: 'Committee Member', email: 'oliver.v@spearempire.com', unit: 'Unit 7' }
+      { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
+      { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
+      { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
+      { id: 'scm-4', name: 'George', office: 'Committee Member', email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
+      { id: 'scm-5', name: 'Lisa', office: 'Committee Member', email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
+      { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.member@cavalloscm.org', unit: 'Unit 21' }
     ],
     quotes: [
-      { vendorId: 'VND-002', vendorName: 'ElectroPro Strata Services', amount: 4850, gstIncluded: true, recommended: true },
-      { vendorId: 'VND-005', vendorName: 'SunVolt Commercial Energy Systems', amount: 5600, gstIncluded: true },
+      { vendorId: 'VND-006', vendorName: 'SoundShield Acoustic Engineering NSW', amount: 8250, gstIncluded: true, recommended: true },
+      { vendorId: 'VND-007', vendorName: 'Aeroflow HVAC & Sound Dampeners Pty Ltd', amount: 9600, gstIncluded: true },
     ],
     attachments: [
-      { name: 'ElectroPro_Inverter_Diagnostic_Report.pdf', url: '#', size: '1.8 MB', type: 'original' },
-      { name: 'Scheme_Energy_Audit_2026.pdf', url: '#', size: '3.2 MB', type: 'original' },
+      { name: 'Rooftop_HVAC_Cooling_Tower_Survey.pdf', url: '#', size: '3.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Peter (Building Manager)' },
+      { name: 'SoundShield_Engineering_Quote_8250.pdf', url: '#', size: '1.2 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Peter (Building Manager)' },
+    ],
+    rfiHistory: [
+      {
+        id: 'RFI-CAV-002',
+        requestedBy: 'Joana',
+        requestedRole: 'Treasurer',
+        question: 'Before the committee approves $8,250 from capital works, we require an independent acoustic engineer dB test certifying compliance with Council Night-Time Noise Policy (AS 1055), plus structural engineer sign-off on rooftop load limits.',
+        requestedAt: '2026-09-12',
+        extendedDays: 14,
+        status: 'open'
+      }
     ],
     comments: [
       {
-        id: 'C-MOT-1',
-        authorName: 'Arthur Pendelton',
-        authorRole: 'Committee Member',
-        text: 'ElectroPro has served SP103 for over 3 years with pristine compliance and 5-year parts warranty. Strongly recommend YES.',
+        id: 'CMT-RFI-502-1',
+        authorName: 'Joana',
+        authorRole: 'Treasurer',
+        text: '⚠️ Request for Information (RFI) Raised: "Before the committee approves $8,250 from capital works, we require an independent acoustic engineer dB test certifying compliance with Council Night-Time Noise Policy (AS 1055), plus structural engineer sign-off on rooftop load limits.". Voting deadline extended by 14 days to 2026-10-08.',
         createdAt: '1 day ago'
       },
       {
-        id: 'C-MOT-2',
-        authorName: 'Jessica Taylor',
-        authorRole: 'Tenant',
-        text: 'Will this power disruption affect EV charging bays in basement level 2 during installation?',
-        createdAt: '5 hours ago'
-      },
-      {
-        id: 'C-MOT-3',
-        authorName: 'Emma Wilson',
-        authorRole: 'Strata Manager',
-        text: 'Hi Jessica, the contractor confirms all electrical works are strictly confined to rooftop plant room with no outage to residential risers or EV chargers.',
-        createdAt: '2 hours ago'
+        id: 'CMT-RFI-502-2',
+        authorName: 'Peter',
+        authorRole: 'Building Manager',
+        text: 'I have contacted SoundShield Acoustic Engineering to schedule the calibrated sound meter testing on Friday evening. Structural plans have also been dispatched to the consulting engineer.',
+        createdAt: '6 hours ago'
       }
     ],
     ballots: [
-      { voterName: 'Arthur Pendelton', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Recommended by facility engineering committee.' },
-      { voterName: 'Sophia Zhang', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Capex funding allocated.' },
-      { voterName: 'Brandon Cole', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'Electrical certification reviewed.' }
+      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-11', comment: 'Acoustic remediation is necessary to mitigate resident complaints and prevent council fines.' }
     ]
   },
   {
@@ -1878,7 +1910,7 @@ export function useSmartLotStore() {
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
-  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v9`, INITIAL_MOTIONS);
+  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v10`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 

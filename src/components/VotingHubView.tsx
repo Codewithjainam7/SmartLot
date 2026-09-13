@@ -174,10 +174,17 @@ export function VotingHubView({
     setTimeout(() => setActionNotification(null), 4000);
   };
 
+  const isMotionRFI = (m?: Motion) => !!m && (m.status === 'unresolved' || !!(m.rfiHistory && m.rfiHistory.some(r => r.status === 'open')));
+
   const filteredMotions = schemeMotions.filter(m => {
     if (activeFilter !== 'all') {
-      if (activeFilter === 'unresolved' && (m.status === 'unresolved' || m.status === 'rejected')) return true;
-      if (m.status !== activeFilter) return false;
+      if (activeFilter === 'unresolved') {
+        if (!isMotionRFI(m) && m.status !== 'rejected') return false;
+      } else if (activeFilter === 'active') {
+        if (m.status !== 'active' || isMotionRFI(m)) return false;
+      } else {
+        if (m.status !== activeFilter) return false;
+      }
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -259,10 +266,9 @@ export function VotingHubView({
   // User's existing ballot
   const userBallot = ballots.find(b => b.voterName.toLowerCase() === activePersonaName.toLowerCase());
 
-  // Statistics
-  const statsActive = schemeMotions.filter(m => m.status === 'active').length;
+  const statsActive = schemeMotions.filter(m => m.status === 'active' && !isMotionRFI(m)).length;
   const statsPassed = schemeMotions.filter(m => m.status === 'passed').length;
-  const statsUnresolved = schemeMotions.filter(m => m.status === 'unresolved' || m.status === 'rejected').length;
+  const statsUnresolved = schemeMotions.filter(m => isMotionRFI(m) || m.status === 'rejected').length;
   const statsAwaitingUser = schemeMotions.filter(
     m => m.status === 'active' && canCastVote && !m.ballots?.some(b => b.voterName.toLowerCase() === activePersonaName.toLowerCase())
   ).length;
@@ -676,9 +682,9 @@ export function VotingHubView({
                           <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase flex items-center gap-1">
                             <CheckCircle2 size={11} /> Passed & Locked
                           </span>
-                        ) : motion.status === 'unresolved' ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase">
-                            Under RFI
+                        ) : isMotionRFI(motion) ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase flex items-center gap-1">
+                            <AlertTriangle size={11} /> Under RFI
                           </span>
                         ) : (
                           <span className="px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-black uppercase flex items-center gap-1">
@@ -864,9 +870,9 @@ export function VotingHubView({
                     <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black uppercase flex items-center gap-1.5">
                       <Lock size={12} /> Passed & Locked
                     </span>
-                  ) : activeMotion.status === 'unresolved' ? (
-                    <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-black uppercase">
-                      Under RFI Clarification
+                  ) : isMotionRFI(activeMotion) ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-black uppercase flex items-center gap-1.5">
+                      <AlertTriangle size={12} /> Under RFI Clarification
                     </span>
                   ) : (
                     <span className="px-3 py-1 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-black uppercase flex items-center gap-1.5">
@@ -981,75 +987,108 @@ export function VotingHubView({
                   )}
                 </div>
               ) : (
-                <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Live Quorum & Voting Progress
+                <div className="space-y-4">
+                  {/* RFI Alert Banner if activeMotion is under RFI */}
+                  {isMotionRFI(activeMotion) && (
+                    <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3.5 shadow-2xs">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                        <AlertTriangle size={18} />
                       </div>
-                      <div className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2 mt-0.5">
-                        <span>{yesVotes} Yes votes cast</span>
-                        <span className="text-gray-400 font-normal">•</span>
-                        <span className="text-[#0055FF] dark:text-[#00D4B2]">
-                          {Math.max(0, quorumTarget - yesVotes)} more needed to pass
-                        </span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black uppercase tracking-wider text-[11px] text-amber-700 dark:text-amber-300">
+                            Formal Clarification Pending (Under RFI)
+                          </span>
+                          <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[10px] font-bold">
+                            Voting Paused
+                          </span>
+                        </div>
+                        <p className="text-xs text-amber-800 dark:text-amber-200/90 leading-relaxed">
+                          {activeMotion.rfiHistory?.find(r => r.status === 'open') ? (
+                            <>
+                              <strong>{activeMotion.rfiHistory.find(r => r.status === 'open')?.requestedBy}</strong> ({activeMotion.rfiHistory.find(r => r.status === 'open')?.requestedRole}) requested: &ldquo;{activeMotion.rfiHistory.find(r => r.status === 'open')?.question}&rdquo;
+                            </>
+                          ) : (
+                            "This motion is pending formal information or documentation from the requester/engineer."
+                          )}
+                        </p>
+                        <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold pt-0.5">
+                          Deadline automatically extended by {activeMotion.rfiHistory?.find(r => r.status === 'open')?.extendedDays || 14} days to allow compliance documents to be uploaded.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Live Quorum & Voting Progress
+                        </div>
+                        <div className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2 mt-0.5">
+                          <span>{yesVotes} Yes votes cast</span>
+                          <span className="text-gray-400 font-normal">•</span>
+                          <span className="text-[#0055FF] dark:text-[#00D4B2]">
+                            {Math.max(0, quorumTarget - yesVotes)} more needed to pass
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-xs font-mono font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                        <Clock size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        <span>Voting Deadline: {activeMotion.deadline}</span>
                       </div>
                     </div>
 
-                    <div className="text-xs font-mono font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                      <Clock size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                      <span>Voting Deadline: {activeMotion.deadline}</span>
-                    </div>
-                  </div>
+                    {/* Progress Bar with 4-Vote Threshold Line */}
+                    <div className="relative pt-2 pb-1">
+                      <div className="h-3.5 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex">
+                        <div 
+                          style={{ width: `${Math.min(100, (yesVotes / totalCommitteeSize) * 100)}%` }}
+                          className="bg-emerald-500 transition-all duration-500"
+                        />
+                        <div 
+                          style={{ width: `${Math.min(100, (noVotes / totalCommitteeSize) * 100)}%` }}
+                          className="bg-red-500 transition-all duration-500"
+                        />
+                        <div 
+                          style={{ width: `${Math.min(100, (abstainVotes / totalCommitteeSize) * 100)}%` }}
+                          className="bg-gray-400 transition-all duration-500"
+                        />
+                      </div>
 
-                  {/* Progress Bar with 4-Vote Threshold Line */}
-                  <div className="relative pt-2 pb-1">
-                    <div className="h-3.5 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex">
+                      {/* Threshold Line at 4 of 6 */}
                       <div 
-                        style={{ width: `${Math.min(100, (yesVotes / totalCommitteeSize) * 100)}%` }}
-                        className="bg-emerald-500 transition-all duration-500"
+                        className="absolute top-0 bottom-0 w-0.5 bg-gray-900 dark:bg-white z-10"
+                        style={{ left: `${(quorumTarget / totalCommitteeSize) * 100}%` }}
                       />
                       <div 
-                        style={{ width: `${Math.min(100, (noVotes / totalCommitteeSize) * 100)}%` }}
-                        className="bg-red-500 transition-all duration-500"
-                      />
-                      <div 
-                        style={{ width: `${Math.min(100, (abstainVotes / totalCommitteeSize) * 100)}%` }}
-                        className="bg-gray-400 transition-all duration-500"
-                      />
+                        className="absolute top-6 text-[10px] font-mono font-bold text-gray-600 dark:text-gray-300 -translate-x-1/2 whitespace-nowrap"
+                        style={{ left: `${(quorumTarget / totalCommitteeSize) * 100}%` }}
+                      >
+                        ▲ Pass Threshold ({quorumTarget} Votes)
+                      </div>
                     </div>
 
-                    {/* Threshold Line at 4 of 6 */}
-                    <div 
-                      className="absolute top-0 bottom-0 w-0.5 bg-gray-900 dark:bg-white z-10"
-                      style={{ left: `${(quorumTarget / totalCommitteeSize) * 100}%` }}
-                    />
-                    <div 
-                      className="absolute top-6 text-[10px] font-mono font-bold text-gray-600 dark:text-gray-300 -translate-x-1/2 whitespace-nowrap"
-                      style={{ left: `${(quorumTarget / totalCommitteeSize) * 100}%` }}
-                    >
-                      ▲ Pass Threshold ({quorumTarget} Votes)
+                    {/* Legend Counters */}
+                    <div className="flex flex-wrap items-center gap-5 pt-3 text-xs text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                        <strong>{yesVotes}</strong> Yes
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                        <strong>{noVotes}</strong> No
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
+                        <strong>{abstainVotes}</strong> Abstain
+                      </span>
+                      <span className="flex items-center gap-1.5 text-amber-500 font-bold">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                        <strong>{pendingVotesCount}</strong> Awaiting Response
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Legend Counters */}
-                  <div className="flex flex-wrap items-center gap-5 pt-3 text-xs text-gray-500 dark:text-gray-400">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                      <strong>{yesVotes}</strong> Yes
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                      <strong>{noVotes}</strong> No
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
-                      <strong>{abstainVotes}</strong> Abstain
-                    </span>
-                    <span className="flex items-center gap-1.5 text-amber-500 font-bold">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-                      <strong>{pendingVotesCount}</strong> Awaiting Response
-                    </span>
                   </div>
                 </div>
               )}
