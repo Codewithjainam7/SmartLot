@@ -163,12 +163,70 @@ export type ResidentRequest = {
 export type MaintenanceCase = ResidentRequest;
 
 export type MotionVote = 'YES' | 'NO' | 'ABSTAIN';
+export type SCMOffice = 'Chairperson' | 'Treasurer' | 'Secretary' | 'Committee Member';
+
+export type CommitteeMember = {
+  id: string;
+  name: string;
+  office: SCMOffice;
+  email?: string;
+  unit?: string;
+};
+
+export type MotionAttachment = {
+  name: string;
+  url: string;
+  size?: string;
+  type?: 'original' | 'revised';
+  uploadedAt?: string;
+  uploadedBy?: string;
+  note?: string;
+};
+
+export type MotionRFI = {
+  id: string;
+  requestedBy: string;
+  requestedRole: string;
+  question: string;
+  requestedAt: string;
+  extendedDays: number;
+  status: 'open' | 'addressed';
+  responseNote?: string;
+};
+
+export type MotionRestartEvent = {
+  id: string;
+  restartedAt: string;
+  restartedBy: string;
+  reason: string;
+  previousYesCount: number;
+  previousNoCount: number;
+};
 
 export type Motion = {
   id: string;
   caseId: string;
+  schemeId?: string;
+  strataPlan?: string;
+  propertyAddress?: string;
+  heading?: string;
   title: string;
   summary: string;
+  voterGroup?: 'committee_only' | 'lot_owners' | 'all_residents' | string;
+  committeeSize?: number;
+  quorumTarget: number;
+  deadline: string;
+  originalDeadline?: string;
+  status: 'active' | 'passed' | 'rejected' | 'unresolved';
+  committeeRoster?: CommitteeMember[];
+  ballots: {
+    voterName: string;
+    voterRole: string;
+    voterOffice?: SCMOffice;
+    vote: MotionVote;
+    votedAt: string;
+    comment?: string;
+  }[];
   quotes: {
     vendorId: string;
     vendorName: string;
@@ -176,15 +234,17 @@ export type Motion = {
     gstIncluded: boolean;
     recommended?: boolean;
   }[];
-  quorumTarget: number;
-  deadline: string;
-  status: 'active' | 'passed' | 'rejected';
-  ballots: {
-    voterName: string;
-    voterRole: string;
-    vote: MotionVote;
-    votedAt: string;
-  }[];
+  attachments?: MotionAttachment[];
+  revisedAttachments?: MotionAttachment[];
+  rfiHistory?: MotionRFI[];
+  restartHistory?: MotionRestartEvent[];
+  comments?: RequestComment[];
+  closeReason?: string;
+  closedAt?: string;
+  closedBy?: {
+    name: string;
+    role: string;
+  };
   createdWorkOrderId?: string;
 };
 
@@ -221,12 +281,15 @@ export type WorkOrder = {
 export type CreateVendorPayload = Omit<Vendor, 'id'> & { id?: string };
 export type CreateWorkOrderPayload = Omit<WorkOrder, 'id' | 'siteAccessPin' | 'guestMagicToken' | 'status'>;
 export type CreateMotionPayload = {
-  caseId: string;
+  caseId?: string;
   title: string;
   summary: string;
-  quotes: Motion['quotes'];
+  quotes?: Motion['quotes'];
+  attachments?: Motion['attachments'];
   quorumTarget: number;
   deadline: string;
+  schemeId?: string;
+  voterGroup?: 'committee_only' | 'lot_owners' | 'all_residents' | string;
 };
 
 
@@ -328,10 +391,136 @@ export const INITIAL_VENDORS: Vendor[] = [
 
 export const INITIAL_MOTIONS: Motion[] = [
   {
-    id: 'MOT-001',
-    caseId: 'REQ-101',
-    title: 'Common Area Main Water Line Replacement',
-    summary: 'Resolution to accept contractor tender for replacing damaged 50mm copper hydraulic supply line servicing Lots 1-6.',
+    id: 'MOT-CAV-501',
+    caseId: 'REQ-CAV-101',
+    schemeId: 'SP52042',
+    strataPlan: 'SP 52042',
+    propertyAddress: '1 Pitt Street, Sydney NSW 2000',
+    heading: 'Lot Owner Request: Common Property Signage & Facade Modernisation',
+    title: 'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Lot Owner Request: Common Property Signage & Facade Modernisation',
+    summary: 'Official Strata Committee Motion to approve Lot 4 owner Jack\'s request for replacing aged common lobby directory signage and exterior entry cladding with architect-specified architectural aluminum panels, funded under capital works fund.',
+    voterGroup: 'committee_only',
+    committeeSize: 6,
+    quorumTarget: 4, // 4 votes required to form a binding decision
+    deadline: '2026-09-26',
+    originalDeadline: '2026-09-19',
+    status: 'active',
+    committeeRoster: [
+      { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
+      { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
+      { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
+      { id: 'scm-4', name: 'George', office: 'Committee Member', email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
+      { id: 'scm-5', name: 'Lisa', office: 'Committee Member', email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
+      { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.member@cavalloscm.org', unit: 'Unit 21' }
+    ],
+    ballots: [
+      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Complies with building by-laws and architectural guidelines.' },
+      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Cost is fully budgeted under line item 4.2 in capital works fund.' },
+      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'All notices and contractor insurance verified.' }
+    ],
+    quotes: [
+      { vendorId: 'VND-002', vendorName: 'Apex Architectural Facades NSW', amount: 3850, gstIncluded: true, recommended: true },
+      { vendorId: 'VND-005', vendorName: 'Sydney Signcraft & Cladding Co.', amount: 4400, gstIncluded: true }
+    ],
+    attachments: [
+      { name: 'Original_Signage_Submission_Jack_Lot4.pdf', url: '#', size: '2.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Jack (Lot Owner)' },
+      { name: 'Cavallo_Lobby_Existing_Photo.jpg', url: '#', size: '3.1 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Jack (Lot Owner)' }
+    ],
+    revisedAttachments: [
+      { name: 'Revised_Resubmission_Green_Accent_Spec_v2.pdf', url: '#', size: '1.9 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Updated per John\'s RFI: Green colorway and non-reflective acrylic finish.' },
+      { name: 'Revised_Signage_Mockup_Photo_v2.jpg', url: '#', size: '2.8 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Architectural rendering with dark bronze frame and forest green letter accents.' }
+    ],
+    rfiHistory: [
+      {
+        id: 'RFI-001',
+        requestedBy: 'John',
+        requestedRole: 'Committee Member',
+        question: 'Could the requester please provide an updated design mockup in forest green accent to match our foyer redesign palette?',
+        requestedAt: '2026-09-11',
+        extendedDays: 7,
+        status: 'addressed',
+        responseNote: 'Jack provided revised design photos and specs on 12 Sep 2026. Deadline extended by 7 days.'
+      }
+    ],
+    comments: [
+      {
+        id: 'C-CAV-1',
+        authorName: 'John',
+        authorRole: 'Committee Member',
+        text: 'I requested updated signage design in green to match foyer aesthetics. Requester resubmitted revised attachments, looks much better now!',
+        createdAt: '1 day ago'
+      },
+      {
+        id: 'C-CAV-2',
+        authorName: 'Peter',
+        authorRole: 'Building Manager',
+        text: 'As Building Manager, I checked the structural anchors on the ground floor foyer wall. Conduit paths are clear and installation will take less than 4 hours.',
+        createdAt: '18 hours ago'
+      },
+      {
+        id: 'C-CAV-3',
+        authorName: 'Steve',
+        authorRole: 'Strata Manager',
+        text: 'Thank you Peter and John. The motion is currently at 3 YES votes. We require 1 more vote (4 votes out of 6) to reach statutory threshold and pass.',
+        createdAt: '4 hours ago'
+      }
+    ]
+  },
+  {
+    id: 'MOT-CAV-301',
+    caseId: 'REQ-CAV-303',
+    schemeId: 'SP103',
+    title: 'Rooftop Commercial Solar Inverter Replacement & Firmware Upgrade',
+    summary: 'Resolution under Special Motion 4B to approve contractor tender for decommissioning faulty Inverter 3 and installing an industrial 25kW Fronius Symo commercial solar inverter.',
+    voterGroup: 'committee_only',
+    committeeSize: 5,
+    quotes: [
+      { vendorId: 'VND-002', vendorName: 'ElectroPro Strata Services', amount: 4850, gstIncluded: true, recommended: true },
+      { vendorId: 'VND-005', vendorName: 'SunVolt Commercial Energy Systems', amount: 5600, gstIncluded: true },
+    ],
+    attachments: [
+      { name: 'ElectroPro_Inverter_Diagnostic_Report.pdf', url: '#', size: '1.8 MB', type: 'original' },
+      { name: 'Scheme_Energy_Audit_2026.pdf', url: '#', size: '3.2 MB', type: 'original' },
+    ],
+    quorumTarget: 4,
+    deadline: '2026-09-24',
+    status: 'active',
+    comments: [
+      {
+        id: 'C-MOT-1',
+        authorName: 'Arthur Pendelton',
+        authorRole: 'Committee Member',
+        text: 'ElectroPro has served SP103 for over 3 years with pristine compliance and 5-year parts warranty. Strongly recommend YES.',
+        createdAt: '1 day ago'
+      },
+      {
+        id: 'C-MOT-2',
+        authorName: 'Jessica Taylor',
+        authorRole: 'Tenant',
+        text: 'Will this power disruption affect EV charging bays in basement level 2 during installation?',
+        createdAt: '5 hours ago'
+      },
+      {
+        id: 'C-MOT-3',
+        authorName: 'Emma Wilson',
+        authorRole: 'Strata Manager',
+        text: 'Hi Jessica, the contractor confirms all electrical works are strictly confined to rooftop plant room with no outage to residential risers or EV chargers.',
+        createdAt: '2 hours ago'
+      }
+    ],
+    ballots: [
+      { voterName: 'Arthur Pendelton', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-10', comment: 'Recommended by facility engineering committee.' },
+      { voterName: 'Sophia Zhang', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-11' },
+      { voterName: 'Brandon Cole', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-12' }
+    ]
+  },
+  {
+    id: 'MOT-COR-201',
+    caseId: 'REQ-COR-202',
+    schemeId: 'SP102',
+    title: 'Central Garden Courtyard Hydraulic Line Overhaul & Resurfacing',
+    summary: 'Resolution to accept contractor tender for excavating cracked terracotta irrigation pipes, replacing with 32mm PN16 high-density polyethylene, and restoring courtyard flagstones.',
+    voterGroup: 'lot_owners',
     quotes: [
       { vendorId: 'VND-001', vendorName: 'Sydney Apex Plumbing & Gas', amount: 3450, gstIncluded: true, recommended: true },
       { vendorId: 'VND-004', vendorName: 'Citywide Commercial Hydraulics', amount: 4100, gstIncluded: true },
@@ -339,10 +528,40 @@ export const INITIAL_MOTIONS: Motion[] = [
     quorumTarget: 3,
     deadline: '2026-09-30',
     status: 'active',
+    comments: [
+      {
+        id: 'C-MOT-COR-1',
+        authorName: 'Marcus Sterling',
+        authorRole: 'Committee Member',
+        text: 'Apex Plumbing already surveyed the basement run. Quote is reasonable and within administrative fund cap.',
+        createdAt: 'Yesterday'
+      }
+    ],
     ballots: [
-      { voterName: 'Sarah Jones', voterRole: 'Strata Admin', vote: 'YES', votedAt: '2026-09-08' },
-      { voterName: 'Michael Chen', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-09' }
+      { voterName: 'Marcus Sterling', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-11' },
+      { voterName: 'Michael Chen', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-12' }
     ]
+  },
+  {
+    id: 'MOT-001',
+    caseId: 'REQ-101',
+    schemeId: 'SP101',
+    title: 'Common Area Main Water Line Replacement',
+    summary: 'Resolution to accept contractor tender for replacing damaged 50mm copper hydraulic supply line servicing Lots 1-6.',
+    voterGroup: 'all_residents',
+    quotes: [
+      { vendorId: 'VND-001', vendorName: 'Sydney Apex Plumbing & Gas', amount: 3450, gstIncluded: true, recommended: true },
+      { vendorId: 'VND-004', vendorName: 'Citywide Commercial Hydraulics', amount: 4100, gstIncluded: true },
+    ],
+    quorumTarget: 2,
+    deadline: '2026-09-28',
+    status: 'passed',
+    comments: [],
+    ballots: [
+      { voterName: 'Sarah Jones', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-08' },
+      { voterName: 'David Miller', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-09' }
+    ],
+    createdWorkOrderId: 'WO-10482'
   }
 ];
 
@@ -553,6 +772,63 @@ const INITIAL_MEMBERS: Member[] = [
 ];
 
 const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
+  // Cavallo (SP52042) - Scenario V1 Lot Owner Request
+  {
+    id: 'REQ-CAV-101',
+    referenceId: '#CAV-101',
+    schemeId: 'SP52042',
+    buildingName: 'Cavallo, 1 Pitt St',
+    unit: 'Unit 4',
+    title: 'Common lobby directory signage & exterior entry cladding modernisation',
+    description: 'Requesting permission and committee funding to replace the cracked 2004 entrance signage board with modern architectural brushed aluminum directory signage, and renew weathered exterior entry cladding.',
+    requestType: 'Lot Owner Modification',
+    stream: 'common_area_repair',
+    priority: 'Medium',
+    location: 'Ground Floor Main Lobby & Entryway',
+    contactPreference: 'Email',
+    strataManagerEmail: 'steve@stratachoice.com.au',
+    attachmentUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop',
+    attachmentUrls: [
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop'
+    ],
+    status: 'in_voting',
+    createdAt: '10 Sep 2026',
+    requestorName: 'Jack',
+    reportedBy: 'Jack (Lot Owner / Resident)',
+    requestorEmail: 'jack.resident@cavallosydney.com.au',
+    requestorPhone: '0412 888 777',
+    requestorRole: 'Lot Owner',
+    linkedMotionId: 'MOT-CAV-501',
+    comments: [
+      {
+        id: 'C-CAV-101-1',
+        authorName: 'Steve',
+        authorRole: 'Strata Manager',
+        text: 'Hi Jack, I have published this request as official Strata Committee Motion MOT-CAV-501. 4 committee votes required to pass under NSW Strata Schemes Management Act 2015.',
+        createdAt: '10 Sep 2026'
+      }
+    ],
+    auditLog: [
+      {
+        id: 'AUD-CAV-101-1',
+        type: 'created',
+        actor: 'Jack',
+        actorRole: 'Lot Owner',
+        timestamp: '10 Sep 2026',
+        note: 'Request #CAV-101 submitted for Unit 4 common area signage.',
+      },
+      {
+        id: 'AUD-CAV-101-2',
+        type: 'status_change',
+        actor: 'Steve',
+        actorRole: 'Strata Manager',
+        timestamp: '10 Sep 2026',
+        fromStatus: 'new',
+        toStatus: 'in_voting',
+        note: 'Published as official Committee Motion MOT-CAV-501.',
+      }
+    ]
+  },
   // Cavalier Grand Residences (SP103) Initial Requests
   {
     id: 'REQ-SL-10452',
@@ -1565,7 +1841,7 @@ export function useSmartLotStore() {
   }, [user?.id, session]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v8`, ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'settings' | 'performance'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
   const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v8`, false);
   const [theme, setThemeRaw] = useState<'light' | 'dark'>(() => {
     try {
@@ -2835,33 +3111,536 @@ export function useSmartLotStore() {
     const newMotion: Motion = {
       id: `MOT-${Date.now()}`,
       caseId: payload.caseId,
+      schemeId: payload.schemeId || activeScheme.id,
       title: payload.title,
       summary: payload.summary,
-      quotes: payload.quotes,
+      quotes: payload.quotes || [],
+      attachments: payload.attachments || [],
       quorumTarget: payload.quorumTarget,
       deadline: payload.deadline,
+      voterGroup: payload.voterGroup || 'all_residents',
       status: 'active',
       ballots: [],
+      comments: [],
     };
     setMotions(prev => [newMotion, ...prev]);
+    return newMotion;
   };
 
-  const castBallot = (motionId: string, vote: MotionVote) => {
+  const initiateVotingForRequest = (requestId: string, payload: CreateMotionPayload) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const motionId = `MOT-${Date.now()}`;
+    const targetReq = residentRequests.find(r => r.id === requestId || r.referenceId === requestId);
+
+    const newMotion: Motion = {
+      id: motionId,
+      caseId: targetReq?.id || requestId,
+      schemeId: payload.schemeId || targetReq?.schemeId || activeScheme.id,
+      title: payload.title || targetReq?.title || 'Community Voting Motion',
+      summary: payload.summary || targetReq?.description || '',
+      quotes: payload.quotes || [],
+      attachments: payload.attachments || (targetReq?.attachmentUrls?.map((url, i) => ({ name: `Attachment_${i+1}`, url })) || []),
+      quorumTarget: payload.quorumTarget || 3,
+      deadline: payload.deadline,
+      voterGroup: payload.voterGroup || 'all_residents',
+      status: 'active',
+      ballots: [],
+      comments: targetReq?.comments ? [...targetReq.comments] : [],
+    };
+
+    setMotions(prev => [newMotion, ...prev]);
+
+    // Update request to in_voting status
+    setResidentRequests(prev => prev.map(r => {
+      if (r.id !== requestId && r.referenceId !== requestId) return r;
+      const auditEntry: AuditEvent = {
+        id: `AUD-${r.id}-VT${Date.now()}`,
+        type: 'status_change',
+        actor: activePersona.name,
+        actorRole: activePersona.role,
+        timestamp: `Today at ${nowStr}`,
+        fromStatus: r.status,
+        toStatus: 'in_voting',
+        note: `Voting flow initiated by ${activePersona.role}. Linked to Motion #${motionId}. Due: ${payload.deadline}.`,
+      };
+      return {
+        ...r,
+        status: 'in_voting',
+        linkedMotionId: motionId,
+        auditLog: [...(r.auditLog || []), auditEntry],
+      };
+    }));
+
+    // Sync to Supabase
+    supabase.from('resident_requests').update({
+      status: 'in_voting',
+      updated_at: new Date().toISOString(),
+    }).eq('id', targetReq?.id || requestId).then(({ error }) => {
+      if (error) console.warn('[SmartLot] initiateVotingForRequest sync note:', error.message);
+    });
+
+    if (targetReq?.requestorEmail) {
+      dispatchStatusUpdateEmail({
+        toEmail: targetReq.requestorEmail,
+        requestorName: targetReq.requestorName || 'Resident',
+        referenceId: targetReq.referenceId ? targetReq.referenceId.replace('#', '') : targetReq.id,
+        activityTitle: targetReq.title,
+        oldStatus: targetReq.status,
+        newStatus: 'in_voting',
+        reason: `Your request has been published for community and committee voting (Motion #${motionId}). Voting ends ${payload.deadline}.`,
+        actionType: 'status_change',
+      }).catch(err => console.warn('Initiate voting email notification note:', err));
+    }
+
+    return newMotion;
+  };
+
+  const castBallot = (motionId: string, vote: MotionVote, comment?: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const todayIso = new Date().toISOString().split('T')[0];
+    const targetMotion = motions.find(m => m.id === motionId);
+    if (!targetMotion) return;
+
+    // Check if motion is already passed / locked
+    if (targetMotion.status === 'passed') {
+      console.warn('[SmartLot Governance] Motion has already passed threshold and is locked against modifications.');
+      return;
+    }
+
+    // Role check: Strata Manager & Building Manager cannot vote under Permission Matrix
+    const roleLower = activePersona.role.toLowerCase();
+    const isManager = roleLower.includes('strata manager') || roleLower.includes('building manager');
+    const isAdmin = roleLower.includes('admin') || activePersona.isSystemAdmin;
+    const isSCM = roleLower.includes('committee') || targetMotion.committeeRoster?.some(m => m.name.toLowerCase() === activePersona.name.toLowerCase());
+    if (isManager && !isAdmin && !isSCM) {
+      console.warn('[SmartLot Governance] Managers administer motions but cannot vote under NSW Strata Act.');
+      return;
+    }
+
+    // Lookup SCM office if present
+    const memberProfile = targetMotion.committeeRoster?.find(m => m.name.toLowerCase() === activePersona.name.toLowerCase());
+
     setMotions(prev => prev.map(m => {
       if (m.id !== motionId) return m;
-      const alreadyVoted = m.ballots.some(b => b.voterName === activePersona.name);
       const filtered = m.ballots.filter(b => b.voterName !== activePersona.name);
       const newBallot = {
         voterName: activePersona.name,
         voterRole: activePersona.role,
+        voterOffice: memberProfile?.office || (isSCM ? 'Committee Member' : undefined),
         vote,
-        votedAt: new Date().toISOString().split('T')[0],
+        votedAt: todayIso,
+        comment,
       };
       const updatedBallots = [...filtered, newBallot];
       const yesVotes = updatedBallots.filter(b => b.vote === 'YES').length;
-      const newStatus = yesVotes >= m.quorumTarget ? 'passed' : m.status;
-      return { ...m, ballots: updatedBallots, status: newStatus };
+      const noVotes = updatedBallots.filter(b => b.vote === 'NO').length;
+      const totalCommittee = m.committeeSize || m.committeeRoster?.length || 6;
+      
+      let newStatus = m.status;
+      let closedTime: string | undefined = m.closedAt;
+      let createdWoId: string | undefined = m.createdWorkOrderId;
+
+      // Threshold locking rule: when 4th YES vote is cast, status immediately becomes 'passed' and locked!
+      if (yesVotes >= m.quorumTarget) {
+        newStatus = 'passed';
+        closedTime = `Today at ${nowStr}`;
+        if (!createdWoId && m.quotes && m.quotes.length > 0) {
+          createdWoId = `WO-${Date.now()}`;
+          const recQuote = m.quotes.find(q => q.recommended) || m.quotes[0];
+          const newWo: WorkOrder = {
+            id: createdWoId,
+            caseId: m.caseId,
+            schemeId: m.schemeId || activeScheme.id,
+            vendorId: recQuote?.vendorId || 'VND-001',
+            vendorName: recQuote?.vendorName || 'Contractor',
+            scopeOfWork: m.summary,
+            budgetCap: recQuote?.amount || 2500,
+            siteAccessPin: Math.floor(1000 + Math.random() * 9000).toString(),
+            guestMagicToken: `tok_${(m.schemeId || activeScheme.id).toLowerCase()}_${Date.now()}`,
+            status: 'issued',
+          };
+          setWorkOrders(wos => [newWo, ...wos]);
+        }
+      } else if (noVotes > (totalCommittee - m.quorumTarget)) {
+        // Statistically impossible to pass
+        newStatus = 'rejected';
+        closedTime = `Today at ${nowStr}`;
+      }
+
+      return { 
+        ...m, 
+        ballots: updatedBallots, 
+        status: newStatus,
+        closedAt: closedTime,
+        createdWorkOrderId: createdWoId
+      };
     }));
+
+    // Update linked request audit log & status if passed
+    if (targetMotion?.caseId) {
+      setResidentRequests(prev => prev.map(r => {
+        if (r.id !== targetMotion.caseId && r.referenceId !== targetMotion.caseId) return r;
+        const currentBallots = targetMotion.ballots.filter(b => b.voterName !== activePersona.name);
+        const willPass = (currentBallots.filter(b => b.vote === 'YES').length + (vote === 'YES' ? 1 : 0)) >= targetMotion.quorumTarget;
+        
+        const auditEntry: AuditEvent = {
+          id: `AUD-${r.id}-BL${Date.now()}`,
+          type: willPass ? 'triage_approved' : 'comment_added',
+          actor: activePersona.name,
+          actorRole: activePersona.role,
+          timestamp: `Today at ${nowStr}`,
+          note: willPass
+            ? `Motion #${motionId} PASSED! 4th vote cast by ${activePersona.name} (${activePersona.role}). Decision is binding and locked.`
+            : `${activePersona.name} (${activePersona.role}) cast ${vote} ballot on linked Motion #${motionId}.`,
+        };
+        return {
+          ...r,
+          status: willPass ? 'approved' : r.status,
+          auditLog: [...(r.auditLog || []), auditEntry],
+        };
+      }));
+    }
+  };
+
+  const requestMotionRFI = (motionId: string, question: string, extendedDays: number = 7) => {
+    const todayIso = new Date().toISOString().split('T')[0];
+
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      const currentDead = new Date(m.deadline || todayIso);
+      currentDead.setDate(currentDead.getDate() + extendedDays);
+      const newDeadlineStr = currentDead.toISOString().split('T')[0];
+
+      const newRfi: MotionRFI = {
+        id: `RFI-${Date.now()}`,
+        requestedBy: activePersona.name,
+        requestedRole: activePersona.role,
+        question: question.trim(),
+        requestedAt: todayIso,
+        extendedDays,
+        status: 'open',
+      };
+
+      const systemComment: RequestComment = {
+        id: `CMT-RFI-${Date.now()}`,
+        authorName: activePersona.name,
+        authorRole: activePersona.role,
+        text: `⚠️ Request for Information (RFI) Raised: "${question.trim()}". Voting deadline extended by ${extendedDays} days to ${newDeadlineStr}.`,
+        createdAt: 'Just now',
+      };
+
+      return {
+        ...m,
+        deadline: newDeadlineStr,
+        rfiHistory: [...(m.rfiHistory || []), newRfi],
+        comments: [...(m.comments || []), systemComment],
+      };
+    }));
+  };
+
+  const submitRevisedProposal = (motionId: string, revisionNote: string, newAttachments: MotionAttachment[] = []) => {
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+
+      const systemComment: RequestComment = {
+        id: `CMT-REV-${Date.now()}`,
+        authorName: activePersona.name,
+        authorRole: activePersona.role,
+        text: `📎 Revised Resubmission Uploaded: "${revisionNote.trim()}". ${newAttachments.length} new revised attachment(s) added for committee review.`,
+        createdAt: 'Just now',
+      };
+
+      const updatedRfis = m.rfiHistory?.map(r => ({ ...r, status: 'addressed' as const, responseNote: revisionNote })) || [];
+
+      return {
+        ...m,
+        revisedAttachments: [...(m.revisedAttachments || []), ...newAttachments],
+        rfiHistory: updatedRfis,
+        comments: [...(m.comments || []), systemComment],
+      };
+    }));
+  };
+
+  const restartVoting = (motionId: string, reason: string) => {
+    const todayIso = new Date().toISOString().split('T')[0];
+
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+
+      const previousYes = m.ballots.filter(b => b.vote === 'YES').length;
+      const previousNo = m.ballots.filter(b => b.vote === 'NO').length;
+
+      const restartEvent: MotionRestartEvent = {
+        id: `RST-${Date.now()}`,
+        restartedAt: todayIso,
+        restartedBy: `${activePersona.name} (${activePersona.role})`,
+        reason: reason.trim(),
+        previousYesCount: previousYes,
+        previousNoCount: previousNo,
+      };
+
+      const resetComment: RequestComment = {
+        id: `CMT-RST-${Date.now()}`,
+        authorName: activePersona.name,
+        authorRole: activePersona.role,
+        text: `🔄 Strata Committee Voting Restarted: "${reason.trim()}". Previous ballots (${previousYes} Yes, ${previousNo} No) cleared. All SCMs are notified to recast their vote.`,
+        createdAt: 'Just now',
+      };
+
+      return {
+        ...m,
+        status: 'active',
+        ballots: [],
+        restartHistory: [...(m.restartHistory || []), restartEvent],
+        comments: [...(m.comments || []), resetComment],
+      };
+    }));
+  };
+
+  const sendSCMReminder = (motionId: string, memberName: string) => {
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      const reminderComment: RequestComment = {
+        id: `CMT-REM-${Date.now()}`,
+        authorName: activePersona.name,
+        authorRole: activePersona.role,
+        text: `🔔 In-Context Reminder Dispatched: Notice sent to ${memberName} requesting their vote on Motion #${m.strataPlan || m.id}.`,
+        createdAt: 'Just now',
+      };
+      return {
+        ...m,
+        comments: [...(m.comments || []), reminderComment],
+      };
+    }));
+  };
+
+  const sendBlastReminder = (motionId: string) => {
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      const votedNames = new Set(m.ballots.map(b => b.voterName.toLowerCase()));
+      const pendingMembers = (m.committeeRoster || []).filter(scm => !votedNames.has(scm.name.toLowerCase()));
+      const pendingListStr = pendingMembers.map(scm => scm.name).join(', ') || 'unresponsive members';
+
+      const blastComment: RequestComment = {
+        id: `CMT-BLAST-${Date.now()}`,
+        authorName: activePersona.name,
+        authorRole: activePersona.role,
+        text: `📢 Strata Manager Blast Notification: Automated reminder dispatched to all ${pendingMembers.length} unresponsive committee members (${pendingListStr}).`,
+        createdAt: 'Just now',
+      };
+      return {
+        ...m,
+        comments: [...(m.comments || []), blastComment],
+      };
+    }));
+  };
+
+  const extendMotionDeadline = (motionId: string, additionalDays: number, reason?: string) => {
+    const todayIso = new Date().toISOString().split('T')[0];
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      const curr = new Date(m.deadline || todayIso);
+      curr.setDate(curr.getDate() + additionalDays);
+      const newDeadline = curr.toISOString().split('T')[0];
+
+      const noteComment: RequestComment = {
+        id: `CMT-EXT-${Date.now()}`,
+        authorName: activePersona.name,
+        authorRole: activePersona.role,
+        text: `📅 Motion Deadline Extended: Deadline extended by ${additionalDays} days to ${newDeadline}.${reason ? ` Reason: ${reason}` : ''}`,
+        createdAt: 'Just now',
+      };
+
+      return {
+        ...m,
+        deadline: newDeadline,
+        comments: [...(m.comments || []), noteComment],
+      };
+    }));
+  };
+
+  const markMotionUnresolved = (motionId: string, reason: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      return {
+        ...m,
+        status: 'unresolved',
+        closeReason: reason,
+        closedAt: `Today at ${nowStr}`,
+        closedBy: { name: activePersona.name, role: activePersona.role },
+      };
+    }));
+  };
+
+  const closeVotingEarly = (motionId: string, reason: string) => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const targetMotion = motions.find(m => m.id === motionId);
+
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      return {
+        ...m,
+        status: 'rejected',
+        closeReason: reason,
+        closedAt: `Today at ${nowStr}`,
+        closedBy: { name: activePersona.name, role: activePersona.role },
+      };
+    }));
+
+    if (targetMotion?.caseId) {
+      const targetReq = residentRequests.find(r => r.id === targetMotion.caseId || r.referenceId === targetMotion.caseId);
+      setResidentRequests(prev => prev.map(r => {
+        if (r.id !== targetMotion.caseId && r.referenceId !== targetMotion.caseId) return r;
+        const auditEntry: AuditEvent = {
+          id: `AUD-${r.id}-CVE${Date.now()}`,
+          type: 'closed',
+          actor: activePersona.name,
+          actorRole: activePersona.role,
+          timestamp: `Today at ${nowStr}`,
+          fromStatus: r.status,
+          toStatus: 'waiting',
+          note: `Voting closed before completion by ${activePersona.role}. Reason: ${reason}. Changes or further services requested.`,
+        };
+        return {
+          ...r,
+          status: 'waiting',
+          closeReason: reason,
+          auditLog: [...(r.auditLog || []), auditEntry],
+        };
+      }));
+
+      supabase.from('resident_requests').update({
+        status: 'waiting',
+        close_reason: reason,
+        updated_at: new Date().toISOString(),
+      }).eq('id', targetReq?.id || targetMotion.caseId).then(({ error }) => {
+        if (error) console.warn('[SmartLot] closeVotingEarly sync note:', error.message);
+      });
+
+      if (targetReq?.requestorEmail) {
+        dispatchStatusUpdateEmail({
+          toEmail: targetReq.requestorEmail,
+          requestorName: targetReq.requestorName || 'Resident',
+          referenceId: targetReq.referenceId ? targetReq.referenceId.replace('#', '') : targetReq.id,
+          activityTitle: targetReq.title,
+          oldStatus: 'in_voting',
+          newStatus: 'waiting',
+          reason: `Voting closed before completion: ${reason}. Additional info or changes requested.`,
+          actionType: 'status_change',
+        }).catch(err => console.warn('Close voting early email note:', err));
+      }
+    }
+  };
+
+  const resolveMotion = (motionId: string, outcome: 'passed' | 'rejected') => {
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const targetMotion = motions.find(m => m.id === motionId);
+    let createdWoId: string | undefined;
+
+    if (outcome === 'passed' && targetMotion) {
+      createdWoId = `WO-${Date.now()}`;
+      const recQuote = targetMotion.quotes.find(q => q.recommended) || targetMotion.quotes[0];
+      const newWo: WorkOrder = {
+        id: createdWoId,
+        caseId: targetMotion.caseId,
+        schemeId: targetMotion.schemeId || activeScheme.id,
+        vendorId: recQuote?.vendorId || 'VND-001',
+        vendorName: recQuote?.vendorName || 'Selected Vendor',
+        scopeOfWork: targetMotion.summary,
+        budgetCap: recQuote?.amount || 2500,
+        siteAccessPin: Math.floor(1000 + Math.random() * 9000).toString(),
+        guestMagicToken: `tok_${(targetMotion.schemeId || activeScheme.id).toLowerCase()}_${Date.now()}`,
+        status: 'issued',
+      };
+      setWorkOrders(prev => [newWo, ...prev]);
+    }
+
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      return {
+        ...m,
+        status: outcome,
+        closedAt: `Today at ${nowStr}`,
+        closedBy: { name: activePersona.name, role: activePersona.role },
+        createdWorkOrderId: createdWoId,
+      };
+    }));
+
+    if (targetMotion?.caseId) {
+      const newStatus: CaseStatus = outcome === 'passed' ? 'approved' : 'closed';
+      const targetReq = residentRequests.find(r => r.id === targetMotion.caseId || r.referenceId === targetMotion.caseId);
+
+      setResidentRequests(prev => prev.map(r => {
+        if (r.id !== targetMotion.caseId && r.referenceId !== targetMotion.caseId) return r;
+        const auditEntry: AuditEvent = {
+          id: `AUD-${r.id}-RS${Date.now()}`,
+          type: outcome === 'passed' ? 'triage_approved' : 'closed',
+          actor: activePersona.name,
+          actorRole: activePersona.role,
+          timestamp: `Today at ${nowStr}`,
+          fromStatus: r.status,
+          toStatus: newStatus,
+          note: outcome === 'passed' 
+            ? `Motion PASSED: Quorum target achieved. Initiating work order flow (${createdWoId || 'Digital Dispatch'}).` 
+            : `Motion REJECTED: Community/committee vote concluded without passing. Case closed.`,
+        };
+        return {
+          ...r,
+          status: newStatus,
+          rejectionReason: outcome === 'rejected' ? 'Motion failed in community voting' : undefined,
+          auditLog: [...(r.auditLog || []), auditEntry],
+        };
+      }));
+
+      supabase.from('resident_requests').update({
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      }).eq('id', targetReq?.id || targetMotion.caseId).then(({ error }) => {
+        if (error) console.warn('[SmartLot] resolveMotion sync note:', error.message);
+      });
+
+      if (targetReq?.requestorEmail) {
+        dispatchStatusUpdateEmail({
+          toEmail: targetReq.requestorEmail,
+          requestorName: targetReq.requestorName || 'Resident',
+          referenceId: targetReq.referenceId ? targetReq.referenceId.replace('#', '') : targetReq.id,
+          activityTitle: targetReq.title,
+          oldStatus: 'in_voting',
+          newStatus,
+          reason: outcome === 'passed' 
+            ? `Community motion passed! Work order ${createdWoId || ''} has been initiated.` 
+            : `Voting concluded and motion was not approved. Case closed.`,
+          actionType: 'status_change',
+        }).catch(err => console.warn('Resolve motion email note:', err));
+      }
+    }
+  };
+
+  const addMotionComment = (motionId: string, text: string) => {
+    if (!text.trim()) return;
+    const nowStr = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const commentId = `CMT-${Date.now()}`;
+    const newComment: RequestComment = {
+      id: commentId,
+      authorName: activePersona.name,
+      authorRole: activePersona.role,
+      text: text.trim(),
+      createdAt: 'Just now',
+    };
+
+    setMotions(prev => prev.map(m => {
+      if (m.id !== motionId) return m;
+      return {
+        ...m,
+        comments: [...(m.comments || []), newComment],
+      };
+    }));
+
+    const targetMotion = motions.find(m => m.id === motionId);
+    if (targetMotion?.caseId) {
+      addCommentToRequest(targetMotion.caseId, text);
+    }
   };
 
   const deleteMotion = (motionId: string) => {
@@ -3029,6 +3808,18 @@ export function useSmartLotStore() {
     motions,
     setMotions,
     createMotion,
+    initiateVotingForRequest,
+    castBallot,
+    requestMotionRFI,
+    submitRevisedProposal,
+    restartVoting,
+    sendSCMReminder,
+    sendBlastReminder,
+    extendMotionDeadline,
+    markMotionUnresolved,
+    closeVotingEarly,
+    resolveMotion,
+    addMotionComment,
     deleteMotion,
     vendors,
     setVendors,
@@ -3077,7 +3868,6 @@ export function useSmartLotStore() {
     setActiveRoles,
     submitCase: submitResidentRequest,
     triageCase: triageRequest,
-    castBallot,
     submitGuestWorkOrderCompletion,
     verifyWorkOrder,
     refreshData,

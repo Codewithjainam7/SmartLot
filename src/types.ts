@@ -21,6 +21,7 @@ export type UserSiteMembership = {
 };
 
 export const SCHEMES: Scheme[] = [
+  { id: 'SP52042', name: 'Cavallo (1 Pitt St, Sydney)', lots: 32, active: true },
   { id: 'SP101', name: 'Sunset Duplex', lots: 2, active: true },
   { id: 'SP102', name: 'Coronation Residences', lots: 12, active: true },
   { id: 'SP103', name: 'Cavalier Grand Residences', lots: 24, active: true }
@@ -30,7 +31,65 @@ export const PERSONAS: Persona[] = [
   // 1. System Admins
   { id: 'web_admin', role: 'Website Administrator', name: 'Web Admin', context: 'System', email: 'admin@smartlot.com', isSystemAdmin: true },
   
-  // 2. Roman Joe (Master Strata Manager across Duplex, Coronation & Cavalier)
+  // 2. Cavallo Stakeholders (Scenario V1 & V2 from Specification)
+  { 
+    id: 'steve_sm', 
+    role: 'Strata Manager', 
+    name: 'Steve', 
+    context: 'StrataChoice Agency', 
+    email: 'steve@stratachoice.com.au', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Strata Admin', 'Strata Manager'] }] 
+  },
+  { 
+    id: 'peter_bm', 
+    role: 'Building Manager', 
+    name: 'Peter', 
+    context: 'Cavallo Facilities', 
+    email: 'peter.bm@cavallosydney.com.au', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Building Manager'] }] 
+  },
+  { 
+    id: 'cameron_chair', 
+    role: 'Committee Member', 
+    name: 'Cameron', 
+    context: 'Unit 28 (Chairperson)', 
+    email: 'cameron.chair@cavalloscm.org', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Committee Member', 'Lot Owner'] }] 
+  },
+  { 
+    id: 'joana_treasurer', 
+    role: 'Committee Member', 
+    name: 'Joana', 
+    context: 'Unit 15 (Treasurer)', 
+    email: 'joana.treasurer@cavalloscm.org', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Committee Member', 'Lot Owner'] }] 
+  },
+  { 
+    id: 'jake_secretary', 
+    role: 'Committee Member', 
+    name: 'Jake', 
+    context: 'Unit 9 (Secretary)', 
+    email: 'jake.secretary@cavalloscm.org', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Committee Member', 'Lot Owner'] }] 
+  },
+  { 
+    id: 'john_scm', 
+    role: 'Committee Member', 
+    name: 'John', 
+    context: 'Unit 21 (SCM)', 
+    email: 'john.member@cavalloscm.org', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Committee Member', 'Lot Owner'] }] 
+  },
+  { 
+    id: 'jack_owner', 
+    role: 'Lot Owner', 
+    name: 'Jack', 
+    context: 'Unit 4 (Requester)', 
+    email: 'jack.resident@cavallosydney.com.au', 
+    memberships: [{ schemeId: 'SP52042', roles: ['Lot Owner', 'Resident'] }] 
+  },
+
+  // 3. Roman Joe (Master Strata Manager)
   { 
     id: 'roman_joe', 
     role: 'Strata Manager', 
@@ -38,13 +97,14 @@ export const PERSONAS: Persona[] = [
     context: 'HQ / Management', 
     email: 'romanjoe@gmail.com', 
     memberships: [
+      { schemeId: 'SP52042', roles: ['Strata Admin', 'Strata Manager'] },
       { schemeId: 'SP101', roles: ['Strata Admin', 'Strata Manager'] },
       { schemeId: 'SP102', roles: ['Strata Admin', 'Strata Manager'] },
       { schemeId: 'SP103', roles: ['Strata Admin', 'Strata Manager'] }
     ] 
   },
 
-  // 3. Sarah Jones (Duplex)
+  // 4. Sarah Jones (Duplex)
   { 
     id: 'sarah_jones', 
     role: 'Strata Admin', 
@@ -54,7 +114,7 @@ export const PERSONAS: Persona[] = [
     memberships: [{ schemeId: 'SP101', roles: ['Strata Admin', 'Lot Owner', 'Committee Member'] }] 
   },
   
-  // 4. Michael Chen (Coronation Townhouses)
+  // 5. Michael Chen (Coronation Townhouses)
   { 
     id: 'michael_chen', 
     role: 'Committee Member', 
@@ -64,7 +124,7 @@ export const PERSONAS: Persona[] = [
     memberships: [{ schemeId: 'SP102', roles: ['Strata Admin', 'Committee Member'] }] 
   },
   
-  // 5. Emma Wilson (Cavalier & Coronation)
+  // 6. Emma Wilson (Cavalier & Coronation)
   { 
     id: 'emma_wilson', 
     role: 'Strata Manager', 
