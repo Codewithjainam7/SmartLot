@@ -1,5 +1,5 @@
 // @smartlot/component
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { 
   Motion, 
@@ -197,15 +197,50 @@ export function VotingHubView({
   // Linked request
   const linkedRequest = activeMotion ? requests.find(r => r.id === activeMotion.caseId || r.referenceId === activeMotion.caseId) : null;
 
-  // Committee roster (defaults to 6 Cavallo members if not explicitly set)
-  const committeeRoster = activeMotion?.committeeRoster || [
-    { id: 'scm-1', name: 'Cameron', office: 'Chairperson' as SCMOffice, email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
-    { id: 'scm-2', name: 'Joana', office: 'Treasurer' as SCMOffice, email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
-    { id: 'scm-3', name: 'Jake', office: 'Secretary' as SCMOffice, email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
-    { id: 'scm-4', name: 'George', office: 'Committee Member' as SCMOffice, email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
-    { id: 'scm-5', name: 'Lisa', office: 'Committee Member' as SCMOffice, email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
-    { id: 'scm-6', name: 'John', office: 'Committee Member' as SCMOffice, email: 'john.member@cavalloscm.org', unit: 'Unit 21' },
-  ];
+  // Committee roster (dynamically resolves from activeMotion, voters in ballots, or default committee)
+  const committeeRoster = useMemo(() => {
+    if (activeMotion?.committeeRoster && activeMotion.committeeRoster.length > 0) {
+      return activeMotion.committeeRoster;
+    }
+    // If ballots exist with voter names, ensure those voters appear in the roster
+    const votersInBallots = (activeMotion?.ballots || []).map((b, i) => ({
+      id: `ballot-voter-${i}`,
+      name: b.voterName,
+      office: (b.voterOffice || b.voterRole || 'Committee Member') as SCMOffice,
+      email: `${b.voterName.toLowerCase().replace(/\s+/g, '.')}@stratacommittee.org.au`,
+      unit: 'Lot Rep'
+    }));
+
+    if (votersInBallots.length > 0) {
+      const existingNames = new Set(votersInBallots.map(v => v.name.toLowerCase()));
+      const defaultCavallo = [
+        { id: 'scm-1', name: 'Cameron', office: 'Chairperson' as SCMOffice, email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
+        { id: 'scm-2', name: 'Joana', office: 'Treasurer' as SCMOffice, email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
+        { id: 'scm-3', name: 'Jake', office: 'Secretary' as SCMOffice, email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
+        { id: 'scm-4', name: 'George', office: 'Committee Member' as SCMOffice, email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
+        { id: 'scm-5', name: 'Lisa', office: 'Committee Member' as SCMOffice, email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
+        { id: 'scm-6', name: 'John', office: 'Committee Member' as SCMOffice, email: 'john.member@cavalloscm.org', unit: 'Unit 21' },
+      ];
+      const combined = [...votersInBallots];
+      if (activeMotion?.schemeId === 'SP52042' || !activeMotion?.schemeId) {
+        defaultCavallo.forEach(scm => {
+          if (!existingNames.has(scm.name.toLowerCase()) && combined.length < (activeMotion?.committeeSize || 6)) {
+            combined.push(scm);
+          }
+        });
+      }
+      return combined;
+    }
+
+    return [
+      { id: 'scm-1', name: 'Cameron', office: 'Chairperson' as SCMOffice, email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
+      { id: 'scm-2', name: 'Joana', office: 'Treasurer' as SCMOffice, email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
+      { id: 'scm-3', name: 'Jake', office: 'Secretary' as SCMOffice, email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
+      { id: 'scm-4', name: 'George', office: 'Committee Member' as SCMOffice, email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
+      { id: 'scm-5', name: 'Lisa', office: 'Committee Member' as SCMOffice, email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
+      { id: 'scm-6', name: 'John', office: 'Committee Member' as SCMOffice, email: 'john.member@cavalloscm.org', unit: 'Unit 21' },
+    ];
+  }, [activeMotion]);
 
   const totalCommitteeSize = activeMotion?.committeeSize || committeeRoster.length || 6;
   const quorumTarget = activeMotion?.quorumTarget || 4; // 4 votes required to pass
@@ -1211,13 +1246,23 @@ export function VotingHubView({
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
                   <div className="flex items-center gap-2">
                     <Users size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                      Committee Roster
-                    </h3>
+                    <div>
+                      <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                        Committee Roster
+                      </h3>
+                      <p className="text-[10px] text-gray-400">
+                        Live committee voting roll call
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-[11px] font-bold text-gray-400">
-                    6 Members
-                  </span>
+                  <div className="text-right">
+                    <span className="text-[11px] font-bold text-gray-400">
+                      {committeeRoster.length} Members
+                    </span>
+                    <div className="text-[10px] font-bold text-[#0055FF] dark:text-[#00D4B2]">
+                      {yesVotes}/{quorumTarget} to Quorum
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-3">
