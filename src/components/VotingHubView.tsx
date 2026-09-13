@@ -430,14 +430,16 @@ export function VotingHubView({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md"
-            >
-              <Plus size={14} strokeWidth={2.5} />
-              <span>+ Start New Vote</span>
-            </button>
+            {viewMode === 'list' && (
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md"
+              >
+                <Plus size={14} strokeWidth={2.5} />
+                <span>+ Start New Vote</span>
+              </button>
+            )}
             {activeMotion && (
               <button
                 type="button"
@@ -1091,16 +1093,6 @@ export function VotingHubView({
                 </div>
 
                 <div className="space-y-2">
-                  {/* Start New Vote Button */}
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(true)}
-                    className="w-full py-2.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
-                  >
-                    <Plus size={14} strokeWidth={2.5} />
-                    <span>+ Start New Vote</span>
-                  </button>
-
                   {/* Formal Legal Vote Report Button */}
                   <button
                     type="button"
@@ -1693,7 +1685,7 @@ export function VotingHubView({
                     : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Need More Details
+                Before completion
               </button>
               <button
                 type="button"
@@ -1704,29 +1696,29 @@ export function VotingHubView({
                     : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Vote Completed
+                After Completion = Output achieved
               </button>
             </div>
 
-            {/* PATHWAY 1: BEFORE COMPLETION (Needs extra info -> Mandatory Reason -> Notify -> Request goes back to pending) */}
+            {/* PATHWAY 1: BEFORE COMPLETION (Needs extra info -> Add a reason -> Send notification to requestor -> Request goes back to pending) */}
             {closeModalTab === 'before' && (
               <div className="space-y-4">
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs space-y-1">
                   <div className="font-black text-amber-600 dark:text-amber-400">
-                    Need More Information Before Deciding
+                    Incase of additional details needed to cast vote
                   </div>
                   <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Close voting early when the committee or strata manager requires missing specifications, additional engineering reports, or revised mockups. The case status will automatically revert back to <strong>Pending Triage</strong> and an email notification will be dispatched to the requestor.
+                    Close voting early when the committee or strata manager requires missing specifications, additional contractor quotes, or revised details. The case status will automatically revert back to <strong>Pending Triage</strong> and an email notification will be sent to the requestor.
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block">
-                    Mandatory Reason for Early Closure *
+                    Add a reason *
                   </label>
                   <textarea
                     rows={3}
-                    placeholder="e.g. Committee requested 2 additional acoustic contractor quotes and structural engineer report before voting..."
+                    placeholder="e.g. Committee requested 2 additional contractor quotes and structural engineer report before voting..."
                     value={closeReasonInput}
                     onChange={e => setCloseReasonInput(e.target.value)}
                     className="w-full bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -1734,9 +1726,9 @@ export function VotingHubView({
                 </div>
 
                 <div className="p-3 bg-gray-50 dark:bg-black/30 rounded-xl border border-gray-200 dark:border-white/5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
-                  <span>Automated Action:</span>
+                  <span>Automated Workflow:</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                    ✓ Revert to Pending Triage & Email Requestor
+                    ✓ Send notification to requestor ➔ Request goes back to pending
                   </span>
                 </div>
 
@@ -1754,7 +1746,7 @@ export function VotingHubView({
                     disabled={!closeReasonInput.trim()}
                     className="px-5 py-2.5 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer shadow-md transition-all"
                   >
-                    Revert Request to Pending & Notify
+                    Send Notification & Revert to Pending
                   </button>
                 </div>
               </div>
@@ -1765,7 +1757,7 @@ export function VotingHubView({
               <div className="space-y-4">
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-xs space-y-1">
                   <div className="font-black text-emerald-600 dark:text-emerald-400">
-                    Final Resolution Outcome
+                    Request status changes as per votes
                   </div>
                   <div className="text-gray-600 dark:text-gray-300 font-mono text-[11px] pt-1 flex items-center gap-2">
                     <span>Live Quorum: <strong>{yesVotes} YES</strong> • <strong>{noVotes} NO</strong> • <strong>{abstainVotes} ABSTAIN</strong></span>
@@ -1773,37 +1765,37 @@ export function VotingHubView({
                   </div>
                 </div>
 
-                {/* Option A: Motion Passed / Quorum Met */}
+                {/* Option A: Motion Passed [If Approved] */}
                 <div className="space-y-2">
                   <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider">
-                    If Approved (Threshold Met)
+                    Motion Passed [If Approved] • Send notification to all participants
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="bg-blue-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-blue-500/30 space-y-2 flex flex-col justify-between">
                       <div>
                         <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                          Building Repairs
+                          If strata / building-level
                         </span>
                         <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
-                          Motion passed. Dispatches work order to contractor.
+                          Motion passed ➔ Dispatches notification to all participants ➔ <strong>Initiate Work order Flow</strong>.
                         </p>
                       </div>
                       <button
                         type="button"
-                        onClick={() => handleConfirmResolveMotion('passed', '🚀 Motion Approved! Work order created for contractor.')}
+                        onClick={() => handleConfirmResolveMotion('passed', '🚀 Motion Approved! Work order flow initiated.')}
                         className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
                       >
-                        Create Work Order
+                        Initiate Work order Flow
                       </button>
                     </div>
 
                     <div className="bg-purple-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-purple-500/30 space-y-2 flex flex-col justify-between">
                       <div>
                         <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
-                          Resident Request
+                          If resident-level
                         </span>
                         <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
-                          Motion passed. Sends formal approval notice to resident.
+                          Motion passed ➔ Dispatches approval letter to resident ➔ <strong>[Request] Voting Closed</strong>.
                         </p>
                       </div>
                       <button
@@ -1811,18 +1803,18 @@ export function VotingHubView({
                         onClick={() => handleConfirmResolveMotion('passed', '✅ Resident request approved and voting closed.')}
                         className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
                       >
-                        Approve & Close Request
+                        [Request] Voting Closed
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Option B: If Motion Rejected */}
+                {/* Option B: If Rejected */}
                 <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-red-600 dark:text-red-400">If Motion Rejected:</div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Motion rejected. Sends rejection notice to resident.</div>
+                      <div className="font-bold text-red-600 dark:text-red-400">If Rejected:</div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Send notification to requestor ➔ [Request] Voting Closed</div>
                     </div>
                     <button
                       type="button"
@@ -1834,15 +1826,15 @@ export function VotingHubView({
                   </div>
                 </div>
 
-                {/* Option C: If Tie Vote -> Strata Manager Review */}
+                {/* Option C: In case of tie or no votes, send for Manager review */}
                 <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs">
                   <div>
                     <div className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                       <Scale size={13} />
-                      <span>If Tie / Inconclusive (Manager Review):</span>
+                      <span>In case of tie or no votes, send for Manager review:</span>
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Committee votes are tied. Strata Manager casts the deciding vote.
+                      Committee votes are tied or inconclusive. Strata Manager exercises administrative casting determination.
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1855,7 +1847,7 @@ export function VotingHubView({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleConfirmResolveMotion('rejected', '⚖️ Strata Manager casting vote: REJECTED. Ticket closed.')}
+                      onClick={() => handleConfirmResolveMotion('rejected', '⚖️ Strata Manager casting vote: REJECTED. Request closed.')}
                       className="flex-1 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-red-500/20 text-gray-700 dark:text-gray-300 hover:text-red-400 border border-transparent hover:border-red-500/30 rounded-lg font-bold text-xs cursor-pointer transition-colors"
                     >
                       Casting Vote: Reject Motion
