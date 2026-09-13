@@ -157,6 +157,10 @@ export function VotingHubView({
   const isSCM = roleLower.includes('committee') || ['cameron', 'joana', 'jake', 'george', 'lisa', 'john'].some(scm => nameLower.includes(scm));
   const isLotOwnerOrResident = !isStrataManager && !isBuildingManager && !isSystemAdmin && !isSCM;
 
+  // Tenants (renters / non-owner occupants) have zero statutory authority to generate official legal/statutory committee certificates or Certified Vote Reports
+  const isTenant = roleLower.includes('tenant') || (roleLower.includes('resident') && !roleLower.includes('owner') && !roleLower.includes('committee'));
+  const canGenerateReport = !isTenant && (isStrataManager || isBuildingManager || isSystemAdmin || isSCM || roleLower.includes('owner'));
+
   // Rights:
   // - SCM & System Admin can cast vote
   // - Strata Manager & Building Manager CANNOT vote under Australian Strata Law
@@ -434,9 +438,10 @@ export function VotingHubView({
               <span>Start New Vote</span>
             </button>
           )}
-          {activeMotion && (
+          {activeMotion && canGenerateReport && (
             <button
               type="button"
+              id="view-report-modal-btn"
               onClick={() => setShowReportModal(true)}
               className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
@@ -1125,76 +1130,81 @@ export function VotingHubView({
             {/* ── RIGHT 4 COLUMNS: Action & Compliance Sidebar ── */}
             <div className="lg:col-span-4 space-y-6">
               
-              {/* Strata Manager Admin Actions Panel */}
-              <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
-                  <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                    Governance Actions
-                  </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
-                    NSW SSMA 2015
-                  </span>
-                </div>
+              {/* Governance Actions Panel */}
+              {(canManageMotion || canGenerateReport) && (
+                <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
+                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                      Governance Actions
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                      NSW SSMA 2015
+                    </span>
+                  </div>
 
-                <div className="space-y-2">
-                  {/* Formal Legal Vote Report Button */}
-                  <button
-                    type="button"
-                    onClick={() => setShowReportModal(true)}
-                    className="w-full py-2.5 px-4 rounded-2xl bg-[#0055FF]/10 dark:bg-[#0055FF]/20 hover:bg-[#0055FF] text-[#0055FF] dark:text-[#60A5FA] hover:text-white border border-[#0055FF]/30 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
-                  >
-                    <Printer size={14} />
-                    <span>Generate Certified Vote Report</span>
-                  </button>
-
-                  {/* Strata Manager Operational Controls (Strictly Role Gated) */}
-                  {canManageMotion && (
-                    <>
-                      {/* Close Voting Trigger */}
+                  <div className="space-y-2">
+                    {/* Formal Legal Vote Report Button */}
+                    {canGenerateReport && (
                       <button
                         type="button"
-                        onClick={() => {
-                          setCloseModalTab(isPassed ? 'after' : 'before');
-                          setShowCloseModal(true);
-                        }}
-                        className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                        id="gov-gen-report-btn"
+                        onClick={() => setShowReportModal(true)}
+                        className="w-full py-2.5 px-4 rounded-2xl bg-[#0055FF]/10 dark:bg-[#0055FF]/20 hover:bg-[#0055FF] text-[#0055FF] dark:text-[#60A5FA] hover:text-white border border-[#0055FF]/30 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
                       >
-                        <Scale size={14} />
-                        <span>Close Vote</span>
+                        <Printer size={14} />
+                        <span>Generate Certified Vote Report</span>
                       </button>
+                    )}
 
-                      <button
-                        type="button"
-                        onClick={() => setShowExtendModal(true)}
-                        className="w-full py-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-blue-500/10 text-gray-700 dark:text-gray-300 hover:text-blue-500 border border-gray-200 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <Calendar size={14} />
-                        <span>Extend Voting Deadline</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowRestartModal(true)}
-                        className="w-full py-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-amber-500/10 text-gray-700 dark:text-gray-300 hover:text-amber-500 border border-gray-200 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <RotateCcw size={14} />
-                        <span>Restart Committee Vote</span>
-                      </button>
-
-                      {isPassed && !activeMotion.createdWorkOrderId && (
+                    {/* Strata Manager Operational Controls (Strictly Role Gated) */}
+                    {canManageMotion && (
+                      <>
+                        {/* Close Voting Trigger */}
                         <button
                           type="button"
-                          onClick={() => onResolveMotion(activeMotion.id, 'passed')}
-                          className="w-full py-2.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                          onClick={() => {
+                            setCloseModalTab(isPassed ? 'after' : 'before');
+                            setShowCloseModal(true);
+                          }}
+                          className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                         >
-                          <Wrench size={14} />
-                          <span>Issue Official Work Order</span>
+                          <Scale size={14} />
+                          <span>Close Vote</span>
                         </button>
-                      )}
-                    </>
-                  )}
+
+                        <button
+                          type="button"
+                          onClick={() => setShowExtendModal(true)}
+                          className="w-full py-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-blue-500/10 text-gray-700 dark:text-gray-300 hover:text-blue-500 border border-gray-200 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <Calendar size={14} />
+                          <span>Extend Voting Deadline</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowRestartModal(true)}
+                          className="w-full py-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-amber-500/10 text-gray-700 dark:text-gray-300 hover:text-amber-500 border border-gray-200 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <RotateCcw size={14} />
+                          <span>Restart Committee Vote</span>
+                        </button>
+
+                        {isPassed && !activeMotion.createdWorkOrderId && (
+                          <button
+                            type="button"
+                            onClick={() => onResolveMotion(activeMotion.id, 'passed')}
+                            className="w-full py-2.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                          >
+                            <Wrench size={14} />
+                            <span>Issue Official Work Order</span>
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* ── Strata Committee Members (SCM) Live Voting Roster Card ── */}
               <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-4">
@@ -1305,7 +1315,7 @@ export function VotingHubView({
       )}
 
       {/* ── Formal Legal Vote Report Modal (Printable) ────────── */}
-      {showReportModal && activeMotion && (
+      {showReportModal && activeMotion && canGenerateReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-6 lg:p-8 shadow-2xl text-gray-900 dark:text-white space-y-6">
             

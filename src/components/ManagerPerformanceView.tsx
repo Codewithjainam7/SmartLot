@@ -80,6 +80,9 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
   const [selectedSchemeFilter, setSelectedSchemeFilter] = useState<'current' | 'all'>('current');
   const [timeframe, setTimeframe] = useState<'30d' | '90d' | 'ytd' | 'all'>('30d');
 
+  const roleLower = (activePersona?.role || '').toLowerCase();
+  const isTenant = roleLower.includes('tenant') || (roleLower.includes('resident') && !roleLower.includes('owner') && !roleLower.includes('committee'));
+
   // Feedback & Review Modal State
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [userRating, setUserRating] = useState(5);
@@ -249,15 +252,18 @@ export function ManagerPerformanceView({ store }: ManagerPerformanceViewProps) {
             <span>Rate Manager</span>
           </button>
 
-          {/* Export AGM Report */}
-          <button
-            type="button"
-            onClick={handlePrintReport}
-            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-[#00D4B2] to-[#0055FF] text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:opacity-95 transition-all cursor-pointer"
-          >
-            <Printer size={14} />
-            <span>Export AGM Report</span>
-          </button>
+          {/* Export AGM Report (Hidden from Tenants) */}
+          {!isTenant && (
+            <button
+              type="button"
+              id="export-agm-report-btn"
+              onClick={handlePrintReport}
+              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-[#00D4B2] to-[#0055FF] text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:opacity-95 transition-all cursor-pointer"
+            >
+              <Printer size={14} />
+              <span>Export AGM Report</span>
+            </button>
+          )}
 
         </div>
       </div>
