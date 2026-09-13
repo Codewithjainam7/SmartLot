@@ -473,7 +473,16 @@ export const INITIAL_MOTIONS: Motion[] = [
     title: 'Rooftop Commercial Solar Inverter Replacement & Firmware Upgrade',
     summary: 'Resolution under Special Motion 4B to approve contractor tender for decommissioning faulty Inverter 3 and installing an industrial 25kW Fronius Symo commercial solar inverter.',
     voterGroup: 'committee_only',
-    committeeSize: 5,
+    committeeSize: 4,
+    quorumTarget: 3,
+    deadline: '2026-09-24',
+    status: 'active',
+    committeeRoster: [
+      { id: 'scm-sp103-1', name: 'Arthur Pendelton', office: 'Chairperson', email: 'arthur.p@spearempire.com', unit: 'Unit 14' },
+      { id: 'scm-sp103-2', name: 'Sophia Zhang', office: 'Treasurer', email: 'sophia.z@spearempire.com', unit: 'Unit 8' },
+      { id: 'scm-sp103-3', name: 'Brandon Cole', office: 'Secretary', email: 'brandon.c@spearempire.com', unit: 'Unit 3' },
+      { id: 'scm-sp103-4', name: 'Oliver Vance', office: 'Committee Member', email: 'oliver.v@spearempire.com', unit: 'Unit 7' }
+    ],
     quotes: [
       { vendorId: 'VND-002', vendorName: 'ElectroPro Strata Services', amount: 4850, gstIncluded: true, recommended: true },
       { vendorId: 'VND-005', vendorName: 'SunVolt Commercial Energy Systems', amount: 5600, gstIncluded: true },
@@ -482,9 +491,6 @@ export const INITIAL_MOTIONS: Motion[] = [
       { name: 'ElectroPro_Inverter_Diagnostic_Report.pdf', url: '#', size: '1.8 MB', type: 'original' },
       { name: 'Scheme_Energy_Audit_2026.pdf', url: '#', size: '3.2 MB', type: 'original' },
     ],
-    quorumTarget: 4,
-    deadline: '2026-09-24',
-    status: 'active',
     comments: [
       {
         id: 'C-MOT-1',
@@ -509,9 +515,9 @@ export const INITIAL_MOTIONS: Motion[] = [
       }
     ],
     ballots: [
-      { voterName: 'Arthur Pendelton', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-10', comment: 'Recommended by facility engineering committee.' },
-      { voterName: 'Sophia Zhang', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-11' },
-      { voterName: 'Brandon Cole', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-12' }
+      { voterName: 'Arthur Pendelton', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Recommended by facility engineering committee.' },
+      { voterName: 'Sophia Zhang', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Capex funding allocated.' },
+      { voterName: 'Brandon Cole', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'Electrical certification reviewed.' }
     ]
   },
   {
@@ -520,14 +526,20 @@ export const INITIAL_MOTIONS: Motion[] = [
     schemeId: 'SP102',
     title: 'Central Garden Courtyard Hydraulic Line Overhaul & Resurfacing',
     summary: 'Resolution to accept contractor tender for excavating cracked terracotta irrigation pipes, replacing with 32mm PN16 high-density polyethylene, and restoring courtyard flagstones.',
-    voterGroup: 'lot_owners',
+    voterGroup: 'committee_only',
+    committeeSize: 3,
+    quorumTarget: 2,
+    deadline: '2026-09-30',
+    status: 'active',
+    committeeRoster: [
+      { id: 'scm-cor-1', name: 'Michael Chen', office: 'Chairperson', email: 'michael.chen@coronation.com', unit: 'Unit 2' },
+      { id: 'scm-cor-2', name: 'Marcus Sterling', office: 'Treasurer', email: 'marcus.s@coronation.com', unit: 'Unit 3' },
+      { id: 'scm-cor-3', name: 'Elena Rostov', office: 'Secretary', email: 'elena.r@coronation.com', unit: 'Unit 1' }
+    ],
     quotes: [
       { vendorId: 'VND-001', vendorName: 'Sydney Apex Plumbing & Gas', amount: 3450, gstIncluded: true, recommended: true },
       { vendorId: 'VND-004', vendorName: 'Citywide Commercial Hydraulics', amount: 4100, gstIncluded: true },
     ],
-    quorumTarget: 3,
-    deadline: '2026-09-30',
-    status: 'active',
     comments: [
       {
         id: 'C-MOT-COR-1',
@@ -538,8 +550,8 @@ export const INITIAL_MOTIONS: Motion[] = [
       }
     ],
     ballots: [
-      { voterName: 'Marcus Sterling', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-11' },
-      { voterName: 'Michael Chen', voterRole: 'Committee Member', vote: 'YES', votedAt: '2026-09-12' }
+      { voterName: 'Marcus Sterling', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Apex quote is within budget.' },
+      { voterName: 'Michael Chen', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-12', comment: 'Basement line approved.' }
     ]
   },
   {
@@ -548,18 +560,23 @@ export const INITIAL_MOTIONS: Motion[] = [
     schemeId: 'SP101',
     title: 'Common Area Main Water Line Replacement',
     summary: 'Resolution to accept contractor tender for replacing damaged 50mm copper hydraulic supply line servicing Lots 1-6.',
-    voterGroup: 'all_residents',
+    voterGroup: 'committee_only',
+    committeeSize: 2,
+    quorumTarget: 2,
+    deadline: '2026-09-28',
+    status: 'passed',
+    committeeRoster: [
+      { id: 'scm-dup-1', name: 'Sarah Jones', office: 'Chairperson', email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
+      { id: 'scm-dup-2', name: 'Robert Vance', office: 'Secretary', email: 'robert.v@duplex.com', unit: 'Unit 2' }
+    ],
     quotes: [
       { vendorId: 'VND-001', vendorName: 'Sydney Apex Plumbing & Gas', amount: 3450, gstIncluded: true, recommended: true },
       { vendorId: 'VND-004', vendorName: 'Citywide Commercial Hydraulics', amount: 4100, gstIncluded: true },
     ],
-    quorumTarget: 2,
-    deadline: '2026-09-28',
-    status: 'passed',
     comments: [],
     ballots: [
-      { voterName: 'Sarah Jones', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-08' },
-      { voterName: 'David Miller', voterRole: 'Lot Owner', vote: 'YES', votedAt: '2026-09-09' }
+      { voterName: 'Sarah Jones', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-08', comment: 'Urgent hydraulic repair approved.' },
+      { voterName: 'Robert Vance', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-09', comment: 'Basement riser replacement confirmed.' }
     ],
     createdWorkOrderId: 'WO-10482'
   }
@@ -1861,7 +1878,7 @@ export function useSmartLotStore() {
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
-  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v8`, INITIAL_MOTIONS);
+  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v9`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 

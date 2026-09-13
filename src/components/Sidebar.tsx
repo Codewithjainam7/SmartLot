@@ -103,15 +103,17 @@ export function Sidebar({
               badge={pendingTriageCount && pendingTriageCount > 0 && (activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? String(pendingTriageCount) : undefined}
               isCollapsed={isCollapsed} 
             />
-            {/* Voting Hub for Community & Committee Motions */}
-            <NavItem 
-              icon={<Vote size={18} />} 
-              label="Voting Hub" 
-              active={activeView === 'voting'} 
-              onClick={() => setActiveView('voting')}
-              badge={activeMotionsCount && activeMotionsCount > 0 ? String(activeMotionsCount) : undefined}
-              isCollapsed={isCollapsed} 
-            />
+            {/* Voting Hub for Community & Committee Motions (Hidden from Tenants who have no voting rights) */}
+            {!activePersonaRole?.toLowerCase().includes('tenant') && (
+              <NavItem 
+                icon={<Vote size={18} />} 
+                label="Voting Hub" 
+                active={activeView === 'voting'} 
+                onClick={() => setActiveView('voting')}
+                badge={activeMotionsCount && activeMotionsCount > 0 ? String(activeMotionsCount) : undefined}
+                isCollapsed={isCollapsed} 
+              />
+            )}
             {/* Strata Manager Performance Dashboard (Accessible to everyone) */}
             <NavItem 
               icon={<Award size={18} />} 

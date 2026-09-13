@@ -445,7 +445,7 @@ export function VotingHubView({
             {activeSchemeId || activeMotion?.strataPlan || 'SP 52042'}
           </span>
           <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-            Quorum: 4 of 6 Votes
+            Quorum: {quorumTarget} of {totalCommitteeSize} Votes
           </span>
           <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block" />
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
@@ -455,9 +455,11 @@ export function VotingHubView({
                 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
                 : isStrataManager 
                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                : isTenant
+                ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
                 : 'bg-gray-500/15 text-gray-500 dark:text-gray-400 border border-gray-500/30'
             }`}>
-              {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : isLotOwnerOrResident ? 'Resident (Discussion)' : 'Observer'}
+              {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : isTenant ? 'Tenant (Non-voting)' : isLotOwnerOrResident ? 'Lot Owner' : 'Observer'}
             </span>
           </div>
         </div>
@@ -486,6 +488,16 @@ export function VotingHubView({
           )}
         </div>
       </div>
+
+      {/* Tenant Informational Notice Banner */}
+      {isTenant && (
+        <div className="bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-center gap-3 text-blue-700 dark:text-blue-300 text-xs shadow-2xs">
+          <AlertCircle size={18} className="shrink-0 text-[#0055FF] dark:text-[#00D4B2]" />
+          <span>
+            <strong>Tenant Observation View:</strong> Under NSW Strata Schemes Management Act 2015, tenants do not have voting eligibility on committee motions or access to executive governance controls, but may review community progress and participate in discussion comments.
+          </span>
+        </div>
+      )}
 
       {/* ───────────────────────────────────────────────────────────── */}
       {/* ── VIEW MODE 1: EXECUTIVE MOTIONS HUB (GALLERY / DIRECTORY) ── */}
@@ -1165,8 +1177,8 @@ export function VotingHubView({
             {/* ── RIGHT 4 COLUMNS: Action & Compliance Sidebar ── */}
             <div className="lg:col-span-4 space-y-6">
               
-              {/* Governance Actions Panel */}
-              {(canManageMotion || canGenerateReport) && (
+              {/* Governance Actions Panel - Strictly Strata Managers & System Admins */}
+              {canManageMotion && (
                 <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
                     <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
@@ -1259,8 +1271,10 @@ export function VotingHubView({
                     <span className="text-[11px] font-bold text-gray-400">
                       {committeeRoster.length} Members
                     </span>
-                    <div className="text-[10px] font-bold text-[#0055FF] dark:text-[#00D4B2]">
-                      {yesVotes}/{quorumTarget} to Quorum
+                    <div className={`text-[10px] font-bold ${isPassed ? 'text-emerald-500 dark:text-emerald-400' : 'text-[#0055FF] dark:text-[#00D4B2]'}`}>
+                      {isPassed 
+                        ? `✓ Quorum Met (${yesVotes}/${quorumTarget})` 
+                        : `${yesVotes}/${quorumTarget} to Quorum`}
                     </div>
                   </div>
                 </div>
@@ -1308,6 +1322,10 @@ export function VotingHubView({
                                 <MinusCircle size={11} /> ABSTAIN
                               </span>
                             )
+                          ) : isLocked ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gray-500/10 text-gray-500 dark:text-gray-400 border border-gray-500/20 text-[11px] font-medium">
+                              <span>Uncast</span>
+                            </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold">
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -1323,8 +1341,8 @@ export function VotingHubView({
                           </p>
                         )}
 
-                        {/* 1-Click Remind Button for Managers */}
-                        {!hasVoted && canManageMotion && (
+                        {/* 1-Click Remind Button for Managers (Active votes only) */}
+                        {!hasVoted && canManageMotion && !isLocked && (
                           <div className="mt-2.5 pt-2 border-t border-gray-200/60 dark:border-white/5 flex justify-end">
                             <button
                               type="button"
