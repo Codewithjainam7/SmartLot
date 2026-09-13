@@ -49,6 +49,7 @@ import {
   HelpCircle,
   Table,
   LayoutGrid,
+  CalendarDays,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -61,6 +62,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { CustomSelect } from './core/CustomSelect';
+import { ActivityCalendarView } from './ActivityCalendarView';
 
 interface ResidentRequestsViewProps {
   requests: ResidentRequest[];
@@ -82,6 +84,15 @@ interface ResidentRequestsViewProps {
   onAssignActivity?: (requestId: string, assigneeName: string, assigneeRole: string, assigneeEmail?: string) => void;
   onReopenActivity?: (requestId: string, reason: string) => void;
   onTriageCase?: (caseId: string, action: 'approve' | 'reject', rejectionReason?: string) => void;
+  onInitiateVotingFlow?: (requestId: string, payload: {
+    title: string;
+    summary: string;
+    deadline: string;
+    quorumTarget: number;
+    voterGroup: string;
+    quotes?: { vendorId: string; vendorName: string; amount: number; gstIncluded: boolean; recommended?: boolean }[];
+  }) => void;
+  onNavigateToVoting?: (motionId?: string) => void;
   initialFilter?: string;
   activePersonaName: string;
   activePersonaRole: string;
@@ -106,6 +117,8 @@ export function ResidentRequestsView({
   onAssignActivity,
   onReopenActivity,
   onTriageCase,
+  onInitiateVotingFlow,
+  onNavigateToVoting,
   initialFilter,
   activePersonaName,
   activePersonaRole,
@@ -127,8 +140,62 @@ export function ResidentRequestsView({
   const [rejectModalRequest, setRejectModalRequest] = useState<ResidentRequest | null>(null);
   const [rejectionReasonText, setRejectionReasonText] = useState('');
 
+  // Initiate Voting Modal State (Miro Workflow)
+  const [votingModalRequest, setVotingModalRequest] = useState<ResidentRequest | null>(null);
+  const [votingTitle, setVotingTitle] = useState('');
+  const [votingSummary, setVotingSummary] = useState('');
+  const [votingDeadline, setVotingDeadline] = useState('');
+  const [votingQuorumTarget, setVotingQuorumTarget] = useState(3);
+  const [votingVoterGroup, setVotingVoterGroup] = useState<string>('committee_only');
+  const [votingVendorName, setVotingVendorName] = useState('');
+  const [votingQuoteAmount, setVotingQuoteAmount] = useState('');
+
+  const handleOpenVotingModal = (req: ResidentRequest) => {
+    setVotingModalRequest(req);
+    setVotingTitle(`Motion: ${req.title}`);
+    setVotingSummary(req.description);
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    setVotingDeadline(d.toISOString().split('T')[0]);
+    setVotingQuorumTarget(3);
+    setVotingVoterGroup('committee_only');
+    setVotingVendorName('Apex Services NSW');
+    setVotingQuoteAmount('3450');
+  };
+
+  const handleVotingPresetDays = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    setVotingDeadline(d.toISOString().split('T')[0]);
+  };
+
+  const handleSubmitVotingModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!votingModalRequest || !votingTitle.trim()) return;
+
+    const quotes = votingQuoteAmount ? [{
+      vendorId: `VND-${Date.now()}`,
+      vendorName: votingVendorName.trim() || 'Selected Contractor',
+      amount: parseFloat(votingQuoteAmount) || 0,
+      gstIncluded: true,
+      recommended: true,
+    }] : [];
+
+    if (onInitiateVotingFlow) {
+      onInitiateVotingFlow(votingModalRequest.id, {
+        title: votingTitle.trim(),
+        summary: votingSummary.trim(),
+        deadline: votingDeadline,
+        quorumTarget: Number(votingQuorumTarget) || 3,
+        voterGroup: votingVoterGroup,
+        quotes,
+      });
+    }
+    setVotingModalRequest(null);
+  };
+
   const [viewScope, setViewScope] = useState<'my' | 'all'>('all');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<'cards' | 'table' | 'calendar'>('cards');
 
   // Table View column-specific search, filter and sort states
   const [tableSearchText, setTableSearchText] = useState('');
@@ -1332,7 +1399,7 @@ export function ResidentRequestsView({
 
           {/* View Controls: Mode Toggle & Scope Toggle */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto">
-            {/* View Mode Switcher: Cards vs Table */}
+            {/* View Mode Switcher: Cards vs Table vs Calendar */}
             <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
               <button
                 type="button"
@@ -1359,6 +1426,19 @@ export function ResidentRequestsView({
               >
                 <Table size={13} />
                 <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('calendar')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'calendar' 
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+                title="12-Month Multi-Zoom Maintenance Calendar"
+              >
+                <CalendarDays size={13} />
+                <span>Calendar</span>
               </button>
             </div>
 
@@ -1389,42 +1469,10 @@ export function ResidentRequestsView({
             </div>
           </div>
         </div>
-
-        {/* Secondary Stream Filter Pills Row */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100 dark:border-white/5 overflow-x-auto pb-1 text-xs">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-2 shrink-0 flex items-center gap-1">
-            <Filter size={12} /> Strata Stream:
-          </span>
-          {[
-            { id: 'all', label: 'All Streams' },
-            { id: 'general_inquiry', label: 'General Inquiry', icon: HelpCircle },
-            { id: 'emergency_repair', label: 'Emergency Repair', icon: AlertTriangle },
-            { id: 'private_lot_repair', label: 'Private Lot Repair', icon: Home },
-            { id: 'common_area_repair', label: 'Common Area Repair', icon: Building2 },
-          ].map(s => {
-            const Icon = s.icon;
-            const active = filterStream === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setFilterStream(s.id)}
-                className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer border ${
-                  active
-                    ? 'bg-[#00D4B2]/15 text-[#00D4B2] border-[#00D4B2]/30'
-                    : 'bg-transparent text-gray-500 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-gray-200'
-                }`}
-              >
-                {Icon && <Icon size={12} />}
-                <span>{s.label}</span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
-      {/* Content Area: Cards Grid or Enterprise Table View */}
-      {viewMode === 'cards' ? (
+      {/* Content Area: Cards Grid, Enterprise Table View, or Maintenance Calendar */}
+      {viewMode === 'cards' && (
         /* Requests Grid with Fading & Shrinking Depth Exit Animation */
         filteredRequests.length === 0 ? (
           filterStatus === 'needs_triage' ? (
@@ -1491,15 +1539,11 @@ export function ResidentRequestsView({
                       </div>
 
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        {/* Strata Stream Badge */}
+                        {/* Single Clean Category Badge */}
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${streamInfo.badgeColor}`}>
                           <StreamIconComp size={10} />
                           <span>{streamInfo.label}</span>
                         </span>
-
-                        <div className="text-xs font-extrabold text-[#0055FF] dark:text-[#66A3FF] uppercase tracking-wider capitalize">
-                          {req.requestType.replace(/_/g, ' ')}
-                        </div>
 
                         {req.priority && (
                           <span className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
@@ -1592,8 +1636,10 @@ export function ResidentRequestsView({
             </AnimatePresence>
           </div>
         )
-      ) : (
-        /* Enterprise Table View */
+      )}
+
+      {/* Enterprise Table View */}
+      {viewMode === 'table' && (
         <div className="space-y-3">
           {/* Table Header Meta Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs">
@@ -2168,6 +2214,16 @@ export function ResidentRequestsView({
         </div>
       )}
 
+      {/* 12-Month Multi-Zoom Maintenance Calendar View */}
+      {viewMode === 'calendar' && (
+        <ActivityCalendarView 
+          requests={requests}
+          onSelectRequest={(req) => setSelectedRequest(req)}
+          activePersonaRole={activePersonaRole}
+          activeSchemeName={activeSchemeName}
+        />
+      )}
+
 
       {/* Details Drawer */}
       <AnimatePresence>
@@ -2230,11 +2286,6 @@ export function ResidentRequestsView({
                   ) : (
                     <StatusBadge status={activeDetail.status} />
                   )}
-
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 text-[11px] font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                    <span className="capitalize">{activeDetail.requestType.replace(/_/g, ' ')}</span>
-                  </div>
 
                   {isManagerOrAdmin && onUpdatePriority ? (
                     <select
@@ -2318,25 +2369,63 @@ export function ResidentRequestsView({
                     Under NSW Strata Schemes Management Act 2015 s 106, common property repairs are the statutory responsibility of the Owners Corporation. Verify whether this request falls under Common Property or Private Lot Owner fixtures.
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                     <button
                       type="button"
                       onClick={() => handleQuickApprove(activeDetail.id)}
-                      className="py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                      className="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
                     >
-                      <CheckCircle2 size={16} />
-                      <span>Approve & Dispatch Work</span>
+                      <CheckCircle2 size={15} />
+                      <span>Direct Work Order</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenVotingModal(activeDetail)}
+                      className="py-2.5 px-3 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    >
+                      <Vote size={15} />
+                      <span>Initiate Voting Flow</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setRejectModalRequest(activeDetail)}
-                      className="py-2.5 px-4 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      className="py-2.5 px-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
-                      <XCircle size={16} />
-                      <span>Reject with Statutory Rationale</span>
+                      <XCircle size={15} />
+                      <span>Reject with Reason</span>
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Active Voting Flow Banner & Jump Button */}
+              {activeDetail.status === 'in_voting' && (
+                <div className="bg-[#0055FF]/10 dark:bg-[#0055FF]/15 border border-[#0055FF]/30 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-black text-[#0055FF] dark:text-[#60A5FA] uppercase tracking-wider">
+                      <Vote size={16} />
+                      <span>Case in Community & Committee Voting</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#0055FF]/20 text-[#0055FF] dark:text-[#60A5FA]">
+                      Ballots Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-normal">
+                    This request has been triaged into a formal strata motion. Scheme members can compare quotes and cast digital ballots.
+                  </p>
+                  {onNavigateToVoting && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigateToVoting(activeDetail.linkedMotionId)}
+                      className="py-2.5 px-4 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer w-full sm:w-auto"
+                    >
+                      <Vote size={15} />
+                      <span>View Live Motion in Voting Hub</span>
+                      <ExternalLink size={13} />
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -3379,6 +3468,188 @@ export function ResidentRequestsView({
                   <span>Confirm Rejection</span>
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Initiate Voting Flow Modal (Miro Workflow) */}
+      <AnimatePresence>
+        {votingModalRequest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+              onClick={() => setVotingModalRequest(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-white dark:bg-[#0d1117] w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl z-10 border border-gray-100 dark:border-white/10 space-y-5"
+            >
+              <div className="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-white/5 pb-4">
+                <div className="flex items-center gap-2 text-[#0055FF] dark:text-[#60A5FA]">
+                  <Vote size={22} />
+                  <div>
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white">Initiate Strata Voting Flow</h3>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Publish request as an official scheme motion</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setVotingModalRequest(null)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitVotingModal} className="space-y-4 text-xs">
+                {/* Motion Title */}
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-900 dark:text-white block">
+                    Motion Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={votingTitle}
+                    onChange={(e) => setVotingTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                  />
+                </div>
+
+                {/* Motion Summary */}
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-900 dark:text-white block">
+                    Problem Summary / Statutory Rationale *
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={votingSummary}
+                    onChange={(e) => setVotingSummary(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs font-normal text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                  />
+                </div>
+
+                {/* Voting Due Date & Quick Presets */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-gray-900 dark:text-white block">
+                      Voting Due Date *
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-gray-400">Presets:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleVotingPresetDays(2)}
+                        className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-[10px] font-bold text-gray-700 dark:text-gray-300 cursor-pointer"
+                      >
+                        48 Hours
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleVotingPresetDays(7)}
+                        className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-[10px] font-bold text-gray-700 dark:text-gray-300 cursor-pointer"
+                      >
+                        7 Days
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleVotingPresetDays(14)}
+                        className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-[10px] font-bold text-gray-700 dark:text-gray-300 cursor-pointer"
+                      >
+                        14 Days
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="date"
+                    required
+                    value={votingDeadline}
+                    onChange={(e) => setVotingDeadline(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                  />
+                </div>
+
+                {/* Voters / Groups & Quorum Target */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-900 dark:text-white block">
+                      Eligible Voter Group *
+                    </label>
+                    <select
+                      value={votingVoterGroup}
+                      onChange={(e) => setVotingVoterGroup(e.target.value)}
+                      className="w-full px-3.5 py-2 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-900 dark:text-white outline-none"
+                    >
+                      <option value="committee_only">Strata Committee Only</option>
+                      <option value="lot_owners">All Registered Lot Owners</option>
+                      <option value="all_residents">Entire Scheme Community</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-900 dark:text-white block">
+                      Quorum Target Ballots *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={votingQuorumTarget}
+                      onChange={(e) => setVotingQuorumTarget(Number(e.target.value) || 1)}
+                      className="w-full px-3.5 py-2 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-900 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Optional Attached Contractor Quote */}
+                <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-100 dark:border-white/5 space-y-2">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                    Attached Contractor Tender (Optional)
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Contractor Name"
+                      value={votingVendorName}
+                      onChange={(e) => setVotingVendorName(e.target.value)}
+                      className="px-3 py-2 bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl text-xs"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Quote Amount (ex GST)"
+                      value={votingQuoteAmount}
+                      onChange={(e) => setVotingQuoteAmount(e.target.value)}
+                      className="px-3 py-2 bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-xl text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setVotingModalRequest(null)}
+                    className="px-4 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] hover:opacity-90 text-white font-black text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                  >
+                    <Vote size={15} />
+                    <span>Publish for Motion</span>
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
