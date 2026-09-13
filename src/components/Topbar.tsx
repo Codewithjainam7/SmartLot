@@ -31,7 +31,7 @@ export function Topbar({
   const hasMultipleSchemes = schemes.length > 1;
 
   return (
-    <div className="h-20 bg-white/50 dark:bg-[#0B1121]/50 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-8 sticky top-0 z-20 font-sans">
+    <div className="h-20 bg-white/50 dark:bg-[#0B1121]/50 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-8 sticky top-0 z-30 font-sans">
       
       {/* Scheme Switcher & Site Creation */}
       <div className="flex items-center gap-4">
@@ -51,7 +51,7 @@ export function Topbar({
             
             {/* Dropdown Menu - Lists user's schemes + Add New Strata Site option */}
             {(canCreateSites || hasMultipleSchemes) && (
-              <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top z-30">
+              <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top z-50">
                 <div className="p-2 space-y-1">
                   <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                     Your Strata Schemes ({schemes.length})
@@ -137,7 +137,7 @@ export function Topbar({
         </button>
 
         {/* Dropdown Menu */}
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right p-2 text-left z-30">
+        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-[#121316] rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top-right p-2 text-left z-50">
           <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Logged In As</div>
             <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{activePersona.name}</div>

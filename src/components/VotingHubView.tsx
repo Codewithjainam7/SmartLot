@@ -1,5 +1,6 @@
 // @smartlot/component
 import React, { useState, useRef } from 'react';
+import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { 
   Motion, 
   MotionVote, 
@@ -381,7 +382,7 @@ export function VotingHubView({
   };
 
   return (
-    <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto bg-[#F8FAFC] dark:bg-[#07090E] text-gray-900 dark:text-gray-100 font-sans transition-colors pb-16">
+    <div ref={scrollContainerRef} className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans text-gray-900 dark:text-gray-100">
       
       {/* ── Toast Notification ────────────────────────────────── */}
       {actionNotification && (
@@ -391,57 +392,55 @@ export function VotingHubView({
         </div>
       )}
 
-      {/* ── Sleek Executive Header (Action-Oriented, No Book Fluff) ── */}
-      <div className="border-b border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#0C1017] px-6 lg:px-8 py-3.5 shrink-0 sticky top-0 z-30 shadow-2xs backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-              <Vote size={20} className="text-[#0055FF] dark:text-[#00D4B2]" />
-              <span>Committee Voting</span>
-            </h1>
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
-              {activeMotion?.strataPlan || 'SP 52042'}
+      {/* ── Page Header Banner (Non-overlapping, Consistent Theme) ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-5 md:p-6 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Vote size={24} className="text-[#0055FF] dark:text-[#00D4B2]" />
+            <span>Committee Voting</span>
+          </h1>
+          <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+            {activeSchemeId || activeMotion?.strataPlan || 'SP 52042'}
+          </span>
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+            Quorum: 4 of 6 Votes
+          </span>
+          <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block" />
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <span className="font-semibold text-gray-800 dark:text-gray-200">{activePersonaName}</span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+              isSCM 
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
+                : isStrataManager 
+                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                : 'bg-gray-500/15 text-gray-500 dark:text-gray-400 border border-gray-500/30'
+            }`}>
+              {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : isLotOwnerOrResident ? 'Resident (Discussion)' : 'Observer'}
             </span>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-              Quorum: 4 of 6 Votes
-            </span>
-            <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block" />
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <span>{activePersonaName}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                isSCM 
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
-                  : isStrataManager 
-                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                  : 'bg-gray-500/15 text-gray-500 dark:text-gray-400 border border-gray-500/30'
-              }`}>
-                {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : isLotOwnerOrResident ? 'Resident (Discussion)' : 'Observer'}
-              </span>
-            </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {viewMode === 'list' && canManageMotion && (
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md"
-              >
-                <Plus size={14} strokeWidth={2.5} />
-                <span>+ Start New Vote</span>
-              </button>
-            )}
-            {activeMotion && (
-              <button
-                type="button"
-                onClick={() => setShowReportModal(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Printer size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                <span>Certified Report</span>
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-2.5 shrink-0">
+          {viewMode === 'list' && canManageMotion && (
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md active:scale-95"
+            >
+              <Plus size={14} strokeWidth={2.5} />
+              <span>+ Start New Vote</span>
+            </button>
+          )}
+          {activeMotion && (
+            <button
+              type="button"
+              onClick={() => setShowReportModal(true)}
+              className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Printer size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
+              <span>Certified Report</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -449,7 +448,7 @@ export function VotingHubView({
       {/* ── VIEW MODE 1: EXECUTIVE MOTIONS HUB (GALLERY / DIRECTORY) ── */}
       {/* ───────────────────────────────────────────────────────────── */}
       {viewMode === 'list' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="space-y-6">
           
           {/* ── Executive KPI Summary Grid ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -746,15 +745,15 @@ export function VotingHubView({
       {/* ── VIEW MODE 2: DEDICATED FULL-PAGE MOTION GOVERNANCE WORKSPACE ── */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {viewMode === 'detail' && activeMotion && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in duration-200">
+        <div className="space-y-6 animate-in fade-in duration-200">
           
           {/* Top Breadcrumb & Motion Switcher Navigation */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 dark:border-white/10 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/60 dark:bg-[#0d1117]/60 backdrop-blur-md p-3.5 px-5 rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-2xs">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleBackToList}
-                className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all flex items-center gap-1.5 border border-gray-200 dark:border-white/10 shadow-2xs cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all flex items-center gap-1.5 border border-gray-200 dark:border-white/10 shadow-2xs cursor-pointer active:scale-95"
               >
                 <ArrowLeft size={14} />
                 <span>All Motions ({schemeMotions.length})</span>
@@ -763,26 +762,31 @@ export function VotingHubView({
               <div className="h-4 w-px bg-gray-300 dark:bg-white/20 hidden sm:block" />
 
               <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
-                <span>{activeMotion.strataPlan || 'SP 52042'}</span>
+                <span>{activeSchemeId || activeMotion.strataPlan || 'SP 52042'}</span>
                 <span>/</span>
                 <span className="font-mono font-bold text-gray-800 dark:text-gray-200">{activeMotion.id}</span>
               </div>
             </div>
 
-            {/* Quick Motion Selector Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-400 hidden sm:inline">Jump to:</span>
-              <select
-                value={activeMotion.id}
-                onChange={(e) => setSelectedMotionId(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#141A24] border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 outline-none cursor-pointer"
-              >
-                {schemeMotions.map(m => (
-                  <option key={m.id} value={m.id}>
-                    {m.id}: {m.title.substring(0, 45)}...
-                  </option>
-                ))}
-              </select>
+            {/* Quick Motion Selector Dropdown (CustomSelect matching site theme) */}
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 hidden sm:inline whitespace-nowrap">
+                Jump to:
+              </span>
+              <div className="w-72 sm:w-80">
+                <CustomSelect
+                  size="sm"
+                  menuAlign="right"
+                  placeholder="Select motion..."
+                  options={schemeMotions.map(m => ({
+                    value: m.id,
+                    label: `${m.id}: ${m.title}`,
+                    description: `Status: ${m.status.toUpperCase()} • Quorum: ${m.ballots?.length || 0}/${m.committeeSize || 6} Votes`
+                  }))}
+                  value={activeMotion.id}
+                  onChange={(val) => setSelectedMotionId(val)}
+                />
+              </div>
             </div>
           </div>
 
@@ -1943,40 +1947,42 @@ export function VotingHubView({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1.5 block text-xs">
                     Category
                   </label>
-                  <select
+                  <CustomSelect
+                    size="sm"
+                    options={[
+                      { value: 'Repairs & Maintenance', label: 'Repairs & Maintenance' },
+                      { value: 'Major Works', label: 'Major Works' },
+                      { value: 'By-law Approval', label: 'By-law Approval' },
+                      { value: 'Financial', label: 'Financial Approval' },
+                      { value: 'General', label: 'General Resolution' },
+                    ]}
                     value={createCategory}
-                    onChange={e => setCreateCategory(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="Repairs & Maintenance">Repairs & Maintenance</option>
-                    <option value="Major Works">Major Works</option>
-                    <option value="By-law Approval">By-law Approval</option>
-                    <option value="Financial">Financial Approval</option>
-                    <option value="General">General Resolution</option>
-                  </select>
+                    onChange={val => setCreateCategory(val)}
+                  />
                 </div>
 
                 <div>
-                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1.5 block text-xs">
                     Voting Period
                   </label>
-                  <select
-                    value={createDeadlineDays}
-                    onChange={e => setCreateDeadlineDays(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value={7}>7 Days (Standard)</option>
-                    <option value={14}>14 Days (Extended)</option>
-                    <option value={21}>21 Days (Statutory)</option>
-                  </select>
+                  <CustomSelect
+                    size="sm"
+                    options={[
+                      { value: '7', label: '7 Days (Standard)' },
+                      { value: '14', label: '14 Days (Extended)' },
+                      { value: '21', label: '21 Days (Statutory)' },
+                    ]}
+                    value={String(createDeadlineDays)}
+                    onChange={val => setCreateDeadlineDays(Number(val) || 7)}
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block text-xs">
                   Summary & Motion Details *
                 </label>
                 <textarea
@@ -1992,21 +1998,22 @@ export function VotingHubView({
               {/* Optional: Link to Resident Request */}
               {requests && requests.length > 0 && (
                 <div>
-                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">
+                  <label className="font-bold text-gray-700 dark:text-gray-300 mb-1.5 block text-xs">
                     Link to Resident Request (Optional)
                   </label>
-                  <select
+                  <CustomSelect
+                    size="sm"
+                    options={[
+                      { value: '', label: '-- None (Standalone Committee Motion) --' },
+                      ...requests.map(r => ({
+                        value: r.id,
+                        label: `${r.referenceId || r.id} — ${r.title}`,
+                        description: `Type: ${r.requestType || 'General'} • Unit: ${r.unit || 'Common Area'}`
+                      }))
+                    ]}
                     value={createLinkedRequestId}
-                    onChange={e => setCreateLinkedRequestId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="">-- None (Standalone Committee Motion) --</option>
-                    {requests.map(r => (
-                      <option key={r.id} value={r.id}>
-                        {r.referenceId || r.id} — {r.title} ({r.requestType || 'General'})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={val => setCreateLinkedRequestId(val)}
+                  />
                 </div>
               )}
 
