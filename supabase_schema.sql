@@ -208,9 +208,9 @@ INSERT INTO motions (
     'SP52042',
     'SP 52042',
     '1 Pitt Street, Sydney NSW 2000',
-    'Lot Owner Request: Common Property Signage & Facade Modernisation',
-    'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Lot Owner Request: Common Property Signage & Facade Modernisation',
-    'Official Strata Committee Motion to approve Lot 4 owner Jack''s request for replacing aged common lobby directory signage and exterior entry cladding with architect-specified architectural aluminum panels, funded under capital works fund.',
+    'Lobby Signage Upgrade',
+    'Replace Lobby Directory Signage',
+    'Approve replacing the old lobby directory board and front entry signs with modern aluminum panels ($3,850).',
     'committee_only',
     6,
     4,
@@ -219,15 +219,16 @@ INSERT INTO motions (
     'active'
 ) ON CONFLICT (id) DO UPDATE SET 
     title = EXCLUDED.title,
+    heading = EXCLUDED.heading,
     summary = EXCLUDED.summary,
     status = EXCLUDED.status,
     quorum_target = EXCLUDED.quorum_target;
 
--- Motion 1: Ballots (Cameron - Chairperson, Joana - Treasurer, Jake - Secretary)
+-- Motion 1: Ballots
 INSERT INTO motion_ballots (motion_id, voter_name, voter_role, voter_office, vote, comment, voted_at) VALUES
-('MOT-CAV-501', 'Cameron', 'Committee Member', 'Chairperson', 'YES', 'Complies with building by-laws and architectural guidelines.', timezone('utc'::text, now() - interval '3 days')),
-('MOT-CAV-501', 'Joana', 'Committee Member', 'Treasurer', 'YES', 'Cost is fully budgeted under line item 4.2 in capital works fund.', timezone('utc'::text, now() - interval '2 days')),
-('MOT-CAV-501', 'Jake', 'Committee Member', 'Secretary', 'YES', 'All notices and contractor insurance verified.', timezone('utc'::text, now() - interval '1 day'))
+('MOT-CAV-501', 'Cameron', 'Committee Member', 'Chairperson', 'YES', 'Looks clean and fits building design guidelines.', timezone('utc'::text, now() - interval '3 days')),
+('MOT-CAV-501', 'Joana', 'Committee Member', 'Treasurer', 'YES', 'Cost is within our maintenance budget.', timezone('utc'::text, now() - interval '2 days')),
+('MOT-CAV-501', 'Jake', 'Committee Member', 'Secretary', 'YES', 'Contractor license and insurance verified.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (motion_id, voter_name) DO UPDATE SET vote = EXCLUDED.vote, comment = EXCLUDED.comment;
 
 -- Motion 1: Quotes
@@ -237,9 +238,9 @@ INSERT INTO motion_quotes (motion_id, vendor_id, vendor_name, amount, gst_includ
 
 -- Motion 1: Comments
 INSERT INTO motion_comments (id, motion_id, author_name, author_role, text, created_at) VALUES
-('C-CAV-1', 'MOT-CAV-501', 'John', 'Committee Member', 'Signage design and materials meet building aesthetic guidelines.', timezone('utc'::text, now() - interval '1 day')),
-('C-CAV-2', 'MOT-CAV-501', 'Peter', 'Building Manager', 'As Building Manager, I checked the structural anchors on the ground floor foyer wall. Conduit paths are clear and installation will take less than 4 hours.', timezone('utc'::text, now() - interval '18 hours')),
-('C-CAV-3', 'MOT-CAV-501', 'Steve', 'Strata Manager', 'Thank you Peter and John. The motion is currently at 3 YES votes. We require 1 more vote (4 votes out of 6) to reach statutory threshold and pass.', timezone('utc'::text, now() - interval '4 hours'))
+('C-CAV-1', 'MOT-CAV-501', 'John', 'Committee Member', 'New design looks clean and matches our foyer.', timezone('utc'::text, now() - interval '1 day')),
+('C-CAV-2', 'MOT-CAV-501', 'Peter', 'Building Manager', 'Checked the wall anchors. Installation takes under 4 hours.', timezone('utc'::text, now() - interval '18 hours')),
+('C-CAV-3', 'MOT-CAV-501', 'Steve', 'Strata Manager', 'Currently at 3 YES votes. Need 1 more vote to pass.', timezone('utc'::text, now() - interval '4 hours'))
 ON CONFLICT (id) DO NOTHING;
 
 
@@ -255,9 +256,9 @@ INSERT INTO motions (
     'SP102',
     'SP 102',
     '14 Coronation Parade, Strathfield NSW 2135',
-    'Urgent Maintenance: Podium Courtyard Hydraulics',
-    'SP 102 - 14 Coronation Parade - Central Garden Courtyard Hydraulic Line Overhaul & Resurfacing',
-    'Resolution to accept contractor tender for excavating cracked terracotta irrigation pipes causing water seepage, replacing with 32mm PN16 high-density polyethylene, and restoring sandstone courtyard pavers.',
+    'Courtyard Pipe Repairs',
+    'Fix Courtyard Garden Water Pipes',
+    'Approve contractor quote to fix leaking garden irrigation pipes and repair damaged pavers in the courtyard ($3,450).',
     'committee_only',
     3,
     2,
@@ -265,13 +266,14 @@ INSERT INTO motions (
     'active'
 ) ON CONFLICT (id) DO UPDATE SET 
     title = EXCLUDED.title,
+    heading = EXCLUDED.heading,
     summary = EXCLUDED.summary,
     status = EXCLUDED.status;
 
 -- Motion 2: Ballots
 INSERT INTO motion_ballots (motion_id, voter_name, voter_role, voter_office, vote, comment, voted_at) VALUES
-('MOT-COR-201', 'Marcus Sterling', 'Committee Member', 'Treasurer', 'YES', 'Apex quote is within budget and administrative fund cap.', timezone('utc'::text, now() - interval '2 days')),
-('MOT-COR-201', 'Michael Chen', 'Committee Member', 'Chairperson', 'YES', 'Basement line inspection verified. Fully approved.', timezone('utc'::text, now() - interval '1 day'))
+('MOT-COR-201', 'Marcus Sterling', 'Committee Member', 'Treasurer', 'YES', 'Apex quote is fair and within budget.', timezone('utc'::text, now() - interval '2 days')),
+('MOT-COR-201', 'Michael Chen', 'Committee Member', 'Chairperson', 'YES', 'Inspected the courtyard leak. Approved.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (motion_id, voter_name) DO UPDATE SET vote = EXCLUDED.vote, comment = EXCLUDED.comment;
 
 -- Motion 2: Quotes
@@ -281,7 +283,7 @@ INSERT INTO motion_quotes (motion_id, vendor_id, vendor_name, amount, gst_includ
 
 -- Motion 2: Comments
 INSERT INTO motion_comments (id, motion_id, author_name, author_role, text, created_at) VALUES
-('C-MOT-COR-1', 'MOT-COR-201', 'Marcus Sterling', 'Committee Member', 'Apex Plumbing already surveyed the basement run. Quote is reasonable and within administrative fund cap.', timezone('utc'::text, now() - interval '1 day'))
+('C-MOT-COR-1', 'MOT-COR-201', 'Marcus Sterling', 'Committee Member', 'Apex surveyed the run. Quote is reasonable.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (id) DO NOTHING;
 
 
@@ -297,9 +299,9 @@ INSERT INTO motions (
     'SP101',
     'SP 101',
     '88 Sunset Blvd, Cronulla NSW 2230',
-    'Emergency Repair: Common Water Main Supply Line',
-    'SP 101 - 88 Sunset Blvd - Common Area Main Water Line Replacement',
-    'Resolution to accept contractor tender for replacing damaged 50mm copper hydraulic supply line servicing Lots 1-6 following water hammer failure.',
+    'Main Water Line Repair',
+    'Emergency Main Water Line Replacement',
+    'Emergency replacement of burst water supply line servicing Units 1-6. Work completed under Work Order WO-10482 ($3,450).',
     'committee_only',
     2,
     2,
@@ -307,17 +309,20 @@ INSERT INTO motions (
     'passed',
     'WO-10482',
     timezone('utc'::text, now() - interval '5 days'),
-    'Statutory quorum achieved (2/2 YES votes). Emergency work order WO-10482 generated.'
+    'Quorum reached (2/2 YES). Emergency work order WO-10482 generated.'
 ) ON CONFLICT (id) DO UPDATE SET 
     title = EXCLUDED.title,
+    heading = EXCLUDED.heading,
     summary = EXCLUDED.summary,
     status = EXCLUDED.status,
-    created_work_order_id = EXCLUDED.created_work_order_id;
+    created_work_order_id = EXCLUDED.created_work_order_id,
+    close_reason = EXCLUDED.close_reason,
+    closed_at = EXCLUDED.closed_at;
 
 -- Motion 3: Ballots
 INSERT INTO motion_ballots (motion_id, voter_name, voter_role, voter_office, vote, comment, voted_at) VALUES
-('MOT-001', 'Sarah Jones', 'Committee Member', 'Chairperson', 'YES', 'Urgent hydraulic repair approved.', timezone('utc'::text, now() - interval '6 days')),
-('MOT-001', 'Robert Vance', 'Committee Member', 'Secretary', 'YES', 'Basement riser replacement confirmed.', timezone('utc'::text, now() - interval '5 days'))
+('MOT-001', 'Sarah Jones', 'Committee Member', 'Chairperson', 'YES', 'Urgent repair approved.', timezone('utc'::text, now() - interval '6 days')),
+('MOT-001', 'Robert Vance', 'Committee Member', 'Secretary', 'YES', 'Pipe replacement confirmed.', timezone('utc'::text, now() - interval '5 days'))
 ON CONFLICT (motion_id, voter_name) DO UPDATE SET vote = EXCLUDED.vote, comment = EXCLUDED.comment;
 
 -- Motion 3: Quotes
@@ -338,18 +343,19 @@ INSERT INTO motions (
     'SP52042',
     'SP 52042',
     '1 Pitt Street, Sydney NSW 2000',
-    'Capital Works: Rooftop HVAC Acoustic Attenuation Baffle',
-    'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Rooftop HVAC Plant Acoustic Baffle Installation & Vibration Dampening',
-    'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers.',
+    'Rooftop Noise Dampening',
+    'Rooftop AC Noise Barriers',
+    'Proposal to install sound barriers around rooftop air conditioning units ($8,250).',
     'committee_only',
     6,
     4,
     timezone('utc'::text, now() - interval '1 day'),
     'rejected',
     timezone('utc'::text, now() - interval '1 day'),
-    'Motion rejected by strata committee due to lack of structural load certification and quote exceeding capital works budget allocation.'
+    'Rejected by committee due to high cost ($8,250) and missing engineer sign-off.'
 ) ON CONFLICT (id) DO UPDATE SET 
     title = EXCLUDED.title,
+    heading = EXCLUDED.heading,
     summary = EXCLUDED.summary,
     status = EXCLUDED.status,
     close_reason = EXCLUDED.close_reason,
@@ -357,9 +363,9 @@ INSERT INTO motions (
 
 -- Motion 4: Ballots (Rejected: 1 YES vs 2 NO)
 INSERT INTO motion_ballots (motion_id, voter_name, voter_role, voter_office, vote, comment, voted_at) VALUES
-('MOT-CAV-502', 'Cameron', 'Committee Member', 'Chairperson', 'YES', 'Acoustic remediation is necessary to mitigate resident complaints.', timezone('utc'::text, now() - interval '3 days')),
-('MOT-CAV-502', 'Joana', 'Committee Member', 'Treasurer', 'NO', 'Quote is $8,250 which exceeds our uncommitted capital budget and lacks structural engineer certification.', timezone('utc'::text, now() - interval '2 days')),
-('MOT-CAV-502', 'Jake', 'Committee Member', 'Secretary', 'NO', 'Contractor failed to provide council compliance and crane permits.', timezone('utc'::text, now() - interval '1 day'))
+('MOT-CAV-502', 'Cameron', 'Committee Member', 'Chairperson', 'YES', 'Need to reduce noise for top-floor units.', timezone('utc'::text, now() - interval '3 days')),
+('MOT-CAV-502', 'Joana', 'Committee Member', 'Treasurer', 'NO', 'Too expensive ($8,250) and missing structural engineer approval.', timezone('utc'::text, now() - interval '2 days')),
+('MOT-CAV-502', 'Jake', 'Committee Member', 'Secretary', 'NO', 'Missing council permits and crane access plan.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (motion_id, voter_name) DO UPDATE SET vote = EXCLUDED.vote, comment = EXCLUDED.comment;
 
 -- Motion 4: Quotes
@@ -369,8 +375,9 @@ INSERT INTO motion_quotes (motion_id, vendor_id, vendor_name, amount, gst_includ
 
 -- Motion 4: Comments
 INSERT INTO motion_comments (id, motion_id, author_name, author_role, text, created_at) VALUES
-('CMT-RFI-502-1', 'MOT-CAV-502', 'Joana', 'Treasurer', 'The committee has voted NO on this motion. The $8,250 cost is unbudgeted and no structural certification was submitted.', timezone('utc'::text, now() - interval '1 day')),
-('CMT-RFI-502-2', 'MOT-CAV-502', 'Steve', 'Strata Manager', 'Motion officially concluded and marked as REJECTED. Requester notified of committee determination.', timezone('utc'::text, now() - interval '1 day'))
+('CMT-RFI-502-1', 'MOT-CAV-502', 'Joana', 'Treasurer', 'Voted NO. Cost is unbudgeted and no structural engineer sign-off.', timezone('utc'::text, now() - interval '1 day')),
+('CMT-RFI-502-2', 'MOT-CAV-502', 'Steve', 'Strata Manager', 'Motion concluded as rejected. Requester notified.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (id) DO NOTHING;
+
 
 

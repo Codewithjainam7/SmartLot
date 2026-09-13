@@ -420,9 +420,9 @@ export const INITIAL_MOTIONS: Motion[] = [
     schemeId: 'SP52042',
     strataPlan: 'SP 52042',
     propertyAddress: '1 Pitt Street, Sydney NSW 2000',
-    heading: 'Lot Owner Request: Common Property Signage & Facade Modernisation',
-    title: 'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Lot Owner Request: Common Property Signage & Facade Modernisation',
-    summary: 'Official Strata Committee Motion to approve Lot 4 owner Jack\'s request for replacing aged common lobby directory signage and exterior entry cladding with architect-specified architectural aluminum panels, funded under capital works fund.',
+    heading: 'Lobby Signage Upgrade',
+    title: 'Replace Lobby Directory Signage',
+    summary: 'Approve replacing the old lobby directory board and front entry signs with modern aluminum panels ($3,850).',
     voterGroup: 'committee_only',
     committeeSize: 6,
     quorumTarget: 4, // 4 votes required to form a binding decision
@@ -438,9 +438,9 @@ export const INITIAL_MOTIONS: Motion[] = [
       { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.member@cavalloscm.org', unit: 'Unit 21' }
     ],
     ballots: [
-      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Complies with building by-laws and architectural guidelines.' },
-      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Cost is fully budgeted under line item 4.2 in capital works fund.' },
-      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'All notices and contractor insurance verified.' }
+      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Looks clean and fits building design guidelines.' },
+      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Cost is within our maintenance budget.' },
+      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'Contractor license and insurance verified.' }
     ],
     quotes: [
       { vendorId: 'VND-002', vendorName: 'Apex Architectural Facades NSW', amount: 3850, gstIncluded: true, recommended: true },
@@ -451,29 +451,28 @@ export const INITIAL_MOTIONS: Motion[] = [
       { name: 'Cavallo_Lobby_Existing_Photo.jpg', url: '#', size: '3.1 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Jack (Lot Owner)' }
     ],
     revisedAttachments: [
-      { name: 'Revised_Resubmission_Green_Accent_Spec_v2.pdf', url: '#', size: '1.9 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Updated per John\'s RFI: Green colorway and non-reflective acrylic finish.' },
-      { name: 'Revised_Signage_Mockup_Photo_v2.jpg', url: '#', size: '2.8 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Architectural rendering with dark bronze frame and forest green letter accents.' }
+      { name: 'Revised_Signage_Mockup_Photo_v2.jpg', url: '#', size: '2.8 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Updated mockup with dark bronze frame and green accents.' }
     ],
     comments: [
       {
         id: 'C-CAV-1',
         authorName: 'John',
         authorRole: 'Committee Member',
-        text: 'Signage specifications and materials comply with foyer aesthetic standards. Recommended vendor quote is within budget.',
+        text: 'New design looks clean and matches our foyer.',
         createdAt: '1 day ago'
       },
       {
         id: 'C-CAV-2',
         authorName: 'Peter',
         authorRole: 'Building Manager',
-        text: 'As Building Manager, I checked the structural anchors on the ground floor foyer wall. Conduit paths are clear and installation will take less than 4 hours.',
+        text: 'Checked the wall anchors. Installation takes under 4 hours.',
         createdAt: '18 hours ago'
       },
       {
         id: 'C-CAV-3',
         authorName: 'Steve',
         authorRole: 'Strata Manager',
-        text: 'Thank you Peter and John. The motion is currently at 3 YES votes. We require 1 more vote (4 votes out of 6) to reach statutory threshold and pass.',
+        text: 'Currently at 3 YES votes. Need 1 more vote to pass.',
         createdAt: '4 hours ago'
       }
     ]
@@ -484,15 +483,15 @@ export const INITIAL_MOTIONS: Motion[] = [
     schemeId: 'SP52042',
     strataPlan: 'SP 52042',
     propertyAddress: '1 Pitt Street, Sydney NSW 2000',
-    heading: 'Capital Works: Rooftop HVAC Acoustic Attenuation Baffle',
-    title: 'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Rooftop HVAC Plant Acoustic Baffle Installation & Vibration Dampening',
-    summary: 'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers.',
+    heading: 'Rooftop Noise Dampening',
+    title: 'Rooftop AC Noise Barriers',
+    summary: 'Proposal to install sound barriers around rooftop air conditioning units ($8,250).',
     voterGroup: 'committee_only',
     committeeSize: 6,
     quorumTarget: 4,
     deadline: '2026-09-12',
     status: 'rejected',
-    closeReason: 'Motion rejected by strata committee due to lack of structural load certification and quote exceeding capital works budget allocation.',
+    closeReason: 'Rejected by committee due to high cost ($8,250) and missing engineer sign-off.',
     closedAt: '2026-09-12',
     closedBy: {
       name: 'Joana',
@@ -519,29 +518,32 @@ export const INITIAL_MOTIONS: Motion[] = [
         id: 'CMT-CAV-502-1',
         authorName: 'Joana',
         authorRole: 'Treasurer',
-        text: 'The committee has voted NO on this motion. The $8,250 cost is unbudgeted and no structural certification was submitted.',
+        text: 'Voted NO. Cost is unbudgeted and no structural engineer sign-off.',
         createdAt: '1 day ago'
       },
       {
         id: 'CMT-CAV-502-2',
         authorName: 'Steve',
         authorRole: 'Strata Manager',
-        text: 'Motion officially concluded and marked as REJECTED. Requester notified of committee determination.',
+        text: 'Motion concluded as rejected. Requester notified.',
         createdAt: '1 day ago'
       }
     ],
     ballots: [
-      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Acoustic remediation is necessary to mitigate resident complaints.' },
-      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'NO', votedAt: '2026-09-11', comment: 'Quote is $8,250 which exceeds our uncommitted capital budget and lacks structural engineer certification.' },
-      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'NO', votedAt: '2026-09-12', comment: 'Contractor failed to provide council compliance and crane permits.' }
+      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Need to reduce noise for top-floor units.' },
+      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'NO', votedAt: '2026-09-11', comment: 'Too expensive ($8,250) and missing structural engineer approval.' },
+      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'NO', votedAt: '2026-09-12', comment: 'Missing council permits and crane access plan.' }
     ]
   },
   {
     id: 'MOT-COR-201',
     caseId: 'REQ-COR-202',
     schemeId: 'SP102',
-    title: 'Central Garden Courtyard Hydraulic Line Overhaul & Resurfacing',
-    summary: 'Resolution to accept contractor tender for excavating cracked terracotta irrigation pipes, replacing with 32mm PN16 high-density polyethylene, and restoring courtyard flagstones.',
+    strataPlan: 'SP 102',
+    propertyAddress: '14 Coronation Parade, Strathfield NSW 2135',
+    heading: 'Courtyard Pipe Repairs',
+    title: 'Fix Courtyard Garden Water Pipes',
+    summary: 'Approve contractor quote to fix leaking garden irrigation pipes and repair damaged pavers in the courtyard ($3,450).',
     voterGroup: 'committee_only',
     committeeSize: 3,
     quorumTarget: 2,
@@ -561,26 +563,31 @@ export const INITIAL_MOTIONS: Motion[] = [
         id: 'C-MOT-COR-1',
         authorName: 'Marcus Sterling',
         authorRole: 'Committee Member',
-        text: 'Apex Plumbing already surveyed the basement run. Quote is reasonable and within administrative fund cap.',
+        text: 'Apex surveyed the run. Quote is reasonable.',
         createdAt: 'Yesterday'
       }
     ],
     ballots: [
-      { voterName: 'Marcus Sterling', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Apex quote is within budget.' },
-      { voterName: 'Michael Chen', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-12', comment: 'Basement line approved.' }
+      { voterName: 'Marcus Sterling', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Apex quote is fair and within budget.' },
+      { voterName: 'Michael Chen', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-12', comment: 'Inspected the courtyard leak. Approved.' }
     ]
   },
   {
     id: 'MOT-001',
     caseId: 'REQ-101',
     schemeId: 'SP101',
-    title: 'Common Area Main Water Line Replacement',
-    summary: 'Resolution to accept contractor tender for replacing damaged 50mm copper hydraulic supply line servicing Lots 1-6.',
+    strataPlan: 'SP 101',
+    propertyAddress: '88 Sunset Blvd, Cronulla NSW 2230',
+    heading: 'Main Water Line Repair',
+    title: 'Emergency Main Water Line Replacement',
+    summary: 'Emergency replacement of burst water supply line servicing Units 1-6. Work completed under Work Order WO-10482 ($3,450).',
     voterGroup: 'committee_only',
     committeeSize: 2,
     quorumTarget: 2,
     deadline: '2026-09-28',
     status: 'passed',
+    closeReason: 'Quorum reached (2/2 YES). Emergency work order WO-10482 generated.',
+    closedAt: '2026-09-09',
     committeeRoster: [
       { id: 'scm-dup-1', name: 'Sarah Jones', office: 'Chairperson', email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
       { id: 'scm-dup-2', name: 'Robert Vance', office: 'Secretary', email: 'robert.v@duplex.com', unit: 'Unit 2' }
@@ -591,8 +598,8 @@ export const INITIAL_MOTIONS: Motion[] = [
     ],
     comments: [],
     ballots: [
-      { voterName: 'Sarah Jones', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-08', comment: 'Urgent hydraulic repair approved.' },
-      { voterName: 'Robert Vance', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-09', comment: 'Basement riser replacement confirmed.' }
+      { voterName: 'Sarah Jones', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-08', comment: 'Urgent repair approved.' },
+      { voterName: 'Robert Vance', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-09', comment: 'Pipe replacement confirmed.' }
     ],
     createdWorkOrderId: 'WO-10482'
   }
@@ -1979,7 +1986,7 @@ export function useSmartLotStore() {
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
-  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v12`, INITIAL_MOTIONS);
+  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v13`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 
