@@ -1617,17 +1617,27 @@ export function useSmartLotStore() {
   const refreshData = async () => {
     setIsLoading(true);
     try {
-      // 🚀 Fast parallel roundtrip: Fetch all 5 tables at once
+      // 🚀 Fast parallel roundtrip: Fetch all tables at once
       const [
         { data: schemesData },
         { data: membersData },
         { data: profilesData },
-        { data: unitsData }
+        { data: unitsData },
+        { data: motionsData },
+        { data: ballotsData },
+        { data: quotesData },
+        { data: commentsData },
+        { data: attachmentsData }
       ] = await Promise.all([
         supabase.from('schemes').select('*'),
         supabase.from('members').select('*'),
         supabase.from('profiles').select('*'),
-        supabase.from('units').select('*')
+        supabase.from('units').select('*'),
+        supabase.from('motions').select('*').order('created_at', { ascending: false }),
+        supabase.from('motion_ballots').select('*'),
+        supabase.from('motion_quotes').select('*'),
+        supabase.from('motion_comments').select('*'),
+        supabase.from('motion_attachments').select('*')
       ]);
       
       let formattedSchemes = SCHEMES;
@@ -1862,6 +1872,81 @@ export function useSmartLotStore() {
         setResidentRequests(INITIAL_RESIDENT_REQUESTS);
       }
 
+      // Process live motions from Supabase
+      if (motionsData && motionsData.length > 0) {
+        const mappedMotions: Motion[] = motionsData.map(m => {
+          const motionBallots = (ballotsData || []).filter(b => b.motion_id === m.id).map(b => ({
+            voterName: b.voter_name,
+            voterRole: b.voter_role || 'Committee Member',
+            voterOffice: b.voter_office,
+            vote: b.vote as 'YES' | 'NO' | 'ABSTAIN',
+            votedAt: b.voted_at ? new Date(b.voted_at).toISOString().split('T')[0] : 'Today',
+            comment: b.comment
+          }));
+
+          const motionQuotes = (quotesData || []).filter(q => q.motion_id === m.id).map(q => ({
+            vendorId: q.vendor_id || 'VND-001',
+            vendorName: q.vendor_name,
+            amount: Number(q.amount),
+            gstIncluded: q.gst_included ?? true,
+            recommended: q.recommended ?? false
+          }));
+
+          const motionComments = (commentsData || []).filter(c => c.motion_id === m.id).map(c => ({
+            id: c.id,
+            authorName: c.author_name,
+            authorRole: c.author_role,
+            text: c.text,
+            createdAt: c.created_at ? new Date(c.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'Recently'
+          }));
+
+          const motionAttachments = (attachmentsData || []).filter(a => a.motion_id === m.id).map(a => ({
+            name: a.name,
+            url: a.url || '#',
+            size: a.size || '1.0 MB',
+            type: a.type || 'original',
+            uploadedAt: a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'Recently',
+            uploadedBy: a.uploaded_by || 'Strata Manager',
+            note: a.note
+          }));
+
+          return {
+            id: m.id,
+            caseId: m.case_id,
+            schemeId: m.scheme_id,
+            strataPlan: m.strata_plan,
+            propertyAddress: m.property_address,
+            heading: m.heading,
+            title: m.title,
+            summary: m.summary,
+            voterGroup: m.voter_group || 'committee_only',
+            committeeSize: m.committee_size || 6,
+            quorumTarget: m.quorum_target || 4,
+            deadline: m.deadline ? new Date(m.deadline).toISOString().split('T')[0] : '2026-09-30',
+            originalDeadline: m.original_deadline ? new Date(m.original_deadline).toISOString().split('T')[0] : undefined,
+            status: m.status as any,
+            closeReason: m.close_reason,
+            closedAt: m.closed_at ? new Date(m.closed_at).toISOString().split('T')[0] : undefined,
+            createdWorkOrderId: m.created_work_order_id,
+            ballots: motionBallots,
+            quotes: motionQuotes,
+            comments: motionComments,
+            attachments: motionAttachments,
+            committeeRoster: [
+              { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
+              { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
+              { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 4' },
+              { id: 'scm-4', name: 'Elena', office: 'Member', email: 'elena.m@cavalloscm.org', unit: 'Unit 19' },
+              { id: 'scm-5', name: 'David', office: 'Member', email: 'david.w@cavalloscm.org', unit: 'Unit 7' },
+              { id: 'scm-6', name: 'John', office: 'Member', email: 'john.d@cavalloscm.org', unit: 'Unit 12' }
+            ]
+          };
+        });
+        setMotions(mappedMotions);
+      } else {
+        setMotions(prev => prev && prev.length > 0 ? prev : INITIAL_MOTIONS);
+      }
+
     } catch (err) {
       console.error("Error fetching from Supabase:", err);
     } finally {
@@ -1894,7 +1979,7 @@ export function useSmartLotStore() {
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
-  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v11`, INITIAL_MOTIONS);
+  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v12`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 

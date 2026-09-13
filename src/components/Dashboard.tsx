@@ -19,7 +19,10 @@ import {
   X,
   Award,
   Star,
-  Clock
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ChevronRight
 } from 'lucide-react';
 
 import { dispatchMemberInviteEmail } from '../services/emailService';
@@ -140,6 +143,17 @@ export function Dashboard({ store }: DashboardProps) {
     setNewSchemeId(`SP${Math.floor(100 + Math.random() * 900)}`);
   };
 
+  const allMotions = store.motions || [];
+  const [motionFilter, setMotionFilter] = useState<'all' | 'active' | 'passed' | 'rejected'>('all');
+  const activeMotions = allMotions.filter((m: any) => m.status === 'active');
+  
+  const displayedMotions = allMotions.filter((m: any) => {
+    if (motionFilter === 'active') return m.status === 'active';
+    if (motionFilter === 'passed') return m.status === 'passed';
+    if (motionFilter === 'rejected') return m.status === 'rejected' || m.status === 'unresolved';
+    return true;
+  });
+
   return (
     <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0a0a0f] relative">
       
@@ -149,7 +163,13 @@ export function Dashboard({ store }: DashboardProps) {
         <div className="grid grid-cols-2 gap-4">
           <MetricTile icon={<Users size={16} />} label="Residents" value={residents.length.toString()} />
           <MetricTile icon={<AlertTriangle size={16} />} label="Issues" value={pendingRequests.length.toString()} highlight={pendingRequests.length > 0} />
-          <MetricTile icon={<Vote size={16} />} label="Votes" value="0" />
+          <MetricTile 
+            icon={<Vote size={16} />} 
+            label="Motions" 
+            value={allMotions.length.toString()} 
+            highlight={activeMotions.length > 0}
+            onClick={() => store.setActiveView('voting')}
+          />
           <MetricTile icon={<ClipboardList size={16} />} label="Lots" value={activeScheme?.lots?.toString() || "0"} />
         </div>
 
@@ -193,7 +213,169 @@ export function Dashboard({ store }: DashboardProps) {
       <div className="lg:col-span-6 space-y-6">
         <UnitDetailCard store={store} />
 
-        {/* Feed / Timeline */}
+        {/* Committee Motions & Voting Hub Preview */}
+        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] flex items-center justify-center font-bold">
+                <Vote size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Committee Motions & Voting</h3>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                    {allMotions.length} Motions
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Statutory strata voting records, resolutions & active ballots
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => store.setActiveView('voting')}
+                className="px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-[#0044CC] text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#0055FF]/20"
+              >
+                <span>Voting Hub</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setMotionFilter('all')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                motionFilter === 'all'
+                  ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              All ({allMotions.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMotionFilter('active')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                motionFilter === 'active'
+                  ? 'bg-amber-500 text-black shadow-xs'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Active ({allMotions.filter((m: any) => m.status === 'active').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMotionFilter('passed')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                motionFilter === 'passed'
+                  ? 'bg-emerald-500 text-white shadow-xs'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Passed ({allMotions.filter((m: any) => m.status === 'passed').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMotionFilter('rejected')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                motionFilter === 'rejected'
+                  ? 'bg-red-500 text-white shadow-xs'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Rejected ({allMotions.filter((m: any) => m.status === 'rejected' || m.status === 'unresolved').length})
+            </button>
+          </div>
+
+          {/* Motion Cards Grid */}
+          <div className="space-y-3">
+            {displayedMotions.length === 0 ? (
+              <div className="text-xs text-gray-400 text-center py-6">
+                No motions found in this category.
+              </div>
+            ) : (
+              displayedMotions.map((motion: any) => {
+                const yesVotes = (motion.ballots || []).filter((b: any) => b.vote === 'YES').length;
+                const noVotes = (motion.ballots || []).filter((b: any) => b.vote === 'NO').length;
+                const quorumTarget = motion.quorumTarget || 4;
+
+                return (
+                  <div
+                    key={motion.id}
+                    onClick={() => store.setActiveView('voting')}
+                    className="p-4 rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/60 dark:border-white/5 hover:border-[#0055FF]/40 dark:hover:border-[#0055FF]/40 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/10 text-gray-800 dark:text-gray-200">
+                          {motion.id}
+                        </span>
+                        <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                          {motion.strataPlan || motion.schemeId || 'Strata Plan'}
+                        </span>
+                      </div>
+
+                      {/* Status Badge */}
+                      {motion.status === 'active' && (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                          <Clock size={11} /> Voting Open
+                        </span>
+                      )}
+                      {motion.status === 'passed' && (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                          <CheckCircle2 size={11} /> Passed & Executed
+                        </span>
+                      )}
+                      {(motion.status === 'rejected' || motion.status === 'unresolved') && (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-500 border border-red-500/30 flex items-center gap-1">
+                          <XCircle size={11} /> Rejected
+                        </span>
+                      )}
+                    </div>
+
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#3880ff] transition-colors leading-snug">
+                      {motion.heading || motion.title}
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                      {motion.summary}
+                    </p>
+
+                    <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">
+                          Quorum: <strong className="text-gray-900 dark:text-white">{yesVotes}/{quorumTarget} YES</strong>
+                        </span>
+                        {noVotes > 0 && (
+                          <span className="text-red-500 font-semibold">
+                            ({noVotes} NO)
+                          </span>
+                        )}
+                        {motion.createdWorkOrderId && (
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                            {motion.createdWorkOrderId}
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="text-[#0055FF] dark:text-[#3880ff] text-xs font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        <span>{motion.status === 'active' ? 'Vote / Review' : 'View Resolution'}</span>
+                        <ArrowRight size={12} />
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+
         <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Activity Log</h3>
@@ -476,9 +658,11 @@ export function Dashboard({ store }: DashboardProps) {
   );
 }
 
-function MetricTile({ icon, label, value, highlight }: { icon: React.ReactNode, label: string, value: string, highlight?: boolean }) {
+function MetricTile({ icon, label, value, highlight, onClick }: { icon: React.ReactNode, label: string, value: string, highlight?: boolean, onClick?: () => void }) {
   return (
-    <div className={`p-4 rounded-2xl border transition-colors ${
+    <div 
+      onClick={onClick}
+      className={`p-4 rounded-2xl border transition-all ${onClick ? 'cursor-pointer hover:scale-[1.02] hover:shadow-md' : ''} ${
       highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20' : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-gray-700'
     }`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 ${
@@ -487,7 +671,10 @@ function MetricTile({ icon, label, value, highlight }: { icon: React.ReactNode, 
         {icon}
       </div>
       <div className="text-2xl font-bold text-gray-900 dark:text-white mb-0.5">{value}</div>
-      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</div>
+      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between">
+        <span>{label}</span>
+        {onClick && <ArrowRight size={12} className="opacity-60" />}
+      </div>
     </div>
   );
 }
