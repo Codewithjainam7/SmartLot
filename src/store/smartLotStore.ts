@@ -454,24 +454,12 @@ export const INITIAL_MOTIONS: Motion[] = [
       { name: 'Revised_Resubmission_Green_Accent_Spec_v2.pdf', url: '#', size: '1.9 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Updated per John\'s RFI: Green colorway and non-reflective acrylic finish.' },
       { name: 'Revised_Signage_Mockup_Photo_v2.jpg', url: '#', size: '2.8 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Architectural rendering with dark bronze frame and forest green letter accents.' }
     ],
-    rfiHistory: [
-      {
-        id: 'RFI-001',
-        requestedBy: 'John',
-        requestedRole: 'Committee Member',
-        question: 'Could the requester please provide an updated design mockup in forest green accent to match our foyer redesign palette?',
-        requestedAt: '2026-09-11',
-        extendedDays: 7,
-        status: 'addressed',
-        responseNote: 'Jack provided revised design photos and specs on 12 Sep 2026. Deadline extended by 7 days.'
-      }
-    ],
     comments: [
       {
         id: 'C-CAV-1',
         authorName: 'John',
         authorRole: 'Committee Member',
-        text: 'I requested updated signage design in green to match foyer aesthetics. Requester resubmitted revised attachments, looks much better now!',
+        text: 'Signage specifications and materials comply with foyer aesthetic standards. Recommended vendor quote is within budget.',
         createdAt: '1 day ago'
       },
       {
@@ -498,13 +486,18 @@ export const INITIAL_MOTIONS: Motion[] = [
     propertyAddress: '1 Pitt Street, Sydney NSW 2000',
     heading: 'Capital Works: Rooftop HVAC Acoustic Attenuation Baffle',
     title: 'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Rooftop HVAC Plant Acoustic Baffle Installation & Vibration Dampening',
-    summary: 'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers following resident acoustic complaints.',
+    summary: 'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers.',
     voterGroup: 'committee_only',
     committeeSize: 6,
     quorumTarget: 4,
-    deadline: '2026-10-08',
-    originalDeadline: '2026-09-24',
-    status: 'unresolved',
+    deadline: '2026-09-12',
+    status: 'rejected',
+    closeReason: 'Motion rejected by strata committee due to lack of structural load certification and quote exceeding capital works budget allocation.',
+    closedAt: '2026-09-12',
+    closedBy: {
+      name: 'Joana',
+      role: 'Treasurer'
+    },
     committeeRoster: [
       { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
       { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
@@ -521,35 +514,26 @@ export const INITIAL_MOTIONS: Motion[] = [
       { name: 'Rooftop_HVAC_Cooling_Tower_Survey.pdf', url: '#', size: '3.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Peter (Building Manager)' },
       { name: 'SoundShield_Engineering_Quote_8250.pdf', url: '#', size: '1.2 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Peter (Building Manager)' },
     ],
-    rfiHistory: [
-      {
-        id: 'RFI-CAV-002',
-        requestedBy: 'Joana',
-        requestedRole: 'Treasurer',
-        question: 'Before the committee approves $8,250 from capital works, we require an independent acoustic engineer dB test certifying compliance with Council Night-Time Noise Policy (AS 1055), plus structural engineer sign-off on rooftop load limits.',
-        requestedAt: '2026-09-12',
-        extendedDays: 14,
-        status: 'open'
-      }
-    ],
     comments: [
       {
-        id: 'CMT-RFI-502-1',
+        id: 'CMT-CAV-502-1',
         authorName: 'Joana',
         authorRole: 'Treasurer',
-        text: '⚠️ Request for Information (RFI) Raised: "Before the committee approves $8,250 from capital works, we require an independent acoustic engineer dB test certifying compliance with Council Night-Time Noise Policy (AS 1055), plus structural engineer sign-off on rooftop load limits.". Voting deadline extended by 14 days to 2026-10-08.',
+        text: 'The committee has voted NO on this motion. The $8,250 cost is unbudgeted and no structural certification was submitted.',
         createdAt: '1 day ago'
       },
       {
-        id: 'CMT-RFI-502-2',
-        authorName: 'Peter',
-        authorRole: 'Building Manager',
-        text: 'I have contacted SoundShield Acoustic Engineering to schedule the calibrated sound meter testing on Friday evening. Structural plans have also been dispatched to the consulting engineer.',
-        createdAt: '6 hours ago'
+        id: 'CMT-CAV-502-2',
+        authorName: 'Steve',
+        authorRole: 'Strata Manager',
+        text: 'Motion officially concluded and marked as REJECTED. Requester notified of committee determination.',
+        createdAt: '1 day ago'
       }
     ],
     ballots: [
-      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-11', comment: 'Acoustic remediation is necessary to mitigate resident complaints and prevent council fines.' }
+      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Acoustic remediation is necessary to mitigate resident complaints.' },
+      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'NO', votedAt: '2026-09-11', comment: 'Quote is $8,250 which exceeds our uncommitted capital budget and lacks structural engineer certification.' },
+      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'NO', votedAt: '2026-09-12', comment: 'Contractor failed to provide council compliance and crane permits.' }
     ]
   },
   {
@@ -1910,7 +1894,7 @@ export function useSmartLotStore() {
   const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
-  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v10`, INITIAL_MOTIONS);
+  const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v11`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 

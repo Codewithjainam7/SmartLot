@@ -126,9 +126,6 @@ export function VotingHubView({
 
   // Modals state
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showRfiModal, setShowRfiModal] = useState(false);
-  const [rfiQuestion, setRfiQuestion] = useState('');
-  const [rfiDays, setRfiDays] = useState(7);
   
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [restartReason, setRestartReason] = useState('');
@@ -166,7 +163,6 @@ export function VotingHubView({
   // - Strata Manager & Building Manager CANNOT vote under Australian Strata Law
   const canCastVote = isSCM || isSystemAdmin;
   const canManageMotion = isStrataManager || isSystemAdmin;
-  const canRequestRFI = isSCM || isStrataManager || isSystemAdmin;
   const canResubmitProposal = isLotOwnerOrResident || isStrataManager || isSystemAdmin;
 
   const showToast = (msg: string) => {
@@ -174,17 +170,10 @@ export function VotingHubView({
     setTimeout(() => setActionNotification(null), 4000);
   };
 
-  const isMotionRFI = (m?: Motion) => !!m && (m.status === 'unresolved' || !!(m.rfiHistory && m.rfiHistory.some(r => r.status === 'open')));
-
   const filteredMotions = schemeMotions.filter(m => {
     if (activeFilter !== 'all') {
-      if (activeFilter === 'unresolved') {
-        if (!isMotionRFI(m) && m.status !== 'rejected') return false;
-      } else if (activeFilter === 'active') {
-        if (m.status !== 'active' || isMotionRFI(m)) return false;
-      } else {
-        if (m.status !== activeFilter) return false;
-      }
+      if (activeFilter === 'unresolved' && (m.status === 'unresolved' || m.status === 'rejected')) return true;
+      if (m.status !== activeFilter) return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -266,9 +255,9 @@ export function VotingHubView({
   // User's existing ballot
   const userBallot = ballots.find(b => b.voterName.toLowerCase() === activePersonaName.toLowerCase());
 
-  const statsActive = schemeMotions.filter(m => m.status === 'active' && !isMotionRFI(m)).length;
+  const statsActive = schemeMotions.filter(m => m.status === 'active').length;
   const statsPassed = schemeMotions.filter(m => m.status === 'passed').length;
-  const statsUnresolved = schemeMotions.filter(m => isMotionRFI(m) || m.status === 'rejected').length;
+  const statsUnresolved = schemeMotions.filter(m => m.status === 'unresolved' || m.status === 'rejected').length;
   const statsAwaitingUser = schemeMotions.filter(
     m => m.status === 'active' && canCastVote && !m.ballots?.some(b => b.voterName.toLowerCase() === activePersonaName.toLowerCase())
   ).length;
@@ -298,16 +287,6 @@ export function VotingHubView({
     onAddComment(activeMotion.id, commentInput.trim());
     setCommentInput('');
     showToast('💬 Comment posted to motion thread.');
-  };
-
-  const handleConfirmRFI = () => {
-    if (!rfiQuestion.trim() || !activeMotion) return;
-    if (onRequestRFI) {
-      onRequestRFI(activeMotion.id, rfiQuestion.trim(), Number(rfiDays) || 7);
-    }
-    setShowRfiModal(false);
-    setRfiQuestion('');
-    showToast(`⚠️ RFI submitted. Voting deadline extended by ${rfiDays} days.`);
   };
 
   const handleConfirmRestart = () => {
@@ -623,11 +602,11 @@ export function VotingHubView({
                 onClick={() => setActiveFilter('unresolved')}
                 className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   activeFilter === 'unresolved'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                    ? 'bg-red-600 text-white shadow-xs'
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20'
                 }`}
               >
-                Under RFI ({statsUnresolved})
+                Closed / Rejected ({statsUnresolved})
               </button>
             </div>
           </div>
@@ -682,9 +661,9 @@ export function VotingHubView({
                           <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase flex items-center gap-1">
                             <CheckCircle2 size={11} /> Passed & Locked
                           </span>
-                        ) : isMotionRFI(motion) ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase flex items-center gap-1">
-                            <AlertTriangle size={11} /> Under RFI
+                        ) : motion.status === 'rejected' || motion.status === 'unresolved' ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-[10px] font-black uppercase flex items-center gap-1">
+                            <XCircle size={11} /> Rejected
                           </span>
                         ) : (
                           <span className="px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-black uppercase flex items-center gap-1">
@@ -870,9 +849,9 @@ export function VotingHubView({
                     <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black uppercase flex items-center gap-1.5">
                       <Lock size={12} /> Passed & Locked
                     </span>
-                  ) : isMotionRFI(activeMotion) ? (
-                    <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-black uppercase flex items-center gap-1.5">
-                      <AlertTriangle size={12} /> Under RFI Clarification
+                  ) : activeMotion.status === 'rejected' || activeMotion.status === 'unresolved' ? (
+                    <span className="px-3 py-1 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-black uppercase flex items-center gap-1.5">
+                      <XCircle size={12} /> Rejected & Closed
                     </span>
                   ) : (
                     <span className="px-3 py-1 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-black uppercase flex items-center gap-1.5">
@@ -988,33 +967,29 @@ export function VotingHubView({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* RFI Alert Banner if activeMotion is under RFI */}
-                  {isMotionRFI(activeMotion) && (
-                    <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3.5 shadow-2xs">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
-                        <AlertTriangle size={18} />
+                  {/* Notice if activeMotion is rejected */}
+                  {(activeMotion.status === 'rejected' || activeMotion.status === 'unresolved') && (
+                    <div className="p-4 sm:p-5 rounded-3xl bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 text-xs flex items-start gap-3.5 shadow-2xs">
+                      <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0 border border-red-500/30">
+                        <XCircle size={18} />
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-black uppercase tracking-wider text-[11px] text-amber-700 dark:text-amber-300">
-                            Formal Clarification Pending (Under RFI)
+                          <span className="font-black uppercase tracking-wider text-[11px] text-red-700 dark:text-red-300">
+                            Motion Concluded — Rejected
                           </span>
-                          <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[10px] font-bold">
-                            Voting Paused
+                          <span className="px-2 py-0.2 rounded-full bg-red-500/20 text-red-600 dark:text-red-300 text-[10px] font-bold">
+                            Ballots Locked
                           </span>
                         </div>
-                        <p className="text-xs text-amber-800 dark:text-amber-200/90 leading-relaxed">
-                          {activeMotion.rfiHistory?.find(r => r.status === 'open') ? (
-                            <>
-                              <strong>{activeMotion.rfiHistory.find(r => r.status === 'open')?.requestedBy}</strong> ({activeMotion.rfiHistory.find(r => r.status === 'open')?.requestedRole}) requested: &ldquo;{activeMotion.rfiHistory.find(r => r.status === 'open')?.question}&rdquo;
-                            </>
-                          ) : (
-                            "This motion is pending formal information or documentation from the requester/engineer."
-                          )}
+                        <p className="text-xs text-red-800 dark:text-red-200/90 leading-relaxed">
+                          {activeMotion.closeReason || 'This motion was formally rejected by the committee and closed.'}
                         </p>
-                        <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold pt-0.5">
-                          Deadline automatically extended by {activeMotion.rfiHistory?.find(r => r.status === 'open')?.extendedDays || 14} days to allow compliance documents to be uploaded.
-                        </div>
+                        {activeMotion.closedAt && (
+                          <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold pt-0.5">
+                            Determined on {activeMotion.closedAt}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1155,18 +1130,6 @@ export function VotingHubView({
                       Comments & Discussion
                     </h2>
                   </div>
-
-                  {/* RFI Trigger Button */}
-                  {canRequestRFI && !isLocked && (
-                    <button
-                      type="button"
-                      onClick={() => setShowRfiModal(true)}
-                      className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-amber-500/20 transition-all"
-                    >
-                      <HelpCircle size={13} />
-                      <span>Ask for More Info</span>
-                    </button>
-                  )}
                 </div>
 
                 {/* Comment Feed */}
@@ -1541,75 +1504,6 @@ export function VotingHubView({
         </div>
       )}
 
-      {/* ── RFI / Clarification Modal ──────────────────────────── */}
-      {showRfiModal && activeMotion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-lg w-full border border-gray-200 dark:border-white/15 p-6 shadow-2xl space-y-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <HelpCircle size={18} className="text-amber-500" />
-                  <span>Request for Information (RFI)</span>
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Request clarification or revisions from the requester and optionally extend the voting deadline.
-                </p>
-              </div>
-              <button onClick={() => setShowRfiModal(false)} className="text-gray-400 hover:text-white cursor-pointer">
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">Clarification Question / Design Request</label>
-                <textarea
-                  rows={3}
-                  placeholder="e.g. Please supply updated signage design mockups in green finish to match foyer aesthetics..."
-                  value={rfiQuestion}
-                  onChange={e => setRfiQuestion(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-[#0055FF]"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">Extend Voting Deadline</label>
-                <div className="flex items-center gap-2">
-                  {[7, 14, 21].map(d => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setRfiDays(d)}
-                      className={`px-3 py-1.5 rounded-xl border font-bold cursor-pointer transition-all ${
-                        rfiDays === d ? 'bg-blue-500/20 text-blue-400 border-blue-500' : 'bg-transparent text-gray-400 border-gray-200 dark:border-white/10'
-                      }`}
-                    >
-                      +{d} Days
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowRfiModal(false)}
-                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-xs font-bold cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmRFI}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black cursor-pointer shadow-sm"
-              >
-                Submit RFI & Extend Deadline
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Restart Voting Modal ───────────────────────────────── */}
       {showRestartModal && activeMotion && (

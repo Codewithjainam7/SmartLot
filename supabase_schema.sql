@@ -86,6 +86,9 @@ ON CONFLICT DO NOTHING;
 -- 3. Motions & Strata Governance Schema (NSW SSMA 2015 Compliant)
 -- ============================================================================
 
+-- Drop legacy table if previously created
+DROP TABLE IF EXISTS motion_rfis CASCADE;
+
 -- Motions Table (Committee and Community Voting Motions)
 CREATE TABLE IF NOT EXISTS motions (
     id TEXT PRIMARY KEY,
@@ -122,20 +125,6 @@ CREATE TABLE IF NOT EXISTS motion_ballots (
     UNIQUE (motion_id, voter_name)
 );
 
--- Motion RFIs (Request for Information / Clarification)
-CREATE TABLE IF NOT EXISTS motion_rfis (
-    id TEXT PRIMARY KEY,
-    motion_id TEXT NOT NULL REFERENCES motions(id) ON DELETE CASCADE,
-    requested_by TEXT NOT NULL,
-    requested_role TEXT NOT NULL DEFAULT 'Committee Member',
-    question TEXT NOT NULL,
-    extended_days INTEGER DEFAULT 7,
-    status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'addressed')),
-    response_note TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    addressed_at TIMESTAMP WITH TIME ZONE
-);
-
 -- Motion Quotes (Vendor Tenders & Estimates)
 CREATE TABLE IF NOT EXISTS motion_quotes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -148,7 +137,7 @@ CREATE TABLE IF NOT EXISTS motion_quotes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Motion Attachments (Original Submissions and Revised Specs)
+-- Motion Attachments (Submissions, Architectural Plans & Specs)
 CREATE TABLE IF NOT EXISTS motion_attachments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     motion_id TEXT NOT NULL REFERENCES motions(id) ON DELETE CASCADE,
@@ -175,7 +164,6 @@ CREATE TABLE IF NOT EXISTS motion_comments (
 CREATE INDEX IF NOT EXISTS idx_motions_scheme_id ON motions(scheme_id);
 CREATE INDEX IF NOT EXISTS idx_motions_status ON motions(status);
 CREATE INDEX IF NOT EXISTS idx_motion_ballots_motion_id ON motion_ballots(motion_id);
-CREATE INDEX IF NOT EXISTS idx_motion_rfis_motion_id ON motion_rfis(motion_id);
 CREATE INDEX IF NOT EXISTS idx_motion_quotes_motion_id ON motion_quotes(motion_id);
 CREATE INDEX IF NOT EXISTS idx_motion_attachments_motion_id ON motion_attachments(motion_id);
 CREATE INDEX IF NOT EXISTS idx_motion_comments_motion_id ON motion_comments(motion_id);
@@ -183,7 +171,6 @@ CREATE INDEX IF NOT EXISTS idx_motion_comments_motion_id ON motion_comments(moti
 -- Enable Row Level Security (RLS)
 ALTER TABLE motions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE motion_ballots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE motion_rfis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE motion_quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE motion_attachments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE motion_comments ENABLE ROW LEVEL SECURITY;
@@ -194,9 +181,6 @@ CREATE POLICY "Allow public write on motions" ON motions FOR ALL TO public USING
 
 CREATE POLICY "Allow public read on motion_ballots" ON motion_ballots FOR SELECT TO public USING (true);
 CREATE POLICY "Allow public write on motion_ballots" ON motion_ballots FOR ALL TO public USING (true) WITH CHECK (true);
-
-CREATE POLICY "Allow public read on motion_rfis" ON motion_rfis FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public write on motion_rfis" ON motion_rfis FOR ALL TO public USING (true) WITH CHECK (true);
 
 CREATE POLICY "Allow public read on motion_quotes" ON motion_quotes FOR SELECT TO public USING (true);
 CREATE POLICY "Allow public write on motion_quotes" ON motion_quotes FOR ALL TO public USING (true) WITH CHECK (true);
@@ -209,7 +193,7 @@ CREATE POLICY "Allow public write on motion_comments" ON motion_comments FOR ALL
 
 
 -- ============================================================================
--- 4. Seed Data: 4 Realistic Strata Motions (2 Active, 1 Solved, 1 Under RFI)
+-- 4. Seed Data: 4 Realistic Strata Motions (2 Active, 1 Solved, 1 Rejected)
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -251,14 +235,9 @@ INSERT INTO motion_quotes (motion_id, vendor_id, vendor_name, amount, gst_includ
 ('MOT-CAV-501', 'VND-002', 'Apex Architectural Facades NSW', 3850.00, true, true),
 ('MOT-CAV-501', 'VND-005', 'Sydney Signcraft & Cladding Co.', 4400.00, true, false);
 
--- Motion 1: RFI History (Addressed clarification)
-INSERT INTO motion_rfis (id, motion_id, requested_by, requested_role, question, extended_days, status, response_note, created_at, addressed_at) VALUES
-('RFI-001', 'MOT-CAV-501', 'John', 'Committee Member', 'Could the requester please provide an updated design mockup in forest green accent to match our foyer redesign palette?', 7, 'addressed', 'Jack provided revised design photos and specs on 12 Sep 2026. Deadline extended by 7 days.', timezone('utc'::text, now() - interval '2 days'), timezone('utc'::text, now() - interval '1 day'))
-ON CONFLICT (id) DO NOTHING;
-
 -- Motion 1: Comments
 INSERT INTO motion_comments (id, motion_id, author_name, author_role, text, created_at) VALUES
-('C-CAV-1', 'MOT-CAV-501', 'John', 'Committee Member', 'I requested updated signage design in green to match foyer aesthetics. Requester resubmitted revised attachments, looks much better now!', timezone('utc'::text, now() - interval '1 day')),
+('C-CAV-1', 'MOT-CAV-501', 'John', 'Committee Member', 'Signage design and materials meet building aesthetic guidelines.', timezone('utc'::text, now() - interval '1 day')),
 ('C-CAV-2', 'MOT-CAV-501', 'Peter', 'Building Manager', 'As Building Manager, I checked the structural anchors on the ground floor foyer wall. Conduit paths are clear and installation will take less than 4 hours.', timezone('utc'::text, now() - interval '18 hours')),
 ('C-CAV-3', 'MOT-CAV-501', 'Steve', 'Strata Manager', 'Thank you Peter and John. The motion is currently at 3 YES votes. We require 1 more vote (4 votes out of 6) to reach statutory threshold and pass.', timezone('utc'::text, now() - interval '4 hours'))
 ON CONFLICT (id) DO NOTHING;
@@ -348,11 +327,11 @@ INSERT INTO motion_quotes (motion_id, vendor_id, vendor_name, amount, gst_includ
 
 
 -- ----------------------------------------------------------------------------
--- Motion 4: UNDER RFI (SP52042 - Rooftop HVAC Acoustic Baffle Installation)
+-- Motion 4: REJECTED (SP52042 - Rooftop HVAC Acoustic Baffle Installation)
 -- ----------------------------------------------------------------------------
 INSERT INTO motions (
     id, case_id, scheme_id, strata_plan, property_address, heading, title, summary,
-    voter_group, committee_size, quorum_target, deadline, original_deadline, status
+    voter_group, committee_size, quorum_target, deadline, status, closed_at, close_reason
 ) VALUES (
     'MOT-CAV-502',
     'REQ-CAV-104',
@@ -361,35 +340,26 @@ INSERT INTO motions (
     '1 Pitt Street, Sydney NSW 2000',
     'Capital Works: Rooftop HVAC Acoustic Attenuation Baffle',
     'SP 52042 - 1 Pitt Street, Sydney NSW 2000 - Rooftop HVAC Plant Acoustic Baffle Installation & Vibration Dampening',
-    'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers following resident acoustic complaints.',
+    'Motion to approve $8,250 capital works expenditure to fabricate and install high-density acoustic attenuation louvers and spring-isolated inertia bases around rooftop cooling towers.',
     'committee_only',
     6,
     4,
-    timezone('utc'::text, now() + interval '25 days'),
-    timezone('utc'::text, now() + interval '11 days'),
-    'unresolved'
+    timezone('utc'::text, now() - interval '1 day'),
+    'rejected',
+    timezone('utc'::text, now() - interval '1 day'),
+    'Motion rejected by strata committee due to lack of structural load certification and quote exceeding capital works budget allocation.'
 ) ON CONFLICT (id) DO UPDATE SET 
     title = EXCLUDED.title,
     summary = EXCLUDED.summary,
     status = EXCLUDED.status,
-    deadline = EXCLUDED.deadline;
+    close_reason = EXCLUDED.close_reason,
+    closed_at = EXCLUDED.closed_at;
 
--- Motion 4: Open RFI (Request for Information from Treasurer Joana)
-INSERT INTO motion_rfis (id, motion_id, requested_by, requested_role, question, extended_days, status, created_at) VALUES
-(
-    'RFI-CAV-002',
-    'MOT-CAV-502',
-    'Joana',
-    'Treasurer',
-    'Before the committee approves $8,250 from capital works, we require an independent acoustic engineer dB test certifying compliance with Council Night-Time Noise Policy (AS 1055), plus structural engineer sign-off on rooftop load limits.',
-    14,
-    'open',
-    timezone('utc'::text, now() - interval '1 day')
-) ON CONFLICT (id) DO UPDATE SET question = EXCLUDED.question, status = EXCLUDED.status;
-
--- Motion 4: Ballots (1 YES vote so far, voting paused pending RFI documentation)
+-- Motion 4: Ballots (Rejected: 1 YES vs 2 NO)
 INSERT INTO motion_ballots (motion_id, voter_name, voter_role, voter_office, vote, comment, voted_at) VALUES
-('MOT-CAV-502', 'Cameron', 'Committee Member', 'Chairperson', 'YES', 'Acoustic remediation is necessary to mitigate resident complaints and prevent council fines.', timezone('utc'::text, now() - interval '2 days'))
+('MOT-CAV-502', 'Cameron', 'Committee Member', 'Chairperson', 'YES', 'Acoustic remediation is necessary to mitigate resident complaints.', timezone('utc'::text, now() - interval '3 days')),
+('MOT-CAV-502', 'Joana', 'Committee Member', 'Treasurer', 'NO', 'Quote is $8,250 which exceeds our uncommitted capital budget and lacks structural engineer certification.', timezone('utc'::text, now() - interval '2 days')),
+('MOT-CAV-502', 'Jake', 'Committee Member', 'Secretary', 'NO', 'Contractor failed to provide council compliance and crane permits.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (motion_id, voter_name) DO UPDATE SET vote = EXCLUDED.vote, comment = EXCLUDED.comment;
 
 -- Motion 4: Quotes
@@ -399,7 +369,8 @@ INSERT INTO motion_quotes (motion_id, vendor_id, vendor_name, amount, gst_includ
 
 -- Motion 4: Comments
 INSERT INTO motion_comments (id, motion_id, author_name, author_role, text, created_at) VALUES
-('CMT-RFI-502-1', 'MOT-CAV-502', 'Joana', 'Treasurer', '⚠️ Request for Information (RFI) Raised: "Before the committee approves $8,250 from capital works, we require an independent acoustic engineer dB test certifying compliance with Council Night-Time Noise Policy (AS 1055), plus structural engineer sign-off on rooftop load limits.". Voting deadline extended by 14 days.', timezone('utc'::text, now() - interval '1 day')),
-('CMT-RFI-502-2', 'MOT-CAV-502', 'Peter', 'Building Manager', 'I have contacted SoundShield Acoustic Engineering to schedule the calibrated sound meter testing on Friday evening. Structural plans have also been dispatched to the consulting engineer.', timezone('utc'::text, now() - interval '6 hours'))
+('CMT-RFI-502-1', 'MOT-CAV-502', 'Joana', 'Treasurer', 'The committee has voted NO on this motion. The $8,250 cost is unbudgeted and no structural certification was submitted.', timezone('utc'::text, now() - interval '1 day')),
+('CMT-RFI-502-2', 'MOT-CAV-502', 'Steve', 'Strata Manager', 'Motion officially concluded and marked as REJECTED. Requester notified of committee determination.', timezone('utc'::text, now() - interval '1 day'))
 ON CONFLICT (id) DO NOTHING;
+
 
