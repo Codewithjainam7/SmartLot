@@ -82,7 +82,7 @@ export function Topbar({
                         className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/5 dark:hover:bg-[#00D4B2]/5 flex items-center gap-1.5 cursor-pointer transition-colors"
                       >
                         <Plus size={14} />
-                        + Add New Strata Site
+                        <span>Add New Strata Site</span>
                       </button>
                     </div>
                   )}

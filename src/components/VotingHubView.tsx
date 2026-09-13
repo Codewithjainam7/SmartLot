@@ -428,7 +428,7 @@ export function VotingHubView({
               className="px-4 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md active:scale-95"
             >
               <Plus size={14} strokeWidth={2.5} />
-              <span>+ Start New Vote</span>
+              <span>Start New Vote</span>
             </button>
           )}
           {activeMotion && (
@@ -574,7 +574,7 @@ export function VotingHubView({
                   className="px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer ml-auto"
                 >
                   <Plus size={13} strokeWidth={2.5} />
-                  <span>+ Start Vote</span>
+                  <span>Start Vote</span>
                 </button>
               )}
             </div>
