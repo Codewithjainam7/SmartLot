@@ -3499,19 +3499,19 @@ export function useSmartLotStore() {
           actorRole: activePersona.role,
           timestamp: `Today at ${nowStr}`,
           fromStatus: r.status,
-          toStatus: 'waiting',
-          note: `Voting closed before completion by ${activePersona.role}. Reason: ${reason}. Changes or further services requested.`,
+          toStatus: 'pending_triage',
+          note: `Voting closed before completion by ${activePersona.role}. Reason: ${reason}. Request reverted to pending triage for additional specifications/details.`,
         };
         return {
           ...r,
-          status: 'waiting',
+          status: 'pending_triage',
           closeReason: reason,
           auditLog: [...(r.auditLog || []), auditEntry],
         };
       }));
 
       supabase.from('resident_requests').update({
-        status: 'waiting',
+        status: 'pending_triage',
         close_reason: reason,
         updated_at: new Date().toISOString(),
       }).eq('id', targetReq?.id || targetMotion.caseId).then(({ error }) => {
@@ -3525,8 +3525,8 @@ export function useSmartLotStore() {
           referenceId: targetReq.referenceId ? targetReq.referenceId.replace('#', '') : targetReq.id,
           activityTitle: targetReq.title,
           oldStatus: 'in_voting',
-          newStatus: 'waiting',
-          reason: `Voting closed before completion: ${reason}. Additional info or changes requested.`,
+          newStatus: 'pending_triage',
+          reason: `Voting closed before completion: ${reason}. Additional details or quotes requested.`,
           actionType: 'status_change',
         }).catch(err => console.warn('Close voting early email note:', err));
       }

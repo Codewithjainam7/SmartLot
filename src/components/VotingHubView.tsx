@@ -45,7 +45,9 @@ import {
   Info,
   Layers,
   ArrowRight,
-  UploadCloud
+  UploadCloud,
+  ArrowLeft,
+  Scale
 } from 'lucide-react';
 
 interface VotingHubViewProps {
@@ -118,6 +120,14 @@ export function VotingHubView({
 
   const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [resubmitNote, setResubmitNote] = useState('');
+
+  // Workflow View Mode: 'list' (Requests currently in voting) vs 'detail' (Selected Motion & Track)
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+
+  // Close Voting Decision Engine Modal (Miro Flowchart)
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [closeModalTab, setCloseModalTab] = useState<'before' | 'after'>('before');
+  const [closeReasonInput, setCloseReasonInput] = useState('');
 
   // ── Permission Matrix (per spreadsheet) ──────────────────────────────────
   const roleLower = activePersonaRole.toLowerCase();
@@ -290,6 +300,28 @@ export function VotingHubView({
     showToast(`📢 Blast notification sent to all ${pendingVotesCount} unresponsive committee members.`);
   };
 
+  // Close Voting: Path 1 (Before Completion - Revert to Pending)
+  const handleConfirmCloseEarly = () => {
+    if (!activeMotion) return;
+    if (!closeReasonInput.trim()) {
+      showToast('⚠️ Please provide a mandatory reason for closing voting early.');
+      return;
+    }
+    onCloseVotingEarly(activeMotion.id, closeReasonInput.trim());
+    setShowCloseModal(false);
+    setCloseReasonInput('');
+    showToast('✅ Voting closed early. Case reverted to Pending Triage & notification sent to requestor.');
+    setViewMode('list');
+  };
+
+  // Close Voting: Path 2 (After Completion - Output Achieved Resolution)
+  const handleConfirmResolveMotion = (outcome: 'passed' | 'rejected', customToast?: string) => {
+    if (!activeMotion) return;
+    onResolveMotion(activeMotion.id, outcome);
+    setShowCloseModal(false);
+    showToast(customToast || (outcome === 'passed' ? '🚀 Motion PASSED & work order flow initiated.' : '❌ Motion REJECTED & request closed.'));
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F4F6F9] dark:bg-[#07090E] text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
       
@@ -320,8 +352,36 @@ export function VotingHubView({
             </p>
           </div>
 
-          {/* Quick Stat Badges */}
+          {/* View Mode Switcher & Quick Stat Badges */}
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Miro Flow Switcher */}
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-[#141A24] p-1 rounded-2xl border border-gray-200 dark:border-white/10 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'list'
+                    ? 'bg-white dark:bg-[#0055FF] text-gray-900 dark:text-white shadow-xs font-black'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Layers size={13} />
+                <span>1. Requests in Voting ({statsActive})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('detail')}
+                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === 'detail'
+                    ? 'bg-white dark:bg-[#0055FF] text-gray-900 dark:text-white shadow-xs font-black'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Vote size={13} />
+                <span>2. Ticket & Vote Track</span>
+              </button>
+            </div>
+
             <div className="bg-gray-50 dark:bg-[#141A24] border border-gray-200 dark:border-white/10 rounded-2xl px-3.5 py-2 flex items-center gap-2.5 shadow-2xs">
               <div className="w-7 h-7 rounded-xl bg-[#0055FF]/10 dark:bg-[#0055FF]/20 text-[#0055FF] dark:text-[#60A5FA] flex items-center justify-center font-black text-xs">
                 {statsActive}
@@ -401,8 +461,162 @@ export function VotingHubView({
         </div>
       </div>
 
-      {/* ── Main Two-Column Workspace ──────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto p-4 lg:p-6 gap-6">
+      {/* ── Main Workspace: Dual Mode (Step 1: List vs Step 2: Detail) ──────── */}
+      {viewMode === 'list' ? (
+        /* ── VIEW 1: FULL-WIDTH REQUESTS CURRENTLY IN VOTING (Miro Flowchart Step 1) ── */
+        <div className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+          
+          {/* Header Bar with Count, Description, Search and Filter Tabs */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0D121C] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <span>Requests Currently in Voting</span>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    {filteredMotions.length}
+                  </span>
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  Active Committee Ballots
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                NSW SSMA 2015 s 106 • Select a request below to inspect live voter tallies, post comments, or execute the Close Voting Decision Engine.
+              </p>
+            </div>
+
+            {/* Search Input & Status Filter Tabs */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative w-full sm:w-64">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search motions or SP..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-[#0055FF]"
+                />
+              </div>
+
+              <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-black/40 rounded-xl text-xs font-bold">
+                {(['all', 'active', 'passed', 'unresolved'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setActiveFilter(f)}
+                    className={`px-3 py-1 rounded-lg capitalize transition-all cursor-pointer ${
+                      activeFilter === f 
+                        ? 'bg-white dark:bg-[#1A2232] text-gray-900 dark:text-white shadow-2xs font-black' 
+                        : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Request Cards Grid */}
+          {filteredMotions.length === 0 ? (
+            <div className="text-center py-16 bg-white dark:bg-[#0D121C] border border-gray-200 dark:border-white/10 rounded-3xl p-8 text-gray-400">
+              <Vote size={36} className="mx-auto mb-2 text-gray-400 dark:text-gray-600" />
+              <div className="text-sm font-bold text-gray-700 dark:text-gray-300">No requests found</div>
+              <div className="text-xs text-gray-400 mt-1">Try adjusting your search query or filter settings.</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredMotions.map(motion => {
+                const req = requests.find(r => r.id === motion.caseId || r.referenceId === motion.caseId);
+                const mYes = motion.ballots?.filter(b => b.vote === 'YES').length || 0;
+                const mNo = motion.ballots?.filter(b => b.vote === 'NO').length || 0;
+                const mTarget = motion.quorumTarget || 4;
+                const mPassed = motion.status === 'passed' || mYes >= mTarget;
+                const mIsBuilding = (motion.heading || '').toLowerCase().includes('building') || (motion.heading || '').toLowerCase().includes('strata') || (req?.requestType || '').toLowerCase().includes('maintenance');
+                const isTie = !mPassed && mYes > 0 && mYes === mNo;
+
+                return (
+                  <div
+                    key={motion.id}
+                    onClick={() => {
+                      setSelectedMotionId(motion.id);
+                      setViewMode('detail');
+                    }}
+                    className="bg-white dark:bg-[#0D121C] hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 border border-gray-200 dark:border-white/10 rounded-3xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-mono font-black px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
+                            {req?.referenceId || motion.id}
+                          </span>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+                            mIsBuilding 
+                              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' 
+                              : 'bg-purple-500/10 text-purple-600 dark:text-purple-300 border-purple-500/20'
+                          }`}>
+                            {mIsBuilding ? 'Building-Level Motion' : 'Resident-Level Motion'}
+                          </span>
+                        </div>
+
+                        {mPassed ? (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 flex items-center gap-1">
+                            <CheckCircle2 size={10} /> Passed & Locked
+                          </span>
+                        ) : isTie ? (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30 shrink-0">
+                            Tie Vote ({mYes} vs {mNo})
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" /> Active • Closes in 48h
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <h3 className="font-black text-sm text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors line-clamp-2">
+                          {motion.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                          {motion.summary}
+                        </p>
+                      </div>
+
+                      {/* Live Segmented Progress Bar */}
+                      <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-white/5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-400 text-[11px] font-bold">Quorum Target: {mTarget} of {totalCommitteeSize} Votes</span>
+                          <span className="font-mono font-black text-xs text-emerald-600 dark:text-emerald-400">
+                            {mYes} YES • {mNo} NO
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 dark:bg-white/10 rounded-full h-2 overflow-hidden flex">
+                          <div style={{ width: `${Math.min(100, (mYes / totalCommitteeSize) * 100)}%` }} className="bg-emerald-500" />
+                          <div style={{ width: `${Math.min(100, (mNo / totalCommitteeSize) * 100)}%` }} className="bg-red-500" />
+                          <div style={{ width: `${Math.max(0, 100 - ((mYes + mNo) / totalCommitteeSize) * 100)}%` }} className="bg-gray-300 dark:bg-gray-700" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-xs">
+                      <span className="text-gray-400 text-[11px] truncate">
+                        By: <strong className="text-gray-700 dark:text-gray-300">{req?.requestorName || 'Strata Committee'}</strong>
+                      </span>
+                      <span className="text-xs font-black text-[#0055FF] dark:text-[#00D4B2] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        <span>Review & Track Voting</span>
+                        <ArrowRight size={13} />
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </div>
+      ) : (
+        /* ── VIEW 2: DETAIL & LIVE VOTING TRACKING WORKSPACE (Miro Flowchart Step 2 & 3) ── */
+        <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto p-4 lg:p-6 gap-6">
         
         {/* ── Left Column: Motions Queue ──────────────────────── */}
         <div className="w-full lg:w-[380px] shrink-0 flex flex-col bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
@@ -535,6 +749,22 @@ export function VotingHubView({
           {activeMotion ? (
             <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
               
+              {/* Back to Requests navigation bar (Miro Step 2) */}
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className="inline-flex items-center gap-2 text-xs font-black text-[#0055FF] dark:text-[#60A5FA] hover:underline cursor-pointer"
+                >
+                  <ArrowLeft size={14} />
+                  <span>← Back to Requests Currently in Voting</span>
+                </button>
+
+                <div className="text-xs text-gray-400">
+                  Motion <strong>{activeMotion.id}</strong> • Quorum Target: <strong>{quorumTarget} of {totalCommitteeSize} Votes</strong>
+                </div>
+              </div>
+
               {/* ── Motion Header Block (Standard Title Format) ── */}
               <div className="border-b border-gray-100 dark:border-white/8 pb-5 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -556,6 +786,19 @@ export function VotingHubView({
                   <div className="flex items-center gap-2 flex-wrap">
                     {canManageMotion && (
                       <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCloseModalTab(isPassed ? 'after' : 'before');
+                            setShowCloseModal(true);
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                          title="Open Close Voting Decision Engine (Miro Workflow)"
+                        >
+                          <Scale size={13} />
+                          <span>Close Voting</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => setShowRestartModal(true)}
@@ -599,19 +842,58 @@ export function VotingHubView({
                   {activeMotion.summary}
                 </p>
 
-                {/* Linked Request Pill */}
+                {/* ── Linked Request Details Card (Proper Full Specs Card) ── */}
                 {linkedRequest && (
-                  <div className="inline-flex items-center gap-2 p-2 rounded-xl bg-gray-50 dark:bg-white/3 border border-gray-200 dark:border-white/5 text-xs text-gray-600 dark:text-gray-300">
-                    <FileText size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    <span>Linked to Lot Request: <strong>{linkedRequest.title}</strong> ({linkedRequest.referenceId || linkedRequest.id})</span>
-                    {onNavigateToRequest && (
-                      <button 
-                        onClick={() => onNavigateToRequest(linkedRequest.id)}
-                        className="text-[#0055FF] dark:text-[#00D4B2] font-bold hover:underline cursor-pointer ml-1 flex items-center gap-0.5"
-                      >
-                        View Request <ExternalLink size={10} />
-                      </button>
-                    )}
+                  <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/40 dark:from-white/3 dark:to-white/1 border border-blue-500/20 dark:border-white/10 rounded-2xl p-5 space-y-3.5 shadow-2xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200/60 dark:border-white/5 pb-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-mono font-black px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                          {linkedRequest.referenceId || linkedRequest.id}
+                        </span>
+                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">
+                          {linkedRequest.requestType || 'Lot Request'}
+                        </span>
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${
+                          linkedRequest.priority === 'Urgent' || linkedRequest.priority === 'High' || linkedRequest.priority === 'Emergency'
+                            ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20'
+                            : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300'
+                        }`}>
+                          {linkedRequest.priority} Priority
+                        </span>
+                      </div>
+
+                      <div className="text-[11px] text-gray-400 flex items-center gap-1.5">
+                        <Calendar size={12} />
+                        <span>Submitted {linkedRequest.createdAt}</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-black text-gray-900 dark:text-white">
+                        {linkedRequest.title}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                        {linkedRequest.description}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200/50 dark:border-white/5 text-xs">
+                      <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                        <span>Requestor: <strong className="text-gray-800 dark:text-gray-200">{linkedRequest.requestorName}</strong> ({linkedRequest.requestorRole || 'Resident'})</span>
+                        <span>• Lot/Unit: <strong className="text-gray-800 dark:text-gray-200">{linkedRequest.unit}</strong></span>
+                      </div>
+
+                      {onNavigateToRequest && (
+                        <button
+                          type="button"
+                          onClick={() => onNavigateToRequest(linkedRequest.id)}
+                          className="text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Open Full Request Ticket</span>
+                          <ExternalLink size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1173,6 +1455,37 @@ export function VotingHubView({
                 </form>
               </div>
 
+              {/* ── Strata Manager Decision Engine Action Card (Miro Step 3) ── */}
+              {canManageMotion && (
+                <div className="bg-gradient-to-br from-red-500/10 via-amber-500/5 to-purple-500/10 border border-red-500/25 rounded-2xl p-5 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-red-500 dark:text-red-400 font-black text-xs uppercase tracking-wider">
+                      <Scale size={15} />
+                      <span>Strata Manager Decision Engine</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 border border-red-500/20">
+                      Miro Resolution Hub
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                    As Strata Manager, resolve this resolution once quorum is achieved (Issue Work Order or Close Lot Approval), or close early if additional specifications and details are needed from the requestor.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCloseModalTab(isPassed ? 'after' : 'before');
+                      setShowCloseModal(true);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <Scale size={14} />
+                    <span>Open Close Voting Decision Engine</span>
+                  </button>
+                </div>
+              )}
+
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center">
@@ -1186,6 +1499,7 @@ export function VotingHubView({
 
         </div>
       </div>
+      )}
 
       {/* ── Formal Legal Vote Report Modal (Printable) ────────── */}
       {showReportModal && activeMotion && (
@@ -1558,6 +1872,222 @@ export function VotingHubView({
                 Upload & Mark RFI Addressed
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Close Voting Decision Engine (Miro Flowchart Implementation) ── */}
+      {showCloseModal && activeMotion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-xl w-full border border-gray-200 dark:border-white/15 p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white animate-in fade-in zoom-in duration-150">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">
+              <div>
+                <div className="text-[10px] font-mono font-bold text-red-500 uppercase tracking-widest mb-0.5">
+                  Miro Workflow Engine • Strata Manager Close Resolution
+                </div>
+                <h3 className="text-base font-black flex items-center gap-2">
+                  <Scale size={18} className="text-red-500" />
+                  <span>Close Voting Resolution Engine</span>
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Motion: <strong>{activeMotion.id}</strong> — {activeMotion.title}
+                </p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowCloseModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* 2 Pathways Selector Tabs */}
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-gray-100 dark:bg-[#070A10] rounded-2xl border border-gray-200 dark:border-white/10 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setCloseModalTab('before')}
+                className={`py-2 rounded-xl transition-all cursor-pointer font-bold ${
+                  closeModalTab === 'before'
+                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 shadow-2xs'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Path 1: Before Completion
+              </button>
+              <button
+                type="button"
+                onClick={() => setCloseModalTab('after')}
+                className={`py-2 rounded-xl transition-all cursor-pointer font-bold ${
+                  closeModalTab === 'after'
+                    ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 shadow-2xs'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Path 2: Output Achieved
+              </button>
+            </div>
+
+            {/* PATHWAY 1: BEFORE COMPLETION (Needs extra info -> Mandatory Reason -> Notify -> Request goes back to pending) */}
+            {closeModalTab === 'before' && (
+              <div className="space-y-4">
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs space-y-1">
+                  <div className="font-black text-amber-600 dark:text-amber-400">
+                    Flowchart Rule: Additional Details Needed to Cast Vote
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Close voting early when the committee or strata manager requires missing specifications, additional engineering reports, or revised mockups. The case status will automatically revert back to <strong>Pending Triage</strong> and an email notification will be dispatched to the requestor.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block">
+                    Mandatory Reason for Early Closure *
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="e.g. Committee requested 2 additional acoustic contractor quotes and structural engineer report before voting..."
+                    value={closeReasonInput}
+                    onChange={e => setCloseReasonInput(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div className="p-3 bg-gray-50 dark:bg-black/30 rounded-xl border border-gray-200 dark:border-white/5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                  <span>Automated Action:</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    ✓ Revert to Pending Triage & Email Requestor
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCloseModal(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmCloseEarly}
+                    disabled={!closeReasonInput.trim()}
+                    className="px-5 py-2.5 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer shadow-md transition-all"
+                  >
+                    Revert Request to Pending & Notify
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* PATHWAY 2: AFTER COMPLETION = OUTPUT ACHIEVED */}
+            {closeModalTab === 'after' && (
+              <div className="space-y-4">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-xs space-y-1">
+                  <div className="font-black text-emerald-600 dark:text-emerald-400">
+                    Flowchart Rule: Output Achieved • Request Status Changes as per Votes
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-300 font-mono text-[11px] pt-1 flex items-center gap-2">
+                    <span>Live Quorum: <strong>{yesVotes} YES</strong> • <strong>{noVotes} NO</strong> • <strong>{abstainVotes} ABSTAIN</strong></span>
+                    <span>(Target: {quorumTarget} Votes)</span>
+                  </div>
+                </div>
+
+                {/* Option A: Motion Passed / Quorum Met */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider">
+                    If Approved (Threshold Met)
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="bg-blue-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-blue-500/30 space-y-2 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                          Strata / Building-Level Scope
+                        </span>
+                        <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
+                          Motion Passed ➔ Dispatches notification to all participants ➔ <strong>Initiates Work Order Flow</strong>.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmResolveMotion('passed', '🚀 Motion Approved! Work Order flow initiated for contractor.')}
+                        className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
+                      >
+                        Initiate Work Order Flow
+                      </button>
+                    </div>
+
+                    <div className="bg-purple-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-purple-500/30 space-y-2 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
+                          Resident-Level Scope
+                        </span>
+                        <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
+                          Motion Passed ➔ Dispatches approval letter to resident ➔ <strong>Request Voting Closed & Approved</strong>.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmResolveMotion('passed', '✅ Resident request approved and voting closed.')}
+                        className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
+                      >
+                        Close Ticket as Approved
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Option B: If Motion Rejected */}
+                <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-red-600 dark:text-red-400">If Motion Rejected:</div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Send notification to requestor ➔ Request Voting Closed & Rejected.</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmResolveMotion('rejected', '❌ Motion Rejected. Notification sent to requestor.')}
+                      className="px-3.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20 font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      Mark as Rejected & Close
+                    </button>
+                  </div>
+                </div>
+
+                {/* Option C: If Tie Vote -> Strata Manager Review */}
+                <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs">
+                  <div>
+                    <div className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <Scale size={13} />
+                      <span>If Tie / Inconclusive (Manager Review):</span>
+                    </div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                      Committee votes are tied or inconclusive. Strata Manager exercises administrative casting determination.
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmResolveMotion('passed', '⚖️ Strata Manager casting vote: PASSED. Work order flow initiated.')}
+                      className="flex-1 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-emerald-500/20 text-gray-700 dark:text-gray-300 hover:text-emerald-400 border border-transparent hover:border-emerald-500/30 rounded-lg font-bold text-xs cursor-pointer transition-colors"
+                    >
+                      Casting Vote: Pass Motion
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleConfirmResolveMotion('rejected', '⚖️ Strata Manager casting vote: REJECTED. Ticket closed.')}
+                      className="flex-1 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-red-500/20 text-gray-700 dark:text-gray-300 hover:text-red-400 border border-transparent hover:border-red-500/30 rounded-lg font-bold text-xs cursor-pointer transition-colors"
+                    >
+                      Casting Vote: Reject Motion
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
           </div>
         </div>
       )}
