@@ -132,20 +132,27 @@ export function ResidentVotingView({
                 </div>
               </div>
 
-              {!isTenant && !activeDetail.userVoted && (
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <button
-                    onClick={() => onCastVote(activeDetail.id, 'YES')}
-                    className="bg-[#10B981] hover:bg-emerald-600 text-white rounded-2xl py-3 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
-                  >
-                    <CheckCircle2 size={16} /> Vote YES
-                  </button>
-                  <button
-                    onClick={() => onCastVote(activeDetail.id, 'NO')}
-                    className="bg-[#FF6B6B] hover:bg-red-600 text-white rounded-2xl py-3 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
-                  >
-                    <XCircle size={16} /> Vote NO
-                  </button>
+              {!activeDetail.userVoted && (
+                <div className="space-y-2 pt-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => onCastVote(activeDetail.id, 'YES')}
+                      className="bg-[#10B981] hover:bg-emerald-600 text-white rounded-2xl py-3 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                    >
+                      <CheckCircle2 size={16} /> Vote YES
+                    </button>
+                    <button
+                      onClick={() => onCastVote(activeDetail.id, 'NO')}
+                      className="bg-[#FF6B6B] hover:bg-red-600 text-white rounded-2xl py-3 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                    >
+                      <XCircle size={16} /> Vote NO
+                    </button>
+                  </div>
+                  {isTenant && (
+                    <div className="text-[11px] text-center text-gray-400 dark:text-gray-500">
+                      Cast Vote to log your tenant preference.
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -89,6 +89,17 @@ export const PERSONAS: Persona[] = [
     email: 'jack.resident@cavallosydney.com.au', 
     memberships: [{ schemeId: 'SP52042', roles: ['Lot Owner', 'Resident'] }] 
   },
+  { 
+    id: 'david_miller_tenant', 
+    role: 'Tenant', 
+    name: 'David Miller', 
+    context: 'Unit 2 (Tenant)', 
+    email: 'david.m@duplex.com', 
+    memberships: [
+      { schemeId: 'SP52042', roles: ['Tenant', 'Resident'] },
+      { schemeId: 'SP101', roles: ['Tenant', 'Resident'] }
+    ] 
+  },
 
   // 3. Roman Joe (Master Strata Manager)
   { 

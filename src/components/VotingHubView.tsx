@@ -162,9 +162,10 @@ export function VotingHubView({
   const canGenerateReport = !isTenant && (isStrataManager || isBuildingManager || isSystemAdmin || isSCM || roleLower.includes('owner'));
 
   // Rights:
-  // - SCM & System Admin can cast vote
-  // - Strata Manager & Building Manager CANNOT vote under Australian Strata Law
-  const canCastVote = isSCM || isSystemAdmin;
+  // - SCM & System Admin can cast binding statutory committee votes
+  // - Tenants & Residents can cast Community Feedback ballots to show voting UI/button preferences
+  // - Strata Manager & Building Manager administer motions
+  const canCastVote = isSCM || isSystemAdmin || isTenant || isLotOwnerOrResident;
   const canManageMotion = isStrataManager || isSystemAdmin;
   const canResubmitProposal = isLotOwnerOrResident || isStrataManager || isSystemAdmin;
 
@@ -479,10 +480,15 @@ export function VotingHubView({
 
       {/* Tenant Informational Notice Banner */}
       {isTenant && (
-        <div className="bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-center gap-3 text-blue-700 dark:text-blue-300 text-xs shadow-2xs">
-          <AlertCircle size={18} className="shrink-0 text-[#0055FF] dark:text-[#00D4B2]" />
-          <span>
-            <strong>Tenant Observation View:</strong> Under NSW Strata Schemes Management Act 2015, tenants do not have voting eligibility on committee motions or access to executive governance controls, but may review community progress and participate in discussion comments.
+        <div className="bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-center justify-between gap-3 text-blue-700 dark:text-blue-300 text-xs shadow-2xs">
+          <div className="flex items-center gap-3">
+            <AlertCircle size={18} className="shrink-0 text-[#0055FF] dark:text-[#00D4B2]" />
+            <span>
+              <strong>Tenant Ballot & Feedback:</strong> You can review active motions, view the voting interface, and cast an indicative ballot to record your household's preference alongside the Strata Committee.
+            </span>
+          </div>
+          <span className="shrink-0 px-2.5 py-1 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-[#0055FF] dark:text-[#00D4B2] font-bold text-[11px]">
+            Tenant Mode Active
           </span>
         </div>
       )}
@@ -781,7 +787,7 @@ export function VotingHubView({
                       {canCastVote && !mUserVoted && !mPassed ? (
                         <span className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs inline-flex items-center gap-1.5 shadow-sm transition-all">
                           <Vote size={13} />
-                          <span>Cast Ballot →</span>
+                          <span>Cast Vote →</span>
                         </span>
                       ) : mUserVoted ? (
                         <span className="text-emerald-500 text-xs font-bold flex items-center gap-1">
@@ -1107,14 +1113,23 @@ export function VotingHubView({
                       <Vote size={20} />
                     </div>
                     <div>
-                      <div className="text-sm font-black text-gray-900 dark:text-white">
-                        Vote — Approve or Reject
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-gray-900 dark:text-white">
+                          Vote — Approve or Reject
+                        </span>
+                        {isTenant && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+                            Tenant Ballot
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {userBallot ? (
                           <span>
                             You voted <strong className={userBallot.vote === 'YES' ? 'text-emerald-500' : 'text-red-500'}>{userBallot.vote === 'YES' ? 'Approve' : 'Reject'}</strong>. You can change your vote anytime before voting closes.
                           </span>
+                        ) : isTenant ? (
+                          <span>Cast your ballot to record your preference on this active motion.</span>
                         ) : (
                           <span>Cast your committee vote on this motion.</span>
                         )}

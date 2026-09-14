@@ -156,7 +156,28 @@ export function Topbar({
             <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{activePersona.email}</div>
           </div>
 
-          <div className="pt-1.5">
+          <div className="pt-1.5 border-t border-gray-100 dark:border-gray-800">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 px-1">Switch Persona</div>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {personas.map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActivePersona(p)}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                    activePersona.name === p.name 
+                      ? 'bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <span className="truncate">{p.name}</span>
+                  <span className="text-[10px] opacity-70 font-normal ml-1 shrink-0">{p.role}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-1">
             <button
               onClick={onLogout}
               className="w-full text-left px-3 py-2 rounded-xl text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 font-semibold cursor-pointer transition-colors"

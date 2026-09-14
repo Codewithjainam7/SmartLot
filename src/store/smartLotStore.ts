@@ -1943,9 +1943,9 @@ export function useSmartLotStore() {
               { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
               { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
               { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 4' },
-              { id: 'scm-4', name: 'Elena', office: 'Member', email: 'elena.m@cavalloscm.org', unit: 'Unit 19' },
-              { id: 'scm-5', name: 'David', office: 'Member', email: 'david.w@cavalloscm.org', unit: 'Unit 7' },
-              { id: 'scm-6', name: 'John', office: 'Member', email: 'john.d@cavalloscm.org', unit: 'Unit 12' }
+              { id: 'scm-4', name: 'Elena', office: 'Committee Member', email: 'elena.m@cavalloscm.org', unit: 'Unit 19' },
+              { id: 'scm-5', name: 'David', office: 'Committee Member', email: 'david.w@cavalloscm.org', unit: 'Unit 7' },
+              { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.d@cavalloscm.org', unit: 'Unit 12' }
             ]
           };
         });
