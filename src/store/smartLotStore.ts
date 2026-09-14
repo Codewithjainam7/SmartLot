@@ -163,7 +163,7 @@ export type ResidentRequest = {
 export type MaintenanceCase = ResidentRequest;
 
 export type MotionVote = 'YES' | 'NO' | 'ABSTAIN';
-export type SCMOffice = 'Chairperson' | 'Treasurer' | 'Secretary' | 'Committee Member';
+export type SCMOffice = 'Chairperson' | 'Treasurer' | 'Secretary' | 'Committee Member' | 'Member';
 
 export type CommitteeMember = {
   id: string;
