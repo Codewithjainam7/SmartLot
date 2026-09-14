@@ -79,26 +79,26 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
       <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-[#0055FF]/10 rounded-full blur-3xl pointer-events-none -z-10" />
  
       {/* Floating Premium Capsule Navbar */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl bg-white/80 dark:bg-[#121316]/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-full px-8 py-4 flex items-center justify-between shadow-lg z-50 transition-colors duration-300">
+      <header className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 w-[94%] sm:w-[90%] max-w-5xl bg-white/80 dark:bg-[#121316]/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-full px-4 sm:px-8 py-2.5 sm:py-4 flex items-center justify-between shadow-lg z-50 transition-colors duration-300">
         <div 
           className="flex items-center cursor-pointer group"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <SmartLotLogo className="h-8" textColor="text-gray-900 dark:text-white" />
+          <SmartLotLogo className="h-7 sm:h-8" textColor="text-gray-900 dark:text-white" />
         </div>
         
         <nav className="hidden md:flex items-center gap-8 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
-          <a href="#features" className="hover:text-gray-900 dark:hover:text-white transition-colors">Features</a>
-          <a href="#testimonials" className="hover:text-gray-900 dark:hover:text-white transition-colors">Testimonials</a>
-          <a href="#compliance" className="hover:text-gray-900 dark:hover:text-white transition-colors">Compliance</a>
+          <a href="#features" className="hover:text-gray-900 dark:text-white transition-colors">Features</a>
+          <a href="#testimonials" className="hover:text-gray-900 dark:text-white transition-colors">Testimonials</a>
+          <a href="#compliance" className="hover:text-gray-900 dark:text-white transition-colors">Compliance</a>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Light/Dark Mode Switcher Button */}
           <button 
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
             aria-label={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
@@ -116,24 +116,24 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
           <button 
             onClick={() => onSelectPersona('guest')}
             aria-label="Access Roster or Sign Up"
-            className="bg-[#0B1121] dark:bg-white dark:text-black hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] px-6 py-2.5 rounded-full font-black text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer"
+            className="bg-[#0B1121] dark:bg-white dark:text-black hover:bg-black dark:hover:bg-gray-100 text-[#00D4B2] px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-black text-xs shadow-md transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
           >
-            Access Roster / Sign Up
+            Sign In
           </button>
         </div>
       </header>
 
       {/* Hero Section with Interactive Background Ripple Effect */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden pt-20">
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 sm:px-6 text-center overflow-hidden pt-20">
         {/* Foreground Content */}
-        <div className="relative z-10 max-w-4xl mx-auto space-y-8 mt-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-xs font-black uppercase tracking-widest">
-            <ShieldCheck size={14} className="text-[#0055FF] dark:text-[#00D4B2] animate-pulse" /> NSW & VIC Strata Scheme Certified
+        <div className="relative z-10 max-w-4xl mx-auto space-y-6 sm:space-y-8 mt-12">
+          <div className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-[11px] sm:text-xs font-black uppercase tracking-widest">
+            <ShieldCheck size={14} className="text-[#0055FF] dark:text-[#00D4B2] animate-pulse shrink-0" /> NSW & VIC Strata Scheme Certified
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tight leading-[1.1] max-w-4xl mx-auto uppercase">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tight leading-[1.12] max-w-4xl mx-auto uppercase">
             The Strata Management <span className="text-[#0055FF] dark:text-[#00D4B2]">OS</span> for Modern Schemes
           </h1>
-          <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-sm sm:text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
             Take back control of common property. From self-managed duplex structures to multi-lot townhouse committees and apartment complexes.
           </p>
           <div className="flex flex-col items-center justify-center pt-4 gap-4">

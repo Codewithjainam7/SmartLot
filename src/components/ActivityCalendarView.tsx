@@ -426,21 +426,22 @@ export function ActivityCalendarView({
 
       {/* ── ZOOM 1: 1 MONTH FULL CALENDAR GRID ───────────────── */}
       {zoomLevel === '1m' && (
-        <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
-          
-          {/* Day Headers (Mon – Sun) */}
-          <div className="grid grid-cols-7 border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/30 text-center py-2.5 text-xs font-black text-gray-400 uppercase tracking-wider">
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thu</span>
-            <span>Fri</span>
-            <span className="text-blue-500">Sat</span>
-            <span className="text-blue-500">Sun</span>
-          </div>
+        <div className="bg-white dark:bg-[#0D121C] rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto w-full">
+            <div className="min-w-[650px]">
+              {/* Day Headers (Mon – Sun) */}
+              <div className="grid grid-cols-7 border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/30 text-center py-2.5 text-xs font-black text-gray-400 uppercase tracking-wider">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span className="text-blue-500">Sat</span>
+                <span className="text-blue-500">Sun</span>
+              </div>
 
-          {/* Month Days Matrix */}
-          <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 dark:divide-white/5 bg-gray-50/20 dark:bg-black/10">
+              {/* Month Days Matrix */}
+              <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 dark:divide-white/5 bg-gray-50/20 dark:bg-black/10">
             {(() => {
               const year = currentDate.getFullYear();
               const month = currentDate.getMonth();
@@ -549,6 +550,8 @@ export function ActivityCalendarView({
 
               return cells;
             })()}
+          </div>
+            </div>
           </div>
         </div>
       )}

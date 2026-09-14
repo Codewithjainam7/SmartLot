@@ -168,22 +168,23 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       )}
 
       {/* Header Profile Area */}
-      <div className="bg-[#0B1121] dark:bg-gradient-to-br dark:from-[#0d1117] dark:to-[#161b22] rounded-[22px] p-6 text-white relative m-3 border border-transparent dark:border-[#00D4B2]/10 overflow-hidden">
+      <div className="bg-[#0B1121] dark:bg-gradient-to-br dark:from-[#0d1117] dark:to-[#161b22] rounded-[22px] p-4 sm:p-6 text-white relative m-2 sm:m-3 border border-transparent dark:border-[#00D4B2]/10 overflow-hidden">
         {/* Subtle glow in dark mode */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-[22px]" />
         
-        <div className="absolute top-4 right-4 bg-white/10 dark:bg-white/5 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-transparent dark:border-white/5 z-10">
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/10 dark:bg-white/5 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 border border-transparent dark:border-white/5 z-10">
           <div className={`w-1.5 h-1.5 rounded-full ${unitMembers.length > 0 ? 'bg-[#6EE7B7] animate-pulse' : 'bg-gray-400'}`}></div>
           {unitMembers.length > 0 ? 'Occupied' : 'Vacant'}
         </div>
         
-        <div className="flex items-start gap-4 mb-6 relative z-10">
-          <div className="w-16 h-16 rounded-2xl bg-[#0F172A] dark:bg-[#1a1d27] flex items-center justify-center shadow-lg border dark:border-white/5">
-            <Home size={32} className="text-white" />
+        <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6 relative z-10">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0F172A] dark:bg-[#1a1d27] flex items-center justify-center shadow-lg border dark:border-white/5 shrink-0">
+            <Home size={24} className="text-white sm:hidden" />
+            <Home size={32} className="text-white hidden sm:block" />
           </div>
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="text-2xl font-bold tracking-tight">{currentUnit.unitId}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight">{currentUnit.unitId}</h2>
               {canManage && (
                 <button
                   type="button"
@@ -200,7 +201,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-3 text-gray-450 dark:text-gray-400 text-sm mt-1">
+            <div className="flex items-center gap-2 sm:gap-3 text-gray-450 dark:text-gray-400 text-xs sm:text-sm mt-1">
               <span>Lot {currentUnit.lotNumber}</span>
               <span className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-500"></span>
               <span>Entitlement: {currentUnit.entitlement}</span>
@@ -209,7 +210,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-center gap-3 relative z-10">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 relative z-10 w-full pt-1">
           <QuickAction icon={<Phone size={16} />} label="Call" />
           <QuickAction icon={<Mail size={16} />} label="Message" />
           <QuickAction icon={<FileText size={16} />} label="Documents" />
@@ -217,7 +218,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       </div>
 
       {/* Actors & Access Matrix */}
-      <div className="p-5 space-y-4">
+      <div className="p-3 sm:p-5 space-y-4">
         
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Access Matrix</h3>
@@ -298,7 +299,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-6 overflow-hidden"
+              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-5 sm:p-8 border border-white/10 shadow-2xl relative z-10 space-y-5 sm:space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <button 
                 type="button"
@@ -379,7 +380,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl relative z-10 space-y-5 overflow-hidden"
+              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-5 sm:p-8 border border-white/10 shadow-2xl relative z-10 space-y-4 sm:space-y-5 overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <button 
                 type="button"

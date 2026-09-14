@@ -428,8 +428,8 @@ export function JoinSchemeView({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] p-4 font-sans py-12">
-      <div className="bg-white dark:bg-[#0d1117] w-full max-w-lg rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-white/5 space-y-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] p-4 font-sans py-8 sm:py-12">
+      <div className="bg-white dark:bg-[#0d1117] w-full max-w-lg rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-8 border border-gray-100 dark:border-white/5 space-y-6">
         
         {/* Header / Identity */}
         <div className="text-center">

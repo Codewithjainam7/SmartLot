@@ -494,7 +494,7 @@ export function AdminView({
     <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#07090e] text-gray-900 dark:text-white font-sans transition-colors duration-300 flex flex-col overflow-x-hidden">
       
       {/* Top Super Admin Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           
           <div className="flex items-center gap-4">
@@ -566,7 +566,7 @@ export function AdminView({
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto w-full p-6 space-y-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full p-3 sm:p-6 space-y-6 flex-1">
         
         {/* Navigation Tabs with Smooth Animated Pill Design */}
         <div className="bg-gray-200/60 dark:bg-[#0d1117]/80 p-1.5 rounded-[22px] border border-gray-300/50 dark:border-white/5 flex items-center gap-1.5 overflow-x-auto scrollbar-none shadow-sm backdrop-blur-md">

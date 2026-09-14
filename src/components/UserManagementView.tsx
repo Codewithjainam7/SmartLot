@@ -308,13 +308,13 @@ export function UserManagementView({
   ]);
 
   return (
-    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
+    <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Morphing Popover Wrapper */}
       <MorphingPopover>
         
         {/* Header with Title, Stats & Action Buttons (Identical to Admin View Global Directory) */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-5 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
           <div>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20">
@@ -1093,9 +1093,9 @@ function MemberRosterGrid({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
+    <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
       <div className="overflow-x-auto w-full min-h-[440px]">
-        <table className="w-full text-left text-xs border-collapse font-sans table-auto">
+        <table className="w-full min-w-[720px] text-left text-xs border-collapse font-sans table-auto">
           <thead>
             {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
             <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">

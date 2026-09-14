@@ -155,12 +155,12 @@ export function Dashboard({ store }: DashboardProps) {
   });
 
   return (
-    <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0a0a0f] relative">
+    <div className="flex-1 p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0a0a0f] relative">
       
       {/* Column 1: Metrics & Worklist */}
-      <div className="lg:col-span-3 space-y-6">
+      <div className="lg:col-span-3 space-y-5 sm:space-y-6">
         {/* 2x2 Metrics */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <MetricTile icon={<Users size={16} />} label="Residents" value={residents.length.toString()} />
           <MetricTile icon={<AlertTriangle size={16} />} label="Issues" value={pendingRequests.length.toString()} highlight={pendingRequests.length > 0} />
           <MetricTile 
@@ -214,7 +214,7 @@ export function Dashboard({ store }: DashboardProps) {
         <UnitDetailCard store={store} />
 
         {/* Committee Motions & Voting Hub Preview */}
-        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
+        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] flex items-center justify-center font-bold">

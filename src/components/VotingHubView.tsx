@@ -412,21 +412,21 @@ export function VotingHubView({
   };
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans text-gray-900 dark:text-gray-100">
+    <div ref={scrollContainerRef} className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans text-gray-900 dark:text-gray-100">
       
       {/* ── Toast Notification ────────────────────────────────── */}
       {actionNotification && (
-        <div className="fixed top-6 right-8 z-50 bg-gray-950 text-white dark:bg-white dark:text-black px-5 py-3 rounded-2xl shadow-2xl border border-white/20 text-xs font-bold flex items-center gap-2.5 animate-in fade-in slide-in-from-top duration-200">
+        <div className="fixed top-6 right-4 sm:right-8 z-50 bg-gray-950 text-white dark:bg-white dark:text-black px-4 sm:px-5 py-3 rounded-2xl shadow-2xl border border-white/20 text-xs font-bold flex items-center gap-2.5 animate-in fade-in slide-in-from-top duration-200">
           <Sparkles size={15} className="text-[#00D4B2]" />
           <span>{actionNotification}</span>
         </div>
       )}
 
       {/* ── Page Header Banner (Non-overlapping, Consistent Theme) ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-5 md:p-6 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm relative overflow-hidden">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <Vote size={24} className="text-[#0055FF] dark:text-[#00D4B2]" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm relative overflow-hidden">
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Vote size={22} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
             <span>Committee Voting</span>
           </h1>
           <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
@@ -494,55 +494,55 @@ export function VotingHubView({
         <div className="space-y-6">
           
           {/* ── Executive KPI Summary Grid ── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-5 shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-lg shrink-0">
-                <Clock size={22} />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-lg shrink-0">
+                <Clock size={20} />
               </div>
-              <div>
-                <div className="text-2xl font-black text-gray-900 dark:text-white">{statsActive}</div>
-                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">Active in Voting</div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{statsActive}</div>
+                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">Active in Voting</div>
               </div>
             </div>
 
-            <div className={`bg-white dark:bg-[#0D121C] border rounded-3xl p-5 shadow-xs flex items-center gap-4 ${
+            <div className={`bg-white dark:bg-[#0D121C] border rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 ${
               canCastVote && statsAwaitingUser > 0 
                 ? 'border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/5' 
                 : 'border-gray-200/80 dark:border-white/10'
             }`}>
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-lg shrink-0">
-                <Vote size={22} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-lg shrink-0">
+                <Vote size={20} />
               </div>
-              <div>
-                <div className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
                   <span>{canCastVote ? statsAwaitingUser : statsAwaitingQuorum}</span>
                   {canCastVote && statsAwaitingUser > 0 && (
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                   )}
                 </div>
-                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">
                   {canCastVote ? 'Awaiting Your Vote' : 'Votes Needed'}
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-5 shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-lg shrink-0">
-                <CheckCircle2 size={22} />
+            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-lg shrink-0">
+                <CheckCircle2 size={20} />
               </div>
-              <div>
-                <div className="text-2xl font-black text-gray-900 dark:text-white">{statsPassed}</div>
-                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">Passed & Binding</div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{statsPassed}</div>
+                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">Passed & Binding</div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-5 shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center font-black text-lg shrink-0">
-                <FileText size={22} />
+            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center font-black text-lg shrink-0">
+                <FileText size={20} />
               </div>
-              <div>
-                <div className="text-2xl font-black text-gray-900 dark:text-white">{statsUnresolved}</div>
-                <div className="text-xs font-bold text-gray-500 dark:text-gray-400">Closed / Rejected</div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{statsUnresolved}</div>
+                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">Closed / Rejected</div>
               </div>
             </div>
           </div>
@@ -831,11 +831,11 @@ export function VotingHubView({
             </div>
 
             {/* Quick Motion Selector Dropdown (CustomSelect matching site theme) */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
               <span className="text-xs font-bold text-gray-500 dark:text-gray-400 hidden sm:inline whitespace-nowrap">
                 Jump to:
               </span>
-              <div className="w-72 sm:w-80">
+              <div className="w-full sm:w-80">
                 <CustomSelect
                   size="sm"
                   menuAlign="right"
@@ -853,13 +853,13 @@ export function VotingHubView({
           </div>
 
           {/* ── 12-Column Executive Layout ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             
             {/* ── LEFT 8 COLUMNS: Main Governance Canvas ── */}
             <div className="lg:col-span-8 space-y-6">
               
               {/* Executive Motion Header Block */}
-              <div className="bg-white dark:bg-[#0D121C] rounded-3xl p-6 sm:p-8 border border-gray-200/80 dark:border-white/10 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-[#0D121C] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-gray-200/80 dark:border-white/10 shadow-sm space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono font-black px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
@@ -1412,8 +1412,8 @@ export function VotingHubView({
 
       {/* ── Formal Legal Vote Report Modal (Printable) ────────── */}
       {showReportModal && activeMotion && canGenerateReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-6 lg:p-8 shadow-2xl text-gray-900 dark:text-white space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0C1018] rounded-2xl sm:rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-4 sm:p-6 lg:p-8 shadow-2xl text-gray-900 dark:text-white space-y-6">
             
             {/* Report Header */}
             <div className="flex items-start justify-between border-b border-gray-200 dark:border-white/10 pb-4">
@@ -1421,7 +1421,7 @@ export function VotingHubView({
                 <div className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1">
                   Official Strata Record • NSW SSMA 2015 s 106
                 </div>
-                <h2 className="text-xl font-black">Certificate of Committee Motion Vote</h2>
+                <h2 className="text-lg sm:text-xl font-black">Certificate of Committee Motion Vote</h2>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Strata Plan: <strong>{activeMotion.strataPlan || 'SP 52042'}</strong> • Property: <strong>{activeMotion.propertyAddress || 'Cavallo, 1 Pitt Street, Sydney NSW 2000'}</strong>
                 </div>
@@ -1436,7 +1436,7 @@ export function VotingHubView({
             </div>
 
             {/* Motion Reference Details */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 dark:bg-white/4 p-4 rounded-2xl text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 dark:bg-white/4 p-3.5 sm:p-4 rounded-2xl text-xs">
               <div>
                 <div className="text-[10px] text-gray-400 uppercase font-bold">Motion ID</div>
                 <div className="font-mono font-bold">{activeMotion.id}</div>
@@ -1471,33 +1471,35 @@ export function VotingHubView({
               <div className="text-xs font-black uppercase text-gray-400 tracking-wider">
                 Full Committee Voter Breakdown
               </div>
-              <table className="w-full text-xs border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
-                <thead className="bg-gray-100 dark:bg-white/5 font-bold text-gray-500">
-                  <tr>
-                    <th className="p-2.5 text-left">Member Name</th>
-                    <th className="p-2.5 text-left">Office</th>
-                    <th className="p-2.5 text-left">Ballot Cast</th>
-                    <th className="p-2.5 text-left">Date/Time</th>
-                    <th className="p-2.5 text-left">Voter Rationale</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                  {committeeRoster.map(scm => {
-                    const ballot = activeMotion.ballots.find(b => b.voterName.toLowerCase() === scm.name.toLowerCase());
-                    return (
-                      <tr key={scm.id}>
-                        <td className="p-2.5 font-bold">{scm.name}</td>
-                        <td className="p-2.5 text-gray-400">{scm.office}</td>
-                        <td className="p-2.5 font-mono font-bold">
-                          {ballot ? ballot.vote : <span className="text-amber-500">UNRESPONSIVE</span>}
-                        </td>
-                        <td className="p-2.5 text-gray-400 font-mono">{ballot ? ballot.votedAt : '—'}</td>
-                        <td className="p-2.5 text-gray-600 dark:text-gray-300 italic">{ballot?.comment || '—'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto w-full -mx-1 sm:mx-0">
+                <table className="w-full min-w-[550px] text-xs border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
+                  <thead className="bg-gray-100 dark:bg-white/5 font-bold text-gray-500">
+                    <tr>
+                      <th className="p-2.5 text-left">Member Name</th>
+                      <th className="p-2.5 text-left">Office</th>
+                      <th className="p-2.5 text-left">Ballot Cast</th>
+                      <th className="p-2.5 text-left">Date/Time</th>
+                      <th className="p-2.5 text-left">Voter Rationale</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                    {committeeRoster.map(scm => {
+                      const ballot = activeMotion.ballots.find(b => b.voterName.toLowerCase() === scm.name.toLowerCase());
+                      return (
+                        <tr key={scm.id}>
+                          <td className="p-2.5 font-bold">{scm.name}</td>
+                          <td className="p-2.5 text-gray-400">{scm.office}</td>
+                          <td className="p-2.5 font-mono font-bold">
+                            {ballot ? ballot.vote : <span className="text-amber-500">UNRESPONSIVE</span>}
+                          </td>
+                          <td className="p-2.5 text-gray-400 font-mono">{ballot ? ballot.votedAt : '—'}</td>
+                          <td className="p-2.5 text-gray-600 dark:text-gray-300 italic">{ballot?.comment || '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Statutory Certification Block */}
@@ -1718,8 +1720,8 @@ export function VotingHubView({
 
       {/* ── MODAL: Close Vote ── */}
       {showCloseModal && activeMotion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-xl w-full border border-gray-200 dark:border-white/15 p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#0C1018] rounded-2xl sm:rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-4 sm:p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white animate-in fade-in zoom-in duration-150">
             
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">
@@ -1934,8 +1936,8 @@ export function VotingHubView({
 
       {/* ── MODAL: Start New Committee Vote ── */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-lg w-full border border-gray-200 dark:border-white/15 p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#0C1018] rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-4 sm:p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white">
             
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">

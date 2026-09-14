@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
 import { PERSONAS, Persona, Scheme } from './types';
-import { ShieldAlert, ArrowLeft, Building2, User, Eye, Zap } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Building2, User, Eye, Zap, LayoutDashboard, ClipboardList, Vote, Menu } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -31,6 +31,7 @@ export default function App() {
   const store = useSmartLotStore();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
   const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_login' | 'admin_console' | 'dashboard'>(
@@ -566,7 +567,7 @@ export default function App() {
               </span>
 
               {/* Perspective Role Switcher Buttons */}
-              <div className="flex items-center gap-1 ml-1 bg-black/40 p-1 rounded-xl border border-white/10">
+              <div className="flex items-center gap-1 ml-1 bg-black/40 p-1 rounded-xl border border-white/10 overflow-x-auto max-w-full scrollbar-none shrink-0">
                 {PERSONAS
                   .filter(p => p.role !== 'Super Admin' && p.role !== 'Service Provider')
                   .slice(0, 5)
@@ -656,6 +657,14 @@ export default function App() {
 
       {/* Main Inner Application Area */}
       <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile Backdrop Overlay */}
+        {isMobileNavOpen && (
+          <div 
+            onClick={() => setIsMobileNavOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200" 
+          />
+        )}
+
         {/* Main Sidebar */}
         <Sidebar 
           activeView={store.activeView}
@@ -666,6 +675,8 @@ export default function App() {
           activePersonaRole={store.activePersona.role}
           hasPermission={store.hasPermission}
           onLogout={handleLogout}
+          isMobileOpen={isMobileNavOpen}
+          onCloseMobile={() => setIsMobileNavOpen(false)}
         />
         
         {/* Content Area */}
@@ -681,10 +692,11 @@ export default function App() {
             activeRoles={store.activeRoles}
             setActiveRoles={store.setActiveRoles}
             onLogout={handleLogout}
+            onOpenMobileMenu={() => setIsMobileNavOpen(true)}
           />
         
         {/* Dynamic View Rendering */}
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-hidden relative pb-16 md:pb-0">
           
           {/* Shimmer Skeleton during initial bootstrap only (prevents full unmount on background sync) */}
           {store.isLoading && store.schemes.length === 0 ? (
@@ -835,6 +847,70 @@ export default function App() {
         
       </div>
       </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav 
+        aria-label="Mobile Bottom Navigation"
+        className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#0B1121]/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-800/80 px-2 py-1.5 flex items-center justify-around md:hidden shadow-lg"
+      >
+        <button
+          type="button"
+          onClick={() => store.setActiveView('dashboard')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            store.activeView === 'dashboard'
+              ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
+              : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <LayoutDashboard size={19} />
+          <span className="text-[10px] mt-0.5">Home</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => store.setActiveView('requests')}
+          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            store.activeView === 'requests' || store.activeView === 'triage'
+              ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
+              : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <ClipboardList size={19} />
+          <span className="text-[10px] mt-0.5">Requests</span>
+          {pendingTriageCount > 0 && (
+            <span className="absolute top-0.5 right-2 w-4 h-4 bg-[#FF4757] text-white text-[9px] font-black rounded-full flex items-center justify-center">
+              {pendingTriageCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => store.setActiveView('voting')}
+          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            store.activeView === 'voting'
+              ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
+              : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Vote size={19} />
+          <span className="text-[10px] mt-0.5">Voting</span>
+          {activeMotionsCount > 0 && (
+            <span className="absolute top-0.5 right-2 w-4 h-4 bg-blue-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+              {activeMotionsCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsMobileNavOpen(true)}
+          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer"
+        >
+          <Menu size={19} />
+          <span className="text-[10px] mt-0.5">Menu</span>
+        </button>
+      </nav>
 
       {/* Onboarding Provisioning Modal */}
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} store={store} />

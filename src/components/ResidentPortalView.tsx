@@ -76,20 +76,20 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
   ];
 
   return (
-    <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100">
       
       {/* Top Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] p-8 text-white shadow-xl shadow-[#0055FF]/10">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] p-5 sm:p-8 text-white shadow-xl shadow-[#0055FF]/10">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold tracking-wide uppercase">
               <Home size={13} />
               <span>{activePersona.context || 'Unit 1'} • {activeScheme?.name || 'Your Scheme'}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
               Welcome home, {activePersona.name}
             </h1>
-            <p className="text-white/80 text-sm max-w-xl">
+            <p className="text-white/80 text-xs sm:text-sm max-w-xl">
               Manage your residential maintenance, track repairs, view building notices, and connect with your strata management team.
             </p>
           </div>
@@ -98,10 +98,10 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
             <button
               type="button"
               onClick={onOpenCreateRequest}
-              className="px-5 py-3 rounded-2xl bg-white text-[#0055FF] font-bold text-sm hover:bg-white/90 shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto bg-[#0B1121] hover:bg-black text-white px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-105 cursor-pointer"
             >
-              <Plus size={16} />
-              <span>Report an Issue</span>
+              <Plus size={16} className="text-[#00D4B2]" />
+              <span>Report Issue / Request</span>
             </button>
           </div>
         </div>
@@ -112,7 +112,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
       </div>
 
       {/* Internal Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/5 pb-1">
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/5 pb-1 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab('overview')}

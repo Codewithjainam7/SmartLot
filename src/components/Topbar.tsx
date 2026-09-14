@@ -1,6 +1,6 @@
 // @smartlot/component
 import React from "react";
-import { Building2, ChevronDown, CheckCircle2, Plus } from "lucide-react";
+import { Building2, ChevronDown, CheckCircle2, Plus, Menu } from "lucide-react";
 import { Persona, Scheme } from "../types";
 
 interface TopbarProps {
@@ -14,6 +14,7 @@ interface TopbarProps {
   activeRoles?: string[];
   setActiveRoles?: (roles: string[]) => void;
   onLogout?: () => void;
+  onOpenMobileMenu?: () => void;
 }
 
 export function Topbar({ 
@@ -24,29 +25,40 @@ export function Topbar({
   activePersona, 
   setActivePersona,
   onAddSchemeClick,
-  onLogout
+  onLogout,
+  onOpenMobileMenu
 }: TopbarProps) {
   const isResidentOrTenant = activePersona.role === 'Resident' || activePersona.role === 'Tenant' || activePersona.role === 'On-Site Resident';
   const canCreateSites = !isResidentOrTenant;
   const hasMultipleSchemes = schemes.length > 1;
 
   return (
-    <div className="h-20 bg-white/50 dark:bg-[#0B1121]/50 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-8 sticky top-0 z-30 font-sans">
+    <div className="h-16 md:h-20 bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-3 sm:px-6 md:px-8 sticky top-0 z-30 font-sans">
       
       {/* Scheme Switcher & Site Creation */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Mobile Hamburger Drawer Trigger */}
+        <button
+          type="button"
+          onClick={onOpenMobileMenu}
+          aria-label="Open navigation menu"
+          className="md:hidden p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0"
+        >
+          <Menu size={20} />
+        </button>
+
         {activeScheme && activeScheme.id !== 'NO_SCHEME' ? (
           <div className="relative group">
             <button 
               aria-label="Strata Scheme Selector"
               aria-haspopup="true"
-              className={`flex items-center gap-2 bg-white dark:bg-[#121316] border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm px-4 py-2 rounded-xl transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-[#121316] border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all text-xs sm:text-sm ${
               canCreateSites || hasMultipleSchemes ? 'cursor-pointer' : 'cursor-default'
             }`}>
-              <Building2 size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
-              <span className="font-bold text-gray-800 dark:text-gray-200 text-sm">Scheme: {activeScheme.id}</span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">- {(activeScheme?.name || "").split("-")[1]?.trim() || activeScheme?.name || "Unnamed Scheme"}</span>
-              {(canCreateSites || hasMultipleSchemes) && <ChevronDown size={16} className="text-gray-400 ml-1 transition-transform group-hover:rotate-180" />}
+              <Building2 size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+              <span className="font-bold text-gray-800 dark:text-gray-200">{activeScheme.id}</span>
+              <span className="text-gray-500 dark:text-gray-400 hidden sm:inline truncate max-w-[140px] md:max-w-xs">- {(activeScheme?.name || "").split("-")[1]?.trim() || activeScheme?.name || "Unnamed Scheme"}</span>
+              {(canCreateSites || hasMultipleSchemes) && <ChevronDown size={14} className="text-gray-400 ml-0.5 sm:ml-1 transition-transform group-hover:rotate-180 shrink-0" />}
             </button>
             
             {/* Dropdown Menu - Lists user's schemes + Add New Strata Site option */}

@@ -588,7 +588,7 @@ export function ResidentRequestsView({
     };
 
     return (
-      <div className="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans animate-in fade-in duration-150">
+      <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans animate-in fade-in duration-150">
         
         {/* Back to Requests Navigation */}
         <div>
@@ -609,7 +609,7 @@ export function ResidentRequestsView({
           <div className="lg:col-span-8 space-y-6">
             
             {/* Header / Overview Card */}
-            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 shadow-sm space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3.5 min-w-0">
                   <div className="w-12 h-12 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] flex items-center justify-center shrink-0 border border-[#0055FF]/15 dark:border-[#00D4B2]/20">
@@ -1513,18 +1513,18 @@ export function ResidentRequestsView({
 
 
   return (
-    <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
         {/* Subtle glow in dark mode */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-2xl sm:rounded-3xl" />
         <div className="relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#0055FF]/15 text-[#0055FF] dark:text-[#6699ff] border border-[#0055FF]/20 text-xs font-bold uppercase tracking-wider mb-2">
             Resident Hub • Requests Engine
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Resident Service & Repair Requests</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Log issues, track status in real-time, and view community requests.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Resident Service & Repair Requests</h1>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Log issues, track status in real-time, and view community requests.</p>
         </div>
 
         {/* Morphing Capsule Button */}
@@ -1860,8 +1860,8 @@ export function ResidentRequestsView({
           </div>
 
           {/* Table Container */}
-          <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
-            <table className="w-full text-left text-xs border-collapse font-sans table-auto">
+          <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
+            <table className="w-full min-w-[760px] text-left text-xs border-collapse font-sans table-auto">
               <thead>
                 {/* Column Headers */}
                 <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
