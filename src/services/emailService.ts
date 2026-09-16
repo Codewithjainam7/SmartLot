@@ -56,8 +56,62 @@ export interface CommentNotificationPayload {
   commentText: string;
 }
 
+export interface SurveyInvitePayload {
+  toEmails: string[];
+  ccEmails?: string[];
+  bccEmails?: string[];
+  surveyId: string;
+  surveyTitle: string;
+  surveyDescription: string;
+  schemeName: string;
+  deadline?: string;
+  surveyUrl: string;
+}
+
 function buildHtmlForType(body: Record<string, any>): { subject: string; html: string } {
   const type = body.type || 'activity_conduit';
+
+  if (type === 'survey_invitation') {
+    const surveyTitle = body.surveyTitle || 'Resident Feedback Questionnaire';
+    const schemeName = body.schemeName || 'SmartLot Building';
+    const deadlineText = body.deadline ? `Deadline: ${body.deadline}` : 'Open Feedback Round';
+    const surveyUrl = body.surveyUrl || '#';
+    return {
+      subject: `[SmartLot] Feedback Request: ${surveyTitle} (${schemeName})`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:30px;background:#F4F6F9">
+          <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;max-width:620px;margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,0.06)">
+            <div style="background:linear-gradient(135deg,#0055FF 0%,#00D4B2 100%);padding:32px 36px">
+              <p style="margin:0 0 6px;color:rgba(255,255,255,0.9);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Resident Voice & Feedback</p>
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800">${surveyTitle}</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:13px">${schemeName} • ${deadlineText}</p>
+            </div>
+            <div style="padding:32px 36px">
+              <p style="margin:0 0 16px;color:#0F172A;font-size:15px;font-weight:600">Dear Resident,</p>
+              <p style="margin:0 0 18px;color:#334155;font-size:14px;line-height:1.6">
+                Your Strata Management and Committee value your perspective. We have launched a short questionnaire to evaluate building performance and identify improvements for our community.
+              </p>
+              <div style="background:#F0FDFA;border:1px solid #CCFBF1;border-radius:12px;padding:16px;margin-bottom:24px">
+                <p style="margin:0 0 6px;color:#0F766E;font-size:13px;font-weight:700">⏱️ Takes ~2 minutes • Zero login required</p>
+                <p style="margin:0;color:#115E59;font-size:12px;line-height:1.5">
+                  You can submit with your Lot/Unit number or choose <strong>total anonymity</strong> with a 1-click toggle.
+                </p>
+              </div>
+              <div style="text-align:center;margin:28px 0">
+                <a href="${surveyUrl}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#0055FF 0%,#00D4B2 100%);color:#ffffff;font-size:15px;font-weight:700;padding:14px 36px;border-radius:12px;text-decoration:none;box-shadow:0 4px 14px rgba(0,85,255,0.25)">
+                  Complete Feedback Survey &rarr;
+                </a>
+              </div>
+              <p style="margin:20px 0 0;color:#94A3B8;font-size:11px;border-top:1px solid #E2E8F0;padding-top:16px;text-align:center">
+                SmartLot Strata Feedback Engine • Direct Guest Access
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+  }
+
 
   if (type === 'member_invite') {
     const schemeName = body.schemeName || 'SmartLot Scheme';
@@ -341,3 +395,14 @@ export async function dispatchCommentNotificationEmail(payload: CommentNotificat
     ...payload,
   });
 }
+
+/**
+ * Dispatches a feedback questionnaire invitation email to residents.
+ */
+export async function dispatchSurveyInvitationEmail(payload: SurveyInvitePayload) {
+  return sendViaEdgeFunction({
+    type: 'survey_invitation',
+    ...payload,
+  });
+}
+

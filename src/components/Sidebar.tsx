@@ -12,17 +12,19 @@ import {
   ClipboardList,
   Award,
   Vote,
-  X
+  X,
+  MessageSquareHeart
 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance';
-  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance') => void;
+  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'surveys';
+  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'surveys') => void;
   pendingTriageCount?: number;
   activeMotionsCount?: number;
   activePersonaName?: string;
   activePersonaRole?: string;
+
   hasPermission: (perm: string) => boolean;
   onLogout: () => void;
   isMobileOpen?: boolean;
@@ -149,6 +151,17 @@ export function Sidebar({
               onClick={() => handleNavClick('performance')}
               isCollapsed={isCollapsed && !isMobileOpen} 
             />
+            {/* Resident Feedback & Surveys Engine (Part 1) */}
+            {(activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Owner')) && (
+              <NavItem 
+                icon={<MessageSquareHeart size={18} />} 
+                label="Surveys & Feedback" 
+                active={activeView === 'surveys'} 
+                onClick={() => handleNavClick('surveys')}
+                isCollapsed={isCollapsed && !isMobileOpen} 
+              />
+            )}
+
             <NavItem 
               icon={<FileText size={18} />} 
               label="Bylaws Library" 

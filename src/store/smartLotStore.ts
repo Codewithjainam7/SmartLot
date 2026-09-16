@@ -34,14 +34,26 @@ import {
   ActivityType,
   ActivityPriority,
   ActivityLocation,
-  ContactPreference
+  ContactPreference,
+  Survey,
+  SurveyQuestion,
+  SurveyResponse,
+  SurveyAISummary,
+  SurveyCategory
 } from '../types';
 import { supabase } from '../lib/supabase';
 import { 
   dispatchActivityConduitEmail, 
   dispatchStatusUpdateEmail, 
-  dispatchCommentNotificationEmail 
+  dispatchCommentNotificationEmail,
+  dispatchSurveyInvitationEmail
 } from '../services/emailService';
+import {
+  STRATA_SURVEY_TEMPLATES,
+  generateSurveyQuestionsWithAI,
+  generateSurveySummaryWithAI
+} from '../services/aiSurveyService';
+
 
 export type RequestStream = 
   | 'maintenance_upgrade' 
@@ -618,6 +630,234 @@ export const INITIAL_WORK_ORDERS: WorkOrder[] = [
     siteAccessPin: '4829',
     guestMagicToken: 'tok_sp101_wo10482_live',
     status: 'issued',
+  }
+];
+
+export const INITIAL_SURVEYS: Survey[] = [
+  {
+    id: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    title: 'Annual Strata Scheme Satisfaction Survey 2026',
+    description: 'Annual feedback questionnaire for Cavallo owners & residents to review Strata Management responsiveness, building cleanliness, lift reliability, and shared facilities.',
+    category: 'Annual Satisfaction',
+    status: 'active',
+    targetAudience: 'All Residents',
+    recipientEmails: [
+      'cameron.chair@cavalloscm.org',
+      'joana.treasurer@cavalloscm.org',
+      'jake.secretary@cavalloscm.org',
+      'george.scm@cavalloscm.org',
+      'lisa.scm@cavalloscm.org',
+      'john.member@cavalloscm.org',
+      'jack.owner@cavallosydney.com.au',
+      'sam.resident@cavallosydney.com.au'
+    ],
+    deadline: '2026-10-31',
+    createdAt: '2026-09-01T09:00:00.000Z',
+    createdBy: {
+      name: 'Steve',
+      role: 'Strata Manager',
+      email: 'steve@stratachoice.com.au'
+    },
+    questions: [
+      {
+        id: 'q_cav_1',
+        questionText: 'How satisfied are you with the overall management responsiveness and communication from StrataChoice (Managing Agency)?',
+        category: 'Management Performance',
+        type: 'star_rating',
+        required: true,
+        order: 1
+      },
+      {
+        id: 'q_cav_2',
+        questionText: 'How would you rate the ongoing cleanliness, waste disposal, and presentation of Cavallo lobbies, corridors, and gardens?',
+        category: 'Building & Cleanliness',
+        type: 'star_rating',
+        required: true,
+        order: 2
+      },
+      {
+        id: 'q_cav_3',
+        questionText: 'How reliable are our shared essential building assets (passenger lifts, main security gate, intercom)?',
+        category: 'Building Facilities',
+        type: 'star_rating',
+        required: true,
+        order: 3
+      },
+      {
+        id: 'q_cav_4',
+        questionText: 'How satisfied are you with visitor parking enforcement and common property by-law compliance?',
+        category: 'Parking & By-laws',
+        type: 'star_rating',
+        required: false,
+        order: 4
+      },
+      {
+        id: 'q_cav_5',
+        questionText: 'How likely are you to recommend living in or owning property at Cavallo (1 Pitt St) to family or friends? (NPS)',
+        category: 'Community NPS',
+        type: 'nps_score',
+        required: true,
+        order: 5
+      },
+      {
+        id: 'q_cav_6',
+        questionText: 'What is the #1 priority or improvement you would like the Strata Committee and Manager to focus on this coming year?',
+        category: 'General Suggestions',
+        type: 'text_feedback',
+        required: false,
+        order: 6
+      }
+    ],
+    aiExecutiveSummary: {
+      overallSentiment: 'Highly Positive',
+      sentimentScore: 78,
+      topStrengths: [
+        'Lobby and garden presentation praised for immaculate maintenance and high curb appeal.',
+        'Strata manager communication turnaround and digital notice transparency rated very favorably.',
+        'Strong sense of building security and community peace among both owners and tenants.'
+      ],
+      topActionItems: [
+        'Address visitor parking bay misuse on weekends with refreshed signage and visitor pass checks.',
+        'Schedule preventive maintenance review with lift technicians to service ground floor doors.',
+        'Coordinate an additional Monday morning recycling bin collection with city council.'
+      ],
+      executiveBrief: 'Overall resident sentiment is Highly Positive with an average satisfaction rating of 4.6/5.0 across 8 submitted surveys. Residents commend recent common area maintenance and digital issue tracking while requesting proactive enforcement of weekend visitor parking.',
+      generatedAt: '2026-09-14T11:30:00.000Z'
+    }
+  }
+];
+
+export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
+  {
+    id: 'RSP-CAV-001',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    unitId: 'Unit 28',
+    respondentName: 'Cameron (Chairperson)',
+    isAnonymous: false,
+    submittedAt: '2026-09-02T10:15:00.000Z',
+    answers: {
+      q_cav_1: 5,
+      q_cav_2: 5,
+      q_cav_3: 4,
+      q_cav_4: 4,
+      q_cav_5: 10,
+      q_cav_6: 'Steve and Peter have done a great job coordinating the lobby directory upgrade. Very prompt communication.'
+    }
+  },
+  {
+    id: 'RSP-CAV-002',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    unitId: 'Unit 15',
+    respondentName: 'Joana (Treasurer)',
+    isAnonymous: false,
+    submittedAt: '2026-09-03T14:30:00.000Z',
+    answers: {
+      q_cav_1: 5,
+      q_cav_2: 5,
+      q_cav_3: 4,
+      q_cav_4: 4,
+      q_cav_5: 9,
+      q_cav_6: 'Financial reports and levy distributions have been very transparent. Please look at getting quotes for EV chargers in the basement.'
+    }
+  },
+  {
+    id: 'RSP-CAV-003',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    unitId: 'Unit 4',
+    respondentName: 'Jack (Lot Owner)',
+    isAnonymous: false,
+    submittedAt: '2026-09-04T09:45:00.000Z',
+    answers: {
+      q_cav_1: 4,
+      q_cav_2: 4,
+      q_cav_3: 5,
+      q_cav_4: 3,
+      q_cav_5: 8,
+      q_cav_6: 'Visitor parking is sometimes taken up by non-visitors on Friday and Saturday evenings. We need clearer towing warning signs.'
+    }
+  },
+  {
+    id: 'RSP-CAV-004',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    isAnonymous: true,
+    submittedAt: '2026-09-05T16:20:00.000Z',
+    answers: {
+      q_cav_1: 5,
+      q_cav_2: 5,
+      q_cav_3: 5,
+      q_cav_4: 4,
+      q_cav_5: 10,
+      q_cav_6: 'The cleaners are wonderful. The lobby smells clean every morning. Thank you!'
+    }
+  },
+  {
+    id: 'RSP-CAV-005',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    unitId: 'Unit 9',
+    respondentName: 'Jake (Secretary)',
+    isAnonymous: false,
+    submittedAt: '2026-09-06T11:00:00.000Z',
+    answers: {
+      q_cav_1: 5,
+      q_cav_2: 4,
+      q_cav_3: 4,
+      q_cav_4: 4,
+      q_cav_5: 9,
+      q_cav_6: 'Very happy with our committee and strata manager collaboration. Keep up the high standard.'
+    }
+  },
+  {
+    id: 'RSP-CAV-006',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    isAnonymous: true,
+    submittedAt: '2026-09-07T18:05:00.000Z',
+    answers: {
+      q_cav_1: 4,
+      q_cav_2: 5,
+      q_cav_3: 3,
+      q_cav_4: 3,
+      q_cav_5: 8,
+      q_cav_6: 'The north passenger lift had a minor sensor stutter last week. It is fine now but good to keep an eye on before warranty expires.'
+    }
+  },
+  {
+    id: 'RSP-CAV-007',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    unitId: 'Unit 12',
+    respondentName: 'George (SCM)',
+    isAnonymous: false,
+    submittedAt: '2026-09-08T13:40:00.000Z',
+    answers: {
+      q_cav_1: 5,
+      q_cav_2: 5,
+      q_cav_3: 5,
+      q_cav_4: 5,
+      q_cav_5: 10,
+      q_cav_6: 'Garden landscaping looks top notch. Great work team.'
+    }
+  },
+  {
+    id: 'RSP-CAV-008',
+    surveyId: 'SRV-CAV-2026',
+    schemeId: 'SP52042',
+    isAnonymous: true,
+    submittedAt: '2026-09-10T08:15:00.000Z',
+    answers: {
+      q_cav_1: 4,
+      q_cav_2: 4,
+      q_cav_3: 4,
+      q_cav_4: 3,
+      q_cav_5: 9,
+      q_cav_6: 'Cardboard recycling bins overflow after people move in on weekends. An extra collection day would be super helpful.'
+    }
   }
 ];
 
@@ -1966,7 +2206,7 @@ export function useSmartLotStore() {
   }, [user?.id]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v8`, ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'surveys'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
   const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v8`, false);
   const [theme, setThemeRaw] = useState<'light' | 'dark'>(() => {
     try {
@@ -1988,7 +2228,10 @@ export function useSmartLotStore() {
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
   const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v13`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
+  const [surveys, setSurveys] = usePersistedState<Survey[]>(`smartlot_${pId}_surveys_v1`, INITIAL_SURVEYS);
+  const [surveyResponses, setSurveyResponses] = usePersistedState<SurveyResponse[]>(`smartlot_${pId}_surveyResponses_v1`, INITIAL_SURVEY_RESPONSES);
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
+
 
   const addCustomPersona = (p: Persona) => {
     setCustomPersonas(prev => {
@@ -3816,6 +4059,101 @@ export function useSmartLotStore() {
     setWorkOrders(prev => prev.filter(wo => wo.id !== workOrderId));
   };
 
+  const createSurvey = async (payload: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey> => {
+    const rawScheme = (payload.schemeId || activeScheme.id || 'SP52042').replace(/[^a-zA-Z0-9]/g, '');
+    const newId = `SRV-${rawScheme}-${Date.now().toString().slice(-4)}`;
+    const newSurvey: Survey = {
+      ...payload,
+      id: newId,
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      questions: payload.questions.map((q, idx) => ({
+        ...q,
+        id: q.id || `q_${newId}_${idx + 1}`,
+        order: idx + 1,
+      })),
+    };
+
+    setSurveys(prev => [newSurvey, ...prev]);
+
+    // Dispatch survey email invitation to recipients if provided
+    if (payload.recipientEmails && payload.recipientEmails.length > 0) {
+      const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
+      const surveyUrl = `${origin}/?survey_token=${encodeURIComponent(newId)}`;
+      const schemeObj = schemes.find(s => s.id === payload.schemeId) || activeScheme;
+
+      try {
+        await dispatchSurveyInvitationEmail({
+          toEmails: payload.recipientEmails,
+          ccEmails: payload.ccEmails,
+          bccEmails: payload.bccEmails,
+          surveyId: newId,
+          surveyTitle: payload.title,
+          surveyDescription: payload.description,
+          schemeName: schemeObj?.name || 'Cavallo',
+          deadline: payload.deadline,
+          surveyUrl,
+        });
+      } catch (err) {
+        console.warn('[SmartLot Store] Survey invitation email notice:', err);
+      }
+    }
+
+    return newSurvey;
+  };
+
+  const closeSurvey = (surveyId: string) => {
+    const closedTime = new Date().toISOString();
+    setSurveys(prev => prev.map(s => {
+      if (s.id !== surveyId) return s;
+      return {
+        ...s,
+        status: 'closed',
+        closedAt: closedTime,
+      };
+    }));
+  };
+
+  const submitSurveyResponse = (payload: Omit<SurveyResponse, 'id' | 'submittedAt'>): SurveyResponse => {
+    const newResponse: SurveyResponse = {
+      ...payload,
+      id: `RSP-${Date.now().toString().slice(-6)}`,
+      submittedAt: new Date().toISOString(),
+    };
+
+    setSurveyResponses(prev => [newResponse, ...prev]);
+    return newResponse;
+  };
+
+  const generateAISurveyQuestions = async (prompt: string, category: SurveyCategory, schemeName: string): Promise<SurveyQuestion[]> => {
+    return generateSurveyQuestionsWithAI(prompt, category, schemeName);
+  };
+
+  const generateAISurveySummary = async (surveyId: string): Promise<SurveyAISummary> => {
+    const targetSurvey = surveys.find(s => s.id === surveyId);
+    if (!targetSurvey) {
+      throw new Error(`Survey ${surveyId} not found`);
+    }
+    const matchingResponses = surveyResponses.filter(r => r.surveyId === surveyId);
+    const summary = await generateSurveySummaryWithAI(targetSurvey, matchingResponses);
+
+    setSurveys(prev => prev.map(s => {
+      if (s.id !== surveyId) return s;
+      return {
+        ...s,
+        aiExecutiveSummary: summary,
+      };
+    }));
+
+    return summary;
+  };
+
+  const deleteSurvey = (surveyId: string) => {
+    setSurveys(prev => prev.filter(s => s.id !== surveyId));
+    setSurveyResponses(prev => prev.filter(r => r.surveyId !== surveyId));
+  };
+
+
   const addResidentToUnit = (
     schemeId: string, 
     unitId: string, 
@@ -4001,8 +4339,19 @@ export function useSmartLotStore() {
     verifyWorkOrder,
     refreshData,
     isLoading,
+    surveys,
+    setSurveys,
+    surveyResponses,
+    setSurveyResponses,
+    createSurvey,
+    closeSurvey,
+    submitSurveyResponse,
+    generateAISurveyQuestions,
+    generateAISurveySummary,
+    deleteSurvey,
   };
 }
+
 
 export type SmartLotStore = ReturnType<typeof useSmartLotStore>;
 

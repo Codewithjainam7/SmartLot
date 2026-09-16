@@ -26,12 +26,16 @@ import { DashboardSkeleton } from './components/core/DashboardSkeleton';
 import { ResidentPortalView } from './components/ResidentPortalView';
 import { ManagerPerformanceView } from './components/ManagerPerformanceView';
 import { VotingHubView } from './components/VotingHubView';
+import { SurveysView } from './components/SurveysView';
+import { GuestSurveyView } from './components/GuestSurveyView';
 
 export default function App() {
   const store = useSmartLotStore();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [surveyToken, setSurveyToken] = useState<string | null>(null);
+
 
   // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
   const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_login' | 'admin_console' | 'dashboard'>(
@@ -79,8 +83,14 @@ export default function App() {
       const unit = params.get('unit');
       const lot = params.get('lot');
       const schemeFromParam = params.get('scheme');
+      const surveyParam = params.get('survey_token') || params.get('survey');
+
+      if (surveyParam) {
+        setSurveyToken(surveyParam);
+      }
 
       // Match path or hash like #/join/SP101 or #/join?scheme=SP101 or /lander?scheme=SP101
+
       const hashClean = hashStr.split('?')[0];
       const pathClean = pathStr.split('?')[0];
       const hashMatch = hashClean.match(/^#\/join(?:\/([A-Za-z0-9_-]+))?/);
@@ -392,9 +402,26 @@ export default function App() {
     setSessionState('landing');
   };
 
+  // Zero-login survey guest access (Part 1)
+  if (surveyToken) {
+    return (
+      <GuestSurveyView 
+        surveyToken={surveyToken}
+        store={store}
+        onClose={() => {
+          setSurveyToken(null);
+          if (window.history.pushState) {
+            window.history.pushState('', '', window.location.pathname);
+          }
+        }}
+      />
+    );
+  }
+
   // Render unauthenticated screens
   if (joinSchemeId) {
     return (
+
       <JoinSchemeView 
         schemeId={joinSchemeId}
         inviteToken={inviteToken || undefined}
@@ -840,7 +867,16 @@ export default function App() {
           {store.activeView === 'performance' && (
             <ManagerPerformanceView store={store} />
           )}
+
+          {/* Resident Feedback & Surveys View (Part 1) */}
+          {store.activeView === 'surveys' && (
+            <SurveysView 
+              store={store} 
+              onOpenGuestView={(tok) => setSurveyToken(tok)}
+            />
+          )}
           </>
+
           )}
 
         </div>

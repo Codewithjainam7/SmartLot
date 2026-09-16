@@ -370,3 +370,75 @@ export const getAvatarInitials = (name?: string): string => {
   if (!name) return 'U';
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
+
+/**
+ * Survey and Resident Feedback Types (Part 1 - AI Feedback Engine)
+ */
+export type SurveyQuestionType = 
+  | 'star_rating'      // 1-5 stars with descriptive labels (Poor to Excellent)
+  | 'nps_score'        // 0-10 Net Promoter Score scale
+  | 'single_choice'    // Single option radio select
+  | 'multi_choice'     // Multi select checkboxes
+  | 'text_feedback';   // Open-ended comment / suggestion text
+
+export type SurveyCategory = 
+  | 'Annual Satisfaction'
+  | 'Strata Management Performance'
+  | 'Building & Amenities'
+  | 'Cleanliness & Maintenance'
+  | 'Renovation & Upgrades'
+  | 'General Feedback';
+
+export interface SurveyQuestion {
+  id: string;
+  questionText: string;
+  category: string; // e.g. 'Management Performance', 'Facilities & Grounds', 'Cleanliness'
+  type: SurveyQuestionType;
+  options?: string[]; // Used for single_choice and multi_choice
+  required: boolean;
+  order: number;
+}
+
+export interface SurveyAISummary {
+  overallSentiment: 'Highly Positive' | 'Positive' | 'Neutral' | 'Mixed' | 'Needs Improvement';
+  sentimentScore: number; // -100 to +100
+  topStrengths: string[];
+  topActionItems: string[];
+  executiveBrief: string;
+  generatedAt: string;
+}
+
+export interface Survey {
+  id: string; // e.g. 'SRV-CAV-2026'
+  schemeId: string;
+  title: string;
+  description: string;
+  category: SurveyCategory;
+  status: 'active' | 'closed';
+  targetAudience: 'All Residents' | 'Owners Only' | 'Tenants Only' | 'Custom';
+  recipientEmails: string[];
+  ccEmails?: string[];
+  bccEmails?: string[];
+  questions: SurveyQuestion[];
+  deadline?: string; // ISO date string e.g. '2026-10-15'
+  createdAt: string;
+  createdBy: {
+    name: string;
+    role: string;
+    email?: string;
+  };
+  closedAt?: string;
+  aiExecutiveSummary?: SurveyAISummary;
+}
+
+export interface SurveyResponse {
+  id: string;
+  surveyId: string;
+  schemeId: string;
+  unitId?: string; // e.g. 'Unit 12' or undefined if anonymous
+  respondentName?: string;
+  isAnonymous: boolean;
+  submittedAt: string;
+  answers: Record<string, any>; // questionId -> rating (number), text (string), or selected options
+}
+
