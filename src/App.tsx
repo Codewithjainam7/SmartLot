@@ -28,6 +28,8 @@ import { ManagerPerformanceView } from './components/ManagerPerformanceView';
 import { VotingHubView } from './components/VotingHubView';
 import { SurveysView } from './components/SurveysView';
 import { GuestSurveyView } from './components/GuestSurveyView';
+import { VendorView } from './components/VendorView';
+import { GuestPortalView } from './components/GuestPortalView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -35,7 +37,7 @@ export default function App() {
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [surveyToken, setSurveyToken] = useState<string | null>(null);
-
+  const [activeGuestWorkOrderId, setActiveGuestWorkOrderId] = useState<string | null>(null);
 
   // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
   const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_login' | 'admin_console' | 'dashboard'>(
@@ -463,6 +465,22 @@ export default function App() {
     );
   }
 
+  // Zero-Login Tradie Portal Mode
+  if (activeGuestWorkOrderId) {
+    const activeGuestWo = store.workOrders.find(wo => wo.id === activeGuestWorkOrderId);
+    if (activeGuestWo) {
+      return (
+        <GuestPortalView 
+          workOrder={activeGuestWo}
+          onSubmitCompletion={(woId, photoUrl, finalCost, invoicePdf) => {
+            store.submitGuestWorkOrderCompletion(woId, photoUrl, finalCost, invoicePdf);
+          }}
+          onBack={() => setActiveGuestWorkOrderId(null)}
+        />
+      );
+    }
+  }
+
   if (sessionState === 'landing') {
     return (
       <LandingPageView 
@@ -698,6 +716,7 @@ export default function App() {
           setActiveView={store.setActiveView}
           pendingTriageCount={pendingTriageCount}
           activeMotionsCount={activeMotionsCount}
+          activeWorkOrdersCount={store.workOrders.filter(w => (!w.schemeId || w.schemeId === store.activeScheme.id) && w.status !== 'completed').length}
           activePersonaName={store.activePersona.name}
           activePersonaRole={store.activePersona.role}
           hasPermission={store.hasPermission}
@@ -770,6 +789,8 @@ export default function App() {
           {(store.activeView === 'requests' || store.activeView === 'triage') && (
             <ResidentRequestsView 
               requests={filteredRequests}
+              workOrders={store.workOrders}
+              vendors={store.vendors}
               onSubmitRequest={store.submitResidentRequest}
               onCloseRequest={store.closeResidentRequest}
               onAddComment={store.addCommentToRequest}
@@ -789,6 +810,12 @@ export default function App() {
               onNavigateToVoting={() => {
                 store.setActiveView('voting');
               }}
+              onOpenGuestPortal={(woId) => setActiveGuestWorkOrderId(woId)}
+              onRequestQuotes={store.requestQuotesForRequest}
+              onVoteForQuote={(reqId, qteId) => store.voteForQuote(reqId, qteId, store.activePersona.name)}
+              onAwardQuote={(reqId, qteId, budgetCap, pin) => store.awardQuoteAndCreateWorkOrder(reqId, qteId, budgetCap, pin, store.activePersona.name)}
+              onSignOffWorkOrder={(woId, notes) => store.signOffWorkOrder(woId, notes, store.activePersona.name)}
+              onNavigateToTrades={() => store.setActiveView('vendors')}
               initialFilter={store.activeView === 'triage' ? 'needs_triage' : undefined}
               activePersonaName={store.activePersona.name}
               activePersonaRole={store.activePersona.role}
@@ -873,6 +900,27 @@ export default function App() {
             <SurveysView 
               store={store} 
               onOpenGuestView={(tok) => setSurveyToken(tok)}
+            />
+          )}
+
+          {/* Trades & Work Orders Hub */}
+          {store.activeView === 'vendors' && (
+            <VendorView 
+              vendors={store.vendors}
+              workOrders={store.workOrders}
+              requests={store.residentRequests}
+              onOpenGuestPortal={(woId) => setActiveGuestWorkOrderId(woId)}
+              onVerifyWorkOrder={store.verifyWorkOrder}
+              onSignOffWorkOrder={(woId, notes) => store.signOffWorkOrder(woId, notes, store.activePersona.name)}
+              onRequestQuotes={store.requestQuotesForRequest}
+              onVoteForQuote={(reqId, qteId) => store.voteForQuote(reqId, qteId, store.activePersona.name)}
+              onAwardQuote={(reqId, qteId, budgetCap, pin) => store.awardQuoteAndCreateWorkOrder(reqId, qteId, budgetCap, pin, store.activePersona.name)}
+              onAddVendor={store.addVendor}
+              onUpdateVendorInsurance={store.updateVendorInsurance}
+              activePersonaName={store.activePersona.name}
+              activePersonaRole={store.activePersona.role}
+              activeSchemeName={store.activeScheme.name}
+              activeSchemeId={store.activeScheme.id}
             />
           )}
           </>

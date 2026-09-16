@@ -18,10 +18,11 @@ import {
 import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SidebarProps {
-  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'surveys';
-  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'surveys') => void;
+  activeView: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'vendors' | 'surveys';
+  setActiveView: (view: 'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'vendors' | 'surveys') => void;
   pendingTriageCount?: number;
   activeMotionsCount?: number;
+  activeWorkOrdersCount?: number;
   activePersonaName?: string;
   activePersonaRole?: string;
 
@@ -36,6 +37,7 @@ export function Sidebar({
   setActiveView, 
   pendingTriageCount = 2,
   activeMotionsCount = 0,
+  activeWorkOrdersCount = 0,
   activePersonaName = 'Alex Vance',
   activePersonaRole = 'Strata Manager',
   hasPermission,
@@ -132,6 +134,15 @@ export function Sidebar({
               active={activeView === 'requests' || activeView === 'triage'} 
               onClick={() => handleNavClick('requests')}
               badge={pendingTriageCount && pendingTriageCount > 0 && (activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? String(pendingTriageCount) : undefined}
+              isCollapsed={isCollapsed && !isMobileOpen} 
+            />
+            {/* Trades & Work Orders Engine */}
+            <NavItem 
+              icon={<Wrench size={18} />} 
+              label="Trades & Work Orders" 
+              active={activeView === 'vendors'} 
+              onClick={() => handleNavClick('vendors')}
+              badge={activeWorkOrdersCount && activeWorkOrdersCount > 0 ? String(activeWorkOrdersCount) : undefined}
               isCollapsed={isCollapsed && !isMobileOpen} 
             />
             {/* Voting Hub for Community & Committee Motions */}

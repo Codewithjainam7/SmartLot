@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ResidentRequest, CaseStatus, AuditEvent } from '../store/smartLotStore';
+import { ResidentRequest, CaseStatus, AuditEvent, WorkOrder, Vendor, RequestQuote } from '../store/smartLotStore';
 import { 
   MorphingPopover, 
   MorphingPopoverTrigger, 
@@ -63,13 +63,17 @@ import {
   Copy,
   Phone,
   Calendar,
-  ShieldCheck
+  Key,
+  ShieldCheck,
+  Camera
 } from 'lucide-react';
 import { CustomSelect } from './core/CustomSelect';
 import { ActivityCalendarView } from './ActivityCalendarView';
 
 interface ResidentRequestsViewProps {
   requests: ResidentRequest[];
+  workOrders?: WorkOrder[];
+  vendors?: Vendor[];
   onOpenCreateModal?: () => void;
   onSubmitRequest: (data: any) => any;
   onCloseRequest: (requestId: string, reason: string) => void;
@@ -97,6 +101,12 @@ interface ResidentRequestsViewProps {
     quotes?: { vendorId: string; vendorName: string; amount: number; gstIncluded: boolean; recommended?: boolean }[];
   }) => void;
   onNavigateToVoting?: (motionId?: string) => void;
+  onOpenGuestPortal?: (workOrderId: string) => void;
+  onRequestQuotes?: (requestId: string, scope: string, quotes: RequestQuote[]) => void;
+  onVoteForQuote?: (requestId: string, quoteId: string) => void;
+  onAwardQuote?: (requestId: string, quoteId: string, budgetCap?: number, pin?: string) => void;
+  onSignOffWorkOrder?: (workOrderId: string, signOffNotes?: string) => void;
+  onNavigateToTrades?: () => void;
   initialFilter?: string;
   activePersonaName: string;
   activePersonaRole: string;
@@ -109,6 +119,8 @@ interface ResidentRequestsViewProps {
 
 export function ResidentRequestsView({
   requests,
+  workOrders = [],
+  vendors = [],
   onSubmitRequest,
   onCloseRequest,
   onAddComment,
@@ -123,6 +135,12 @@ export function ResidentRequestsView({
   onTriageCase,
   onInitiateVotingFlow,
   onNavigateToVoting,
+  onOpenGuestPortal,
+  onRequestQuotes,
+  onVoteForQuote,
+  onAwardQuote,
+  onSignOffWorkOrder,
+  onNavigateToTrades,
   initialFilter,
   activePersonaName,
   activePersonaRole,
@@ -201,6 +219,90 @@ export function ResidentRequestsView({
       });
     }
     setVotingModalRequest(null);
+  };
+
+  // Tender / Quotes Modal State
+  const [tenderModalRequest, setTenderModalRequest] = useState<ResidentRequest | null>(null);
+  const [tenderScopeInput, setTenderScopeInput] = useState('');
+  const [tenderBudgetInput, setTenderBudgetInput] = useState('3400');
+  const [signOffModalWo, setSignOffModalWo] = useState<WorkOrder | null>(null);
+  const [signOffNotesInput, setSignOffNotesInput] = useState('');
+
+  const handleOpenTenderModal = (req: ResidentRequest) => {
+    setTenderModalRequest(req);
+    setTenderScopeInput(req.tenderScope || req.description || req.title);
+    setTenderBudgetInput('3400');
+  };
+
+  const handleSubmitTenderModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenderModalRequest || !onRequestQuotes) return;
+
+    const quotes: RequestQuote[] = [
+      {
+        id: `QTE-${Date.now()}-1`,
+        vendorId: 'VND-003',
+        vendorName: 'Kone Elevator Maintenance NSW',
+        contactEmail: 'maintenance.sydney@kone.com',
+        contactPhone: '1300 362 473',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2028-01-01',
+        amount: Number(tenderBudgetInput) || 3400,
+        scopeNotes: `Full repair and replacement: ${tenderScopeInput}`,
+        warranty: '12 Months Comprehensive',
+        estimatedDays: 1,
+        submittedAt: 'Today, Just now',
+        recommended: true,
+        committeeVotes: []
+      },
+      {
+        id: `QTE-${Date.now()}-2`,
+        vendorId: 'VND-008',
+        vendorName: 'Apex Lift & Escalator Services',
+        contactEmail: 'repairs@apexlifts.com.au',
+        contactPhone: '02 9155 3300',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-05-12',
+        amount: Math.round((Number(tenderBudgetInput) || 3400) * 0.85),
+        scopeNotes: `Recondition parts and recalibrate sensors: ${tenderScopeInput}`,
+        warranty: '6 Months Parts',
+        estimatedDays: 2,
+        submittedAt: 'Today, Just now',
+        recommended: false,
+        committeeVotes: []
+      },
+      {
+        id: `QTE-${Date.now()}-3`,
+        vendorId: 'VND-009',
+        vendorName: 'Ascent Vertical Transport Pty Ltd',
+        contactEmail: 'quotes@ascentvt.com.au',
+        contactPhone: '0412 888 123',
+        isAccredited: false,
+        insuranceStatus: 'Expired Ins.',
+        insuranceExpiry: '2025-08-30',
+        amount: Math.round((Number(tenderBudgetInput) || 3400) * 0.92),
+        scopeNotes: `Supply alternative aftermarket drive unit: ${tenderScopeInput}`,
+        warranty: '12 Months Parts',
+        estimatedDays: 3,
+        submittedAt: 'Today, Just now',
+        recommended: false,
+        committeeVotes: []
+      }
+    ];
+
+    onRequestQuotes(tenderModalRequest.id, tenderScopeInput, quotes);
+    setTenderModalRequest(null);
+  };
+
+  const handleConfirmSignOff = () => {
+    if (!signOffModalWo) return;
+    if (onSignOffWorkOrder) {
+      onSignOffWorkOrder(signOffModalWo.id, signOffNotesInput);
+    }
+    setSignOffModalWo(null);
+    setSignOffNotesInput('');
   };
 
   const [viewScope, setViewScope] = useState<'my' | 'all'>('all');
@@ -400,6 +502,9 @@ export function ResidentRequestsView({
 
   // Extract unique authors from comments to suggest in @mention dropdown
   const activeDetail = selectedRequest ? requests.find(r => r.id === selectedRequest.id) || selectedRequest : null;
+  const linkedWo = activeDetail 
+    ? workOrders.find(wo => wo.id === activeDetail.linkedWorkOrderId || wo.caseId === activeDetail.id) 
+    : undefined;
   const possibleTagTargets = Array.from(new Set([
     ...(activeDetail ? activeDetail.comments.map(c => c.authorName) : []),
     activeDetail?.requestorName || '',
@@ -2562,7 +2667,7 @@ export function ResidentRequestsView({
                     Under NSW Strata Schemes Management Act 2015 s 106, common property repairs are the statutory responsibility of the Owners Corporation. Verify whether this request falls under Common Property or Private Lot Owner fixtures.
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
                     <button
                       type="button"
                       onClick={() => handleQuickApprove(activeDetail.id)}
@@ -2570,6 +2675,15 @@ export function ResidentRequestsView({
                     >
                       <CheckCircle2 size={15} />
                       <span>Direct Work Order</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTenderModal(activeDetail)}
+                      className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    >
+                      <Wrench size={15} />
+                      <span>Get Quotes (Tender)</span>
                     </button>
 
                     <button
@@ -2619,6 +2733,296 @@ export function ResidentRequestsView({
                       <ExternalLink size={13} />
                     </button>
                   )}
+                </div>
+              )}
+
+              {/* Quote Comparison & Tender Card */}
+              {activeDetail.tenderQuotes && activeDetail.tenderQuotes.length > 0 && (
+                <div className="bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/30 rounded-2xl p-5 space-y-4 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-500/20 pb-3">
+                    <div className="flex items-center gap-2 text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                      <FileText size={16} />
+                      <span>Trade Quote Comparison ({activeDetail.tenderQuotes.length} Quotes Received)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30">
+                        Scope: {activeDetail.tenderScope || 'Repair Tender'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {activeDetail.tenderQuotes.map((quote) => {
+                      const hasVoted = quote.committeeVotes.includes(activePersonaName);
+                      const isExpired = quote.insuranceStatus.toLowerCase().includes('expired');
+
+                      return (
+                        <div
+                          key={quote.id}
+                          className={`relative flex flex-col justify-between p-4 rounded-xl border transition-all ${
+                            quote.recommended
+                              ? 'bg-blue-50/50 dark:bg-[#0055FF]/10 border-[#0055FF]/40 ring-1 ring-[#0055FF]/30'
+                              : isExpired
+                              ? 'bg-red-50/50 dark:bg-red-500/10 border-red-500/30'
+                              : 'bg-white dark:bg-[#131b2e] border-gray-200 dark:border-white/10'
+                          }`}
+                        >
+                          {quote.recommended && (
+                            <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-[#0055FF] text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
+                              Recommended
+                            </span>
+                          )}
+
+                          <div className="space-y-2">
+                            <div>
+                              <h4 className="text-sm font-black text-gray-900 dark:text-white leading-tight">
+                                {quote.vendorName}
+                              </h4>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                  quote.isAccredited
+                                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                                    : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10'
+                                }`}>
+                                  {quote.isAccredited ? 'Accredited Trade' : 'Ad-hoc'}
+                                </span>
+
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+                                  isExpired
+                                    ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
+                                    : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                                }`}>
+                                  {isExpired && <AlertTriangle size={10} />}
+                                  {isExpired ? 'Expired Ins.' : 'Active Ins.'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-gray-100 dark:border-white/5">
+                              <div className="text-xl font-black text-gray-900 dark:text-white">
+                                ${quote.amount.toLocaleString()}
+                                <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400 ml-1">ex GST</span>
+                              </div>
+                              <p className="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mt-1">
+                                {quote.scopeNotes}
+                              </p>
+                              <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 flex items-center justify-between">
+                                <span>Warranty: {quote.warranty}</span>
+                                <span>ETA: {quote.estimatedDays}d</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 mt-3 border-t border-gray-100 dark:border-white/5 space-y-2">
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-semibold text-gray-500 dark:text-gray-400">
+                                Committee Votes:
+                              </span>
+                              <span className="font-bold text-purple-600 dark:text-purple-400">
+                                {quote.committeeVotes.length} {quote.committeeVotes.length === 1 ? 'vote' : 'votes'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => onVoteForQuote && onVoteForQuote(activeDetail.id, quote.id)}
+                                className={`w-full py-1.5 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                                  hasVoted
+                                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                    : 'bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-500/30'
+                                }`}
+                              >
+                                <ThumbsUp size={12} className={hasVoted ? 'fill-white' : ''} />
+                                <span>{hasVoted ? 'You Supported This' : 'Vote for Quote'}</span>
+                              </button>
+
+                              {isManagerOrCommittee && (
+                                <button
+                                  type="button"
+                                  disabled={isExpired}
+                                  onClick={() => onAwardQuote && onAwardQuote(activeDetail.id, quote.id, quote.amount, '4892')}
+                                  title={isExpired ? 'Cannot issue work order to contractor with expired insurance' : undefined}
+                                  className={`w-full py-1.5 px-2.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                    isExpired
+                                      ? 'bg-gray-200 dark:bg-white/10 text-gray-400 cursor-not-allowed'
+                                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'
+                                  }`}
+                                >
+                                  <Wrench size={12} />
+                                  <span>{isExpired ? 'Insurance Expired' : 'Select & Issue Order'}</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Linked Digital Work Order & Tradie Access Card */}
+              {linkedWo && (
+                <div className="bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 space-y-4 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/20 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Wrench size={18} className="text-[#0055FF] dark:text-[#60A5FA]" />
+                      <div>
+                        <div className="text-xs font-black text-gray-900 dark:text-white flex items-center gap-2">
+                          <span>Work Order: {linkedWo.id}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            linkedWo.status === 'completed'
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                              : linkedWo.status === 'completion_submitted'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 animate-pulse'
+                              : 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30'
+                          }`}>
+                            {linkedWo.status === 'completed'
+                              ? 'Signed Off & Closed'
+                              : linkedWo.status === 'completion_submitted'
+                              ? 'Job Completed - Proof Awaiting Sign-Off'
+                              : linkedWo.status === 'in_progress'
+                              ? 'Trade On-Site / In Progress'
+                              : 'Work Order Assigned'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                          Contractor: <strong className="text-gray-800 dark:text-gray-200">{linkedWo.vendorName}</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {onOpenGuestPortal && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenGuestPortal(linkedWo.id)}
+                          className="px-3 py-1.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                        >
+                          <ExternalLink size={12} />
+                          <span>Tradie Access Portal</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Access PIN, Cap, and Emergency Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#131b2e] border border-gray-200/80 dark:border-white/5 space-y-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                        Gate & Key PIN
+                      </span>
+                      <div className="text-lg font-mono font-black text-[#0055FF] dark:text-[#60A5FA] flex items-center gap-2">
+                        <Key size={16} />
+                        <span>{linkedWo.siteAccessPin || '4892'}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#131b2e] border border-gray-200/80 dark:border-white/5 space-y-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                        Budget Cap
+                      </span>
+                      <div className="text-lg font-black text-gray-900 dark:text-white">
+                        ${linkedWo.budgetCap.toLocaleString()} <span className="text-[10px] font-normal text-gray-500">AUD</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#131b2e] border border-gray-200/80 dark:border-white/5 space-y-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                        Final Contractor Cost
+                      </span>
+                      <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                        {linkedWo.finalCost ? `$${linkedWo.finalCost.toLocaleString()} AUD` : 'Pending Invoice'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Proof Photo & Invoice Card */}
+                  {(linkedWo.completionPhoto || linkedWo.invoicePdf || linkedWo.signOffNotes) && (
+                    <div className="p-4 rounded-xl bg-white dark:bg-[#131b2e] border border-gray-200/80 dark:border-white/5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2 size={15} />
+                          <span>Job Completed & Proof Photos Submitted</span>
+                        </div>
+                        {linkedWo.invoicePdf && (
+                          <a
+                            href={linkedWo.invoicePdf}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-bold text-[#0055FF] dark:text-[#60A5FA] flex items-center gap-1 hover:underline"
+                          >
+                            <FileText size={12} />
+                            <span>Tax Invoice PDF</span>
+                          </a>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3 items-start">
+                        {linkedWo.completionPhoto && (
+                          <div className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 w-full sm:w-44 shrink-0 aspect-4/3 bg-gray-100 dark:bg-black/40">
+                            <img
+                              src={linkedWo.completionPhoto}
+                              alt="Job Completion Proof"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2 text-white text-[10px] font-semibold">
+                              Completion Photo Proof
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="space-y-2 flex-1">
+                          <div className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-white/5 p-3 rounded-lg border border-gray-100 dark:border-white/5">
+                            <strong className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1">Scope & Notes:</strong>
+                            {linkedWo.signOffNotes || linkedWo.scopeOfWork || 'All repairs tested and certified to Australian Standards.'}
+                          </div>
+
+                          {linkedWo.status === 'completion_submitted' && isManagerOrCommittee && (
+                            <button
+                              type="button"
+                              onClick={() => setSignOffModalWo(linkedWo)}
+                              className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                            >
+                              <ShieldCheck size={14} />
+                              <span>Manager Sign-Off & Approve Invoice</span>
+                            </button>
+                          )}
+
+                          {linkedWo.signedOffAt && (
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 pt-1">
+                              <CheckCircle2 size={14} />
+                              <span>Signed Off by {linkedWo.signedOffBy || 'Strata Manager'} ({new Date(linkedWo.signedOffAt).toLocaleDateString()})</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Quick Tender Trigger if no quotes requested yet and not in pending triage */}
+              {!linkedWo && (!activeDetail.tenderQuotes || activeDetail.tenderQuotes.length === 0) && isManagerOrCommittee && activeDetail.status !== 'pending_triage' && activeDetail.status !== 'new' && (
+                <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-500/5 border border-purple-200 dark:border-purple-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
+                      <Wrench size={14} />
+                      <span>Require Competitive Trade Quotes?</span>
+                    </div>
+                    <p className="text-[11px] text-purple-700 dark:text-purple-400">
+                      Request 3 quotes from verified Sydney strata contractors with verified insurance.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenTenderModal(activeDetail)}
+                    className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
+                  >
+                    <FileText size={13} />
+                    <span>Get 3 Quotes (Tender)</span>
+                  </button>
                 </div>
               )}
 
@@ -3843,6 +4247,207 @@ export function ResidentRequestsView({
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Tender / Request Quotes Modal */}
+      <AnimatePresence>
+        {tenderModalRequest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+              onClick={() => setTenderModalRequest(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-white dark:bg-[#0d1117] w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl z-10 border border-gray-100 dark:border-white/10 space-y-5"
+            >
+              <div className="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-white/5 pb-4">
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                  <Wrench size={22} />
+                  <div>
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white">Request Competitive Quotes</h3>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Invite verified Sydney trades with automated insurance checks</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTenderModalRequest(null)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitTenderModal} className="space-y-4 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-900 dark:text-white block">
+                    Scope of Works & Job Description *
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={tenderScopeInput}
+                    onChange={(e) => setTenderScopeInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs text-gray-900 dark:text-white outline-none focus:border-purple-500"
+                    placeholder="Describe the repair requirements..."
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-900 dark:text-white block">
+                    Target Budget / Authorisation Cap ($ AUD) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={tenderBudgetInput}
+                    onChange={(e) => setTenderBudgetInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs font-semibold text-gray-900 dark:text-white outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-800 dark:text-purple-300 space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <ShieldCheck size={14} />
+                    <span>Automatic Compliance Check</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-purple-700 dark:text-purple-400">
+                    Will request 3 itemised quotes from accredited strata trade partners (Kone, Apex, Ascent) and verify Public Liability Insurance.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setTenderModalRequest(null)}
+                    className="px-4 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                  >
+                    <Wrench size={15} />
+                    <span>Send Tender to Contractors</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Manager Sign-Off Modal */}
+      <AnimatePresence>
+        {signOffModalWo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+              onClick={() => setSignOffModalWo(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 12 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-white dark:bg-[#0d1117] w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl z-10 border border-gray-100 dark:border-white/10 space-y-5"
+            >
+              <div className="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-white/5 pb-4">
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck size={22} />
+                  <div>
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white">Manager Sign-Off</h3>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Approve completed work order & authorise invoice payment</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSignOffModalWo(null)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 space-y-2">
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-gray-400">Order ID:</span>
+                    <strong className="text-gray-900 dark:text-white">{signOffModalWo.id}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-gray-400">Contractor:</span>
+                    <strong className="text-gray-900 dark:text-white">{signOffModalWo.vendorName}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-gray-400">Final Cost:</span>
+                    <strong className="text-emerald-600 dark:text-emerald-400 text-sm">
+                      ${(signOffModalWo.finalCost || signOffModalWo.budgetCap).toLocaleString()} AUD
+                    </strong>
+                  </div>
+                </div>
+
+                {signOffModalWo.completionPhoto && (
+                  <div className="space-y-1.5">
+                    <span className="font-bold text-gray-700 dark:text-gray-300 block">
+                      Contractor Proof Photo
+                    </span>
+                    <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 aspect-video max-h-48 bg-black/40">
+                      <img
+                        src={signOffModalWo.completionPhoto}
+                        alt="Proof"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-900 dark:text-white block">
+                    Manager Sign-Off Approval Memo *
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={signOffNotesInput}
+                    onChange={(e) => setSignOffNotesInput(e.target.value)}
+                    placeholder="e.g. Work inspected on site, lift operating normally, invoice approved for strata fund release."
+                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl text-xs text-gray-900 dark:text-white outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setSignOffModalWo(null)}
+                    className="px-4 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmSignOff}
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                  >
+                    <CheckCircle2 size={15} />
+                    <span>Approve & Sign Off Job</span>
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

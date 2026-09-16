@@ -170,6 +170,41 @@ export type ResidentRequest = {
   internalNotes?: InternalNote[];
   auditLog: AuditEvent[];
   linkedMotionId?: string;
+  linkedWorkOrderId?: string;
+  tenderStatus?: 'none' | 'quoting' | 'quote_selected' | 'work_order_dispatched';
+  tenderScope?: string;
+  tenderQuotes?: RequestQuote[];
+};
+
+export type RequestQuote = {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  isAccredited: boolean;
+  insuranceStatus: 'Active' | 'Expired Ins.' | 'Pending Verification';
+  insuranceExpiry?: string;
+  amount: number;
+  scopeNotes: string;
+  warranty?: string;
+  estimatedDays?: number;
+  submittedAt: string;
+  recommended?: boolean;
+  committeeVotes?: string[];
+  isSelected?: boolean;
+};
+
+export type RequestTender = {
+  id: string;
+  requestId: string;
+  schemeId: string;
+  title: string;
+  scopeOfWork: string;
+  status: 'draft' | 'open_for_quotes' | 'quotes_received' | 'selected' | 'dispatched';
+  quotes: RequestQuote[];
+  selectedQuoteId?: string;
+  createdAt: string;
 };
 
 export type MaintenanceCase = ResidentRequest;
@@ -210,14 +245,14 @@ export type MotionRestartEvent = {
   id: string;
   restartedAt: string;
   restartedBy: string;
-  reason: string;
-  previousYesCount: number;
-  previousNoCount: number;
+  reason?: string;
+  previousYesCount?: number;
+  previousNoCount?: number;
 };
 
 export type Motion = {
   id: string;
-  caseId: string;
+  caseId?: string;
   schemeId?: string;
   strataPlan?: string;
   propertyAddress?: string;
@@ -268,9 +303,12 @@ export type Vendor = {
   licenseNo: string;
   phone: string;
   email: string;
-  insuranceStatus: 'Active' | 'Expired Ins.';
+  insuranceStatus: 'Active' | 'Expired Ins.' | 'Pending Verification';
   insuranceExpiry: string;
   rating: number;
+  certificateOfCurrencyUrl?: string;
+  verifiedAt?: string;
+  verifiedBy?: string;
 };
 
 export type WorkOrder = {
@@ -279,6 +317,8 @@ export type WorkOrder = {
   schemeId: string;
   vendorId: string;
   vendorName: string;
+  vendorEmail?: string;
+  vendorPhone?: string;
   scopeOfWork: string;
   budgetCap: number;
   siteAccessPin: string;
@@ -288,6 +328,9 @@ export type WorkOrder = {
   invoicePdf?: string;
   finalCost?: number;
   submittedAt?: string;
+  signedOffAt?: string;
+  signedOffBy?: string;
+  signOffNotes?: string;
 };
 
 export type CreateVendorPayload = Omit<Vendor, 'id'> & { id?: string };
@@ -421,6 +464,30 @@ export const INITIAL_VENDORS: Vendor[] = [
     insuranceStatus: 'Active',
     insuranceExpiry: '2026-12-31',
     rating: 4.6,
+  },
+  {
+    id: 'VND-008',
+    name: 'Apex Lift & Escalator Services',
+    category: 'Lift & Vertical Transport',
+    abn: '64 109 233 801',
+    licenseNo: 'LIC-NSW-77491L',
+    phone: '02 9155 3300',
+    email: 'repairs@apexlifts.com.au',
+    insuranceStatus: 'Active',
+    insuranceExpiry: '2027-05-12',
+    rating: 4.7,
+  },
+  {
+    id: 'VND-009',
+    name: 'Ascent Vertical Transport Pty Ltd',
+    category: 'Lift & Vertical Transport',
+    abn: '89 421 900 115',
+    licenseNo: 'LIC-NSW-51092L',
+    phone: '0412 888 123',
+    email: 'quotes@ascentvt.com.au',
+    insuranceStatus: 'Expired Ins.',
+    insuranceExpiry: '2025-08-30',
+    rating: 4.2,
   }
 ];
 
@@ -621,15 +688,35 @@ export const INITIAL_MOTIONS: Motion[] = [
 export const INITIAL_WORK_ORDERS: WorkOrder[] = [
   {
     id: 'WO-10482',
-    caseId: 'REQ-101',
+    caseId: 'REQ-DUP-101',
     schemeId: 'SP101',
     vendorId: 'VND-001',
     vendorName: 'Sydney Apex Plumbing & Gas',
+    vendorEmail: 'dispatch@apexplumbing.com.au',
+    vendorPhone: '02 9844 2001',
     scopeOfWork: 'Replace damaged 50mm hydraulic isolation valve in basement riser B.',
     budgetCap: 1200,
     siteAccessPin: '4829',
     guestMagicToken: 'tok_sp101_wo10482_live',
     status: 'issued',
+  },
+  {
+    id: 'WO-10483',
+    caseId: 'REQ-CAV-301',
+    schemeId: 'SP103',
+    vendorId: 'VND-003',
+    vendorName: 'Kone Elevator Maintenance NSW',
+    vendorEmail: 'maintenance.sydney@kone.com',
+    vendorPhone: '1300 362 473',
+    scopeOfWork: 'Inspect and repair hydraulic motor & power inverter drive on Passenger Lift #2.',
+    budgetCap: 3400,
+    siteAccessPin: '7392',
+    guestMagicToken: 'tok_sp103_wo10483_live',
+    status: 'completion_submitted',
+    completionPhoto: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop',
+    invoicePdf: 'Tax_Invoice_INV-84920_KONE.pdf',
+    finalCost: 3400,
+    submittedAt: 'Today, 2:30 PM',
   }
 ];
 
@@ -1109,6 +1196,118 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
       }
     ]
   },
+  {
+    id: 'REQ-CAV-102',
+    referenceId: '#CAV-102',
+    schemeId: 'SP52042',
+    buildingName: 'Cavallo, 1 Pitt St',
+    unit: 'Common Property',
+    title: 'Main Passenger Lift Jerking and Stalling at Level 3',
+    description: 'Main passenger lift #1 is jerking violently between Level 2 and Level 3 and displayed safety fault E-41. Out of service. Requires urgent hydraulic motor inspection and drive replacement.',
+    requestType: 'Common Property Repair',
+    stream: 'emergency_repair',
+    priority: 'Emergency',
+    location: 'Lift',
+    contactPreference: 'Email',
+    strataManagerEmail: 'steve@stratachoice.com.au',
+    status: 'approved',
+    createdAt: 'Today, 8:45 AM',
+    requestorName: 'Cameron',
+    reportedBy: 'Cameron (Chairperson - Unit 28)',
+    requestorEmail: 'cameron.chair@cavalloscm.org',
+    requestorPhone: '0412 999 333',
+    requestorRole: 'Committee Member',
+    tenderStatus: 'quoting',
+    tenderScope: 'Inspect and replace hydraulic motor assembly and power inverter drive on Main Passenger Lift #1.',
+    tenderQuotes: [
+      {
+        id: 'QTE-102-1',
+        vendorId: 'VND-003',
+        vendorName: 'Kone Elevator Maintenance NSW',
+        contactEmail: 'maintenance.sydney@kone.com',
+        contactPhone: '1300 362 473',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2028-01-01',
+        amount: 3400,
+        scopeNotes: 'OEM replacement of hydraulic motor inverter and full safety sensor recalibration with 12-month warranty.',
+        warranty: '12 Months Comprehensive',
+        estimatedDays: 1,
+        submittedAt: 'Today, 9:20 AM',
+        recommended: true,
+        committeeVotes: ['Cameron', 'Joana']
+      },
+      {
+        id: 'QTE-102-2',
+        vendorId: 'VND-008',
+        vendorName: 'Apex Lift & Escalator Services',
+        contactEmail: 'repairs@apexlifts.com.au',
+        contactPhone: '02 9155 3300',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-05-12',
+        amount: 2850,
+        scopeNotes: 'Recondition drive module and bench-test electrical sensors with 6-month parts warranty.',
+        warranty: '6 Months Parts',
+        estimatedDays: 2,
+        submittedAt: 'Today, 10:15 AM',
+        recommended: false,
+        committeeVotes: ['Jake']
+      },
+      {
+        id: 'QTE-102-3',
+        vendorId: 'VND-009',
+        vendorName: 'Ascent Vertical Transport Pty Ltd',
+        contactEmail: 'quotes@ascentvt.com.au',
+        contactPhone: '0412 888 123',
+        isAccredited: false,
+        insuranceStatus: 'Expired Ins.',
+        insuranceExpiry: '2025-08-30',
+        amount: 3100,
+        scopeNotes: 'Supply generic aftermarket hydraulic pump and recalibrate control board.',
+        warranty: '12 Months Parts',
+        estimatedDays: 3,
+        submittedAt: 'Today, 11:10 AM',
+        recommended: false,
+        committeeVotes: []
+      }
+    ],
+    comments: [
+      {
+        id: 'C-CAV-102-1',
+        authorName: 'Steve',
+        authorRole: 'Strata Manager',
+        text: 'Received 3 competitive quotes under strata guidelines. Quotes are posted for Committee review.',
+        createdAt: 'Today, 11:30 AM'
+      }
+    ],
+    auditLog: [
+      {
+        id: 'AUD-CAV-102-1',
+        type: 'created',
+        actor: 'Cameron',
+        actorRole: 'Committee Member',
+        timestamp: 'Today, 8:45 AM',
+        note: 'Emergency lift fault logged by Committee Chair.',
+      },
+      {
+        id: 'AUD-CAV-102-2',
+        type: 'email_sent',
+        actor: 'SmartLot',
+        actorRole: 'System',
+        timestamp: 'Today, 8:46 AM',
+        note: 'Emergency notification dispatched to Strata Manager Steve.',
+      },
+      {
+        id: 'AUD-CAV-102-3',
+        type: 'triage_approved',
+        actor: 'Steve',
+        actorRole: 'Strata Manager',
+        timestamp: 'Today, 9:00 AM',
+        note: 'Tender initiated: Requested quotes from 3 vertical transport contractors.',
+      }
+    ]
+  },
   // Cavalier Grand Residences (SP103) Initial Requests
   {
     id: 'REQ-SL-10452',
@@ -1324,6 +1523,62 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorEmail: 'arthur.p@cavalier.com',
     requestorPhone: '0477 111 999',
     requestorRole: 'Committee Member',
+    linkedWorkOrderId: 'WO-10483',
+    tenderStatus: 'quoting',
+    tenderScope: 'Inspect and replace faulty power inverter drive and recalibrate motor controller on Passenger Lift #2.',
+    tenderQuotes: [
+      {
+        id: 'QTE-301-1',
+        vendorId: 'VND-003',
+        vendorName: 'Kone Elevator Maintenance NSW',
+        contactEmail: 'maintenance.sydney@kone.com',
+        contactPhone: '1300 362 473',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2028-01-01',
+        amount: 3400,
+        scopeNotes: 'Supply & install OEM high-capacity inverter module, recalibrate brake sensors, 12-month parts & labor warranty.',
+        warranty: '12 Months Comprehensive',
+        estimatedDays: 1,
+        submittedAt: 'Today, 9:15 AM',
+        recommended: true,
+        committeeVotes: ['Arthur Pendelton', 'Marcus Sterling']
+      },
+      {
+        id: 'QTE-301-2',
+        vendorId: 'VND-008',
+        vendorName: 'Apex Lift & Escalator Services',
+        contactEmail: 'repairs@apexlifts.com.au',
+        contactPhone: '02 9155 3300',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-05-12',
+        amount: 2850,
+        scopeNotes: 'Refurbish existing inverter drive board, replace failed capacitors, and test run on site.',
+        warranty: '6 Months Parts',
+        estimatedDays: 2,
+        submittedAt: 'Today, 10:30 AM',
+        recommended: false,
+        committeeVotes: ['Jack Vance']
+      },
+      {
+        id: 'QTE-301-3',
+        vendorId: 'VND-009',
+        vendorName: 'Ascent Vertical Transport Pty Ltd',
+        contactEmail: 'quotes@ascentvt.com.au',
+        contactPhone: '0412 888 123',
+        isAccredited: false,
+        insuranceStatus: 'Expired Ins.',
+        insuranceExpiry: '2025-08-30',
+        amount: 3100,
+        scopeNotes: 'Supply alternative aftermarket inverter drive unit and re-program controller.',
+        warranty: '12 Months Parts',
+        estimatedDays: 3,
+        submittedAt: 'Today, 11:00 AM',
+        recommended: false,
+        committeeVotes: []
+      }
+    ],
     comments: [
       { id: 'C4', authorName: 'Emma Wilson', authorRole: 'Strata Manager', text: 'KONE Elevator technicians scheduled for 10:00 AM on-site service.', createdAt: '30 mins ago' }
     ],
@@ -2206,7 +2461,7 @@ export function useSmartLotStore() {
   }, [user?.id]);
 
   const [activeRoles, setActiveRoles] = usePersistedState<string[]>(`smartlot_${pId}_activeRoles_v8`, ['Strata Manager']);
-  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'surveys'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
+  const [activeView, setActiveView] = usePersistedState<'dashboard' | 'user_management' | 'requests' | 'triage' | 'voting' | 'settings' | 'performance' | 'vendors' | 'surveys'>(`smartlot_${pId}_activeView_v8`, 'dashboard');
   const [isLoggedIn, setIsLoggedIn] = usePersistedState(`smartlot_${pId}_isLoggedIn_v8`, false);
   const [theme, setThemeRaw] = useState<'light' | 'dark'>(() => {
     try {
@@ -4055,6 +4310,154 @@ export function useSmartLotStore() {
     }));
   };
 
+  const signOffWorkOrder = (workOrderId: string, signOffNotes?: string, managerName?: string) => {
+    const actor = managerName || activePersona.name || 'Strata Manager';
+    const nowIso = new Date().toISOString();
+
+    let linkedCaseId: string | undefined;
+
+    setWorkOrders(prev => prev.map(wo => {
+      if (wo.id !== workOrderId) return wo;
+      linkedCaseId = wo.caseId;
+      return {
+        ...wo,
+        status: 'completed',
+        signedOffAt: nowIso,
+        signedOffBy: actor,
+        signOffNotes: signOffNotes || 'Repair verified on site and completed within authorized budget cap.',
+      };
+    }));
+
+    if (linkedCaseId) {
+      setResidentRequests(prev => prev.map(req => {
+        if (req.id !== linkedCaseId && req.linkedWorkOrderId !== workOrderId) return req;
+        return {
+          ...req,
+          status: 'resolved',
+          auditLog: [
+            {
+              id: `AUD-SO-${Date.now()}`,
+              type: 'status_change',
+              actor,
+              actorRole: 'Strata Manager',
+              timestamp: 'Just now',
+              fromStatus: req.status,
+              toStatus: 'resolved',
+              note: `Work Order ${workOrderId} signed off as complete by ${actor}. ${signOffNotes || 'Repair verified and closed.'}`
+            },
+            ...(req.auditLog || [])
+          ]
+        };
+      }));
+    }
+  };
+
+  const requestQuotesForRequest = (requestId: string, scope: string, quotes: RequestQuote[]) => {
+    setResidentRequests(prev => prev.map(req => {
+      if (req.id !== requestId) return req;
+      return {
+        ...req,
+        tenderStatus: 'quoting',
+        tenderScope: scope,
+        tenderQuotes: quotes,
+        auditLog: [
+          {
+            id: `AUD-QTE-${Date.now()}`,
+            type: 'comment_added',
+            actor: activePersona.name || 'Strata Manager',
+            actorRole: activePersona.role || 'Strata Manager',
+            timestamp: 'Just now',
+            note: `Tender released: Invited ${quotes.length} contractor(s) for quote submission.`
+          },
+          ...(req.auditLog || [])
+        ]
+      };
+    }));
+  };
+
+  const voteForQuote = (requestId: string, quoteId: string, voterName: string) => {
+    setResidentRequests(prev => prev.map(req => {
+      if (req.id !== requestId) return req;
+      const updatedQuotes = (req.tenderQuotes || []).map(q => {
+        if (q.id !== quoteId) return q;
+        const currentVotes = q.committeeVotes || [];
+        const hasVoted = currentVotes.includes(voterName);
+        const newVotes = hasVoted ? currentVotes.filter(v => v !== voterName) : [...currentVotes, voterName];
+        return { ...q, committeeVotes: newVotes };
+      });
+      return { ...req, tenderQuotes: updatedQuotes };
+    }));
+  };
+
+  const awardQuoteAndCreateWorkOrder = (requestId: string, quoteId: string, customBudgetCap?: number, customPin?: string, managerName?: string) => {
+    const targetReq = residentRequests.find(r => r.id === requestId);
+    if (!targetReq) return null;
+    const targetQuote = targetReq.tenderQuotes?.find(q => q.id === quoteId);
+    if (!targetQuote) return null;
+
+    const randomPin = customPin || Math.floor(1000 + Math.random() * 9000).toString();
+    const token = `tok_${targetReq.schemeId.toLowerCase()}_wo_${Date.now()}`;
+    const newWoId = `WO-${Date.now().toString().slice(-5)}`;
+
+    const newWo: WorkOrder = {
+      id: newWoId,
+      caseId: targetReq.id,
+      schemeId: targetReq.schemeId,
+      vendorId: targetQuote.vendorId,
+      vendorName: targetQuote.vendorName,
+      vendorEmail: targetQuote.contactEmail,
+      vendorPhone: targetQuote.contactPhone,
+      scopeOfWork: targetReq.tenderScope || targetReq.description,
+      budgetCap: customBudgetCap ?? targetQuote.amount,
+      siteAccessPin: randomPin,
+      guestMagicToken: token,
+      status: 'issued',
+    };
+
+    setWorkOrders(prev => [newWo, ...prev]);
+
+    setResidentRequests(prev => prev.map(req => {
+      if (req.id !== requestId) return req;
+      const updatedQuotes = (req.tenderQuotes || []).map(q => ({
+        ...q,
+        isSelected: q.id === quoteId
+      }));
+      return {
+        ...req,
+        status: 'approved',
+        linkedWorkOrderId: newWo.id,
+        tenderStatus: 'work_order_dispatched',
+        tenderQuotes: updatedQuotes,
+        auditLog: [
+          {
+            id: `AUD-WO-${Date.now()}`,
+            type: 'triage_approved',
+            actor: managerName || activePersona.name || 'Strata Manager',
+            actorRole: 'Strata Manager',
+            timestamp: 'Just now',
+            note: `Quote awarded to ${targetQuote.vendorName} ($${targetQuote.amount.toLocaleString()} ex GST). Work Order ${newWo.id} issued with Site Access PIN ${newWo.siteAccessPin}.`
+          },
+          ...(req.auditLog || [])
+        ]
+      };
+    }));
+
+    return newWo;
+  };
+
+  const updateVendorInsurance = (vendorId: string, status: 'Active' | 'Expired Ins.' | 'Pending Verification', expiryDate: string) => {
+    setVendors(prev => prev.map(v => {
+      if (v.id !== vendorId) return v;
+      return {
+        ...v,
+        insuranceStatus: status,
+        insuranceExpiry: expiryDate,
+        verifiedAt: new Date().toISOString(),
+        verifiedBy: activePersona.name || 'Strata Manager'
+      };
+    }));
+  };
+
   const deleteWorkOrder = (workOrderId: string) => {
     setWorkOrders(prev => prev.filter(wo => wo.id !== workOrderId));
   };
@@ -4337,6 +4740,11 @@ export function useSmartLotStore() {
     triageCase: triageRequest,
     submitGuestWorkOrderCompletion,
     verifyWorkOrder,
+    signOffWorkOrder,
+    requestQuotesForRequest,
+    voteForQuote,
+    awardQuoteAndCreateWorkOrder,
+    updateVendorInsurance,
     refreshData,
     isLoading,
     surveys,
