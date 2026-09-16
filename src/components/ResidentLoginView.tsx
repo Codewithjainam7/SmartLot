@@ -217,6 +217,56 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
               </div>
             )}
 
+            {/* Quick 1-Click Demo Personas */}
+            {authMode === "signin" && (
+              <div className="mb-6 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    ⚡ 1-Click Demo Access
+                  </span>
+                  <span className="text-[10px] font-bold text-[#00D4B2]">Instant Login</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => onLoginSuccess('Strata Manager', 'Steve', { id: 'SP52042', name: 'Cavallo (1 Pitt St, Sydney)', lots: 32, unit: 'StrataChoice HQ' })}
+                    className="p-2.5 rounded-xl bg-white dark:bg-[#121316] hover:border-[#00D4B2] border border-gray-200 dark:border-gray-800 text-left transition-all cursor-pointer group shadow-xs"
+                  >
+                    <div className="text-xs font-black text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2]">Steve</div>
+                    <div className="text-[10px] text-gray-400">Strata Manager (Cavallo)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onLoginSuccess('Committee Member', 'Cameron', { id: 'SP52042', name: 'Cavallo (1 Pitt St, Sydney)', lots: 32, unit: 'Unit 28' })}
+                    className="p-2.5 rounded-xl bg-white dark:bg-[#121316] hover:border-[#00D4B2] border border-gray-200 dark:border-gray-800 text-left transition-all cursor-pointer group shadow-xs"
+                  >
+                    <div className="text-xs font-black text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2]">Cameron</div>
+                    <div className="text-[10px] text-gray-400">Chairperson (Cavallo)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onLoginSuccess('Building Manager', 'Peter', { id: 'SP52042', name: 'Cavallo (1 Pitt St, Sydney)', lots: 32, unit: 'Cavallo Facilities' })}
+                    className="p-2.5 rounded-xl bg-white dark:bg-[#121316] hover:border-[#00D4B2] border border-gray-200 dark:border-gray-800 text-left transition-all cursor-pointer group shadow-xs"
+                  >
+                    <div className="text-xs font-black text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2]">Peter</div>
+                    <div className="text-[10px] text-gray-400">Building Manager</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onAdminLogin}
+                    className="p-2.5 rounded-xl bg-gradient-to-r from-red-950/20 to-rose-950/20 hover:border-red-500 border border-red-500/30 text-left transition-all cursor-pointer group shadow-xs"
+                  >
+                    <div className="text-xs font-black text-red-500">System Admin</div>
+                    <div className="text-[10px] text-gray-400">Super Admin Console</div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+
             {authMode === "signin" ? (
               <form onSubmit={handleSignIn} className="space-y-5">
                 <div className="space-y-1.5">
