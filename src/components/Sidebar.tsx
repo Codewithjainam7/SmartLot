@@ -58,13 +58,23 @@ export function Sidebar({
   };
 
   return (
-    <div 
-      className={`smartlot-sidebar flex flex-col h-full shrink-0 border-r shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white dark:bg-[#050505] text-gray-900 dark:text-white border-gray-200 dark:border-gray-900 bg-gradient-to-l from-black/[0.01] dark:from-white/[0.04] to-transparent ${
-        isMobileOpen
-          ? 'fixed inset-y-0 left-0 z-50 w-72 flex shadow-2xl animate-in slide-in-from-left duration-200'
-          : 'hidden md:flex relative z-40'
-      } ${isCollapsed && !isMobileOpen ? 'md:w-[80px]' : 'md:w-[280px]'}`}
-    >
+    <>
+      {/* Mobile Drawer Backdrop Overlay */}
+      {isMobileOpen && (
+        <div 
+          onClick={onCloseMobile}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
+          aria-hidden="true"
+        />
+      )}
+
+      <div 
+        className={`smartlot-sidebar flex flex-col h-full shrink-0 border-r shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white dark:bg-[#050505] text-gray-900 dark:text-white border-gray-200 dark:border-gray-900 bg-gradient-to-l from-black/[0.01] dark:from-white/[0.04] to-transparent ${
+          isMobileOpen
+            ? 'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] flex shadow-2xl animate-in slide-in-from-left duration-200 pt-safe pb-safe'
+            : 'hidden md:flex relative z-40'
+        } ${isCollapsed && !isMobileOpen ? 'md:w-[80px]' : 'md:w-[280px]'}`}
+      >
       
       {/* Header */}
       <div className={`flex items-center ${isCollapsed && !isMobileOpen ? 'justify-center flex-col gap-4' : 'justify-between px-6'} py-6 mb-2 transition-all duration-300`}>
@@ -210,7 +220,7 @@ export function Sidebar({
         </div>
         <button
           onClick={handleLogoutClick}
-          className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200 dark:border-white/10 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer ${
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border border-gray-200 dark:border-white/10 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer min-h-[44px] active:scale-95 ${
             isCollapsed && !isMobileOpen ? 'px-0' : 'px-4'
           }`}
         >
@@ -219,6 +229,7 @@ export function Sidebar({
       </div>
 
     </div>
+    </>
   );
 }
 
@@ -243,7 +254,7 @@ function NavItem({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       aria-label={label}
-      className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-between px-4 py-3'} rounded-2xl transition-all duration-300 ease-out group cursor-pointer ${
+      className={`relative w-full flex items-center min-h-[44px] ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-between px-4 py-3'} rounded-2xl transition-all duration-200 ease-out group cursor-pointer active:scale-98 select-none ${
         active 
           ? 'bg-gray-100 dark:bg-[#0F172A] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-[#0055FF]/10 dark:border-[#00D4B2]/20 font-bold' 
           : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5'
