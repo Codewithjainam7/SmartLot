@@ -120,17 +120,17 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] p-4 font-sans py-12">
-      <div className="bg-white dark:bg-[#0d1117] w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col md:flex-row min-h-[620px] border border-gray-100 dark:border-white/5">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] p-3 sm:p-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] font-sans py-6 sm:py-12">
+      <div className="bg-white dark:bg-[#0d1117] w-full max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col md:flex-row min-h-[620px] border border-gray-100 dark:border-white/5">
         
         {/* Left Visual Branding Panel */}
-        <div className="w-full md:w-5/12 bg-[#0B1121] p-10 text-white flex flex-col justify-between relative overflow-hidden rounded-t-3xl md:rounded-tr-none md:rounded-l-3xl">
-          <div className="relative z-10 space-y-6">
+        <div className="w-full md:w-5/12 bg-[#0B1121] p-6 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden rounded-t-2xl sm:rounded-t-3xl md:rounded-tr-none md:rounded-l-3xl">
+          <div className="relative z-10 space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between">
               <button
                 type="button"
                 onClick={onBack}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/15 cursor-pointer"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/15 cursor-pointer min-h-[38px] active:scale-95"
               >
                 <ArrowLeft size={14} /> Back to Home
               </button>
@@ -265,7 +265,7 @@ export function ResidentLoginView({ onLoginSuccess, onAdminLogin, onBack }: Resi
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#0B1121] hover:bg-[#15203A] text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4 disabled:opacity-70"
+                  className="w-full bg-[#0B1121] hover:bg-[#15203A] text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all mt-4 disabled:opacity-70 min-h-[44px] active:scale-95 cursor-pointer"
                 >
                   {isLoading ? "Signing In..." : "Sign In"} {!isLoading && <ArrowRight size={18} />}
                 </button>
