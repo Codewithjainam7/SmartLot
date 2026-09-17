@@ -75,12 +75,12 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
   ];
 
   return (
-    <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100">
+    <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-6 md:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100">
       
       {/* Top Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] p-5 sm:p-8 text-white shadow-xl shadow-[#0055FF]/10">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] p-4 sm:p-6 md:p-8 text-white shadow-xl shadow-[#0055FF]/10">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+          <div className="space-y-1.5 sm:space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold tracking-wide uppercase">
               <Home size={13} />
               <span>{activePersona.context || 'Unit 1'} • {activeScheme?.name || 'Your Scheme'}</span>
@@ -97,7 +97,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
             <button
               type="button"
               onClick={onOpenCreateRequest}
-              className="w-full sm:w-auto bg-[#0B1121] hover:bg-black text-white px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-105 cursor-pointer"
+              className="w-full sm:w-auto bg-[#0B1121] hover:bg-black text-white px-5 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 cursor-pointer min-h-[44px]"
             >
               <Plus size={16} className="text-[#00D4B2]" />
               <span>Report Issue / Request</span>
@@ -111,11 +111,11 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
       </div>
 
       {/* Internal Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/5 pb-1 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/5 pb-1 overflow-x-auto no-scrollbar touch-pan-x">
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[40px] select-none active:scale-95 ${
             activeTab === 'overview'
               ? 'bg-white dark:bg-[#121316] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-gray-200 dark:border-white/5'
               : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -126,7 +126,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
         <button
           type="button"
           onClick={() => setActiveTab('requests')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 min-h-[40px] select-none active:scale-95 ${
             activeTab === 'requests'
               ? 'bg-white dark:bg-[#121316] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-gray-200 dark:border-white/5'
               : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -142,7 +142,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
         <button
           type="button"
           onClick={() => setActiveTab('notices')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer flex items-center gap-2 ${
+          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 min-h-[40px] select-none active:scale-95 ${
             activeTab === 'notices'
               ? 'bg-white dark:bg-[#121316] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-gray-200 dark:border-white/5'
               : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -154,7 +154,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
         <button
           type="button"
           onClick={() => setActiveTab('contacts')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[40px] select-none active:scale-95 ${
             activeTab === 'contacts'
               ? 'bg-white dark:bg-[#121316] text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-gray-200 dark:border-white/5'
               : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -166,12 +166,12 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
 
       {/* Tab 1: Resident Overview */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Quick Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-2">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-1 sm:space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Unit</span>
+                <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider">Your Unit</span>
                 <Home size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
               </div>
               <div className="text-2xl font-extrabold text-gray-900 dark:text-white">
@@ -223,19 +223,19 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
           </div>
 
           {/* Two-Column Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             
             {/* Left 2 Cols: My Recent Requests */}
-            <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-5">
+            <div className="lg:col-span-2 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-4 sm:space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
                 <div>
-                  <h2 className="text-base font-bold text-gray-900 dark:text-white">Your Maintenance Requests</h2>
-                  <p className="text-xs text-gray-500">Track current tickets and repairs for your unit</p>
+                  <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Your Maintenance Requests</h2>
+                  <p className="text-[11px] sm:text-xs text-gray-500">Track current tickets and repairs for your unit</p>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenCreateRequest}
-                  className="px-3.5 py-1.5 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/20 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF]/20 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors active:scale-95"
                 >
                   <Plus size={13} />
                   <span>New Request</span>
@@ -243,7 +243,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
               </div>
 
               {myRequests.length === 0 ? (
-                <div className="p-8 text-center rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10 space-y-3">
+                <div className="p-6 sm:p-8 text-center rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-dashed border-gray-200 dark:border-white/10 space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-[#0055FF]/10 dark:bg-white/5 flex items-center justify-center mx-auto text-[#0055FF] dark:text-[#00D4B2]">
                     <CheckCircle2 size={24} />
                   </div>
@@ -256,20 +256,20 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
                   <button
                     type="button"
                     onClick={onOpenCreateRequest}
-                    className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer min-h-[40px] active:scale-95"
                   >
                     Report an Issue
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2.5 sm:space-y-3">
                   {myRequests.map((req: any) => (
                     <div
                       key={req.id}
-                      className="p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
                     >
                       <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-bold text-gray-900 dark:text-white">{req.title}</span>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             req.priority === 'High' || req.priority === 'Critical'
@@ -280,15 +280,15 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 line-clamp-1">{req.description || 'No additional details provided.'}</p>
-                        <div className="text-[10px] text-gray-400 flex items-center gap-2">
+                        <div className="text-[10px] text-gray-400 flex items-center gap-2 flex-wrap">
                           <span>Reported: {req.createdAt || 'Recent'}</span>
                           <span>•</span>
                           <span>Unit: {req.unit || activePersona.context}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold capitalize ${
                           req.status === 'resolved' || req.status === 'closed'
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                             : req.status === 'in_progress'
@@ -305,33 +305,39 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
             </div>
 
             {/* Right 1 Col: Strata Desk & Quick Actions */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Management Contact Card */}
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-4">
+              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-3.5 sm:space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold shrink-0">
                     <ShieldCheck size={20} />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">Strata Management</h3>
-                    <p className="text-xs text-gray-500">{strataManager.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">Strata Management</h3>
+                    <p className="text-xs text-gray-500 truncate">{strataManager.name}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-white/5 text-xs text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <Phone size={13} className="text-gray-400" />
-                    <span>{strataManager.phone || '0411 888 777'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  <a 
+                    href={`tel:${strataManager.phone || '1300888777'}`}
+                    className="flex items-center gap-2 py-1 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors active:scale-95"
+                  >
+                    <Phone size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                    <span className="font-semibold">{strataManager.phone || '1300 888 777'}</span>
+                  </a>
+                  <a 
+                    href={`mailto:${strataManager.email || 'help@smartlot.com.au'}`}
+                    className="flex items-center gap-2 py-1 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                  >
                     <Mail size={13} className="text-gray-400" />
                     <span className="truncate">{strataManager.email}</span>
-                  </div>
+                  </a>
                 </div>
               </div>
 
               {/* Latest Community Notice */}
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-3">
+              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-900 dark:text-white">
                     <Bell size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
@@ -345,7 +351,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
                     View All
                   </button>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-1">
+                <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-1">
                   <div className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">
                     {announcements[0].title}
                   </div>
@@ -362,16 +368,16 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
 
       {/* Tab 2: Full My Requests List */}
       {activeTab === 'requests' && (
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-gray-100 dark:border-white/5">
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">All Logged Requests ({myRequests.length})</h2>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">All Logged Requests ({myRequests.length})</h2>
               <p className="text-xs text-gray-500">Track real-time progress and notes from your building managers</p>
             </div>
             <button
               type="button"
               onClick={onOpenCreateRequest}
-              className="px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-[#0044CC] text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl sm:rounded-2xl bg-[#0055FF] hover:bg-[#0044CC] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer min-h-[40px]"
             >
               <Plus size={14} />
               <span>Submit New Request</span>
@@ -379,22 +385,22 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
           </div>
 
           {myRequests.length === 0 ? (
-            <div className="p-12 text-center text-gray-500 space-y-2">
+            <div className="p-8 sm:p-12 text-center text-gray-500 space-y-2">
               <Wrench size={32} className="mx-auto text-gray-300 dark:text-gray-700" />
               <div className="font-bold text-gray-800 dark:text-gray-200">No requests submitted yet</div>
               <p className="text-xs">Click 'Submit New Request' above if you need any repairs or maintenance in your lot.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {myRequests.map((req: any) => (
                 <div 
                   key={req.id} 
-                  className="p-5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-3"
+                  className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2.5 sm:space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">{req.title}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{req.title}</span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           req.priority === 'High' || req.priority === 'Critical'
                             ? 'bg-red-500/10 text-red-600 dark:text-red-400'
@@ -420,7 +426,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
                   </div>
 
                   {/* Audit / Timeline Notes */}
-                  <div className="pt-3 border-t border-gray-200/60 dark:border-white/5 flex items-center justify-between text-xs text-gray-400">
+                  <div className="pt-2.5 sm:pt-3 border-t border-gray-200/60 dark:border-white/5 flex flex-wrap items-center justify-between gap-1 text-[11px] sm:text-xs text-gray-400">
                     <div>Unit: {req.unit || activePersona.context} • Scheme: {req.schemeId}</div>
                     <div>Logged: {req.createdAt || 'Recent'}</div>
                   </div>
@@ -433,17 +439,17 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
 
       {/* Tab 3: Full Notice Board */}
       {activeTab === 'notices' && (
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-6">
-          <div className="pb-4 border-b border-gray-100 dark:border-white/5">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Community Notice Board</h2>
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-4 sm:space-y-6">
+          <div className="pb-3 sm:pb-4 border-b border-gray-100 dark:border-white/5">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Community Notice Board</h2>
             <p className="text-xs text-gray-500">Official building announcements and scheduled maintenance alerts</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {announcements.map((ann) => (
               <div 
-                key={ann.id}
-                className="p-5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-3"
+                key={ann.id} 
+                className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2.5 sm:space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -453,7 +459,7 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
                   </span>
                   <span className="text-xs text-gray-400">{ann.date}</span>
                 </div>
-                <div className="text-sm font-bold text-gray-900 dark:text-white">{ann.title}</div>
+                <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{ann.title}</div>
                 <p className="text-xs text-gray-600 dark:text-gray-300">{ann.description}</p>
               </div>
             ))}
@@ -463,32 +469,50 @@ export function ResidentPortalView({ store, onOpenCreateRequest }: ResidentPorta
 
       {/* Tab 4: Building Contacts */}
       {activeTab === 'contacts' && (
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-6">
-          <div className="pb-4 border-b border-gray-100 dark:border-white/5">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Emergency & Building Contacts</h2>
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/5 shadow-sm space-y-4 sm:space-y-6">
+          <div className="pb-3 sm:pb-4 border-b border-gray-100 dark:border-white/5">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Emergency & Building Contacts</h2>
             <p className="text-xs text-gray-500">Authorized personnel and 24/7 on-call trades for {activeScheme?.name}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2">
               <div className="text-xs font-bold uppercase text-indigo-500">Strata Manager</div>
               <div className="font-bold text-sm text-gray-900 dark:text-white">{strataManager.name}</div>
-              <div className="text-xs text-gray-500">{strataManager.email}</div>
-              <div className="text-xs font-semibold text-gray-800 dark:text-gray-200">{strataManager.phone || '0411 888 777'}</div>
+              <div className="text-xs text-gray-500 truncate">{strataManager.email}</div>
+              <a 
+                href={`tel:${strataManager.phone || '0411888777'}`} 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold active:scale-95 transition-transform"
+              >
+                <Phone size={12} />
+                <span>{strataManager.phone || '0411 888 777'}</span>
+              </a>
             </div>
 
-            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2">
+            <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2">
               <div className="text-xs font-bold uppercase text-red-500">Emergency Plumber (24/7)</div>
               <div className="font-bold text-sm text-gray-900 dark:text-white">Apex Strata Plumbing</div>
               <div className="text-xs text-gray-500">Burst pipes & urgent water leaks</div>
-              <div className="text-xs font-semibold text-gray-800 dark:text-gray-200">1800 555 333</div>
+              <a 
+                href="tel:1800555333" 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold active:scale-95 transition-transform"
+              >
+                <Phone size={12} />
+                <span>1800 555 333</span>
+              </a>
             </div>
 
-            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2">
+            <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 space-y-2">
               <div className="text-xs font-bold uppercase text-amber-500">Emergency Locksmith</div>
               <div className="font-bold text-sm text-gray-900 dark:text-white">SecureLock Services</div>
               <div className="text-xs text-gray-500">Building access & key fobs</div>
-              <div className="text-xs font-semibold text-gray-800 dark:text-gray-200">0412 999 888</div>
+              <a 
+                href="tel:0412999888" 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold active:scale-95 transition-transform"
+              >
+                <Phone size={12} />
+                <span>0412 999 888</span>
+              </a>
             </div>
           </div>
         </div>
