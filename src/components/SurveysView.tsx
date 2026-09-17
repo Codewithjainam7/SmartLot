@@ -680,7 +680,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                         : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/5'
                     }`}
                   >
-                    All Questions ({selectedSurvey.questions.filter(q => q.type === 'star_rating' || q.type === 'nps_score').length})
+                    All Questions ({selectedSurvey.questions.filter(q => q.type === 'star_rating' || q.type === 'nps_score' || q.type === 'single_choice' || q.type === 'multi_choice').length})
                   </button>
 
                   <button
@@ -1111,18 +1111,18 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         {/* ── 6. TAB 2: Resident Feedback Comments ─────────────────────── */}
         {activeTab === 'comments' && selectedSurvey && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl p-4 shadow-sm dark:shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl p-3 sm:p-4 shadow-sm dark:shadow-xs">
               <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                Filter by Respondent Type:
+                Filter by Respondent:
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setCommentFilter('all')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none active:scale-95 ${
                     commentFilter === 'all'
-                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15]'
+                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
                       : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'
                   }`}
                 >
@@ -1131,9 +1131,9 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <button
                   type="button"
                   onClick={() => setCommentFilter('unit_tagged')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none active:scale-95 ${
                     commentFilter === 'unit_tagged'
-                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15]'
+                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
                       : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'
                   }`}
                 >
@@ -1142,9 +1142,9 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <button
                   type="button"
                   onClick={() => setCommentFilter('anonymous')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none active:scale-95 ${
                     commentFilter === 'anonymous'
-                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15]'
+                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
                       : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'
                   }`}
                 >
