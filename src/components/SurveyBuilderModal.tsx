@@ -1122,19 +1122,19 @@ export function SurveyBuilderFormContent({
           {/* STEP 2: Questions Editor */}
           {currentStep === 2 && (
             <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-black text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-black text-gray-900 dark:text-white truncate">
                     Survey Questions ({questions.length})
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                    Reorder, adjust categories, or customize question types for residents.
+                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
+                    Reorder, adjust categories, or customize question types.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddQuestion}
-                  className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-emerald-200 dark:border-[#00D4B2]/30 hover:bg-emerald-100 dark:hover:bg-[#00D4B2]/25 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  className="h-9 px-3.5 rounded-xl bg-emerald-50 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-emerald-200 dark:border-[#00D4B2]/30 hover:bg-emerald-100 dark:hover:bg-[#00D4B2]/25 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs shrink-0 select-none active:scale-95"
                 >
                   <Plus size={14} className="stroke-[2.5]" />
                   <span>Add Question</span>
@@ -1148,37 +1148,37 @@ export function SurveyBuilderFormContent({
                   <div 
                     key={q.id}
                     id={`survey-question-${q.id}`}
-                    className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 space-y-3.5 ${
+                    className={`p-3.5 sm:p-5 rounded-2xl border transition-all duration-300 space-y-3.5 ${
                       isHighlighted
                         ? 'border-[#00897B] dark:border-[#00D4B2] ring-2 ring-[#00897B]/40 dark:ring-[#00D4B2]/40 bg-emerald-50/40 dark:bg-[#00D4B2]/10 shadow-lg shadow-[#00897B]/10 dark:shadow-[#00D4B2]/10'
                         : 'border-gray-200 dark:border-white/10 bg-gray-50/40 dark:bg-[#0e1320] shadow-2xs hover:border-gray-300 dark:hover:border-white/20'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black transition-colors ${
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0 transition-colors ${
                           isHighlighted
                             ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15]'
                             : 'bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20'
                         }`}>
                           {idx + 1}
                         </span>
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300 truncate">
                           Question #{idx + 1}
                         </span>
                         {isHighlighted && (
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00897B]/15 dark:bg-[#00D4B2]/20 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/30 dark:border-[#00D4B2]/40 animate-pulse">
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00897B]/15 dark:bg-[#00D4B2]/20 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/30 dark:border-[#00D4B2]/40 animate-pulse shrink-0">
                             New
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           type="button"
                           onClick={() => handleMoveQuestion(idx, 'up')}
                           disabled={idx === 0}
-                          className="p-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-all shadow-2xs"
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer flex items-center justify-center transition-all shadow-2xs active:scale-90"
                           title="Move Up"
                         >
                           <MoveUp size={13} />
@@ -1187,7 +1187,7 @@ export function SurveyBuilderFormContent({
                           type="button"
                           onClick={() => handleMoveQuestion(idx, 'down')}
                           disabled={idx === questions.length - 1}
-                          className="p-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-all shadow-2xs"
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer flex items-center justify-center transition-all shadow-2xs active:scale-90"
                           title="Move Down"
                         >
                           <MoveDown size={13} />
@@ -1195,7 +1195,7 @@ export function SurveyBuilderFormContent({
                         <button
                           type="button"
                           onClick={() => handleDeleteQuestion(q.id)}
-                          className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors cursor-pointer shadow-2xs"
+                          className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 flex items-center justify-center transition-colors cursor-pointer shadow-2xs active:scale-90"
                           title="Delete Question"
                         >
                           <Trash2 size={13} />
@@ -1243,15 +1243,15 @@ export function SurveyBuilderFormContent({
                         value={q.category}
                         onChange={(e) => handleUpdateQuestion(q.id, { category: e.target.value })}
                         placeholder="e.g. Management, Facilities"
-                        className="w-full h-8 bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 text-[11px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2] shadow-2xs"
+                        className="w-full h-9 bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2] shadow-2xs"
                       />
                     </div>
 
-                    <div className="flex items-center sm:justify-end pb-1">
+                    <div className="flex items-center sm:justify-end py-1">
                       <button
                         type="button"
                         onClick={() => handleUpdateQuestion(q.id, { required: !q.required })}
-                        className="inline-flex items-center gap-2 cursor-pointer select-none group"
+                        className="inline-flex items-center gap-2 cursor-pointer select-none group min-h-[32px]"
                       >
                         <div 
                           className={`w-8 h-4 rounded-full transition-colors relative flex items-center p-0.5 ${
@@ -1288,7 +1288,7 @@ export function SurveyBuilderFormContent({
                             const current = (q.options && q.options.length > 0) ? q.options : ['Option 1', 'Option 2'];
                             handleUpdateQuestion(q.id, { options: [...current, `Option ${current.length + 1}`] });
                           }}
-                          className="text-[#00897B] dark:text-[#00D4B2] hover:underline flex items-center gap-1 font-black cursor-pointer"
+                          className="h-7 px-2 text-[#00897B] dark:text-[#00D4B2] hover:underline flex items-center gap-1 font-black cursor-pointer select-none active:scale-95"
                         >
                           <Plus size={12} />
                           <span>Add Choice</span>
@@ -1301,21 +1301,21 @@ export function SurveyBuilderFormContent({
                         <button
                           type="button"
                           onClick={() => handleUpdateQuestion(q.id, { options: ['Yes', 'No', 'Unsure'] })}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
+                          className="px-2.5 py-1 min-h-[28px] rounded-md text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer select-none active:scale-95"
                         >
                           Yes / No / Unsure
                         </button>
                         <button
                           type="button"
                           onClick={() => handleUpdateQuestion(q.id, { options: ['Satisfied', 'Neutral', 'Dissatisfied'] })}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
+                          className="px-2.5 py-1 min-h-[28px] rounded-md text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer select-none active:scale-95"
                         >
                           Satisfied / Neutral / Dissatisfied
                         </button>
                         <button
                           type="button"
                           onClick={() => handleUpdateQuestion(q.id, { options: ['Daily', 'Weekly', 'Monthly', 'Rarely'] })}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
+                          className="px-2.5 py-1 min-h-[28px] rounded-md text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer select-none active:scale-95"
                         >
                           Frequency
                         </button>
@@ -1343,7 +1343,7 @@ export function SurveyBuilderFormContent({
                                 newOpts[optIdx] = e.target.value;
                                 handleUpdateQuestion(q.id, { options: newOpts });
                               }}
-                              className="flex-1 bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2]"
+                              className="flex-1 h-9 bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2]"
                             />
                             <button
                               type="button"
@@ -1352,10 +1352,10 @@ export function SurveyBuilderFormContent({
                                 const newOpts = currentList.filter((_, i) => i !== optIdx);
                                 handleUpdateQuestion(q.id, { options: newOpts.length > 0 ? newOpts : ['Option 1'] });
                               }}
-                              className="text-gray-400 hover:text-rose-500 p-1 transition-colors cursor-pointer"
+                              className="w-8 h-8 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-colors cursor-pointer shrink-0 select-none active:scale-90"
                               title="Remove option"
                             >
-                              <X size={12} />
+                              <X size={13} />
                             </button>
                           </div>
                         ))}
