@@ -692,14 +692,14 @@ export function ResidentRequestsView({
     };
 
     return (
-      <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans animate-in fade-in duration-150">
+      <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans animate-in fade-in duration-150">
         
         {/* Back to Requests Navigation */}
-        <div>
+        <div className="sticky top-0 z-10 -mx-3.5 sm:mx-0 px-3.5 sm:px-0 py-2 sm:py-0 bg-[#F4F6F9]/95 dark:bg-[#0a0a0f]/95 backdrop-blur-sm sm:backdrop-blur-none sm:static sm:bg-transparent dark:sm:bg-transparent">
           <button
             type="button"
             onClick={() => setSelectedRequest(null)}
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline cursor-pointer transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline cursor-pointer transition-colors min-h-[40px] active:scale-95"
           >
             <ArrowLeft size={15} className="stroke-[2.5]" />
             <span>Back to Requests</span>
@@ -707,10 +707,10 @@ export function ResidentRequestsView({
         </div>
 
         {/* 2-Column Split Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
           
           {/* LEFT MAIN COLUMN: Issue Content, Attachments & Timeline (Col 1-8) */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-4 sm:space-y-6">
             
             {/* Header / Overview Card */}
             <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 shadow-sm space-y-5">
@@ -1045,12 +1045,12 @@ export function ResidentRequestsView({
                   )}
 
                   <div className="flex items-center justify-between pt-2 border-t border-gray-200/60 dark:border-white/5">
-                    <div className="flex items-center gap-1 text-gray-400">
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-gray-400">
                       <button
                         type="button"
                         onClick={() => docInputRef.current?.click()}
                         title="Attach document"
-                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                        className="p-2 sm:p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
                       >
                         <Paperclip size={14} />
                       </button>
@@ -1058,7 +1058,7 @@ export function ResidentRequestsView({
                         type="button"
                         onClick={() => imgInputRef.current?.click()}
                         title="Attach photo"
-                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                        className="p-2 sm:p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
                       >
                         <ImageIcon size={14} />
                       </button>
@@ -1066,7 +1066,7 @@ export function ResidentRequestsView({
                         type="button"
                         onClick={() => setShowEmojiPicker(prev => !prev)}
                         title="Insert emoji"
-                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                        className="p-2 sm:p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
                       >
                         <Smile size={14} />
                       </button>
@@ -1076,7 +1076,7 @@ export function ResidentRequestsView({
                       type="button"
                       onClick={handleSendComment}
                       disabled={!commentInput.trim() && commentAttachments.length === 0}
-                      className="px-4 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-40"
+                      className="px-4 py-2.5 sm:py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-40 min-h-[40px]"
                     >
                       <Send size={12} />
                       <span>Post Comment</span>
