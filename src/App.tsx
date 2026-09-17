@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSmartLotStore } from './store/smartLotStore';
 import { PERSONAS, Persona, Scheme } from './types';
-import { ShieldAlert, ArrowLeft, Building2, User, Eye, Zap, LayoutDashboard, ClipboardList, Vote, Menu } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Building2, User, Eye, Zap, LayoutDashboard, ClipboardList, Vote, Menu, MessageSquareHeart } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -156,6 +156,7 @@ export default function App() {
   }, [store.theme]);
 
   const pendingTriageCount = store.residentRequests.filter(r => r.status === 'pending_triage' || r.status === 'new').length;
+  const activeSurveysCount = (store.surveys || []).filter(s => (!s.schemeId || s.schemeId === store.activeScheme?.id) && s.status === 'active').length;
 
   // If user is website administrator or inspecting, they can see all schemes or the inspected scheme; otherwise strictly their own scheme(s)
   const isWebAdmin = store.activePersona.role === 'Website Administrator' || (store.activePersona as any).isSystemAdmin;
@@ -931,34 +932,34 @@ export default function App() {
       {/* Mobile Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Bottom Navigation"
-        className="smartlot-mobile-nav fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#0B1121]/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-800/80 px-2 py-1.5 flex items-center justify-around md:hidden shadow-lg"
+        className="smartlot-mobile-nav fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#0B1121]/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-800/80 px-1 pt-1.5 pb-safe flex items-center justify-around md:hidden shadow-lg"
       >
         <button
           type="button"
           onClick={() => store.setActiveView('dashboard')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer min-h-[48px] select-none active:scale-95 ${
             store.activeView === 'dashboard'
               ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
               : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          <LayoutDashboard size={19} />
-          <span className="text-[10px] mt-0.5">Home</span>
+          <LayoutDashboard size={20} className={store.activeView === 'dashboard' ? 'stroke-[2.5]' : ''} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Home</span>
         </button>
 
         <button
           type="button"
           onClick={() => store.setActiveView('requests')}
-          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`relative flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer min-h-[48px] select-none active:scale-95 ${
             store.activeView === 'requests' || store.activeView === 'triage'
               ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
               : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          <ClipboardList size={19} />
-          <span className="text-[10px] mt-0.5">Requests</span>
+          <ClipboardList size={20} className={store.activeView === 'requests' || store.activeView === 'triage' ? 'stroke-[2.5]' : ''} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Requests</span>
           {pendingTriageCount > 0 && (
-            <span className="absolute top-0.5 right-2 w-4 h-4 bg-[#FF4757] text-white text-[9px] font-black rounded-full flex items-center justify-center">
+            <span className="absolute top-1 right-3 min-w-4 h-4 px-1 bg-[#FF4757] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
               {pendingTriageCount}
             </span>
           )}
@@ -967,16 +968,16 @@ export default function App() {
         <button
           type="button"
           onClick={() => store.setActiveView('voting')}
-          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`relative flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer min-h-[48px] select-none active:scale-95 ${
             store.activeView === 'voting'
               ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
               : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          <Vote size={19} />
-          <span className="text-[10px] mt-0.5">Voting</span>
+          <Vote size={20} className={store.activeView === 'voting' ? 'stroke-[2.5]' : ''} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Voting</span>
           {activeMotionsCount > 0 && (
-            <span className="absolute top-0.5 right-2 w-4 h-4 bg-blue-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+            <span className="absolute top-1 right-3 min-w-4 h-4 px-1 bg-[#0055FF] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
               {activeMotionsCount}
             </span>
           )}
@@ -984,11 +985,29 @@ export default function App() {
 
         <button
           type="button"
-          onClick={() => setIsMobileNavOpen(true)}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer"
+          onClick={() => store.setActiveView('surveys')}
+          className={`relative flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all cursor-pointer min-h-[48px] select-none active:scale-95 ${
+            store.activeView === 'surveys'
+              ? 'text-[#0055FF] dark:text-[#00D4B2] font-extrabold'
+              : 'text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white'
+          }`}
         >
-          <Menu size={19} />
-          <span className="text-[10px] mt-0.5">Menu</span>
+          <MessageSquareHeart size={20} className={store.activeView === 'surveys' ? 'stroke-[2.5]' : ''} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Surveys</span>
+          {activeSurveysCount > 0 && (
+            <span className="absolute top-1 right-3 min-w-4 h-4 px-1 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
+              {activeSurveysCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsMobileNavOpen(true)}
+          className="flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer min-h-[48px] select-none active:scale-95"
+        >
+          <Menu size={20} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Menu</span>
         </button>
       </nav>
 
