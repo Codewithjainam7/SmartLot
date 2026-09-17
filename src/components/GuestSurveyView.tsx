@@ -364,27 +364,27 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
     <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] text-gray-900 dark:text-gray-100 flex flex-col items-center justify-start pb-16 font-sans">
       
       {/* Top Brand Banner */}
-      <header className="w-full bg-white dark:bg-[#0d1117] border-b border-gray-200/80 dark:border-white/10 sticky top-0 z-30 shadow-xs backdrop-blur-md">
+      <header className="w-full bg-white dark:bg-[#0d1117] border-b border-gray-200/80 dark:border-white/10 sticky top-0 z-30 shadow-xs backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <SmartLotLogo className="h-7" />
+            <SmartLotLogo className="h-6 sm:h-7" />
             <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 hidden sm:block" />
             <span className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hidden sm:inline">
               Resident Voice & Feedback
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200/80 dark:border-white/10">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-2.5 sm:px-3 py-1.5 rounded-full border border-gray-200/80 dark:border-white/10">
               <ShieldCheck size={14} className="text-[#00D4B2]" />
               <span className="hidden sm:inline">Zero Login Required</span>
-              <span className="sm:hidden">Zero Login</span>
+              <span className="sm:hidden text-[11px]">Zero Login</span>
             </div>
 
             <button
               type="button"
               onClick={() => store.setTheme(store.theme === 'dark' ? 'light' : 'dark')}
-              className="p-1.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-all cursor-pointer"
+              className="w-8 h-8 rounded-xl border border-gray-200/80 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 flex items-center justify-center transition-all cursor-pointer select-none active:scale-95"
               title={`Switch to ${store.theme === 'dark' ? 'light' : 'dark'} mode`}
             >
               {store.theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
@@ -394,15 +394,15 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
       </header>
 
       {/* Main Container */}
-      <main className="w-full max-w-2xl px-4 pt-6 sm:pt-8">
+      <main className="w-full max-w-2xl px-3.5 sm:px-4 pt-4 sm:pt-8">
         
         {/* Closed Survey Banner */}
         {isClosed && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3">
-            <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
+          <div className="mb-4 sm:mb-6 p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3">
+            <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-extrabold text-sm mb-0.5">This Survey Round Has Concluded</h3>
-              <p className="text-xs text-amber-800/80 dark:text-amber-300/80">
+              <h3 className="font-extrabold text-xs sm:text-sm mb-0.5">This Survey Round Has Concluded</h3>
+              <p className="text-[11px] sm:text-xs text-amber-800/80 dark:text-amber-300/80">
                 The deadline for this feedback round was {survey.deadline || 'reached'}. New submissions are currently disabled.
               </p>
             </div>
@@ -410,51 +410,51 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
         )}
 
         {/* Survey Hero Card with Google Forms-style Banner */}
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl shadow-sm mb-6 relative overflow-hidden">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm mb-4 sm:mb-6 relative overflow-hidden">
           {(survey.bannerImage || '/bg_img_building.png') && (
-            <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-gray-900">
+            <div className="relative h-36 sm:h-56 w-full overflow-hidden bg-gray-900">
               <img 
                 src={survey.bannerImage || '/bg_img_building.png'} 
                 alt={survey.title}
                 className="w-full h-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-white">
-                <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20">
+              <div className="absolute bottom-3 left-4 right-4 sm:bottom-4 sm:left-6 sm:right-6 flex items-center justify-between text-white">
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20 truncate max-w-[55%]">
                   {activeScheme?.name || 'Strata Survey'}
                 </span>
-                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/40 backdrop-blur-md">
+                <span className="text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/40 backdrop-blur-md shrink-0">
                   {survey.category}
                 </span>
               </div>
             </div>
           )}
 
-          <div className="p-6 sm:p-8">
+          <div className="p-4 sm:p-8">
             {/* Scheme & Category Badges */}
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] text-xs font-black uppercase tracking-wider">
-                <Building2 size={13} />
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
+              <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] text-[11px] sm:text-xs font-black uppercase tracking-wider">
+                <Building2 size={12} />
                 {activeScheme?.name || 'Cavallo Sydney'}
               </span>
-              <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+              <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px] sm:text-xs font-bold">
                 {survey.category}
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs font-medium">
-                <Clock size={12} /> ~2 min
+              <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs font-medium">
+                <Clock size={11} /> ~2 min
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-2 leading-tight">
+            <h1 className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-2 leading-tight">
               {survey.title}
             </h1>
 
-            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
               {survey.description}
             </p>
 
             {survey.deadline && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                 <span>Closing Deadline:</span>
                 <span className="font-bold text-gray-800 dark:text-gray-200">{survey.deadline}</span>
               </div>
@@ -463,17 +463,17 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
         </div>
 
         {/* Privacy & Unit Identifier Section */}
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm mb-6 relative z-20 overflow-visible">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className={`p-2 rounded-xl ${isAnonymous ? 'bg-emerald-500/15 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm mb-4 sm:mb-6 relative z-20 overflow-visible">
+          <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`p-2 rounded-xl shrink-0 ${isAnonymous ? 'bg-emerald-500/15 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>
                 {isAnonymous ? <Lock size={18} /> : <Home size={18} />}
               </div>
-              <div>
-                <h3 className="text-sm font-heading font-bold text-gray-900 dark:text-white">
+              <div className="min-w-0">
+                <h3 className="text-xs sm:text-sm font-heading font-bold text-gray-900 dark:text-white truncate">
                   {isAnonymous ? 'Anonymous Submission Active' : 'Unit Identification'}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
                   {isAnonymous 
                     ? 'No personal details or unit number will be linked to your answers.' 
                     : 'Specify your unit so committee actions can be tailored to your floor.'}
@@ -488,7 +488,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                 setIsAnonymous(!isAnonymous);
                 setValidationError(null);
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border flex items-center gap-1.5 shrink-0 ${
+              className={`h-9 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border flex items-center gap-1.5 shrink-0 select-none active:scale-95 ${
                 isAnonymous 
                   ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs' 
                   : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -500,7 +500,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
           </div>
 
           {!isAnonymous ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-1">
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   Unit / Lot Number <span className="text-red-500">*</span>
@@ -542,35 +542,35 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
         </div>
 
         {/* Survey Question Cards */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           {survey.questions.map((q, idx) => {
             const currentAns = answers[q.id];
 
             return (
               <div 
                 key={q.id}
-                className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 transition-all"
+                className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 transition-all"
               >
                 {/* Question Header */}
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 truncate">
                     Question {idx + 1} of {survey.questions.length} • {q.category}
                   </span>
                   {q.required && (
-                    <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md shrink-0">
                       Required
                     </span>
                   )}
                 </div>
 
-                <h2 className="text-base sm:text-lg font-heading font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-sm sm:text-lg font-heading font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 leading-snug">
                   {q.questionText}
                 </h2>
 
                 {/* Question Type: Star Rating */}
                 {q.type === 'star_rating' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="space-y-2.5 sm:space-y-3">
+                    <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-3 py-1">
                       {[1, 2, 3, 4, 5].map((star) => {
                         const activeRating = hoveredStar[q.id] || currentAns || 0;
                         const isFilled = star <= activeRating;
@@ -583,12 +583,12 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                             onClick={() => handleStarClick(q.id, star)}
                             onMouseEnter={() => setHoveredStar(prev => ({ ...prev, [q.id]: star }))}
                             onMouseLeave={() => setHoveredStar(prev => ({ ...prev, [q.id]: 0 }))}
-                            className="p-1 sm:p-2 rounded-xl transition-all transform hover:scale-115 active:scale-95 cursor-pointer disabled:cursor-not-allowed focus:outline-none"
+                            className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all active:scale-90 cursor-pointer disabled:cursor-not-allowed focus:outline-none select-none"
                             title={`${star} Star - ${getStarLabel(star)}`}
                           >
                             <Star 
-                              size={32}
-                              className={`transition-all ${
+                              size={30}
+                              className={`transition-all sm:w-8 sm:h-8 ${
                                 isFilled
                                   ? 'text-amber-400 fill-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.4)]' 
                                   : 'text-gray-300 dark:text-gray-700 hover:text-amber-300'
@@ -600,7 +600,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                     </div>
 
                     {/* Label helper */}
-                    <div className="h-5 text-xs font-bold text-amber-500 dark:text-amber-400">
+                    <div className="h-5 text-xs font-bold text-amber-500 dark:text-amber-400 text-center sm:text-left">
                       {(hoveredStar[q.id] || currentAns) ? `${hoveredStar[q.id] || currentAns} / 5 Stars — ${getStarLabel(hoveredStar[q.id] || currentAns)}` : ''}
                     </div>
                   </div>
