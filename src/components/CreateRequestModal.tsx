@@ -692,19 +692,19 @@ export function CreateRequestFormContent({
         </div>
 
         {/* BOTTOM ACTIONS */}
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-white/10">
+        <div className="flex items-center justify-end gap-2 sm:gap-2.5 pt-3 border-t border-gray-100 dark:border-white/10">
           <button
             type="button"
             onClick={handleDismiss}
             disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors"
+            className="flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors min-h-[44px] active:scale-95 flex items-center justify-center"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting || !problem.trim()}
-            className="px-6 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-blue-500/20 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex-1 sm:flex-initial px-5 sm:px-6 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-blue-500/20 cursor-pointer transition-all active:scale-95 min-h-[44px] flex items-center justify-center"
           >
             Submit Request
           </button>
@@ -760,9 +760,9 @@ export function CreateRequestModal({
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-[#0B1121]/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-[#0d1117] w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-gray-200 dark:border-white/10 p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-[#0d1117] w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-gray-200 dark:border-white/10 p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
         <CreateRequestFormContent
           onSubmit={onSubmit}
           requestorName={requestorName}
