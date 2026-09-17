@@ -398,20 +398,26 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         {/* TAB 1: Ratings & Analytics */}
         {activeTab === 'analytics' && selectedSurvey && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               
               {/* Left 2 Cols: Clean Rating Breakdown by Question */}
-              <div className="lg:col-span-2 bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
-                  <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
-                    Rating Breakdown by Question
-                  </h3>
-                  <span className="text-xs text-gray-400 font-medium">
-                    {selectedSurvey.questions.filter(q => q.type === 'star_rating' || q.type === 'nps_score').length} Metrics Tracked
+              <div className="xl:col-span-2 bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100 dark:border-white/5">
+                  <div>
+                    <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
+                      Rating Breakdown by Question
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      Performance score across {selectedSurvey.questions.filter(q => q.type === 'star_rating' || q.type === 'nps_score').length} tracked strata metrics
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 self-start sm:self-auto">
+                    {responses.length} Verified Submissions
                   </span>
                 </div>
 
-                <div className="space-y-3">
+                {/* 2-Column Responsive Metric Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {selectedSurvey.questions
                     .filter(q => q.type === 'star_rating' || q.type === 'nps_score')
                     .map((q, qIdx) => {
@@ -433,46 +439,48 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       return (
                         <div 
                           key={q.id} 
-                          className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/[0.02] border border-gray-200/70 dark:border-white/5 space-y-3 transition-colors hover:border-gray-300 dark:hover:border-white/10"
+                          className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/[0.02] border border-gray-200/70 dark:border-white/5 flex flex-col justify-between gap-3.5 transition-colors hover:border-gray-300 dark:hover:border-white/10"
                         >
-                          {/* Question header row: Clean, crisp, legible typography */}
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
+                          <div className="space-y-2">
+                            {/* Card Top: Metric Badge & Star Rating Pill */}
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500">
-                                  Metric {qIdx + 1}
+                                  #{qIdx + 1}
                                 </span>
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 truncate max-w-[130px]">
                                   {q.category}
                                 </span>
                               </div>
-                              <p className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200 leading-relaxed font-sans">
-                                {q.questionText}
-                              </p>
+
+                              <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs shrink-0">
+                                <Star size={12} className="fill-amber-400 text-amber-400 shrink-0" />
+                                <span className="font-heading font-black text-xs sm:text-sm">{avg}</span>
+                                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">
+                                  /{q.type === 'star_rating' ? '5.0' : '10'}
+                                </span>
+                              </div>
                             </div>
 
-                            {/* Clean Score Badge */}
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs shrink-0">
-                              <Star size={13} className="fill-amber-400 text-amber-400 shrink-0" />
-                              <span className="font-heading font-black text-sm">{avg}</span>
-                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">
-                                / {q.type === 'star_rating' ? '5.0' : '10'}
-                              </span>
+                            {/* Question text: Clean, legible, crisp font */}
+                            <p className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug font-sans line-clamp-3">
+                              {q.questionText}
+                            </p>
+                          </div>
+
+                          {/* Card Bottom: Slim Minimal Indicator Bar & Subtitle */}
+                          <div className="space-y-1.5 pt-1">
+                            <div className="w-full h-2 rounded-full bg-gray-200/70 dark:bg-white/10 overflow-hidden">
+                              <div 
+                                className="h-full rounded-full bg-[#0055FF] dark:bg-[#00D4B2] transition-all duration-500"
+                                style={{ width: `${percent}%` }}
+                              />
                             </div>
-                          </div>
 
-                          {/* Slim, Minimal Indicator Bar (Clean SmartLot Accent, No Gradients) */}
-                          <div className="w-full h-2 rounded-full bg-gray-200/70 dark:bg-white/10 overflow-hidden">
-                            <div 
-                              className="h-full rounded-full bg-[#0055FF] dark:bg-[#00D4B2] transition-all duration-500"
-                              style={{ width: `${percent}%` }}
-                            />
-                          </div>
-
-                          {/* Clean Footer Metadata */}
-                          <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500 font-medium">
-                            <span>{count} verified responses</span>
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{percent}% satisfaction index</span>
+                            <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                              <span>{count} responses</span>
+                              <span className="font-semibold text-emerald-600 dark:text-emerald-400">{percent}% satisfaction</span>
+                            </div>
                           </div>
                         </div>
                       );
