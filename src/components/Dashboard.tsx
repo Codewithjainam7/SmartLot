@@ -155,14 +155,43 @@ export function Dashboard({ store }: DashboardProps) {
   });
 
   return (
-    <div className="flex-1 p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0a0a0f] relative">
+    <div className="flex-1 p-3.5 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start h-full overflow-y-auto bg-[#F4F6F9] dark:bg-[#0a0a0f] relative pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8">
       
+      {/* Mobile Top Building Hero Bar */}
+      <div className="lg:hidden col-span-1 bg-gradient-to-r from-[#0B1121] to-[#162035] dark:from-[#0d1117] dark:to-[#161b27] rounded-2xl p-4 text-white shadow-md border border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 flex items-center justify-center shrink-0">
+            <Building size={20} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-sm font-heading font-black text-white truncate">{activeScheme.name}</h2>
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-gray-300 shrink-0">
+                {activeScheme.id}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-400 font-medium truncate">
+              {activeScheme.lots || (store.units || []).length} Lots • {members.length} Enrolled • {pendingRequests.length} Pending
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => store.setActiveView('settings')}
+          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors cursor-pointer shrink-0 select-none active:scale-95"
+          title="Building Settings"
+        >
+          <Settings size={16} />
+        </button>
+      </div>
+
       {/* Column 1: Metrics & Worklist */}
-      <div className="lg:col-span-3 space-y-5 sm:space-y-6">
+      <div className="lg:col-span-3 space-y-4 sm:space-y-6">
         {/* 2x2 Metrics */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <MetricTile icon={<Users size={16} />} label="Residents" value={residents.length.toString()} />
-          <MetricTile icon={<AlertTriangle size={16} />} label="Issues" value={pendingRequests.length.toString()} highlight={pendingRequests.length > 0} />
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+          <MetricTile icon={<Users size={16} />} label="Residents" value={residents.length.toString()} onClick={() => store.setActiveView('user_management')} />
+          <MetricTile icon={<AlertTriangle size={16} />} label="Issues" value={pendingRequests.length.toString()} highlight={pendingRequests.length > 0} onClick={() => store.setActiveView('requests')} />
           <MetricTile 
             icon={<Vote size={16} />} 
             label="Motions" 
@@ -170,7 +199,7 @@ export function Dashboard({ store }: DashboardProps) {
             highlight={activeMotions.length > 0}
             onClick={() => store.setActiveView('voting')}
           />
-          <MetricTile icon={<ClipboardList size={16} />} label="Lots" value={activeScheme?.lots?.toString() || "0"} />
+          <MetricTile icon={<ClipboardList size={16} />} label="Lots" value={activeScheme?.lots?.toString() || "0"} onClick={() => store.setActiveView('units')} />
         </div>
 
         {/* Worklist */}
@@ -662,18 +691,18 @@ function MetricTile({ icon, label, value, highlight, onClick }: { icon: React.Re
   return (
     <div 
       onClick={onClick}
-      className={`p-4 rounded-2xl border transition-all ${onClick ? 'cursor-pointer hover:scale-[1.02] hover:shadow-md' : ''} ${
-      highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20' : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-gray-700'
+      className={`p-3.5 sm:p-4 rounded-2xl border transition-all select-none ${onClick ? 'cursor-pointer hover:scale-[1.02] active:scale-95 hover:shadow-md' : ''} ${
+      highlight ? 'bg-[#FF4757]/10 border-[#FF4757]/20 shadow-2xs' : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-gray-700 shadow-2xs'
     }`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 ${
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2.5 sm:mb-3 ${
         highlight ? 'bg-[#FF6B6B] text-white shadow-[0_0_15px_rgba(255,107,107,0.3)]' : 'bg-[#F2F4F8] dark:bg-white/5 text-gray-600 dark:text-gray-400'
       }`}>
         {icon}
       </div>
-      <div className="text-2xl font-bold text-gray-900 dark:text-white mb-0.5">{value}</div>
-      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between">
+      <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-0.5">{value}</div>
+      <div className="text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between">
         <span>{label}</span>
-        {onClick && <ArrowRight size={12} className="opacity-60" />}
+        {onClick && <ArrowRight size={11} className="opacity-60" />}
       </div>
     </div>
   );
