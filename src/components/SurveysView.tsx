@@ -63,13 +63,18 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   const [commentFilter, setCommentFilter] = useState<'all' | 'anonymous' | 'unit_tagged'>('all');
   const [ratingFilter, setRatingFilter] = useState<'all' | 'category'>('all');
 
-  // Quantitative Metrics Calculation
+  // Quantitative Metrics Calculation (100% Truthful Real-Time Submissions)
   let totalRatingScore = 0;
   let totalRatingCount = 0;
   let promoters = 0;
   let passives = 0;
   let detractors = 0;
   let anonymousCount = 0;
+  let count5Star = 0;
+  let count4Star = 0;
+  let count3Star = 0;
+  let count2Star = 0;
+  let count1Star = 0;
 
   responses.forEach(r => {
     if (r.isAnonymous) anonymousCount++;
@@ -80,6 +85,11 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
       if (q.type === 'star_rating' && typeof val === 'number') {
         totalRatingScore += val;
         totalRatingCount += 1;
+        if (val === 5) count5Star++;
+        else if (val === 4) count4Star++;
+        else if (val === 3) count3Star++;
+        else if (val === 2) count2Star++;
+        else if (val === 1) count1Star++;
       } else if (q.type === 'nps_score' && typeof val === 'number') {
         if (val >= 9) promoters += 1;
         else if (val >= 7) passives += 1;
@@ -88,10 +98,29 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
     });
   });
 
-  const avgSatisfaction = totalRatingCount > 0 ? (totalRatingScore / totalRatingCount).toFixed(1) : '4.3';
+  const hasRatings = totalRatingCount > 0;
+  const avgSatisfaction = hasRatings ? (totalRatingScore / totalRatingCount).toFixed(1) : '0.0';
   const totalNps = promoters + passives + detractors;
-  const npsScore = totalNps > 0 ? Math.round(((promoters - detractors) / totalNps) * 100) : 75;
-  const responseRate = activeScheme.lots > 0 ? Math.round((responses.length / activeScheme.lots) * 100) : 400;
+  const hasNps = totalNps > 0;
+  const npsScore = hasNps ? Math.round(((promoters - detractors) / totalNps) * 100) : 0;
+  const totalLots = activeScheme.lots && activeScheme.lots > 0 ? activeScheme.lots : 1;
+  const responseRate = totalLots > 0 ? Math.round((responses.length / totalLots) * 100) : 0;
+  const unitTaggedCount = Math.max(0, responses.length - anonymousCount);
+
+  // Calculate real days remaining helper
+  const calculateDaysRemaining = (deadlineStr?: string) => {
+    if (!deadlineStr) return null;
+    const deadlineDate = new Date(deadlineStr);
+    if (isNaN(deadlineDate.getTime())) return deadlineStr;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(deadlineDate.getFullYear(), deadlineDate.getMonth(), deadlineDate.getDate());
+    const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return 'Expired';
+    if (diffDays === 0) return 'Expires today';
+    if (diffDays === 1) return '1 day remaining';
+    return `${diffDays} days remaining`;
+  };
 
   // Origin URL for guest link
   const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
@@ -113,11 +142,28 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
     }
   }, [guestSurveyUrl]);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (!guestSurveyUrl) return;
-    navigator.clipboard.writeText(guestSurveyUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(guestSurveyUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = guestSurveyUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    } catch (err) {
+      console.error('Error copying link:', err);
+    }
   };
 
   const handleGenerateSummary = async () => {
@@ -248,16 +294,27 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   </div>
 
                   {/* Bottom Row: Deadline Info Capsule */}
-                  {selectedSurvey.deadline && (
+                  {selectedSurvey.deadline ? (
                     <div className="inline-flex items-center gap-3 bg-gray-50 dark:bg-[#081525] border border-gray-200 dark:border-white/5 rounded-xl px-3.5 py-1.5 text-xs text-gray-700 dark:text-gray-300 w-fit shadow-xs">
                       <Calendar size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
                       <span>
                         <span className="text-gray-500 dark:text-gray-400 font-medium">Deadline:</span>{' '}
                         <strong className="text-gray-900 dark:text-white font-bold">{selectedSurvey.deadline}</strong>
                       </span>
-                      <span className="text-gray-300 dark:text-gray-600 select-none">|</span>
+                      {calculateDaysRemaining(selectedSurvey.deadline) && (
+                        <>
+                          <span className="text-gray-300 dark:text-gray-600 select-none">|</span>
+                          <Clock size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">
+                            {calculateDaysRemaining(selectedSurvey.deadline)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#081525] border border-gray-200 dark:border-white/5 rounded-xl px-3.5 py-1.5 text-xs text-gray-500 dark:text-gray-400 w-fit shadow-xs">
                       <Clock size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
-                      <span className="text-gray-600 dark:text-gray-300 font-medium">18 days remaining</span>
+                      <span>Continuous open feedback round (No expiry)</span>
                     </div>
                   )}
                 </div>
@@ -335,16 +392,20 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </div>
             
             <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1">
-              {responses.length} <span className="text-xs font-medium text-gray-500 dark:text-gray-400">/ {activeScheme.lots || 2} Lots</span>
+              {responses.length} <span className="text-xs font-medium text-gray-500 dark:text-gray-400">/ {totalLots} Lots</span>
             </div>
 
             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
-              {/* Upward green sparkline */}
-              <svg viewBox="0 0 40 16" className="w-9 h-4 text-emerald-500 dark:text-emerald-400 stroke-current fill-none stroke-2 shrink-0">
+              {/* Upward green sparkline or neutral line */}
+              <svg viewBox="0 0 40 16" className={`w-9 h-4 ${responses.length > 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-600'} stroke-current fill-none stroke-2 shrink-0`}>
                 <path d="M1 14 L12 11 L22 13 L38 2" />
               </svg>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">↗ {responseRate}%</span>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Participation Rate</span>
+              <span className={`text-xs font-bold ${responses.length > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                ↗ {responseRate}%
+              </span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                {responses.length > 0 ? 'Participation Rate' : 'Participation (Awaiting)'}
+              </span>
             </div>
           </div>
 
@@ -360,20 +421,22 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </div>
 
             <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1 flex items-center gap-2">
-              <span>{avgSatisfaction}</span>
+              <span>{hasRatings ? avgSatisfaction : '0.0'}</span>
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">/ 5.0</span>
             </div>
 
             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
               {/* Mini vertical bars chart */}
-              <svg viewBox="0 0 32 16" className="w-7 h-4 text-emerald-500 dark:text-emerald-400 fill-current shrink-0">
+              <svg viewBox="0 0 32 16" className={`w-7 h-4 ${hasRatings ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-300 dark:text-gray-700'} fill-current shrink-0`}>
                 <rect x="1" y="8" width="3" height="8" rx="1"/>
                 <rect x="7" y="4" width="3" height="12" rx="1"/>
                 <rect x="13" y="2" width="3" height="14" rx="1"/>
                 <rect x="19" y="6" width="3" height="10" rx="1"/>
                 <rect x="25" y="1" width="3" height="15" rx="1"/>
               </svg>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Based on {totalRatingCount || 32} verified ratings</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                {hasRatings ? `Based on ${totalRatingCount} verified rating${totalRatingCount === 1 ? '' : 's'}` : '0 ratings • Awaiting responses'}
+              </span>
             </div>
           </div>
 
@@ -389,15 +452,19 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </div>
 
             <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1">
-              +{npsScore}
+              {hasNps ? `${npsScore >= 0 ? '+' : ''}${npsScore}` : '--'}
             </div>
 
             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
-              {/* Smooth wavy green sparkline */}
-              <svg viewBox="0 0 48 16" className="w-10 h-4 text-emerald-500 dark:text-emerald-400 stroke-current fill-none stroke-2 shrink-0">
+              {/* Smooth wavy sparkline */}
+              <svg viewBox="0 0 48 16" className={`w-10 h-4 ${hasNps ? (npsScore >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400') : 'text-gray-300 dark:text-gray-700'} stroke-current fill-none stroke-2 shrink-0`}>
                 <path d="M1 9 C 10 2, 18 14, 28 8 C 35 4, 40 7, 47 4" />
               </svg>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 truncate">High Promoter Loyalty (Score &gt; +50)</span>
+              <span className={`text-[11px] font-bold truncate ${hasNps ? (npsScore >= 50 ? 'text-emerald-600 dark:text-emerald-400' : npsScore >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400') : 'text-gray-500 dark:text-gray-400'}`}>
+                {hasNps 
+                  ? (npsScore >= 50 ? 'High Promoter Loyalty (Score > +50)' : npsScore >= 0 ? 'Moderate NPS (Score ≥ 0)' : 'Needs Attention (Score < 0)')
+                  : '0 NPS scores • Awaiting ratings'}
+              </span>
             </div>
           </div>
 
@@ -413,15 +480,17 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </div>
 
             <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1">
-              {anonymousCount || 3} <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Anonymous</span>
+              {anonymousCount} <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Anonymous</span>
             </div>
 
             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
               {/* Subtle pink wavy sparkline */}
-              <svg viewBox="0 0 48 16" className="w-10 h-4 text-rose-500 dark:text-rose-400 stroke-current fill-none stroke-2 shrink-0">
+              <svg viewBox="0 0 48 16" className="w-10 h-4 text-purple-500 dark:text-purple-400 stroke-current fill-none stroke-2 shrink-0">
                 <path d="M1 8 C 12 14, 22 2, 34 11 C 40 6, 44 9, 47 7" />
               </svg>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{responses.length - anonymousCount || 5} tagged with specific units</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                {unitTaggedCount} tagged with specific units
+              </span>
             </div>
           </div>
 
@@ -581,10 +650,11 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       }
                     });
 
-                    const avg = count > 0 ? (scoreSum / count).toFixed(1) : (4.6 - qIdx * 0.2).toFixed(1);
-                    const percent = q.type === 'star_rating' 
-                      ? Math.round((Number(avg) / 5) * 100)
-                      : Math.round((Number(avg) / 10) * 100);
+                    const hasQResponses = count > 0;
+                    const avg = hasQResponses ? (scoreSum / count).toFixed(1) : '0.0';
+                    const percent = hasQResponses 
+                      ? (q.type === 'star_rating' ? Math.round((Number(avg) / 5) * 100) : Math.round((Number(avg) / 10) * 100))
+                      : 0;
 
                     const badgeClass = getCategoryBadgeColor(q.category);
 
@@ -618,7 +688,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                             />
                           </div>
                           <div className="text-[11px] font-bold text-[#00897B] dark:text-[#00D4B2]">
-                            {percent}% satisfaction
+                            {hasQResponses ? `${percent}% satisfaction` : '0% satisfaction (Awaiting ratings)'}
                           </div>
                         </div>
 
@@ -627,11 +697,11 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                           <div className="text-left md:text-right">
                             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs">
                               <Star size={12} className="fill-amber-400 text-amber-400" />
-                              <span>{avg}</span>
+                              <span>{hasQResponses ? avg : '--'}</span>
                               <span className="text-[10px] text-gray-500 dark:text-gray-400">/{q.type === 'star_rating' ? '5.0' : '10'}</span>
                             </div>
                             <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                              {count || 8} responses
+                              {count} {count === 1 ? 'response' : 'responses'}
                             </div>
                           </div>
 
@@ -653,7 +723,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     Overall Sentiment
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Based on all survey responses
+                    {hasRatings ? `Based on ${totalRatingCount} verified ratings` : 'Awaiting resident submissions'}
                   </p>
                 </div>
 
@@ -679,7 +749,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                         className="stroke-[#00897B] dark:stroke-[#00D4B2] transition-all duration-1000 shadow-[0_0_12px_rgba(0,137,123,0.3)] dark:shadow-[0_0_12px_rgba(0,212,178,0.8)]"
                         strokeWidth="10"
                         strokeDasharray={251.2}
-                        strokeDashoffset={251.2 * (1 - (Number(avgSatisfaction) / 5))}
+                        strokeDashoffset={hasRatings ? 251.2 * (1 - (Number(avgSatisfaction) / 5)) : 251.2}
                         strokeLinecap="round"
                         fill="transparent"
                       />
@@ -688,7 +758,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     {/* Donut Center text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                       <span className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white leading-none">
-                        {avgSatisfaction}
+                        {hasRatings ? avgSatisfaction : '--'}
                       </span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">
                         out of 5.0
@@ -696,65 +766,96 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     </div>
                   </div>
 
-                  {/* Sentiment Legend */}
+                  {/* Sentiment Legend (Real-Time Percentages) */}
                   <div className="space-y-1.5 flex-1 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                         <span className="w-2 h-2 rounded-full bg-[#00897B] dark:bg-[#00D4B2]" />
-                        <span>Excellent</span>
+                        <span>Excellent (5★)</span>
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-white">62%</span>
+                      <span className="font-bold text-gray-900 dark:text-white">
+                        {totalRatingCount > 0 ? `${Math.round((count5Star / totalRatingCount) * 100)}%` : '0%'}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                         <span className="w-2 h-2 rounded-full bg-[#0088FF]" />
-                        <span>Good</span>
+                        <span>Good (4★)</span>
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-white">25%</span>
+                      <span className="font-bold text-gray-900 dark:text-white">
+                        {totalRatingCount > 0 ? `${Math.round((count4Star / totalRatingCount) * 100)}%` : '0%'}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                         <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
-                        <span>Neutral</span>
+                        <span>Neutral (3★)</span>
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-white">10%</span>
+                      <span className="font-bold text-gray-900 dark:text-white">
+                        {totalRatingCount > 0 ? `${Math.round((count3Star / totalRatingCount) * 100)}%` : '0%'}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                         <span className="w-2 h-2 rounded-full bg-[#F97316]" />
-                        <span>Poor</span>
+                        <span>Poor (2★)</span>
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-white">3%</span>
+                      <span className="font-bold text-gray-900 dark:text-white">
+                        {totalRatingCount > 0 ? `${Math.round((count2Star / totalRatingCount) * 100)}%` : '0%'}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                         <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
-                        <span>Very Poor</span>
+                        <span>Very Poor (1★)</span>
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-white">0%</span>
+                      <span className="font-bold text-gray-900 dark:text-white">
+                        {totalRatingCount > 0 ? `${Math.round((count1Star / totalRatingCount) * 100)}%` : '0%'}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Positive Sentiment Alert Pill */}
-                <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-[#00D4B2]/10 border border-emerald-200/80 dark:border-[#00D4B2]/20 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#00897B] dark:bg-[#00D4B2] animate-pulse shrink-0" />
-                    <div>
-                      <div className="text-xs font-black text-[#00897B] dark:text-[#00D4B2]">Positive Sentiment</div>
-                      <div className="text-[10px] sm:text-[11px] text-gray-600 dark:text-gray-300 leading-tight">
-                        Residents are 12% more satisfied compared to last survey.
+                {/* Sentiment Alert Pill */}
+                {hasRatings ? (
+                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-[#00D4B2]/10 border border-emerald-200/80 dark:border-[#00D4B2]/20 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-[#00897B] dark:bg-[#00D4B2] animate-pulse shrink-0" />
+                      <div>
+                        <div className="text-xs font-black text-[#00897B] dark:text-[#00D4B2]">
+                          {Number(avgSatisfaction) >= 4.0 ? 'Positive Community Sentiment' : Number(avgSatisfaction) >= 3.0 ? 'Moderate Community Sentiment' : 'Needs Attention'}
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] text-gray-600 dark:text-gray-300 leading-tight">
+                          {totalRatingCount} verified ratings recorded with average score of {avgSatisfaction} / 5.0.
+                        </div>
                       </div>
                     </div>
+                    <span className="text-xs font-bold text-[#00897B] dark:text-[#00D4B2] bg-[#00897B]/10 dark:bg-[#00D4B2]/15 px-2 py-0.5 rounded-lg shrink-0">
+                      ★ {avgSatisfaction}
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-[#00897B] dark:text-[#00D4B2] bg-[#00897B]/10 dark:bg-[#00D4B2]/15 px-2 py-0.5 rounded-lg shrink-0">
-                    ↑ 12%
-                  </span>
-                </div>
+                ) : (
+                  <div className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 shrink-0" />
+                      <div>
+                        <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                          Awaiting Resident Submissions
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+                          Live rating breakdown will update automatically as residents complete the questionnaire.
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 bg-gray-200/60 dark:bg-white/10 px-2 py-0.5 rounded-lg shrink-0">
+                      0 Submissions
+                    </span>
+                  </div>
+                )}
 
                 {/* NPS Sentiment Distribution */}
                 <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-white/5">
@@ -770,10 +871,15 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
                       <span className="text-emerald-700 dark:text-cyan-400 font-semibold">Promoters (9-10)</span>
-                      <span className="text-gray-700 dark:text-gray-200 font-bold">{promoters || 6} ({Math.round(((promoters || 6) / (totalNps || 8)) * 100)}%)</span>
+                      <span className="text-gray-700 dark:text-gray-200 font-bold">
+                        {promoters} ({totalNps > 0 ? Math.round((promoters / totalNps) * 100) : 0}%)
+                      </span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
-                      <div className="h-full bg-emerald-500 dark:bg-cyan-400 rounded-full" style={{ width: `${((promoters || 6) / (totalNps || 8)) * 100}%` }} />
+                      <div 
+                        className="h-full bg-emerald-500 dark:bg-cyan-400 rounded-full transition-all duration-500" 
+                        style={{ width: `${totalNps > 0 ? (promoters / totalNps) * 100 : 0}%` }} 
+                      />
                     </div>
                   </div>
 
@@ -781,10 +887,15 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
                       <span className="text-amber-700 dark:text-amber-400 font-semibold">Passives (7-8)</span>
-                      <span className="text-gray-700 dark:text-gray-200 font-bold">{passives || 2} ({Math.round(((passives || 2) / (totalNps || 8)) * 100)}%)</span>
+                      <span className="text-gray-700 dark:text-gray-200 font-bold">
+                        {passives} ({totalNps > 0 ? Math.round((passives / totalNps) * 100) : 0}%)
+                      </span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
-                      <div className="h-full bg-amber-500 dark:bg-amber-400 rounded-full" style={{ width: `${((passives || 2) / (totalNps || 8)) * 100}%` }} />
+                      <div 
+                        className="h-full bg-amber-500 dark:bg-amber-400 rounded-full transition-all duration-500" 
+                        style={{ width: `${totalNps > 0 ? (passives / totalNps) * 100 : 0}%` }} 
+                      />
                     </div>
                   </div>
 
@@ -792,10 +903,15 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
                       <span className="text-rose-700 dark:text-rose-400 font-semibold">Detractors (0-6)</span>
-                      <span className="text-gray-700 dark:text-gray-200 font-bold">{detractors || 0} (0%)</span>
+                      <span className="text-gray-700 dark:text-gray-200 font-bold">
+                        {detractors} ({totalNps > 0 ? Math.round((detractors / totalNps) * 100) : 0}%)
+                      </span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
-                      <div className="h-full bg-rose-500 dark:bg-rose-400 rounded-full" style={{ width: `${((detractors || 0) / (totalNps || 8)) * 100}%` }} />
+                      <div 
+                        className="h-full bg-rose-500 dark:bg-rose-400 rounded-full transition-all duration-500" 
+                        style={{ width: `${totalNps > 0 ? (detractors / totalNps) * 100 : 0}%` }} 
+                      />
                     </div>
                   </div>
                 </div>
@@ -904,7 +1020,18 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </div>
 
             {/* Comments Feed */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {responses.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 text-center shadow-xs">
+                <MessageSquare size={32} className="text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                <h4 className="font-heading font-black text-sm text-gray-900 dark:text-white mb-1">
+                  No Resident Feedback Submitted Yet
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                  Responses and open-ended feedback comments will appear here as soon as residents submit the questionnaire.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {responses
                 .filter(r => {
                   if (commentFilter === 'anonymous') return r.isAnonymous;
@@ -982,7 +1109,8 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     </div>
                   );
                 })}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

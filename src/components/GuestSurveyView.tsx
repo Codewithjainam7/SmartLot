@@ -30,10 +30,34 @@ interface GuestSurveyViewProps {
 
 export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyViewProps) {
   // Find matching survey by ID or token
-  const survey: Survey | undefined = 
-    store.surveys.find(s => s.id === surveyToken) ||
-    store.surveys.find(s => s.id.toLowerCase().includes(surveyToken.toLowerCase())) ||
-    store.surveys[0]; // fallback to first active survey if demo
+  const cleanToken = surveyToken ? surveyToken.trim() : '';
+
+  let survey: Survey | undefined = 
+    store.surveys.find(s => s.id === cleanToken) ||
+    store.surveys.find(s => s.id.toLowerCase() === cleanToken.toLowerCase()) ||
+    store.surveys.find(s => s.id.toLowerCase().includes(cleanToken.toLowerCase()));
+
+  // If not found in in-memory store, attempt recovery from global localStorage
+  if (!survey && typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const raw = window.localStorage.getItem('smartlot_global_surveys_v2');
+      if (raw) {
+        const parsed: Survey[] = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          survey = parsed.find(s => s.id === cleanToken) ||
+            parsed.find(s => s.id.toLowerCase() === cleanToken.toLowerCase()) ||
+            parsed.find(s => s.id.toLowerCase().includes(cleanToken.toLowerCase()));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to resolve survey from localStorage:', e);
+    }
+  }
+
+  // Fallback ONLY IF no survey token was specified or demo mode
+  if (!survey && (!cleanToken || cleanToken === 'demo')) {
+    survey = store.surveys[0];
+  }
 
   const activeScheme = store.schemes.find(s => s.id === survey?.schemeId) || store.activeScheme;
 
@@ -65,13 +89,18 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             <AlertCircle size={32} />
           </div>
           <h2 className="text-xl font-heading font-black text-gray-900 dark:text-white mb-2">Survey Not Found</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            The feedback questionnaire link you opened is invalid or may have been removed.
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            The feedback questionnaire link you opened is invalid, expired, or could not be found.
           </p>
+          {cleanToken && (
+            <p className="text-xs font-mono text-gray-500 dark:text-gray-400 mb-6 bg-gray-100 dark:bg-white/5 py-1.5 px-3 rounded-xl inline-block border border-gray-200 dark:border-white/5">
+              Survey Token: <span className="font-bold text-gray-900 dark:text-white">{cleanToken}</span>
+            </p>
+          )}
           {onClose && (
             <button
               onClick={onClose}
-              className="w-full py-2.5 px-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-sm hover:opacity-90 transition-all cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] font-bold text-sm hover:opacity-90 transition-all cursor-pointer shadow-sm"
             >
               Back to Home
             </button>

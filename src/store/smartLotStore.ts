@@ -2491,8 +2491,80 @@ export function useSmartLotStore() {
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
   const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v13`, INITIAL_MOTIONS);
   const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
-  const [surveys, setSurveys] = usePersistedState<Survey[]>(`smartlot_${pId}_surveys_v1`, INITIAL_SURVEYS);
-  const [surveyResponses, setSurveyResponses] = usePersistedState<SurveyResponse[]>(`smartlot_${pId}_surveyResponses_v1`, INITIAL_SURVEY_RESPONSES);
+  // Persistent surveys storage across all tabs & guest links
+  const [surveys, setSurveys] = useState<Survey[]>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem('smartlot_global_surveys_v2');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load surveys from localStorage:', e);
+    }
+    return INITIAL_SURVEYS;
+  });
+
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem('smartlot_global_survey_responses_v2');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load survey responses from localStorage:', e);
+    }
+    return INITIAL_SURVEY_RESPONSES;
+  });
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(surveys));
+      }
+    } catch (e) {
+      console.warn('Failed to persist surveys to localStorage:', e);
+    }
+  }, [surveys]);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('smartlot_global_survey_responses_v2', JSON.stringify(surveyResponses));
+      }
+    } catch (e) {
+      console.warn('Failed to persist survey responses to localStorage:', e);
+    }
+  }, [surveyResponses]);
+
+  // Sync surveys across browser tabs in real time
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'smartlot_global_surveys_v2' && e.newValue) {
+        try {
+          const updated = JSON.parse(e.newValue);
+          if (Array.isArray(updated)) setSurveys(updated);
+        } catch {}
+      } else if (e.key === 'smartlot_global_survey_responses_v2' && e.newValue) {
+        try {
+          const updated = JSON.parse(e.newValue);
+          if (Array.isArray(updated)) setSurveyResponses(updated);
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const [customPersonas, setCustomPersonas] = usePersistedState<Persona[]>('smartlot_custom_personas_v8', []);
 
 
@@ -4485,7 +4557,13 @@ export function useSmartLotStore() {
       })),
     };
 
-    setSurveys(prev => [newSurvey, ...prev]);
+    setSurveys(prev => {
+      const updated = [newSurvey, ...prev.filter(s => s.id !== newId)];
+      try {
+        window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     // Dispatch survey email invitation to recipients if provided
     if (payload.recipientEmails && payload.recipientEmails.length > 0) {
@@ -4515,14 +4593,20 @@ export function useSmartLotStore() {
 
   const closeSurvey = (surveyId: string) => {
     const closedTime = new Date().toISOString();
-    setSurveys(prev => prev.map(s => {
-      if (s.id !== surveyId) return s;
-      return {
-        ...s,
-        status: 'closed',
-        closedAt: closedTime,
-      };
-    }));
+    setSurveys(prev => {
+      const updated = prev.map(s => {
+        if (s.id !== surveyId) return s;
+        return {
+          ...s,
+          status: 'closed' as const,
+          closedAt: closedTime,
+        };
+      });
+      try {
+        window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const submitSurveyResponse = (payload: Omit<SurveyResponse, 'id' | 'submittedAt'>): SurveyResponse => {
@@ -4532,7 +4616,13 @@ export function useSmartLotStore() {
       submittedAt: new Date().toISOString(),
     };
 
-    setSurveyResponses(prev => [newResponse, ...prev]);
+    setSurveyResponses(prev => {
+      const updated = [newResponse, ...prev];
+      try {
+        window.localStorage.setItem('smartlot_global_survey_responses_v2', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     return newResponse;
   };
 

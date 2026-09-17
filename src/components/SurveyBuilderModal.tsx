@@ -28,6 +28,7 @@ import {
   Wrench,
   Tag,
   Calendar,
+  CalendarClock,
   ChevronRight,
   Image as ImageIcon,
   Palette,
@@ -103,6 +104,36 @@ export interface SurveyBuilderFormContentProps {
   onClose?: () => void;
   onSurveyCreated?: (newSurvey: Survey) => void;
 }
+
+export const getDeadlinePreset = (daysFromNow: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  return d.toISOString().split('T')[0];
+};
+
+export const getEndOfMonthDeadline = (): string => {
+  const now = new Date();
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return endOfMonth.toISOString().split('T')[0];
+};
+
+export const formatDeadlineSummary = (deadlineDateStr: string): string => {
+  if (!deadlineDateStr) return 'No deadline set (Continuous open feedback round)';
+  const date = new Date(deadlineDateStr);
+  if (isNaN(date.getTime())) return deadlineDateStr;
+  const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+  const formatted = date.toLocaleDateString('en-AU', options);
+  
+  const today = new Date();
+  const dStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const tStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((tStart.getTime() - dStart.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return `${formatted} (Expired)`;
+  if (diffDays === 0) return `${formatted} (Closes Today)`;
+  if (diffDays === 1) return `${formatted} (1 day remaining)`;
+  return `${formatted} (${diffDays} days remaining)`;
+};
 
 export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: SurveyBuilderFormContentProps) {
   const morphContext = useMorphingPopoverContext();
@@ -193,7 +224,7 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
     `We invite all residents and lot owners at ${activeScheme.name} to share their feedback to guide our Strata Committee and Management priorities for the coming year.`
   );
   const [category, setCategory] = useState<SurveyCategory>('Annual Satisfaction');
-  const [deadline, setDeadline] = useState('');
+  const [deadline, setDeadline] = useState(() => getDeadlinePreset(14));
   const [bannerImage, setBannerImage] = useState<string>('/bg_img_building.png');
   const [isBannerPickerOpen, setIsBannerPickerOpen] = useState(false);
   const [customBannerUrl, setCustomBannerUrl] = useState('');
@@ -886,19 +917,120 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Closing Deadline Date (Optional Auto-Expiry)
-                </label>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full sm:w-64 bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] cursor-pointer shadow-2xs"
-                />
-                <p className="text-[11px] text-gray-400 mt-1">
-                  Leave blank for an open, continuous feedback collection round.
-                </p>
+              {/* Closing Deadline & Auto-Expiry Settings */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/90 dark:bg-[#060D1A] border border-gray-200 dark:border-white/10 space-y-3.5 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/20 dark:border-[#00D4B2]/30 flex items-center justify-center shrink-0">
+                      <CalendarClock size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-white">
+                        Survey Closing Deadline & Auto-Expiry
+                      </h4>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        Choose submission timeframe for residents before feedback collection closes.
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border shrink-0 w-fit ${
+                    deadline
+                      ? 'bg-emerald-50 dark:bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border-emerald-200 dark:border-[#00D4B2]/30'
+                      : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/5'
+                  }`}>
+                    {deadline ? `📅 Closes: ${deadline}` : '♾️ Open Round (No Expiry)'}
+                  </span>
+                </div>
+
+                {/* Quick Pick Presets */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeadline(getDeadlinePreset(7))}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      deadline === getDeadlinePreset(7)
+                        ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2] shadow-xs'
+                        : 'bg-white dark:bg-[#121622] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    7 Days
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeadline(getDeadlinePreset(14))}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      deadline === getDeadlinePreset(14)
+                        ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2] shadow-xs'
+                        : 'bg-white dark:bg-[#121622] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    14 Days (Recommended)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeadline(getDeadlinePreset(30))}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      deadline === getDeadlinePreset(30)
+                        ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2] shadow-xs'
+                        : 'bg-white dark:bg-[#121622] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    30 Days
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeadline(getEndOfMonthDeadline())}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      deadline === getEndOfMonthDeadline()
+                        ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2] shadow-xs'
+                        : 'bg-white dark:bg-[#121622] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    End of Month
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeadline('')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      !deadline
+                        ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2] shadow-xs'
+                        : 'bg-white dark:bg-[#121622] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    No Expiry
+                  </button>
+                </div>
+
+                {/* Custom Date Input & Live Summary */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
+                  <div className="relative w-full sm:w-56 shrink-0">
+                    <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" />
+                    <input
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 rounded-xl pl-9 pr-3.5 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] cursor-pointer shadow-2xs"
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-tight">
+                    {deadline ? (
+                      <span>
+                        Auto-closes on <strong className="text-gray-900 dark:text-white font-bold">{formatDeadlineSummary(deadline)}</strong>.
+                      </span>
+                    ) : (
+                      <span className="text-gray-500 dark:text-gray-400">
+                        No auto-expiry date. This questionnaire remains open for submissions until manually closed.
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
 
             </div>
@@ -1298,6 +1430,80 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                       placeholder="compliance@smartlot.com.au"
                       className="w-full bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 rounded-xl pl-9 pr-3.5 py-2.5 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] transition-all shadow-2xs"
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Closing Deadline Confirmation Card */}
+              <div className="p-4 rounded-2xl bg-gray-50/90 dark:bg-[#060D1A] border border-gray-200 dark:border-white/10 space-y-2.5 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/20 dark:border-[#00D4B2]/30 flex items-center justify-center shrink-0">
+                      <CalendarClock size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span>Survey Response Window</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          deadline 
+                            ? 'bg-emerald-50 dark:bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border-emerald-200 dark:border-[#00D4B2]/30'
+                            : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10'
+                        }`}>
+                          {deadline ? 'Auto-Locks on Expiry' : 'No Expiry'}
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                        {deadline ? formatDeadlineSummary(deadline) : 'Continuous open collection (No expiration)'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Toggles directly on Step 3 */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setDeadline(getDeadlinePreset(7))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                        deadline === getDeadlinePreset(7)
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2]'
+                          : 'bg-white dark:bg-[#121622] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-gray-300'
+                      }`}
+                    >
+                      7d
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeadline(getDeadlinePreset(14))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                        deadline === getDeadlinePreset(14)
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2]'
+                          : 'bg-white dark:bg-[#121622] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-gray-300'
+                      }`}
+                    >
+                      14d (Rec)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeadline(getDeadlinePreset(30))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                        deadline === getDeadlinePreset(30)
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2]'
+                          : 'bg-white dark:bg-[#121622] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-gray-300'
+                      }`}
+                    >
+                      30d
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeadline('')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                        !deadline
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] border-[#00897B] dark:border-[#00D4B2]'
+                          : 'bg-white dark:bg-[#121622] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-gray-300'
+                      }`}
+                    >
+                      No Expiry
+                    </button>
                   </div>
                 </div>
               </div>
