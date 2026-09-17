@@ -1,5 +1,6 @@
 // @smartlot/core
-import React, { createContext, useContext, useState, useId } from 'react';
+import React, { createContext, useContext, useState, useId, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 
 interface MorphingPopoverContextType {
@@ -63,24 +64,40 @@ export function MorphingPopoverContent({
 }) {
   const { isOpen, setIsOpen, uniqueId } = useMorphingPopover();
 
-  return (
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.setAttribute('data-modal-open', 'true');
+    } else {
+      document.body.style.overflow = '';
+      document.body.removeAttribute('data-modal-open');
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.removeAttribute('data-modal-open');
+    };
+  }, [isOpen]);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Subtle Backdrop Blur & Fade */}
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4">
+          {/* Subtle Backdrop Blur & Fade covering full viewport */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="absolute inset-0 bg-[#0B1121]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Fluid Container Transform Card */}
           <motion.div
             layoutId={`morphing-popover-container-${uniqueId}`}
-            className={`relative bg-white dark:bg-[#0d1117] border dark:border-white/5 rounded-3xl p-8 shadow-2xl z-10 overflow-hidden ${className}`}
+            className={`relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 overflow-hidden ${className}`}
             transition={{ 
               type: 'spring', 
               stiffness: 320, 
@@ -100,6 +117,7 @@ export function MorphingPopoverContent({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

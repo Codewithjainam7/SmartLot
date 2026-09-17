@@ -20,6 +20,7 @@ import {
   AlertCircle,
   HelpCircle
 } from 'lucide-react';
+import { CustomSelect, SelectOption } from './core/CustomSelect';
 
 interface GuestSurveyViewProps {
   surveyToken: string;
@@ -45,6 +46,16 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  const unitOptions: SelectOption[] = [
+    ...Array.from({ length: 32 }, (_, i) => ({
+      value: `Unit ${i + 1}`,
+      label: `Unit ${i + 1}`,
+      icon: <Home size={14} className="text-[#00D4B2]" />
+    })),
+    { value: 'Townhouse / Commercial', label: 'Townhouse / Commercial', icon: <Building2 size={14} className="text-blue-500" /> },
+    { value: 'Other', label: 'Other Lot', icon: <Building2 size={14} className="text-purple-500" /> }
+  ];
 
   if (!survey) {
     return (
@@ -284,7 +295,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
         </div>
 
         {/* Privacy & Unit Identifier Section */}
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm mb-6">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm mb-6 relative z-20 overflow-visible">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2.5">
               <div className={`p-2 rounded-xl ${isAnonymous ? 'bg-emerald-500/15 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>
@@ -321,39 +332,37 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
           </div>
 
           {!isAnonymous ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   Unit / Lot Number <span className="text-red-500">*</span>
                 </label>
-                <select
+                <CustomSelect
+                  options={unitOptions}
                   value={selectedUnit}
-                  onChange={(e) => {
-                    setSelectedUnit(e.target.value);
+                  onChange={(val) => {
+                    setSelectedUnit(val);
                     setValidationError(null);
                   }}
-                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
-                >
-                  <option value="">Select your unit...</option>
-                  {Array.from({ length: 32 }, (_, i) => `Unit ${i + 1}`).map(u => (
-                    <option key={u} value={u}>{u}</option>
-                  ))}
-                  <option value="Townhouse / Commercial">Townhouse / Commercial</option>
-                  <option value="Other">Other Lot</option>
-                </select>
+                  placeholder="Select your unit..."
+                  size="md"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   Your Name <span className="text-gray-400 font-normal">(Optional)</span>
                 </label>
-                <input
-                  type="text"
-                  value={residentName}
-                  onChange={(e) => setResidentName(e.target.value)}
-                  placeholder="e.g. Sarah Connor"
-                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
-                />
+                <div className="relative">
+                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type="text"
+                    value={residentName}
+                    onChange={(e) => setResidentName(e.target.value)}
+                    placeholder="e.g. Sarah Connor"
+                    className="w-full bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-xl pl-9 pr-3.5 py-2.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] transition-all shadow-2xs"
+                  />
+                </div>
               </div>
             </div>
           ) : (

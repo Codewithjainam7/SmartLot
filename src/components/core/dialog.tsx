@@ -1,5 +1,6 @@
 // @smartlot/core
-import React, { createContext, useContext, useState, useId } from 'react';
+import React, { createContext, useContext, useState, useId, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, Variants, Transition } from 'motion/react';
 import { X } from 'lucide-react';
 
@@ -99,15 +100,31 @@ export function DialogContent({
     duration: 0.25,
   };
 
-  return (
+  useEffect(() => {
+    if (context.isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.setAttribute('data-modal-open', 'true');
+    } else {
+      document.body.style.overflow = '';
+      document.body.removeAttribute('data-modal-open');
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.removeAttribute('data-modal-open');
+    };
+  }, [context.isOpen]);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {context.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#0B1121]/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#0B1121]/60 backdrop-blur-sm"
             onClick={() => context.setIsOpen(false)}
           />
           <motion.div
@@ -116,13 +133,14 @@ export function DialogContent({
             exit="exit"
             variants={customVariants}
             transition={customTransition}
-            className={`relative z-10 rounded-3xl shadow-2xl overflow-hidden bg-white ${className}`}
+            className={`relative z-10 rounded-3xl shadow-2xl overflow-hidden bg-white dark:bg-[#0d1117] ${className}`}
           >
             {children}
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

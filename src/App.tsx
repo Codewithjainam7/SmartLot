@@ -935,7 +935,7 @@ export default function App() {
       {/* Mobile Bottom Navigation Bar */}
       <nav 
         aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#0B1121]/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-800/80 px-2 py-1.5 flex items-center justify-around md:hidden shadow-lg"
+        className="smartlot-mobile-nav fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#0B1121]/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-800/80 px-2 py-1.5 flex items-center justify-around md:hidden shadow-lg"
       >
         <button
           type="button"

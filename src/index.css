@@ -228,3 +228,13 @@ html {
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
+
+/* Hide Sidebar, Topbar, and Mobile Navigation when a modal/popover card is open */
+body[data-modal-open="true"] .smartlot-sidebar,
+body[data-modal-open="true"] .smartlot-topbar,
+body[data-modal-open="true"] .smartlot-mobile-nav {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out !important;
+}

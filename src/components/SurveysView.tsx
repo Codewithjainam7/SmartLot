@@ -171,17 +171,17 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         
         {/* ── 1. Hero Card with Building Background Image ──────────────── */}
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 px-5 py-4 sm:px-7 sm:py-5 shadow-sm dark:shadow-2xl">
-          {/* Building Background Image (Right side, smooth gradient blend) */}
+          {/* Building Background Image (Right side, clear and sharp in both light and dark mode) */}
           <div 
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-1/2 bg-cover bg-right bg-no-repeat pointer-events-none opacity-20 dark:opacity-65 mix-blend-multiply dark:mix-blend-screen"
+            className="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-1/2 bg-cover bg-right bg-no-repeat pointer-events-none opacity-85 sm:opacity-95 dark:opacity-65 transition-opacity duration-300"
             style={{ 
               backgroundImage: "url('/bg_img_building.png')",
-              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 25%, black 60%)",
-              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 25%, black 60%)"
+              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)"
             }}
           />
-          {/* Radial shade for crisp contrast on text */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent dark:from-[#070E1F] dark:via-[#070E1F]/90 dark:to-transparent pointer-events-none" />
+          {/* Text backing gradient to ensure high readability on the left */}
+          <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-2/3 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-[#070E1F] dark:via-[#070E1F]/95 dark:to-transparent pointer-events-none" />
 
           {/* Hero Content */}
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -207,10 +207,12 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         </div>
 
         {/* ── 2. Active Survey Toolbar (Matches Mockup UI Exactly) ────── */}
-        <div className="relative rounded-2xl bg-white dark:bg-[#060D1A] border border-gray-200 dark:border-white/10 p-4 sm:p-5 shadow-sm dark:shadow-2xl overflow-hidden">
-          {/* Subtle cyan ambient glow at corners */}
-          <div className="absolute -top-12 -left-12 w-48 h-48 bg-[#00D4B2]/5 dark:bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 right-12 w-48 h-48 bg-[#00D4B2]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-30 rounded-2xl bg-white dark:bg-[#060D1A] border border-gray-200 dark:border-white/10 p-4 sm:p-5 shadow-sm dark:shadow-2xl overflow-visible">
+          {/* Subtle cyan ambient glow at corners clipped inside inner container */}
+          <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+            <div className="absolute -top-12 -left-12 w-48 h-48 bg-[#00D4B2]/5 dark:bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-12 right-12 w-48 h-48 bg-[#00D4B2]/5 rounded-full blur-3xl pointer-events-none" />
+          </div>
 
           <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
             

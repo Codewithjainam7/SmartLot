@@ -33,7 +33,7 @@ export function Topbar({
   const hasMultipleSchemes = schemes.length > 1;
 
   return (
-    <div className="h-16 md:h-20 bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-3 sm:px-6 md:px-8 sticky top-0 z-30 font-sans">
+    <div className="smartlot-topbar h-16 md:h-20 bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-3 sm:px-6 md:px-8 sticky top-0 z-30 font-sans">
       
       {/* Scheme Switcher & Site Creation */}
       <div className="flex items-center gap-2 sm:gap-4">
