@@ -787,12 +787,21 @@ export const INITIAL_SURVEYS: Survey[] = [
         order: 5
       },
       {
+        id: 'q_cav_radio',
+        questionText: 'Would you support upgrading to smart energy-efficient LED lighting in common basements and hallways?',
+        category: 'Building Facilities',
+        type: 'single_choice',
+        options: ['Yes, strongly support', 'Neutral / depends on cost', 'No, not needed'],
+        required: true,
+        order: 6
+      },
+      {
         id: 'q_cav_6',
         questionText: 'What is the #1 priority or improvement you would like the Strata Committee and Manager to focus on this coming year?',
         category: 'General Suggestions',
         type: 'text_feedback',
         required: false,
-        order: 6
+        order: 7
       }
     ],
     aiExecutiveSummary: {
@@ -829,6 +838,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 4,
       q_cav_4: 4,
       q_cav_5: 10,
+      q_cav_radio: 'Yes, strongly support',
       q_cav_6: 'Emma Wilson has done a great job coordinating the lobby directory upgrade. Very prompt communication.'
     }
   },
@@ -846,6 +856,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 4,
       q_cav_4: 4,
       q_cav_5: 9,
+      q_cav_radio: 'Yes, strongly support',
       q_cav_6: 'Financial reports and levy distributions have been very transparent. Please look at getting quotes for EV chargers in the basement.'
     }
   },
@@ -863,6 +874,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 5,
       q_cav_4: 3,
       q_cav_5: 8,
+      q_cav_radio: 'Neutral / depends on cost',
       q_cav_6: 'Visitor parking is sometimes taken up by non-visitors on Friday and Saturday evenings. We need clearer towing warning signs.'
     }
   },
@@ -878,6 +890,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 5,
       q_cav_4: 4,
       q_cav_5: 10,
+      q_cav_radio: 'Yes, strongly support',
       q_cav_6: 'The cleaners are wonderful. The lobby smells clean every morning. Thank you!'
     }
   },
@@ -895,6 +908,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 4,
       q_cav_4: 4,
       q_cav_5: 9,
+      q_cav_radio: 'Yes, strongly support',
       q_cav_6: 'Very happy with our committee and strata manager collaboration. Keep up the high standard.'
     }
   },
@@ -910,6 +924,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 3,
       q_cav_4: 3,
       q_cav_5: 8,
+      q_cav_radio: 'Neutral / depends on cost',
       q_cav_6: 'The north passenger lift had a minor sensor stutter last week. It is fine now but good to keep an eye on before warranty expires.'
     }
   },
@@ -927,6 +942,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 5,
       q_cav_4: 5,
       q_cav_5: 10,
+      q_cav_radio: 'Yes, strongly support',
       q_cav_6: 'Garden landscaping looks top notch. Great work team.'
     }
   },
@@ -942,6 +958,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 4,
       q_cav_4: 3,
       q_cav_5: 9,
+      q_cav_radio: 'No, not needed',
       q_cav_6: 'Cardboard recycling bins overflow after people move in on weekends. An extra collection day would be super helpful.'
     }
   }

@@ -472,6 +472,18 @@ export function SurveyBuilderFormContent({
       .map(e => e.trim())
       .filter(e => e.length > 0 && e.includes('@'));
 
+    // Sanitize questions so choice fields always have non-empty valid options
+    const sanitizedQuestions: SurveyQuestion[] = questions.map(q => {
+      if (q.type === 'single_choice' || q.type === 'multi_choice') {
+        const validOpts = (q.options || []).map(o => o.trim()).filter(Boolean);
+        return {
+          ...q,
+          options: validOpts.length > 0 ? validOpts : ['Yes', 'No', 'Unsure']
+        };
+      }
+      return q;
+    });
+
     try {
       if (surveyToEdit) {
         const updated = await store.updateSurvey(surveyToEdit.id, {
@@ -484,7 +496,7 @@ export function SurveyBuilderFormContent({
           bccEmails: parsedBcc.length > 0 ? parsedBcc : undefined,
           deadline: deadline.trim() || undefined,
           bannerImage: bannerImage.trim() || undefined,
-          questions,
+          questions: sanitizedQuestions,
         });
         if (updated) {
           onSurveyUpdated?.(updated);
@@ -503,7 +515,7 @@ export function SurveyBuilderFormContent({
           bccEmails: parsedBcc.length > 0 ? parsedBcc : undefined,
           deadline: deadline.trim() || undefined,
           bannerImage: bannerImage.trim() || undefined,
-          questions,
+          questions: sanitizedQuestions,
           createdBy: {
             name: store.activePersona.name,
             role: store.activePersona.role,
@@ -1204,7 +1216,14 @@ export function SurveyBuilderFormContent({
                       <CustomSelect
                         options={QUESTION_TYPE_OPTIONS}
                         value={q.type}
-                        onChange={(val) => handleUpdateQuestion(q.id, { type: val as SurveyQuestionType })}
+                        onChange={(val) => {
+                          const newType = val as SurveyQuestionType;
+                          const updates: Partial<SurveyQuestion> = { type: newType };
+                          if ((newType === 'single_choice' || newType === 'multi_choice') && (!q.options || q.options.length === 0)) {
+                            updates.options = ['Option 1', 'Option 2', 'Option 3'];
+                          }
+                          handleUpdateQuestion(q.id, updates);
+                        }}
                         size="sm"
                       />
                     </div>
@@ -1246,13 +1265,21 @@ export function SurveyBuilderFormContent({
 
                   {/* Options Editor for Choice Questions */}
                   {(q.type === 'single_choice' || q.type === 'multi_choice') && (
-                    <div className="pt-2 space-y-2 border-t border-gray-200/60 dark:border-white/5">
+                    <div className="pt-2.5 space-y-2.5 border-t border-gray-200/60 dark:border-white/5">
                       <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 dark:text-gray-400">
-                        <span>Answer Choices</span>
+                        <span className="flex items-center gap-1.5">
+                          {q.type === 'single_choice' ? (
+                            <span className="w-2.5 h-2.5 rounded-full border border-blue-500 bg-blue-500/20 inline-block" />
+                          ) : (
+                            <span className="w-2.5 h-2.5 rounded border border-purple-500 bg-purple-500/20 inline-block" />
+                          )}
+                          {q.type === 'single_choice' ? 'Radio Choices (Single Select)' : 'Checkbox Choices (Multi Select)'}
+                        </span>
+                        
                         <button
                           type="button"
                           onClick={() => {
-                            const current = q.options && q.options.length > 0 ? q.options : ['Option 1', 'Option 2'];
+                            const current = (q.options && q.options.length > 0) ? q.options : ['Option 1', 'Option 2'];
                             handleUpdateQuestion(q.id, { options: [...current, `Option ${current.length + 1}`] });
                           }}
                           className="text-[#00897B] dark:text-[#00D4B2] hover:underline flex items-center gap-1 font-black cursor-pointer"
@@ -1262,15 +1289,51 @@ export function SurveyBuilderFormContent({
                         </button>
                       </div>
 
-                      <div className="space-y-1.5">
-                        {(q.options && q.options.length > 0 ? q.options : ['Option 1', 'Option 2']).map((opt, optIdx) => (
+                      {/* Quick Choice Presets */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mr-0.5">Presets:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuestion(q.id, { options: ['Yes', 'No', 'Unsure'] })}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
+                        >
+                          Yes / No / Unsure
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuestion(q.id, { options: ['Satisfied', 'Neutral', 'Dissatisfied'] })}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
+                        >
+                          Satisfied / Neutral / Dissatisfied
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuestion(q.id, { options: ['Daily', 'Weekly', 'Monthly', 'Rarely'] })}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 transition-all cursor-pointer"
+                        >
+                          Frequency
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {((q.options && q.options.length > 0) ? q.options : ['Option 1', 'Option 2', 'Option 3']).map((opt, optIdx) => (
                           <div key={optIdx} className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 w-4 text-center">{optIdx + 1}.</span>
+                            {q.type === 'single_choice' ? (
+                              <div className="w-4 h-4 rounded-full border-2 border-blue-500/70 dark:border-blue-400 flex items-center justify-center shrink-0">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
+                              </div>
+                            ) : (
+                              <div className="w-4 h-4 rounded border-2 border-purple-500/70 dark:border-purple-400 flex items-center justify-center shrink-0">
+                                <CheckCircle2 size={10} className="text-purple-500 dark:text-purple-400 stroke-[3]" />
+                              </div>
+                            )}
                             <input
                               type="text"
                               value={opt}
+                              placeholder={`Option ${optIdx + 1}`}
                               onChange={(e) => {
-                                const newOpts = [...(q.options && q.options.length > 0 ? q.options : ['Option 1', 'Option 2'])];
+                                const currentList = (q.options && q.options.length > 0) ? q.options : ['Option 1', 'Option 2', 'Option 3'];
+                                const newOpts = [...currentList];
                                 newOpts[optIdx] = e.target.value;
                                 handleUpdateQuestion(q.id, { options: newOpts });
                               }}
@@ -1279,10 +1342,11 @@ export function SurveyBuilderFormContent({
                             <button
                               type="button"
                               onClick={() => {
-                                const newOpts = (q.options && q.options.length > 0 ? q.options : ['Option 1', 'Option 2']).filter((_, i) => i !== optIdx);
-                                handleUpdateQuestion(q.id, { options: newOpts });
+                                const currentList = (q.options && q.options.length > 0) ? q.options : ['Option 1', 'Option 2', 'Option 3'];
+                                const newOpts = currentList.filter((_, i) => i !== optIdx);
+                                handleUpdateQuestion(q.id, { options: newOpts.length > 0 ? newOpts : ['Option 1'] });
                               }}
-                              className="text-gray-400 hover:text-rose-500 p-1 transition-colors"
+                              className="text-gray-400 hover:text-rose-500 p-1 transition-colors cursor-pointer"
                               title="Remove option"
                             >
                               <X size={12} />

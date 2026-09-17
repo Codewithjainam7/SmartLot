@@ -642,64 +642,123 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                 )}
 
                 {/* Question Type: Single Choice Radio Cards */}
-                {q.type === 'single_choice' && q.options && (
-                  <div className="space-y-2">
-                    {q.options.map((opt) => {
-                      const isSelected = currentAns === opt;
+                {q.type === 'single_choice' && (() => {
+                  const resolvedOptions: string[] = (Array.isArray(q.options) && q.options.length > 0)
+                    ? q.options
+                    : (typeof q.options === 'string' && (q.options as string).trim())
+                      ? (q.options as string).split(',').map(s => s.trim()).filter(Boolean)
+                      : ['Yes', 'No', 'Neutral'];
 
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          disabled={isClosed}
-                          onClick={() => handleChoiceSelect(q.id, opt)}
-                          className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold ${
-                            isSelected
-                              ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/60 dark:bg-[#00D4B2]/10 text-gray-900 dark:text-white font-bold shadow-xs'
-                              : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
-                          }`}
-                        >
-                          <span>{opt}</span>
-                          <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            isSelected ? 'border-[#0055FF] dark:border-[#00D4B2] bg-[#0055FF] dark:bg-[#00D4B2]' : 'border-gray-300 dark:border-white/20'
-                          }`}>
-                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                  return (
+                    <div className="space-y-2.5" role="radiogroup" aria-label={q.questionText}>
+                      {resolvedOptions.map((opt, optIndex) => {
+                        const isSelected = currentAns === opt;
+
+                        return (
+                          <div
+                            key={`${opt}-${optIndex}`}
+                            role="radio"
+                            aria-checked={isSelected}
+                            tabIndex={0}
+                            onClick={() => {
+                              if (!isClosed) handleChoiceSelect(q.id, opt);
+                            }}
+                            onKeyDown={(e) => {
+                              if (!isClosed && (e.key === ' ' || e.key === 'Enter')) {
+                                e.preventDefault();
+                                handleChoiceSelect(q.id, opt);
+                              }
+                            }}
+                            className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold select-none min-h-[48px] active:scale-[0.99] ${
+                              isSelected
+                                ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/90 dark:bg-[#00D4B2]/15 text-gray-900 dark:text-white font-bold shadow-xs ring-2 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                                : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#1f2433]'
+                            }`}
+                          >
+                            <label className="flex items-center gap-3 cursor-pointer flex-1 pointer-events-none">
+                              <input
+                                type="radio"
+                                name={`survey_radio_${q.id}`}
+                                value={opt}
+                                checked={isSelected}
+                                disabled={isClosed}
+                                onChange={() => handleChoiceSelect(q.id, opt)}
+                                className="sr-only"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                              isSelected 
+                                ? 'border-[#0055FF] dark:border-[#00D4B2] bg-[#0055FF] dark:bg-[#00D4B2]' 
+                                : 'border-gray-300 dark:border-white/30 bg-transparent'
+                            }`}>
+                              {isSelected && <span className="w-2 h-2 rounded-full bg-white dark:bg-[#060D1A]" />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
 
                 {/* Question Type: Multi Choice Checkbox Cards */}
-                {q.type === 'multi_choice' && q.options && (
-                  <div className="space-y-2">
-                    {q.options.map((opt) => {
-                      const isSelected = Array.isArray(currentAns) && currentAns.includes(opt);
+                {q.type === 'multi_choice' && (() => {
+                  const resolvedMultiOptions: string[] = (Array.isArray(q.options) && q.options.length > 0)
+                    ? q.options
+                    : (typeof q.options === 'string' && (q.options as string).trim())
+                      ? (q.options as string).split(',').map(s => s.trim()).filter(Boolean)
+                      : ['Option A', 'Option B', 'Option C'];
 
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          disabled={isClosed}
-                          onClick={() => handleMultiChoiceToggle(q.id, opt)}
-                          className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold ${
-                            isSelected
-                              ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/60 dark:bg-[#00D4B2]/10 text-gray-900 dark:text-white font-bold shadow-xs'
-                              : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
-                          }`}
-                        >
-                          <span>{opt}</span>
-                          <span className={`w-4 h-4 rounded-md border flex items-center justify-center ${
-                            isSelected ? 'border-[#0055FF] dark:border-[#00D4B2] bg-[#0055FF] dark:bg-[#00D4B2] text-white dark:text-[#0a0a0f]' : 'border-gray-300 dark:border-white/20'
-                          }`}>
-                            {isSelected && <CheckCircle2 size={12} className="stroke-[3]" />}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                  return (
+                    <div className="space-y-2.5">
+                      {resolvedMultiOptions.map((opt, optIndex) => {
+                        const isSelected = Array.isArray(currentAns) && currentAns.includes(opt);
+
+                        return (
+                          <div
+                            key={`${opt}-${optIndex}`}
+                            role="checkbox"
+                            aria-checked={isSelected}
+                            tabIndex={0}
+                            onClick={() => {
+                              if (!isClosed) handleMultiChoiceToggle(q.id, opt);
+                            }}
+                            onKeyDown={(e) => {
+                              if (!isClosed && (e.key === ' ' || e.key === 'Enter')) {
+                                e.preventDefault();
+                                handleMultiChoiceToggle(q.id, opt);
+                              }
+                            }}
+                            className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold select-none min-h-[48px] active:scale-[0.99] ${
+                              isSelected
+                                ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/90 dark:bg-[#00D4B2]/15 text-gray-900 dark:text-white font-bold shadow-xs ring-2 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                                : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#1f2433]'
+                            }`}
+                          >
+                            <label className="flex items-center gap-3 cursor-pointer flex-1 pointer-events-none">
+                              <input
+                                type="checkbox"
+                                value={opt}
+                                checked={isSelected}
+                                disabled={isClosed}
+                                onChange={() => handleMultiChoiceToggle(q.id, opt)}
+                                className="sr-only"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
+                              isSelected 
+                                ? 'border-[#0055FF] dark:border-[#00D4B2] bg-[#0055FF] dark:bg-[#00D4B2] text-white dark:text-[#060D1A]' 
+                                : 'border-gray-300 dark:border-white/30 bg-transparent'
+                            }`}>
+                              {isSelected && <CheckCircle2 size={13} className="stroke-[3]" />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
 
                 {/* Question Type: Open Textarea Feedback */}
                 {q.type === 'text_feedback' && (

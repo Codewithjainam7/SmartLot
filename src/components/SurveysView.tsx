@@ -30,7 +30,8 @@ import {
   Edit3,
   Trash2,
   RotateCcw,
-  Loader2
+  Loader2,
+  ListFilter
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
@@ -242,13 +243,13 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F4F6F9] dark:bg-[#050A15] text-gray-900 dark:text-gray-100 overflow-y-auto font-sans selection:bg-[#00D4B2] selection:text-black">
-      <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 flex-1">
+      <div className="max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-4 sm:space-y-5 flex-1">
         
         {/* ── 1. Hero Card with Building Background Image ──────────────── */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 px-5 py-4 sm:px-7 sm:py-5 shadow-sm dark:shadow-2xl">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 p-4 sm:px-7 sm:py-5 shadow-sm dark:shadow-2xl">
           {/* Building Background Image (Right side, clear and sharp in both light and dark mode) */}
           <div 
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-1/2 bg-cover bg-right bg-no-repeat pointer-events-none opacity-85 sm:opacity-95 dark:opacity-65 transition-opacity duration-300"
+            className="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-1/2 bg-cover bg-right bg-no-repeat pointer-events-none opacity-40 sm:opacity-95 dark:opacity-40 sm:dark:opacity-65 transition-opacity duration-300"
             style={{ 
               backgroundImage: "url('/bg_img_building.png')",
               maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)",
@@ -259,14 +260,14 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-2/3 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-[#070E1F] dark:via-[#070E1F]/95 dark:to-transparent pointer-events-none" />
 
           {/* Hero Content */}
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="max-w-3xl space-y-1.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/25 text-[11px] font-black uppercase tracking-wider">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+            <div className="max-w-3xl space-y-1 sm:space-y-1.5">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/25 text-[10px] sm:text-[11px] font-black uppercase tracking-wider">
                 <Building2 size={12} className="text-[#00897B] dark:text-[#00D4B2]" />
                 {activeScheme.name.toUpperCase()} ({activeScheme.id})
               </span>
 
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-gray-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                 Resident Feedback & <span className="text-[#00897B] dark:text-[#00D4B2]">Surveys</span>
               </h1>
 
@@ -274,7 +275,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 Listen. Improve.<span className="text-[#00897B] dark:text-[#00D4B2] ml-1">Build a Better Community.</span>
               </p>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xl font-medium leading-relaxed">
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xl font-medium leading-relaxed hidden xs:block">
                 Empower residents to rate building performance, share suggestions, and help shape a better living experience. Every response matters.
               </p>
             </div>
@@ -449,10 +450,10 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         </div>
 
         {/* ── 3. 4 Top KPI Metrics with Sparkline Mini-Graphs ─────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           
           {/* Card 1: Submissions */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 dark:border-blue-500/30 flex items-center justify-center shrink-0">
                 <Users size={18} />
@@ -481,7 +482,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
 
           {/* Card 2: Building Satisfaction */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30 flex items-center justify-center shrink-0">
                 <Star size={18} className="fill-amber-400 text-amber-500 dark:text-amber-400" />
@@ -512,7 +513,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
 
           {/* Card 3: Community NPS */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-center shrink-0">
                 <Award size={18} />
@@ -540,7 +541,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
 
           {/* Card 4: Privacy Breakdown */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 dark:border-purple-500/30 flex items-center justify-center shrink-0">
                 <Lock size={18} />
@@ -709,23 +710,45 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               {/* Question Rows */}
               <div className="space-y-3 pt-1">
                 {selectedSurvey.questions
-                  .filter(q => q.type === 'star_rating' || q.type === 'nps_score')
+                  .filter(q => q.type === 'star_rating' || q.type === 'nps_score' || q.type === 'single_choice' || q.type === 'multi_choice')
                   .map((q, qIdx) => {
+                    const isChoice = q.type === 'single_choice' || q.type === 'multi_choice';
                     let scoreSum = 0;
                     let count = 0;
+                    const choiceOpts = (Array.isArray(q.options) && q.options.length > 0) ? q.options : ['Yes', 'No', 'Neutral'];
+                    const choiceCounts: Record<string, number> = {};
+                    choiceOpts.forEach(o => { choiceCounts[o] = 0; });
+                    let totalChoice = 0;
+
                     responses.forEach(r => {
                       const v = r.answers[q.id];
                       if (typeof v === 'number') {
                         scoreSum += v;
                         count += 1;
+                      } else if (typeof v === 'string' && isChoice) {
+                        choiceCounts[v] = (choiceCounts[v] || 0) + 1;
+                        totalChoice += 1;
+                        count += 1;
+                      } else if (Array.isArray(v) && isChoice) {
+                        v.forEach(optVal => {
+                          choiceCounts[optVal] = (choiceCounts[optVal] || 0) + 1;
+                        });
+                        totalChoice += 1;
+                        count += 1;
                       }
                     });
 
                     const hasQResponses = count > 0;
-                    const avg = hasQResponses ? (scoreSum / count).toFixed(1) : '0.0';
-                    const percent = hasQResponses 
-                      ? (q.type === 'star_rating' ? Math.round((Number(avg) / 5) * 100) : Math.round((Number(avg) / 10) * 100))
-                      : 0;
+                    const avg = (!isChoice && hasQResponses) ? (scoreSum / count).toFixed(1) : '0.0';
+                    
+                    const topOpt = choiceOpts.reduce((max, o) => (choiceCounts[o] || 0) > (choiceCounts[max] || 0) ? o : max, choiceOpts[0]);
+                    const topPercent = totalChoice > 0 ? Math.round(((choiceCounts[topOpt] || 0) / totalChoice) * 100) : 0;
+
+                    const percent = isChoice
+                      ? topPercent
+                      : (hasQResponses 
+                          ? (q.type === 'star_rating' ? Math.round((Number(avg) / 5) * 100) : Math.round((Number(avg) / 10) * 100))
+                          : 0);
 
                     const badgeClass = getCategoryBadgeColor(q.category);
 
@@ -740,13 +763,42 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                             {String(qIdx + 1).padStart(2, '0')}
                           </div>
 
-                          <div className="space-y-1.5 min-w-0">
-                            <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full ${badgeClass}`}>
-                              {q.category}
-                            </span>
+                          <div className="space-y-1.5 min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full ${badgeClass}`}>
+                                {q.category}
+                              </span>
+                              {q.type === 'single_choice' && (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                  <CheckCircle2 size={10} /> Single Choice Radio
+                                </span>
+                              )}
+                              {q.type === 'multi_choice' && (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                                  <ListFilter size={10} /> Multi Choice Checkbox
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-200 leading-snug font-sans">
                               {q.questionText}
                             </p>
+
+                            {/* Option Distribution Chips for Radio / Choice Questions */}
+                            {isChoice && hasQResponses && (
+                              <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                                {choiceOpts.map((opt) => {
+                                  const c = choiceCounts[opt] || 0;
+                                  const pct = totalChoice > 0 ? Math.round((c / totalChoice) * 100) : 0;
+                                  return (
+                                    <span key={opt} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[10px] font-semibold text-gray-700 dark:text-gray-300">
+                                      <span className="font-bold">{opt}:</span>
+                                      <span className="text-blue-600 dark:text-[#00D4B2] font-black">{c}</span>
+                                      <span className="text-gray-400 text-[9px]">({pct}%)</span>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -758,19 +810,28 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                               style={{ width: `${percent}%` }}
                             />
                           </div>
-                          <div className="text-[11px] font-bold text-[#00897B] dark:text-[#00D4B2]">
-                            {hasQResponses ? `${percent}% satisfaction` : '0% satisfaction (Awaiting ratings)'}
+                          <div className="text-[11px] font-bold text-[#00897B] dark:text-[#00D4B2] truncate">
+                            {isChoice 
+                              ? (hasQResponses ? `Top choice: ${topOpt} (${topPercent}%)` : 'Awaiting responses')
+                              : (hasQResponses ? `${percent}% satisfaction` : '0% satisfaction (Awaiting ratings)')}
                           </div>
                         </div>
 
                         {/* Right: Score Pill + Count + Chevron */}
                         <div className="flex items-center justify-between md:justify-end gap-3 shrink-0">
                           <div className="text-left md:text-right">
-                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs">
-                              <Star size={12} className="fill-amber-400 text-amber-400" />
-                              <span>{hasQResponses ? avg : '--'}</span>
-                              <span className="text-[10px] text-gray-500 dark:text-gray-400">/{q.type === 'star_rating' ? '5.0' : '10'}</span>
-                            </div>
+                            {isChoice ? (
+                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 font-bold text-xs">
+                                <CheckCircle2 size={12} className="text-blue-500" />
+                                <span>{totalChoice} Votes</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs">
+                                <Star size={12} className="fill-amber-400 text-amber-400" />
+                                <span>{hasQResponses ? avg : '--'}</span>
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400">/{q.type === 'star_rating' ? '5.0' : '10'}</span>
+                              </div>
+                            )}
                             <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                               {count} {count === 1 ? 'response' : 'responses'}
                             </div>
@@ -1375,6 +1436,25 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       <span>•</span>
                       <span>{q.required ? 'Mandatory' : 'Optional'}</span>
                     </div>
+
+                    {/* Radio and Checkbox choices preview */}
+                    {(q.type === 'single_choice' || q.type === 'multi_choice') && (
+                      <div className="flex items-center gap-1.5 flex-wrap mt-2 pt-2 border-t border-gray-200/50 dark:border-white/5">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">
+                          {q.type === 'single_choice' ? 'Radio Options:' : 'Checkbox Options:'}
+                        </span>
+                        {((Array.isArray(q.options) && q.options.length > 0) ? q.options : ['Option 1', 'Option 2', 'Option 3']).map((opt, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[10px] font-semibold text-gray-700 dark:text-gray-300">
+                            {q.type === 'single_choice' ? (
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            ) : (
+                              <span className="w-1.5 h-1.5 rounded-xs bg-purple-500" />
+                            )}
+                            {opt}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
