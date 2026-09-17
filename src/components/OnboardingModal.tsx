@@ -99,7 +99,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           {/* Backdrop Fade Animation */}
           <motion.div 
             initial={{ opacity: 0 }}
@@ -110,20 +110,20 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             onClick={onClose} 
           />
 
-          {/* Modal Container (Premium Dark Mode styling mirroring the setup popup) */}
+          {/* Modal Container (Bottom Sheet on Mobile) */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 30 }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="relative bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-8 border border-white/10 shadow-2xl z-10 space-y-6 overflow-hidden"
+            className="relative bg-[#0B1121] text-white w-full sm:max-w-md rounded-t-3xl sm:rounded-[32px] p-5 sm:p-8 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-8 border border-white/10 shadow-2xl z-10 space-y-4 sm:space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto"
           >
             {/* Close Button */}
             <button 
               type="button"
               onClick={onClose}
               aria-label="Close onboarding modal"
-              className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50"
+              className="absolute top-4 sm:top-6 right-4 sm:right-6 text-gray-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/5 z-50 min-w-[36px] min-h-[36px] flex items-center justify-center"
             >
               <X size={16} />
             </button>
@@ -132,15 +132,15 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Title / Header */}
-            <div className="text-center space-y-2.5 relative z-10 pt-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center mx-auto border border-[#00D4B2]/20 animate-pulse">
-                <Building size={28} />
+            <div className="text-center space-y-2 relative z-10 pt-2 sm:pt-4">
+              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center mx-auto border border-[#00D4B2]/20 animate-pulse">
+                <Building size={24} />
               </div>
               <div className="space-y-1">
                 <span className="text-[9px] font-extrabold text-[#00D4B2] tracking-widest uppercase bg-[#00D4B2]/10 px-2.5 py-0.5 rounded-full border border-[#00D4B2]/25 inline-block">
                   Strata Provisioning
                 </span>
-                <h3 className="text-2xl font-bold tracking-tight text-white mt-1">Create New Strata Site</h3>
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">Create New Strata Site</h3>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
                 Provision a new duplex, townhouse, or custom scheme under compliance.
@@ -158,7 +158,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                       key={type}
                       type="button"
                       onClick={() => handleTypeChange(type)}
-                      className={`relative py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer outline-none z-10 ${
+                      className={`relative py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer outline-none z-10 min-h-[36px] active:scale-95 ${
                         isActive ? 'text-[#0B1121]' : 'text-gray-400 hover:text-white'
                       }`}
                     >
@@ -177,36 +177,36 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
             </div>
 
             {/* Scheme Details Customization Form */}
-            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-              <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 relative z-10">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Scheme / Site Name</label>
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1.5 sm:mb-2">Scheme / Site Name</label>
                   <input
                     type="text"
                     required
                     aria-label="Scheme or site name"
                     value={schemeName}
                     onChange={e => setSchemeName(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200"
+                    className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200 min-h-[44px]"
                     placeholder="e.g. Sunset Duplex"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Plan ID</label>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1.5 sm:mb-2">Plan ID</label>
                     <input
                       type="text"
                       required
                       aria-label="Strata Plan ID"
                       value={schemeId}
                       onChange={e => setSchemeId(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200"
+                      className="w-full px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-white text-sm outline-none font-bold placeholder:text-gray-600 hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)] transition-all duration-200 min-h-[44px]"
                       placeholder="e.g. SP101"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Lots Count</label>
+                    <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-1.5 sm:mb-2">Lots Count</label>
                     <input
                       type="number"
                       required
@@ -215,7 +215,7 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
                       disabled={siteType !== 'custom'}
                       value={lotsCount}
                       onChange={e => setLotsCount(Number(e.target.value))}
-                      className={`w-full px-4 py-3.5 rounded-2xl border text-sm outline-none font-bold transition-all duration-200 ${
+                      className={`w-full px-4 py-3 rounded-2xl border text-sm outline-none font-bold transition-all duration-200 min-h-[44px] ${
                         siteType !== 'custom'
                           ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
                           : 'border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/[0.08] focus:border-[#00D4B2] focus:bg-white/10 focus:ring-2 focus:ring-[#00D4B2]/25 focus:shadow-[0_0_15px_rgba(0,212,178,0.15)]'
@@ -232,17 +232,17 @@ export function OnboardingModal({ isOpen, onClose, store }: OnboardingModalProps
               </div>
 
               {/* Modal Actions */}
-              <div className="flex justify-end gap-3 pt-3 border-t border-white/5">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-3 border-t border-white/5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-3 rounded-2xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-2xl border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer min-h-[44px] active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] px-8 py-3.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-lg shadow-[#00D4B2]/15 hover:scale-[1.02] transition-all cursor-pointer"
+                  className="bg-[#00D4B2] hover:bg-[#00A38C] text-[#0B1121] px-8 py-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 shadow-lg shadow-[#00D4B2]/15 active:scale-95 transition-all cursor-pointer min-h-[44px]"
                 >
                   Create Scheme
                 </button>
