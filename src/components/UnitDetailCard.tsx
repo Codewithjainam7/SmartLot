@@ -147,14 +147,14 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       
       {/* Unit Selector Tabs */}
       {activeUnits.length > 1 && (
-        <div className="flex flex-col gap-1.5 px-4 pt-4 mb-2">
+        <div className="flex flex-col gap-1.5 px-4 pt-3 sm:pt-4 mb-2">
           <label className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Select Lot / Unit</label>
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-gray-100 dark:border-white/5">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-3 border-b border-gray-100 dark:border-white/5 no-scrollbar touch-pan-x">
             {activeUnits.map((u: any, index: number) => (
               <button
                 key={u.unitId}
                 onClick={() => setSelectedUnitIndex(index)}
-                className={`relative px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors border ${
+                className={`relative px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-colors border select-none active:scale-95 ${
                   selectedUnitIndex === index 
                     ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/30 shadow-sm' 
                     : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 border-transparent dark:border-white/5'
@@ -286,7 +286,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       {/* MODAL 1: Edit Lot Details */}
       <AnimatePresence>
         {showEditLotModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -295,11 +295,11 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               onClick={() => setShowEditLotModal(false)}
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-5 sm:p-8 border border-white/10 shadow-2xl relative z-10 space-y-5 sm:space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="bg-[#0B1121] text-white w-full max-w-md rounded-t-3xl sm:rounded-[32px] p-5 sm:p-8 border-t sm:border border-white/10 shadow-2xl relative z-10 space-y-5 sm:space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8"
             >
               <button 
                 type="button"
@@ -367,7 +367,7 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
       {/* MODAL 2: Add Occupant */}
       <AnimatePresence>
         {showAddOccupantModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -376,11 +376,11 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
               onClick={() => setShowAddOccupantModal(false)}
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="bg-[#0B1121] text-white w-full max-w-md rounded-[32px] p-5 sm:p-8 border border-white/10 shadow-2xl relative z-10 space-y-4 sm:space-y-5 overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="bg-[#0B1121] text-white w-full max-w-md rounded-t-3xl sm:rounded-[32px] p-5 sm:p-8 border-t sm:border border-white/10 shadow-2xl relative z-10 space-y-4 sm:space-y-5 overflow-hidden max-h-[90vh] overflow-y-auto pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8"
             >
               <button 
                 type="button"
@@ -476,11 +476,11 @@ export function UnitDetailCard({ store }: UnitDetailCardProps) {
 
 function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) {
   return (
-    <button aria-label={label} className="flex flex-col items-center gap-1.5 group cursor-pointer">
-      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#00D4B2] group-hover:text-[#0B1121] transition-colors">
+    <button aria-label={label} className="flex flex-col items-center justify-center gap-1.5 group cursor-pointer select-none active:scale-90 min-h-[44px]">
+      <div className="w-11 h-11 sm:w-10 sm:h-10 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:bg-[#00D4B2] group-hover:text-[#0B1121] transition-colors shadow-2xs">
         {icon}
       </div>
-      <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 group-hover:text-white transition-colors">{label}</span>
+      <span className="text-[10px] font-medium text-gray-400 dark:text-gray-400 group-hover:text-white transition-colors">{label}</span>
     </button>
   );
 }
