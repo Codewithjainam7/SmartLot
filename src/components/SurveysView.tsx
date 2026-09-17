@@ -25,7 +25,8 @@ import {
   BarChart3, 
   Calendar,
   Download,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
@@ -225,42 +226,62 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
         </div>
 
-        {/* ── 2. Active Survey Toolbar ─────────────────────────────────── */}
-        <div className="bg-[#070E1F] border border-white/10 rounded-2xl p-3.5 sm:p-4 shadow-xs">
-          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
-            
-            {/* Left Side: Survey Selection & Status */}
-            {selectedSurvey ? (
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs font-bold text-gray-400 shrink-0">
-                  Active Survey:
-                </span>
+        {/* ── 2. Active Survey Toolbar (Matches Mockup UI Exactly) ────── */}
+        <div className="relative rounded-2xl bg-[#060D1A] border border-white/10 p-4 sm:p-5 shadow-2xl overflow-hidden">
+          {/* Subtle cyan ambient glow at corners */}
+          <div className="absolute -top-12 -left-12 w-48 h-48 bg-[#00D4B2]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 right-12 w-48 h-48 bg-[#00D4B2]/5 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="w-64 sm:w-80 shrink-0">
-                  <CustomSelect
-                    options={surveyOptions}
-                    value={selectedSurvey.id}
-                    onChange={(val) => setSelectedSurveyId(val)}
-                    size="sm"
-                  />
+          <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+            
+            {/* Left Section: Double Squircle Icon + Title Selector + Active Badge + Deadline */}
+            {selectedSurvey ? (
+              <div className="flex items-start sm:items-center gap-4 flex-1">
+                {/* Layered Double Squircle Icon */}
+                <div className="relative shrink-0 select-none hidden sm:block">
+                  <div className="absolute -top-1.5 -left-1.5 w-12 h-12 rounded-2xl bg-[#00D4B2]/10 border border-[#00D4B2]/20 -rotate-3 pointer-events-none" />
+                  <div className="relative w-12 h-12 rounded-2xl bg-[#081B26] border border-[#00D4B2]/40 flex items-center justify-center shadow-lg shadow-[#00D4B2]/10">
+                    <FileText size={22} className="text-[#00D4B2] stroke-[2.2]" />
+                  </div>
                 </div>
 
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider shrink-0 ${
-                  selectedSurvey.status === 'active'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25'
-                    : 'bg-white/5 text-gray-400 border border-white/10'
-                }`}>
-                  {selectedSurvey.status === 'active' && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />}
-                  {selectedSurvey.status}
-                </span>
+                <div className="flex-1 space-y-1.5">
+                  {/* Top Eyebrow Label */}
+                  <div className="text-[10px] font-black tracking-[0.22em] text-[#00D4B2] uppercase font-mono">
+                    ACTIVE SURVEY
+                  </div>
 
-                {selectedSurvey.deadline && (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-400 font-medium bg-white/5 px-2.5 py-1 rounded-xl border border-white/5 shrink-0">
-                    <Calendar size={13} className="text-[#00D4B2] shrink-0" />
-                    <span>Deadline: {selectedSurvey.deadline}</span>
-                    <span className="text-gray-500">• 18 days remaining</span>
-                  </span>
-                )}
+                  {/* Middle Row: Survey Select Dropdown + Active Pill */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="dark w-full sm:w-[380px] lg:w-[420px] shrink-0">
+                      <CustomSelect
+                        options={surveyOptions}
+                        value={selectedSurvey.id}
+                        onChange={(val) => setSelectedSurveyId(val)}
+                        size="md"
+                      />
+                    </div>
+
+                    <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#032427] border border-[#00D4B2]/40 text-[#00D4B2] text-xs font-black tracking-wider shadow-sm shadow-[#00D4B2]/10 shrink-0">
+                      <span className="w-2 h-2 rounded-full bg-[#00D4B2] shadow-[0_0_8px_#00D4B2] animate-pulse shrink-0" />
+                      <span>ACTIVE</span>
+                    </span>
+                  </div>
+
+                  {/* Bottom Row: Deadline Info Capsule */}
+                  {selectedSurvey.deadline && (
+                    <div className="inline-flex items-center gap-3 bg-[#081525] border border-white/5 rounded-xl px-3.5 py-1.5 text-xs text-gray-300 w-fit shadow-xs">
+                      <Calendar size={13} className="text-[#00D4B2] shrink-0" />
+                      <span>
+                        <span className="text-gray-400 font-medium">Deadline:</span>{' '}
+                        <strong className="text-white font-bold">{selectedSurvey.deadline}</strong>
+                      </span>
+                      <span className="text-gray-600 select-none">|</span>
+                      <Clock size={13} className="text-[#00D4B2] shrink-0" />
+                      <span className="text-gray-300 font-medium">18 days remaining</span>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="text-xs text-gray-400 font-medium">
@@ -268,74 +289,70 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </div>
             )}
 
-            {/* Right Side: Quick Action Buttons */}
-            <div className="flex items-center gap-2 flex-wrap xl:justify-end shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsBuilderOpen(true)}
-                className="h-9 px-3.5 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98]"
-                title="Create a new survey questionnaire"
-              >
-                <Plus size={15} className="stroke-[3]" />
-                <span>New Questionnaire</span>
-              </button>
+            {/* Vertical Divider (matches screenshot) */}
+            <div className="hidden xl:block w-px h-12 bg-white/10 mx-1 shrink-0" />
 
-              {selectedSurvey && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="w-32 h-9 px-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold text-gray-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
-                    title="Copy direct guest survey link"
-                  >
-                    {copiedLink ? <Check size={14} className="text-emerald-400 shrink-0" /> : <Copy size={14} className="shrink-0" />}
-                    <span className="truncate">{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
-                  </button>
+            {/* Right Section: The 4 Action Buttons */}
+            {selectedSurvey && (
+              <div className="flex items-center gap-2.5 flex-wrap xl:justify-end shrink-0">
+                {/* 1. Copy Link */}
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="h-10 px-4 rounded-xl bg-[#0C1728] hover:bg-[#122238] border border-white/10 hover:border-white/20 text-gray-200 hover:text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 shadow-sm"
+                  title="Copy direct guest survey link"
+                >
+                  {copiedLink ? <Check size={16} className="text-emerald-400 shrink-0" /> : <Copy size={16} className="text-gray-400 shrink-0" />}
+                  <span>{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onOpenGuestView) {
-                        onOpenGuestView(selectedSurvey.id);
-                      } else {
-                        window.open(`/?survey_token=${encodeURIComponent(selectedSurvey.id)}`, '_blank');
-                      }
-                    }}
-                    className="h-9 px-3.5 rounded-xl border border-[#00D4B2]/30 bg-[#00D4B2]/10 text-[#00D4B2] hover:bg-[#00D4B2]/20 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
-                    title="Preview standalone guest survey"
-                  >
-                    <ExternalLink size={14} className="shrink-0" />
-                    <span>Test Survey</span>
-                  </button>
+                {/* 2. Test Survey */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenGuestView) {
+                      onOpenGuestView(selectedSurvey.id);
+                    } else {
+                      window.open(`/?survey_token=${encodeURIComponent(selectedSurvey.id)}`, '_blank');
+                    }
+                  }}
+                  className="h-10 px-4 rounded-xl bg-[#041D27] hover:bg-[#072B3A] border border-[#00D4B2]/40 hover:border-[#00D4B2]/60 text-[#00D4B2] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 shadow-sm shadow-[#00D4B2]/5"
+                  title="Preview standalone guest survey"
+                >
+                  <ExternalLink size={16} className="text-[#00D4B2] shrink-0" />
+                  <span>Test Survey</span>
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={handleGenerateSummary}
-                    disabled={isGeneratingSummary || responses.length === 0}
-                    className="h-9 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-sm"
-                    title="Synthesize resident feedback into executive summary"
-                  >
-                    {isGeneratingSummary ? (
-                      <RefreshCw size={14} className="animate-spin shrink-0" />
-                    ) : (
-                      <FileText size={14} className="shrink-0" />
-                    )}
-                    <span>{isGeneratingSummary ? 'Analyzing...' : 'Executive Brief'}</span>
-                  </button>
-
-                  {selectedSurvey.status === 'active' && (
-                    <button
-                      type="button"
-                      onClick={handleCloseEarly}
-                      className="h-9 px-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 border border-red-500/25 transition-colors cursor-pointer shrink-0"
-                      title="Close survey round immediately"
-                    >
-                      Close Early
-                    </button>
+                {/* 3. Executive Brief */}
+                <button
+                  type="button"
+                  onClick={handleGenerateSummary}
+                  disabled={isGeneratingSummary || responses.length === 0}
+                  className="h-10 px-5 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 shrink-0 shadow-md shadow-[#00D4B2]/25 hover:scale-[1.02] active:scale-[0.98]"
+                  title="Synthesize resident feedback into executive summary"
+                >
+                  {isGeneratingSummary ? (
+                    <RefreshCw size={16} className="animate-spin text-[#050A15] shrink-0" />
+                  ) : (
+                    <FileText size={16} className="text-[#050A15] stroke-[2.5] shrink-0" />
                   )}
-                </>
-              )}
-            </div>
+                  <span>{isGeneratingSummary ? 'Analyzing...' : 'Executive Brief'}</span>
+                </button>
+
+                {/* 4. Close Early */}
+                {selectedSurvey.status === 'active' && (
+                  <button
+                    type="button"
+                    onClick={handleCloseEarly}
+                    className="h-10 px-4 rounded-xl bg-[#1D080E] hover:bg-[#2A0C14] border border-red-500/40 hover:border-red-500/60 text-red-400 hover:text-red-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 shadow-sm shadow-red-500/10"
+                    title="Close survey round immediately"
+                  >
+                    <X size={15} className="text-red-400 stroke-[2.5] shrink-0" />
+                    <span>Close Early</span>
+                  </button>
+                )}
+              </div>
+            )}
 
           </div>
         </div>
@@ -447,58 +464,70 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
         </div>
 
-        {/* ── 4. Capsule Navigation Tabs ───────────────────────────────── */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#070E1F] rounded-2xl border border-white/10 w-fit flex-wrap">
-          <button
-            type="button"
-            onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === 'analytics'
-                ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <BarChart3 size={15} />
-            <span>Ratings & Analytics</span>
-          </button>
+        {/* ── 4. Capsule Navigation Tabs & Create Action ──────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 p-1 bg-[#070E1F] rounded-2xl border border-white/10 w-fit flex-wrap">
+            <button
+              type="button"
+              onClick={() => setActiveTab('analytics')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'analytics'
+                  ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <BarChart3 size={15} />
+              <span>Ratings & Analytics</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('comments')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'comments'
+                  ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <MessageSquare size={15} />
+              <span>Resident Feedback ({responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string')).length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('ai_summary')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'ai_summary'
+                  ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <FileText size={15} />
+              <span>Executive Synthesis</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('questions')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'questions'
+                  ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <FileCheck size={15} />
+              <span>Survey Blueprint ({selectedSurvey?.questions.length})</span>
+            </button>
+          </div>
 
           <button
             type="button"
-            onClick={() => setActiveTab('comments')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === 'comments'
-                ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
-                : 'text-gray-400 hover:text-white'
-            }`}
+            onClick={() => setIsBuilderOpen(true)}
+            className="h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98]"
+            title="Create a new survey questionnaire"
           >
-            <MessageSquare size={15} />
-            <span>Resident Feedback ({responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string')).length})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('ai_summary')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === 'ai_summary'
-                ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <FileText size={15} />
-            <span>Executive Synthesis</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('questions')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === 'questions'
-                ? 'bg-[#00D4B2]/15 text-[#00D4B2] border border-[#00D4B2]/30 shadow-xs'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <FileCheck size={15} />
-            <span>Survey Blueprint ({selectedSurvey?.questions.length})</span>
+            <Plus size={16} className="stroke-[3]" />
+            <span>Create New Questionnaire</span>
           </button>
         </div>
 
