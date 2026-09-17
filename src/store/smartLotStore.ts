@@ -738,6 +738,7 @@ export const INITIAL_SURVEYS: Survey[] = [
       'sam.resident@strata.com'
     ],
     deadline: '2026-10-31',
+    bannerImage: '/bg_img_building.png',
     createdAt: '2026-09-01T09:00:00.000Z',
     createdBy: {
       name: 'Emma Wilson',

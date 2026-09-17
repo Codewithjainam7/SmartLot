@@ -381,6 +381,7 @@ export interface Survey {
   };
   closedAt?: string;
   aiExecutiveSummary?: SurveyAISummary;
+  bannerImage?: string; // Optional Google Forms-style form header banner
 }
 
 export interface SurveyResponse {

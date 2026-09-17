@@ -17,7 +17,7 @@ interface CustomSelectProps {
   placeholder?: string;
   label?: string;
   className?: string;
-  direction?: 'down' | 'up';
+  direction?: 'down' | 'up' | 'auto';
   size?: 'sm' | 'md';
   menuAlign?: 'left' | 'right';
 }
@@ -29,16 +29,60 @@ export function CustomSelect({
   placeholder = 'Select option...',
   label,
   className = '',
-  direction = 'down',
+  direction = 'auto',
   size = 'md',
   menuAlign = 'left',
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [computedDirection, setComputedDirection] = useState<'down' | 'up'>(direction === 'up' ? 'up' : 'down');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find(o => o.value === value);
-  const isUp = direction === 'up';
   const isSm = size === 'sm';
+
+  useEffect(() => {
+    if (isOpen && dropdownRef.current) {
+      if (direction === 'up') {
+        setComputedDirection('up');
+      } else if (direction === 'down') {
+        setComputedDirection('down');
+      } else {
+        // Auto smart positioning: detect space below vs above
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const menuHeight = size === 'sm' ? 210 : 250;
+
+        // Find nearest scrollable container (e.g. modal body)
+        let parentScrollContainer: HTMLElement | null = null;
+        let parent = dropdownRef.current.parentElement;
+        while (parent && parent !== document.body) {
+          const overflowY = window.getComputedStyle(parent).overflowY;
+          if (overflowY === 'auto' || overflowY === 'scroll') {
+            parentScrollContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+
+        let spaceBelow = window.innerHeight - rect.bottom;
+        let spaceAbove = rect.top;
+
+        if (parentScrollContainer) {
+          const parentRect = parentScrollContainer.getBoundingClientRect();
+          spaceBelow = Math.min(spaceBelow, parentRect.bottom - rect.bottom);
+          spaceAbove = Math.min(spaceAbove, rect.top - parentRect.top);
+        }
+
+        // If space below is insufficient and space above is larger, flip upward
+        if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+          setComputedDirection('up');
+        } else {
+          setComputedDirection('down');
+        }
+      }
+    }
+  }, [isOpen, direction, size]);
+
+  const isUp = computedDirection === 'up';
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

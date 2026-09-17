@@ -261,37 +261,57 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
           </div>
         )}
 
-        {/* Survey Hero Card */}
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm mb-6 relative overflow-hidden">
-
-          {/* Scheme & Category Badges */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] text-xs font-black uppercase tracking-wider">
-              <Building2 size={13} />
-              {activeScheme?.name || 'Cavallo Sydney'}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
-              {survey.category}
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs font-medium">
-              <Clock size={12} /> ~2 min
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-2 leading-tight">
-            {survey.title}
-          </h1>
-
-          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-            {survey.description}
-          </p>
-
-          {survey.deadline && (
-            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>Closing Deadline:</span>
-              <span className="font-bold text-gray-800 dark:text-gray-200">{survey.deadline}</span>
+        {/* Survey Hero Card with Google Forms-style Banner */}
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl shadow-sm mb-6 relative overflow-hidden">
+          {(survey.bannerImage || '/bg_img_building.png') && (
+            <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-gray-900">
+              <img 
+                src={survey.bannerImage || '/bg_img_building.png'} 
+                alt={survey.title}
+                className="w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-white">
+                <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/20">
+                  {activeScheme?.name || 'Strata Survey'}
+                </span>
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#00D4B2]/20 text-[#00D4B2] border border-[#00D4B2]/40 backdrop-blur-md">
+                  {survey.category}
+                </span>
+              </div>
             </div>
           )}
+
+          <div className="p-6 sm:p-8">
+            {/* Scheme & Category Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] text-xs font-black uppercase tracking-wider">
+                <Building2 size={13} />
+                {activeScheme?.name || 'Cavallo Sydney'}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+                {survey.category}
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs font-medium">
+                <Clock size={12} /> ~2 min
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-2 leading-tight">
+              {survey.title}
+            </h1>
+
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              {survey.description}
+            </p>
+
+            {survey.deadline && (
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>Closing Deadline:</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{survey.deadline}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Privacy & Unit Identifier Section */}

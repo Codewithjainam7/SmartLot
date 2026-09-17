@@ -28,13 +28,16 @@ import {
   Wrench,
   Tag,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Image as ImageIcon,
+  Palette
 } from 'lucide-react';
 import { SurveyQuestion, SurveyCategory, SurveyQuestionType, Survey } from '../types';
 import { STRATA_SURVEY_TEMPLATES } from '../services/aiSurveyService';
 import { SmartLotStore } from '../store/smartLotStore';
 import { useMorphingPopover } from './core/morphing-popover';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
+import { EmailCapsuleInput } from './core/EmailCapsuleInput';
 
 function useMorphingPopoverContext() {
   try {
@@ -43,6 +46,39 @@ function useMorphingPopoverContext() {
     return null;
   }
 }
+
+const PRESET_SURVEY_BANNERS = [
+  {
+    id: 'building',
+    label: 'Modern Architecture',
+    tag: 'Strata Building',
+    url: '/bg_img_building.png',
+  },
+  {
+    id: 'sunset_apartments',
+    label: 'Sunset Duplex',
+    tag: 'Residential',
+    url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'waterfront',
+    label: 'Waterfront Living',
+    tag: 'Contemporary',
+    url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'courtyard',
+    label: 'Garden & Courtyard',
+    tag: 'Community',
+    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'abstract_cyan',
+    label: 'Teal Geometric',
+    tag: 'Modern Abstract',
+    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+  },
+];
 
 const SURVEY_CATEGORY_OPTIONS: SelectOption[] = [
   { value: 'Annual Satisfaction', label: 'Annual Satisfaction', icon: <Star size={14} className="text-amber-500 fill-amber-400" /> },
@@ -84,7 +120,68 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   }, []);
 
   const activeScheme = store.activeScheme;
-  const currentMembers = store.members.filter(m => m.schemeId === activeScheme.id && m.email);
+
+  // Comprehensive Scheme Members Fetching (Store Members + Units Actors)
+  const schemeMembers = React.useMemo(() => {
+    const memberMap = new Map<string, { email: string; name: string; role: string; unitId?: string }>();
+    const currentSchemeId = (activeScheme?.id || '').toLowerCase();
+
+    // 1. Fetch from store.members
+    (store.members || [])
+      .filter(m => (m.schemeId || '').toLowerCase() === currentSchemeId && m.email && m.email.trim())
+      .forEach(m => {
+        const cleanEmail = m.email.trim();
+        const emailLower = cleanEmail.toLowerCase();
+        if (cleanEmail.includes('@')) {
+          memberMap.set(emailLower, {
+            email: cleanEmail,
+            name: m.name || cleanEmail.split('@')[0],
+            role: m.role || 'Resident',
+            unitId: m.unitId,
+          });
+        }
+      });
+
+    // 2. Fetch from store.units (unit actors)
+    (store.units || [])
+      .filter(u => (u.schemeId || '').toLowerCase() === currentSchemeId)
+      .forEach(u => {
+        (u.actors || []).forEach(a => {
+          if (a.email && a.email.trim()) {
+            const cleanEmail = a.email.trim();
+            const emailLower = cleanEmail.toLowerCase();
+            if (cleanEmail.includes('@') && !memberMap.has(emailLower)) {
+              memberMap.set(emailLower, {
+                email: cleanEmail,
+                name: a.name || cleanEmail.split('@')[0],
+                role: a.role || 'Resident',
+                unitId: u.unitId,
+              });
+            }
+          }
+        });
+      });
+
+    return Array.from(memberMap.values());
+  }, [store.members, store.units, activeScheme.id]);
+
+  const ownerMembers = React.useMemo(() => {
+    return schemeMembers.filter(m => {
+      const r = (m.role || '').toLowerCase();
+      return r.includes('owner') || r.includes('committee') || r.includes('proprietor') || r.includes('admin');
+    });
+  }, [schemeMembers]);
+
+  const tenantMembers = React.useMemo(() => {
+    return schemeMembers.filter(m => {
+      const r = (m.role || '').toLowerCase();
+      return r.includes('tenant') || r.includes('resident') || r.includes('occupant') || r.includes('renter');
+    });
+  }, [schemeMembers]);
+
+  const totalEnrolled = schemeMembers.length;
+  const ownerCount = ownerMembers.length;
+  const tenantCount = tenantMembers.length;
 
   // Modal Step State
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -96,6 +193,9 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   );
   const [category, setCategory] = useState<SurveyCategory>('Annual Satisfaction');
   const [deadline, setDeadline] = useState('');
+  const [bannerImage, setBannerImage] = useState<string>('/bg_img_building.png');
+  const [isBannerPickerOpen, setIsBannerPickerOpen] = useState(false);
+  const [customBannerUrl, setCustomBannerUrl] = useState('');
   
   // Questions State
   const [questions, setQuestions] = useState<SurveyQuestion[]>(() => {
@@ -113,17 +213,23 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
 
   // Recipients State (MCQ A1: All residents + role filtering + To/CC/BCC)
   const [audienceFilter, setAudienceFilter] = useState<'all' | 'owners' | 'tenants'>('all');
-  const [recipientEmails, setRecipientEmails] = useState<string>(() => {
-    return currentMembers.map(m => m.email).filter(Boolean).join(', ');
+  const [recipientEmails, setRecipientEmails] = useState<string[]>(() => {
+    return schemeMembers.map(m => m.email);
   });
   const [ccEmails, setCcEmails] = useState<string>('');
   const [bccEmails, setBccEmails] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const totalEnrolled = currentMembers.length;
-  const ownerCount = currentMembers.filter(m => m.role.toLowerCase().includes('owner') || m.role.toLowerCase().includes('committee')).length;
-  const tenantCount = currentMembers.filter(m => m.role.toLowerCase().includes('tenant') || m.role.toLowerCase().includes('resident')).length;
-  const recipientCount = recipientEmails.split(',').map(e => e.trim()).filter(Boolean).length;
+  // Ensure recipient emails are loaded once schemeMembers is ready if initially empty
+  const hasPopulatedRecipients = useRef(false);
+  useEffect(() => {
+    if (!hasPopulatedRecipients.current && schemeMembers.length > 0 && recipientEmails.length === 0) {
+      setRecipientEmails(schemeMembers.map(m => m.email));
+      hasPopulatedRecipients.current = true;
+    }
+  }, [schemeMembers, recipientEmails.length]);
+
+  const recipientCount = recipientEmails.length;
 
   // Scroll & input focus refs for dynamic question addition
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -170,14 +276,13 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   // Handler: Recipient Filter Toggle
   const handleFilterRecipients = (filter: 'all' | 'owners' | 'tenants') => {
     setAudienceFilter(filter);
-    let filtered = currentMembers;
     if (filter === 'owners') {
-      filtered = currentMembers.filter(m => m.role.toLowerCase().includes('owner') || m.role.toLowerCase().includes('committee'));
+      setRecipientEmails(ownerMembers.map(m => m.email));
     } else if (filter === 'tenants') {
-      filtered = currentMembers.filter(m => m.role.toLowerCase().includes('tenant') || m.role.toLowerCase().includes('resident'));
+      setRecipientEmails(tenantMembers.map(m => m.email));
+    } else {
+      setRecipientEmails(schemeMembers.map(m => m.email));
     }
-    const emails = filtered.map(m => m.email).filter(Boolean).join(', ');
-    setRecipientEmails(emails);
   };
 
   // Question manipulation handlers
@@ -240,7 +345,6 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
     setIsSubmitting(true);
 
     const parsedRecipients = recipientEmails
-      .split(',')
       .map(e => e.trim())
       .filter(e => e.length > 0 && e.includes('@'));
 
@@ -266,6 +370,7 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
         ccEmails: parsedCc.length > 0 ? parsedCc : undefined,
         bccEmails: parsedBcc.length > 0 ? parsedBcc : undefined,
         deadline: deadline.trim() || undefined,
+        bannerImage: bannerImage.trim() || undefined,
         questions,
         createdBy: {
           name: store.activePersona.name,
@@ -369,6 +474,148 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
           {/* STEP 1: Details & AI Generation */}
           {currentStep === 1 && (
             <div className="space-y-6 animate-in fade-in duration-200">
+              
+              {/* Form Header Banner (Google Forms Style) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                      <ImageIcon size={14} className="text-[#00897B] dark:text-[#00D4B2]" />
+                      <span>Form Header Banner</span>
+                    </label>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-emerald-200 dark:border-[#00D4B2]/30">
+                      Google Forms Style
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {bannerImage && (
+                      <button
+                        type="button"
+                        onClick={() => setBannerImage('')}
+                        className="text-xs text-rose-500 hover:text-rose-600 font-semibold cursor-pointer px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                      >
+                        Remove Banner
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsBannerPickerOpen(!isBannerPickerOpen)}
+                      className="px-3 py-1 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Palette size={13} />
+                      <span>{isBannerPickerOpen ? 'Close Gallery' : bannerImage ? 'Change Banner' : 'Add Banner'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Active Banner Preview Card */}
+                {bannerImage ? (
+                  <div className="relative h-36 sm:h-44 w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xs group bg-gray-900">
+                    <img
+                      src={bannerImage}
+                      alt="Form Header Banner Preview"
+                      className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-4">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#00D4B2] font-mono mb-0.5">
+                        BANNER PREVIEW • VISIBLE TO RESIDENTS
+                      </span>
+                      <h4 className="text-white font-extrabold text-sm sm:text-base truncate">
+                        {title || 'Survey Questionnaire Banner'}
+                      </h4>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsBannerPickerOpen(true)}
+                    className="w-full h-24 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-[#00897B] dark:hover:border-[#00D4B2] bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer group"
+                  >
+                    <ImageIcon size={20} className="text-gray-400 group-hover:text-[#00897B] dark:group-hover:text-[#00D4B2] transition-colors" />
+                    <span className="text-xs font-bold">Click to add a cover banner to this survey</span>
+                    <span className="text-[10px] text-gray-400">Renders as a Google Forms-style hero banner on resident mobile screens</span>
+                  </button>
+                )}
+
+                {/* Expandable Curated Preset & Custom URL Picker */}
+                {isBannerPickerOpen && (
+                  <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 shadow-sm space-y-3 animate-in fade-in zoom-in-98 duration-200">
+                    <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                      Choose a Curated Strata Banner:
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                      {PRESET_SURVEY_BANNERS.map((preset) => {
+                        const isSelected = bannerImage === preset.url;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => {
+                              setBannerImage(preset.url);
+                              setIsBannerPickerOpen(false);
+                            }}
+                            className={`relative h-20 rounded-xl overflow-hidden border text-left cursor-pointer group transition-all ${
+                              isSelected
+                                ? 'border-[#00897B] dark:border-[#00D4B2] ring-2 ring-[#00897B]/40 dark:ring-[#00D4B2]/40 shadow-xs'
+                                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                            }`}
+                          >
+                            <img
+                              src={preset.url}
+                              alt={preset.label}
+                              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-2">
+                              <span className="text-[10px] font-extrabold text-white leading-tight truncate">
+                                {preset.label}
+                              </span>
+                            </div>
+                            {isSelected && (
+                              <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] flex items-center justify-center text-[10px]">
+                                <Check size={10} strokeWidth={3} />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Image URL Bar */}
+                    <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex gap-2">
+                      <input
+                        type="url"
+                        value={customBannerUrl}
+                        onChange={(e) => setCustomBannerUrl(e.target.value)}
+                        placeholder="Or paste custom image URL (https://...)"
+                        className="flex-1 bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2]"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (customBannerUrl.trim()) {
+                              setBannerImage(customBannerUrl.trim());
+                              setIsBannerPickerOpen(false);
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (customBannerUrl.trim()) {
+                            setBannerImage(customBannerUrl.trim());
+                            setIsBannerPickerOpen(false);
+                          }
+                        }}
+                        disabled={!customBannerUrl.trim()}
+                        className="px-3 py-1.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer"
+                      >
+                        Apply URL
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               
               {/* Quick Strata Question Composer */}
               <div className="p-5 rounded-2xl bg-emerald-50/60 dark:bg-[#00D4B2]/5 border border-emerald-200/70 dark:border-[#00D4B2]/20 shadow-xs">
@@ -842,26 +1089,26 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                 </div>
               </div>
 
-              {/* Email Addresses Textarea */}
+              {/* Recipient Inboxes Capsule Selector */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <span>Recipient Inboxes (To: Comma-separated)</span>
+                    <span>Recipient Inboxes (To: Capsules)</span>
                     <span className="text-rose-500">*</span>
                   </label>
-                  <span className="px-2 py-0.5 rounded-md bg-[#00897B]/10 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] text-[11px] font-mono font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#00897B]/10 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] text-[11px] font-mono font-bold border border-[#00897B]/20 dark:border-[#00D4B2]/30">
                     {recipientCount} {recipientCount === 1 ? 'recipient' : 'recipients'} queued
                   </span>
                 </div>
-                <textarea
-                  rows={3}
-                  value={recipientEmails}
-                  onChange={(e) => setRecipientEmails(e.target.value)}
-                  placeholder="sarah.jones@duplex.com, michael.chen@coronation.com, ..."
-                  className="w-full bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] transition-all shadow-2xs resize-none"
+                <EmailCapsuleInput
+                  emails={recipientEmails}
+                  onChange={setRecipientEmails}
+                  schemeMembers={schemeMembers}
+                  schemeName={activeScheme.name}
+                  placeholder="Type email address and press Enter or comma..."
                 />
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
-                  Separate multiple inboxes with commas. Direct one-click login tokens are generated per recipient.
+                  Direct one-click login tokens are generated per recipient capsule. Type or paste emails to add more.
                 </p>
               </div>
 
