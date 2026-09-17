@@ -1386,7 +1386,7 @@ export function SurveyBuilderFormContent({
                   <button
                     type="button"
                     onClick={() => handleFilterRecipients('all')}
-                    className={`p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between group active:scale-[0.98] select-none ${
                       audienceFilter === 'all'
                         ? 'border-[#00897B] dark:border-[#00D4B2] bg-[#00897B]/5 dark:bg-[#00D4B2]/10 ring-2 ring-[#00897B]/30 dark:ring-[#00D4B2]/30 shadow-xs'
                         : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121622] hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50/50 dark:hover:bg-[#161b2a]'
@@ -1394,7 +1394,7 @@ export function SurveyBuilderFormContent({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                           audienceFilter === 'all'
                             ? 'bg-[#00897B]/15 dark:bg-[#00D4B2]/20 text-[#00897B] dark:text-[#00D4B2]'
                             : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-white'
@@ -1412,7 +1412,7 @@ export function SurveyBuilderFormContent({
                           </span>
                         </div>
                       </div>
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-all ${
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-all shrink-0 ${
                         audienceFilter === 'all'
                           ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] shadow-xs font-black'
                           : 'border-2 border-gray-300 dark:border-white/20'
@@ -1428,7 +1428,7 @@ export function SurveyBuilderFormContent({
                   <button
                     type="button"
                     onClick={() => handleFilterRecipients('owners')}
-                    className={`p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between group active:scale-[0.98] select-none ${
                       audienceFilter === 'owners'
                         ? 'border-[#00897B] dark:border-[#00D4B2] bg-[#00897B]/5 dark:bg-[#00D4B2]/10 ring-2 ring-[#00897B]/30 dark:ring-[#00D4B2]/30 shadow-xs'
                         : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121622] hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50/50 dark:hover:bg-[#161b2a]'
@@ -1436,7 +1436,7 @@ export function SurveyBuilderFormContent({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                           audienceFilter === 'owners'
                             ? 'bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'
                             : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-white'
@@ -1454,7 +1454,7 @@ export function SurveyBuilderFormContent({
                           </span>
                         </div>
                       </div>
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-all ${
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-all shrink-0 ${
                         audienceFilter === 'owners'
                           ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] shadow-xs font-black'
                           : 'border-2 border-gray-300 dark:border-white/20'
@@ -1470,7 +1470,7 @@ export function SurveyBuilderFormContent({
                   <button
                     type="button"
                     onClick={() => handleFilterRecipients('tenants')}
-                    className={`p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between group ${
+                    className={`p-3.5 sm:p-4 rounded-2xl border text-left cursor-pointer transition-all relative overflow-hidden flex flex-col justify-between group active:scale-[0.98] select-none ${
                       audienceFilter === 'tenants'
                         ? 'border-[#00897B] dark:border-[#00D4B2] bg-[#00897B]/5 dark:bg-[#00D4B2]/10 ring-2 ring-[#00897B]/30 dark:ring-[#00D4B2]/30 shadow-xs'
                         : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121622] hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50/50 dark:hover:bg-[#161b2a]'
@@ -1478,7 +1478,7 @@ export function SurveyBuilderFormContent({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                           audienceFilter === 'tenants'
                             ? 'bg-purple-500/15 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400'
                             : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-white'
@@ -1496,7 +1496,7 @@ export function SurveyBuilderFormContent({
                           </span>
                         </div>
                       </div>
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-all ${
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] transition-all shrink-0 ${
                         audienceFilter === 'tenants'
                           ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] shadow-xs font-black'
                           : 'border-2 border-gray-300 dark:border-white/20'

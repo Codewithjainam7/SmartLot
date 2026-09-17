@@ -1489,14 +1489,14 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
       {/* Delete Confirmation Modal */}
       {surveyToDelete && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-red-500/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center shrink-0">
-                <Trash2 size={24} />
+        <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0d1117] border-t sm:border border-gray-200/80 dark:border-white/10 rounded-t-3xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-7">
+            <div className="flex items-start gap-3.5 sm:gap-4 mb-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-red-500/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center shrink-0">
+                <Trash2 size={22} className="sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-heading font-black text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-heading font-black text-gray-900 dark:text-white">
                   Delete Survey Form?
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium leading-relaxed">
@@ -1505,8 +1505,8 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-[#060D1A] border border-gray-200/80 dark:border-white/5 rounded-2xl p-4 mb-5 space-y-2">
-              <div className="text-xs font-bold text-gray-900 dark:text-white">
+            <div className="bg-gray-50 dark:bg-[#060D1A] border border-gray-200/80 dark:border-white/5 rounded-2xl p-3.5 sm:p-4 mb-4 sm:mb-5 space-y-2">
+              <div className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2">
                 {surveyToDelete.title}
               </div>
               <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 font-mono">
@@ -1514,22 +1514,22 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   {surveyToDelete.id}
                 </span>
                 <span>•</span>
-                <span>{surveyToDelete.category}</span>
+                <span className="truncate">{surveyToDelete.category}</span>
               </div>
               <div className="pt-2 border-t border-gray-200/80 dark:border-white/5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5 font-medium">
                 <AlertCircle size={14} className="shrink-0" />
                 <span>
-                  This will also permanently delete <strong>{store.surveyResponses.filter(r => r.surveyId === surveyToDelete.id).length} resident responses</strong>.
+                  Permanently deletes <strong>{store.surveyResponses.filter(r => r.surveyId === surveyToDelete.id).length} resident responses</strong>.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end gap-2.5 sm:gap-3">
               <button
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setSurveyToDelete(null)}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                className="flex-1 sm:flex-initial h-11 sm:h-10 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 text-xs font-bold transition-all cursor-pointer disabled:opacity-50 select-none active:scale-95 text-center justify-center flex items-center"
               >
                 Cancel
               </button>
@@ -1537,7 +1537,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 type="button"
                 disabled={isDeleting}
                 onClick={handleConfirmDelete}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-md shadow-red-600/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                className="flex-1 sm:flex-initial h-11 sm:h-10 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-md shadow-red-600/20 hover:opacity-95 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 select-none active:scale-95"
               >
                 {isDeleting ? (
                   <>
