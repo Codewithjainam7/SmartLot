@@ -167,13 +167,13 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-2xl flex flex-col items-center">
-          <SmartLotLogo className="h-9 mb-6" />
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00897B] dark:text-[#00D4B2] flex items-center justify-center mb-4 border border-emerald-500/20">
-            <Loader2 size={28} className="animate-spin" />
+      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-3.5 sm:p-4">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-10 max-w-md w-full text-center shadow-2xl flex flex-col items-center">
+          <SmartLotLogo className="h-8 sm:h-9 mb-5 sm:mb-6" />
+          <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500/10 text-[#00897B] dark:text-[#00D4B2] flex items-center justify-center mb-4 border border-emerald-500/20">
+            <Loader2 size={26} className="animate-spin sm:w-7 sm:h-7" />
           </div>
-          <h2 className="text-xl font-heading font-black text-gray-900 dark:text-white mb-2">
+          <h2 className="text-lg sm:text-xl font-heading font-black text-gray-900 dark:text-white mb-2">
             Loading Questionnaire...
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
@@ -186,24 +186,24 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
 
   if (!survey) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-xl">
-          <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle size={32} />
+      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-3.5 sm:p-4">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-xl">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <AlertCircle size={28} className="sm:w-8 sm:h-8" />
           </div>
-          <h2 className="text-xl font-heading font-black text-gray-900 dark:text-white mb-2">Survey Not Found</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          <h2 className="text-lg sm:text-xl font-heading font-black text-gray-900 dark:text-white mb-2">Survey Not Found</h2>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3">
             The feedback questionnaire link you opened is invalid, expired, or could not be found.
           </p>
           {cleanToken && (
-            <p className="text-xs font-mono text-gray-500 dark:text-gray-400 mb-6 bg-gray-100 dark:bg-white/5 py-1.5 px-3 rounded-xl inline-block border border-gray-200 dark:border-white/5">
+            <p className="text-xs font-mono text-gray-500 dark:text-gray-400 mb-5 bg-gray-100 dark:bg-white/5 py-1.5 px-3 rounded-xl inline-block border border-gray-200 dark:border-white/5 truncate max-w-full">
               Survey Token: <span className="font-bold text-gray-900 dark:text-white">{cleanToken}</span>
             </p>
           )}
           {onClose && (
             <button
               onClick={onClose}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] font-bold text-sm hover:opacity-90 transition-all cursor-pointer shadow-sm"
+              className="w-full h-11 sm:h-10 px-4 rounded-xl bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] font-bold text-xs sm:text-sm hover:opacity-90 transition-all cursor-pointer shadow-sm select-none active:scale-95 flex items-center justify-center"
             >
               Back to Home
             </button>
@@ -308,37 +308,37 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
   // If submitted successfully
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-8 sm:p-10 max-w-lg w-full text-center shadow-2xl animate-in zoom-in-95 duration-300">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 size={36} className="stroke-[2.5]" />
+      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-3.5 sm:p-4 pb-safe">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-10 max-w-lg w-full text-center shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <CheckCircle2 size={32} className="sm:w-9 sm:h-9 stroke-[2.5]" />
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-wider mb-3 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-wider mb-2.5 sm:mb-3 border border-emerald-500/20">
             <CheckCircle2 size={13} /> Response Recorded
           </span>
 
-          <h1 className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-3">
+          <h1 className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-2 sm:mb-3">
             Thank You for Your Voice!
           </h1>
 
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-5 sm:mb-6 leading-relaxed">
             Your feedback has been securely delivered to the <strong>Strata Committee</strong> and <strong>Strata Management Agency</strong> for {activeScheme?.name || 'your building'}.
           </p>
 
-          <div className="bg-gray-50 dark:bg-black/30 border border-gray-100 dark:border-white/5 rounded-2xl p-4 text-left mb-6 space-y-2 text-xs text-gray-600 dark:text-gray-400">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Survey:</span>
+          <div className="bg-gray-50 dark:bg-black/30 border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 sm:p-4 text-left mb-5 sm:mb-6 space-y-2 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between items-center gap-2">
+              <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">Survey:</span>
               <span className="font-bold text-gray-900 dark:text-white truncate max-w-[200px]">{survey.title}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Privacy Mode:</span>
+            <div className="flex justify-between items-center gap-2">
+              <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">Privacy Mode:</span>
               <span className="font-bold text-[#00D4B2]">
                 {isAnonymous ? '🔒 Total Anonymity' : `Unit ${selectedUnit || 'Submitted'}`}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Submitted:</span>
+            <div className="flex justify-between items-center gap-2">
+              <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">Submitted:</span>
               <span>{new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           </div>
@@ -346,7 +346,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
           {onClose ? (
             <button
               onClick={onClose}
-              className="w-full py-3.5 px-6 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-sm shadow-sm transition-all cursor-pointer"
+              className="w-full h-12 py-3.5 px-6 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-sm shadow-sm transition-all cursor-pointer select-none active:scale-95 flex items-center justify-center"
             >
               Close & Return
             </button>
@@ -793,11 +793,11 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
 
           {/* Submit Action Bar */}
           {!isClosed && (
-            <div className="pt-2">
+            <div className="pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 px-6 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-base shadow-md shadow-blue-500/20 active:scale-[0.99] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                className="w-full h-13 sm:h-14 py-3.5 sm:py-4 px-6 rounded-xl sm:rounded-2xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-extrabold text-sm sm:text-base shadow-md shadow-blue-500/20 active:scale-[0.98] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 select-none"
               >
                 {isSubmitting ? (
                   <>
@@ -812,7 +812,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                 )}
               </button>
               
-              <p className="text-center text-[11px] text-gray-400 dark:text-gray-500 mt-3">
+              <p className="text-center text-[11px] text-gray-400 dark:text-gray-500 mt-2.5">
                 Zero credentials saved • Protected by SmartLot Strata Privacy Protocols
               </p>
             </div>
