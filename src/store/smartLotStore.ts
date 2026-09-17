@@ -2457,6 +2457,79 @@ export function useSmartLotStore() {
         setMotions(prev => prev && prev.length > 0 ? prev : INITIAL_MOTIONS);
       }
 
+      // Fetch surveys from Supabase
+      try {
+        const { data: dbSurveys } = await supabase.from('surveys').select('*');
+        if (dbSurveys && dbSurveys.length > 0) {
+          const mappedSurveys: Survey[] = dbSurveys.map(s => ({
+            id: s.id,
+            schemeId: s.scheme_id,
+            title: s.title,
+            description: s.description || '',
+            category: s.category || 'General Satisfaction',
+            status: s.status || 'active',
+            targetAudience: s.target_audience || 'All Residents',
+            recipientEmails: s.recipient_emails || [],
+            ccEmails: s.cc_emails || [],
+            bccEmails: s.bcc_emails || [],
+            questions: Array.isArray(s.questions) ? s.questions : [],
+            deadline: s.deadline || undefined,
+            createdAt: s.created_at,
+            createdBy: s.created_by || { name: 'Strata Manager', role: 'Strata Manager' },
+            closedAt: s.closed_at || undefined,
+            aiExecutiveSummary: s.ai_executive_summary || undefined,
+            bannerImage: s.banner_image || undefined,
+          }));
+
+          setSurveys(prev => {
+            const combined = [...mappedSurveys];
+            prev.forEach(p => {
+              if (!combined.some(c => c.id === p.id)) {
+                combined.push(p);
+              }
+            });
+            try {
+              window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(combined));
+            } catch {}
+            return combined;
+          });
+        }
+      } catch (srvErr) {
+        console.warn('[SmartLot Store] Failed to sync surveys from Supabase:', srvErr);
+      }
+
+      // Fetch survey responses from Supabase
+      try {
+        const { data: dbResponses } = await supabase.from('survey_responses').select('*');
+        if (dbResponses && dbResponses.length > 0) {
+          const mappedResponses: SurveyResponse[] = dbResponses.map(r => ({
+            id: r.id,
+            surveyId: r.survey_id,
+            schemeId: r.scheme_id,
+            unitId: r.unit_id || undefined,
+            respondentName: r.respondent_name || undefined,
+            isAnonymous: r.is_anonymous || false,
+            submittedAt: r.submitted_at,
+            answers: r.answers || {},
+          }));
+
+          setSurveyResponses(prev => {
+            const combined = [...mappedResponses];
+            prev.forEach(p => {
+              if (!combined.some(c => c.id === p.id)) {
+                combined.push(p);
+              }
+            });
+            try {
+              window.localStorage.setItem('smartlot_global_survey_responses_v2', JSON.stringify(combined));
+            } catch {}
+            return combined;
+          });
+        }
+      } catch (rspErr) {
+        console.warn('[SmartLot Store] Failed to sync survey responses from Supabase:', rspErr);
+      }
+
     } catch (err) {
       console.error("Error fetching from Supabase:", err);
     } finally {
@@ -4565,6 +4638,30 @@ export function useSmartLotStore() {
       return updated;
     });
 
+    // Persist survey to Supabase
+    try {
+      await supabase.from('surveys').upsert({
+        id: newSurvey.id,
+        scheme_id: newSurvey.schemeId,
+        title: newSurvey.title,
+        description: newSurvey.description,
+        category: newSurvey.category,
+        status: newSurvey.status,
+        target_audience: newSurvey.targetAudience,
+        recipient_emails: newSurvey.recipientEmails,
+        cc_emails: newSurvey.ccEmails || [],
+        bcc_emails: newSurvey.bccEmails || [],
+        questions: newSurvey.questions,
+        deadline: newSurvey.deadline || null,
+        created_at: newSurvey.createdAt,
+        created_by: newSurvey.createdBy,
+        banner_image: newSurvey.bannerImage || null,
+        ai_executive_summary: newSurvey.aiExecutiveSummary || null,
+      });
+    } catch (dbErr) {
+      console.warn('[SmartLot Store] Failed to persist survey to Supabase:', dbErr);
+    }
+
     // Dispatch survey email invitation to recipients if provided
     if (payload.recipientEmails && payload.recipientEmails.length > 0) {
       const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
@@ -4607,6 +4704,17 @@ export function useSmartLotStore() {
       } catch {}
       return updated;
     });
+
+    (async () => {
+      try {
+        await supabase.from('surveys').update({
+          status: 'closed',
+          closed_at: closedTime
+        }).eq('id', surveyId);
+      } catch (e) {
+        console.warn('[SmartLot Store] Supabase closeSurvey notice:', e);
+      }
+    })();
   };
 
   const submitSurveyResponse = (payload: Omit<SurveyResponse, 'id' | 'submittedAt'>): SurveyResponse => {
@@ -4615,6 +4723,25 @@ export function useSmartLotStore() {
       id: `RSP-${Date.now().toString().slice(-6)}`,
       submittedAt: new Date().toISOString(),
     };
+
+    // Fire-and-forget Supabase persist
+    (async () => {
+      try {
+        const { error } = await supabase.from('survey_responses').insert({
+          id: newResponse.id,
+          survey_id: newResponse.surveyId,
+          scheme_id: newResponse.schemeId,
+          unit_id: newResponse.unitId || null,
+          respondent_name: newResponse.respondentName || null,
+          is_anonymous: newResponse.isAnonymous,
+          submitted_at: newResponse.submittedAt,
+          answers: newResponse.answers,
+        });
+        if (error) console.warn('[SmartLot Store] Supabase survey_responses insert error:', error);
+      } catch (err) {
+        console.warn('[SmartLot Store] Supabase survey_responses catch error:', err);
+      }
+    })();
 
     setSurveyResponses(prev => {
       const updated = [newResponse, ...prev];

@@ -1,9 +1,10 @@
 // @smartlot/component GuestSurveyView
 // Mobile-first, zero-login standalone feedback view for residents.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 import { Survey, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
+import { supabase } from '../lib/supabase';
 import { 
   Star, 
   ShieldCheck, 
@@ -18,7 +19,8 @@ import {
   Home, 
   Send,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  Loader2
 } from 'lucide-react';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 
@@ -32,32 +34,114 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
   // Find matching survey by ID or token
   const cleanToken = surveyToken ? surveyToken.trim() : '';
 
-  let survey: Survey | undefined = 
-    store.surveys.find(s => s.id === cleanToken) ||
-    store.surveys.find(s => s.id.toLowerCase() === cleanToken.toLowerCase()) ||
-    store.surveys.find(s => s.id.toLowerCase().includes(cleanToken.toLowerCase()));
+  // 1. In-memory / localStorage resolver helper
+  const findLocalSurvey = (): Survey | undefined => {
+    let found = 
+      store.surveys.find(s => s.id === cleanToken) ||
+      store.surveys.find(s => s.id.toLowerCase() === cleanToken.toLowerCase()) ||
+      store.surveys.find(s => s.id.toLowerCase().includes(cleanToken.toLowerCase()));
 
-  // If not found in in-memory store, attempt recovery from global localStorage
-  if (!survey && typeof window !== 'undefined' && window.localStorage) {
-    try {
-      const raw = window.localStorage.getItem('smartlot_global_surveys_v2');
-      if (raw) {
-        const parsed: Survey[] = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          survey = parsed.find(s => s.id === cleanToken) ||
-            parsed.find(s => s.id.toLowerCase() === cleanToken.toLowerCase()) ||
-            parsed.find(s => s.id.toLowerCase().includes(cleanToken.toLowerCase()));
+    if (!found && typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const raw = window.localStorage.getItem('smartlot_global_surveys_v2');
+        if (raw) {
+          const parsed: Survey[] = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            found = parsed.find(s => s.id === cleanToken) ||
+              parsed.find(s => s.id.toLowerCase() === cleanToken.toLowerCase()) ||
+              parsed.find(s => s.id.toLowerCase().includes(cleanToken.toLowerCase()));
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to resolve survey from localStorage:', e);
+      }
+    }
+
+    if (!found && (!cleanToken || cleanToken === 'demo')) {
+      found = store.surveys[0];
+    }
+    return found;
+  };
+
+  const [survey, setSurvey] = useState<Survey | undefined>(findLocalSurvey);
+  const [isLoading, setIsLoading] = useState<boolean>(() => !findLocalSurvey() && !!cleanToken);
+
+  // Fetch from Supabase if not found locally
+  useEffect(() => {
+    const local = findLocalSurvey();
+    if (local) {
+      setSurvey(local);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!cleanToken) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoading(true);
+
+    const fetchFromSupabase = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('surveys')
+          .select('*')
+          .ilike('id', cleanToken)
+          .maybeSingle();
+
+        if (error) {
+          console.warn('Supabase survey fetch notice:', error);
+        }
+
+        if (data && isMounted) {
+          const loadedSurvey: Survey = {
+            id: data.id,
+            schemeId: data.scheme_id,
+            title: data.title,
+            description: data.description || '',
+            category: data.category || 'General Satisfaction',
+            status: data.status || 'active',
+            targetAudience: data.target_audience || 'All Residents',
+            recipientEmails: data.recipient_emails || [],
+            ccEmails: data.cc_emails || [],
+            bccEmails: data.bcc_emails || [],
+            questions: Array.isArray(data.questions) ? data.questions : [],
+            deadline: data.deadline || undefined,
+            createdAt: data.created_at,
+            createdBy: data.created_by || { name: 'Strata Manager', role: 'Strata Manager' },
+            closedAt: data.closed_at || undefined,
+            aiExecutiveSummary: data.ai_executive_summary || undefined,
+            bannerImage: data.banner_image || undefined,
+          };
+
+          setSurvey(loadedSurvey);
+
+          // Sync into local storage and store surveys list
+          try {
+            const raw = window.localStorage.getItem('smartlot_global_surveys_v2');
+            const parsed = raw ? JSON.parse(raw) : [];
+            if (Array.isArray(parsed) && !parsed.some(s => s.id === loadedSurvey.id)) {
+              window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify([loadedSurvey, ...parsed]));
+            }
+          } catch {}
+        }
+      } catch (err) {
+        console.error('Failed to load survey from Supabase:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
         }
       }
-    } catch (e) {
-      console.warn('Failed to resolve survey from localStorage:', e);
-    }
-  }
+    };
 
-  // Fallback ONLY IF no survey token was specified or demo mode
-  if (!survey && (!cleanToken || cleanToken === 'demo')) {
-    survey = store.surveys[0];
-  }
+    fetchFromSupabase();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cleanToken]);
 
   const activeScheme = store.schemes.find(s => s.id === survey?.schemeId) || store.activeScheme;
 
@@ -80,6 +164,25 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
     { value: 'Townhouse / Commercial', label: 'Townhouse / Commercial', icon: <Building2 size={14} className="text-blue-500" /> },
     { value: 'Other', label: 'Other Lot', icon: <Building2 size={14} className="text-purple-500" /> }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-2xl flex flex-col items-center">
+          <SmartLotLogo className="h-9 mb-6" />
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-[#00897B] dark:text-[#00D4B2] flex items-center justify-center mb-4 border border-emerald-500/20">
+            <Loader2 size={28} className="animate-spin" />
+          </div>
+          <h2 className="text-xl font-heading font-black text-gray-900 dark:text-white mb-2">
+            Loading Questionnaire...
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+            Fetching real-time survey form for {cleanToken || 'community'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!survey) {
     return (
@@ -138,7 +241,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
     setAnswers(prev => ({ ...prev, [questionId]: text }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check required fields
@@ -160,18 +263,34 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
     setIsSubmitting(true);
     setValidationError(null);
 
-    setTimeout(() => {
-      store.submitSurveyResponse({
-        surveyId: survey.id,
-        schemeId: survey.schemeId,
-        unitId: isAnonymous ? undefined : selectedUnit.trim(),
-        respondentName: isAnonymous ? undefined : (residentName.trim() || undefined),
-        isAnonymous,
+    const responseId = `RSP-${Date.now().toString().slice(-6)}`;
+    const newResponsePayload = {
+      surveyId: survey.id,
+      schemeId: survey.schemeId,
+      unitId: isAnonymous ? undefined : selectedUnit.trim(),
+      respondentName: isAnonymous ? undefined : (residentName.trim() || undefined),
+      isAnonymous,
+      answers,
+    };
+
+    try {
+      await supabase.from('survey_responses').insert({
+        id: responseId,
+        survey_id: survey.id,
+        scheme_id: survey.schemeId,
+        unit_id: isAnonymous ? null : selectedUnit.trim(),
+        respondent_name: isAnonymous ? null : (residentName.trim() || null),
+        is_anonymous: isAnonymous,
+        submitted_at: new Date().toISOString(),
         answers,
       });
-      setIsSubmitting(false);
-      setSubmitted(true);
-    }, 600);
+    } catch (dbErr) {
+      console.warn('Supabase survey_responses save error:', dbErr);
+    }
+
+    store.submitSurveyResponse(newResponsePayload);
+    setIsSubmitting(false);
+    setSubmitted(true);
   };
 
   // Star label helpers

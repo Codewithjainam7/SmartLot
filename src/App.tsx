@@ -69,23 +69,19 @@ export default function App() {
       const hashStr = window.location.hash || '';
       const pathStr = window.location.pathname || '';
 
-      // Extract query parameters from hash (?token=...) or window.location.search
-      let queryString = '';
-      if (hashStr.includes('?')) {
-        queryString = hashStr.split('?')[1];
-      } else if (window.location.search) {
-        queryString = window.location.search.replace(/^\?/, '');
-      }
+      // Extract query parameters from both window.location.search and hash (?token=...)
+      const searchParams = new URLSearchParams(window.location.search ? window.location.search.replace(/^\?/, '') : '');
+      const hashParams = new URLSearchParams(hashStr.includes('?') ? hashStr.split('?')[1] : '');
+      const getParam = (key: string) => searchParams.get(key) || hashParams.get(key);
 
-      const params = new URLSearchParams(queryString);
-      const token = params.get('token');
-      const email = params.get('email');
-      const name = params.get('name');
-      const role = params.get('role');
-      const unit = params.get('unit');
-      const lot = params.get('lot');
-      const schemeFromParam = params.get('scheme');
-      const surveyParam = params.get('survey_token') || params.get('survey');
+      const token = getParam('token');
+      const email = getParam('email');
+      const name = getParam('name');
+      const role = getParam('role');
+      const unit = getParam('unit');
+      const lot = getParam('lot');
+      const schemeFromParam = getParam('scheme');
+      const surveyParam = getParam('survey_token') || getParam('survey');
 
       if (surveyParam) {
         setSurveyToken(surveyParam);
