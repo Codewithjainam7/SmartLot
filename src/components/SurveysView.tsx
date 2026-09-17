@@ -184,7 +184,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
           {/* Hero Content */}
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="max-w-2xl space-y-1.5">
+            <div className="max-w-3xl space-y-1.5">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 text-[11px] font-black uppercase tracking-wider">
                 <Building2 size={12} className="text-[#00D4B2]" />
                 {activeScheme.name.toUpperCase()} ({activeScheme.id})
@@ -198,30 +198,9 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 Listen. Improve.<span className="text-[#00D4B2] ml-1">Build a Better Community.</span>
               </p>
 
-              <p className="text-xs text-gray-400 max-w-xl font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">
+              <p className="text-xs text-gray-400 max-w-xl font-medium leading-relaxed">
                 Empower residents to rate building performance, share suggestions, and help shape a better living experience. Every response matters.
               </p>
-            </div>
-
-            {/* Right: Sleek Floating Glassmorphic Quote */}
-            <div className="shrink-0 self-start md:self-center">
-              <div className="relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/15 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] max-w-xs text-left">
-                {/* Specular highlight border on top */}
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                <div className="absolute -top-6 -right-6 w-16 h-16 bg-[#00D4B2]/10 rounded-full blur-lg pointer-events-none" />
-                
-                <div className="relative z-10 flex items-start gap-2.5">
-                  <span className="text-2xl text-[#00D4B2] font-serif leading-none shrink-0 select-none">“</span>
-                  <div>
-                    <p className="text-xs sm:text-sm font-bold text-white leading-snug tracking-tight">
-                      Stronger Communities
-                    </p>
-                    <p className="text-xs text-gray-300 font-medium mt-0.5">
-                      Start with Listening.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -234,15 +213,12 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
           <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
             
-            {/* Left Section: Double Squircle Icon + Title Selector + Active Badge + Deadline */}
+            {/* Left Section: Normal Icon + Title Selector + Active Badge + Deadline */}
             {selectedSurvey ? (
               <div className="flex items-start sm:items-center gap-4 flex-1">
-                {/* Layered Double Squircle Icon */}
-                <div className="relative shrink-0 select-none hidden sm:block">
-                  <div className="absolute -top-1.5 -left-1.5 w-12 h-12 rounded-2xl bg-[#00D4B2]/10 border border-[#00D4B2]/20 -rotate-3 pointer-events-none" />
-                  <div className="relative w-12 h-12 rounded-2xl bg-[#081B26] border border-[#00D4B2]/40 flex items-center justify-center shadow-lg shadow-[#00D4B2]/10">
-                    <FileText size={22} className="text-[#00D4B2] stroke-[2.2]" />
-                  </div>
+                {/* Clean Normal Icon Badge */}
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#081B26] border border-[#00D4B2]/30 flex items-center justify-center text-[#00D4B2] shrink-0 shadow-sm hidden sm:flex">
+                  <FileText size={22} className="text-[#00D4B2]" />
                 </div>
 
                 <div className="flex-1 space-y-1.5">
@@ -292,7 +268,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             {/* Vertical Divider (matches screenshot) */}
             <div className="hidden xl:block w-px h-12 bg-white/10 mx-1 shrink-0" />
 
-            {/* Right Section: The 4 Action Buttons */}
+            {/* Right Section: Quick Action Buttons */}
             {selectedSurvey && (
               <div className="flex items-center gap-2.5 flex-wrap xl:justify-end shrink-0">
                 {/* 1. Copy Link */}
@@ -323,23 +299,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <span>Test Survey</span>
                 </button>
 
-                {/* 3. Executive Brief */}
-                <button
-                  type="button"
-                  onClick={handleGenerateSummary}
-                  disabled={isGeneratingSummary || responses.length === 0}
-                  className="h-10 px-5 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 shrink-0 shadow-md shadow-[#00D4B2]/25 hover:scale-[1.02] active:scale-[0.98]"
-                  title="Synthesize resident feedback into executive summary"
-                >
-                  {isGeneratingSummary ? (
-                    <RefreshCw size={16} className="animate-spin text-[#050A15] shrink-0" />
-                  ) : (
-                    <FileText size={16} className="text-[#050A15] stroke-[2.5] shrink-0" />
-                  )}
-                  <span>{isGeneratingSummary ? 'Analyzing...' : 'Executive Brief'}</span>
-                </button>
-
-                {/* 4. Close Early */}
+                {/* 3. Close Early */}
                 {selectedSurvey.status === 'active' && (
                   <button
                     type="button"
