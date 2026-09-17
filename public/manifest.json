@@ -1,0 +1,19 @@
+﻿{
+  "short_name": "SmartLot",
+  "name": "SmartLot - Australian Strata Platform",
+  "description": "Deterministic Strata Management & Resident Operations Platform",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0A0A0F",
+  "theme_color": "#00D4B2",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"]
+}
