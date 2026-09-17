@@ -4,7 +4,7 @@ import {
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
-  Sparkles, Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap,
+  Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap,
   ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, SlidersHorizontal
 } from 'lucide-react';
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';

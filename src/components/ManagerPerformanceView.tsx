@@ -19,7 +19,6 @@ import {
   MessageSquare, 
   Filter, 
   ArrowUpRight, 
-  Sparkles,
   Check,
   ChevronRight,
   HelpCircle,

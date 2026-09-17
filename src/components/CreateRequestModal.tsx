@@ -23,7 +23,6 @@ import {
   Phone,
   Building,
   MapPin,
-  Sparkles,
   Send,
   ShieldAlert,
   FileText,

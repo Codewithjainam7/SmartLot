@@ -16,7 +16,6 @@ import {
   User,
   Mail,
   Home,
-  Sparkles,
   Building,
   X
 } from 'lucide-react';

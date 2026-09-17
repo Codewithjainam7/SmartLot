@@ -11,7 +11,8 @@ import {
   Building2, 
   Clock, 
   CheckCircle2, 
-  Sparkles, 
+  Sun,
+  Moon,
   Lock, 
   User, 
   Home, 
@@ -47,12 +48,12 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
 
   if (!survey) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1121] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-[#151D30] border border-gray-200 dark:border-gray-800 rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
+      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-xl">
           <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4">
             <AlertCircle size={32} />
           </div>
-          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-2">Survey Not Found</h2>
+          <h2 className="text-xl font-heading font-black text-gray-900 dark:text-white mb-2">Survey Not Found</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
             The feedback questionnaire link you opened is invalid or may have been removed.
           </p>
@@ -148,17 +149,17 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
   // If submitted successfully
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F0FDFA] to-[#F8FAFC] dark:from-[#08131F] dark:to-[#0B1121] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-[#111A2E] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-8 sm:p-10 max-w-lg w-full text-center shadow-2xl animate-in zoom-in-95 duration-300">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#00D4B2] to-[#0055FF] text-white flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#00D4B2]/20">
-            <CheckCircle2 size={42} className="stroke-[2.5]" />
+      <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-8 sm:p-10 max-w-lg w-full text-center shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 size={36} className="stroke-[2.5]" />
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-wider mb-3">
-            <Sparkles size={13} /> Response Recorded
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-wider mb-3 border border-emerald-500/20">
+            <CheckCircle2 size={13} /> Response Recorded
           </span>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-3">
+          <h1 className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-3">
             Thank You for Your Voice!
           </h1>
 
@@ -186,7 +187,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
           {onClose ? (
             <button
               onClick={onClose}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] text-white font-extrabold text-sm shadow-lg shadow-blue-500/25 hover:opacity-95 transition-all cursor-pointer"
+              className="w-full py-3.5 px-6 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-sm shadow-sm transition-all cursor-pointer"
             >
               Close & Return
             </button>
@@ -201,10 +202,10 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#070C18] text-gray-900 dark:text-gray-100 flex flex-col items-center justify-start pb-16">
+    <div className="min-h-screen bg-[#F4F6F9] dark:bg-[#0a0a0f] text-gray-900 dark:text-gray-100 flex flex-col items-center justify-start pb-16 font-sans">
       
       {/* Top Brand Banner */}
-      <header className="w-full bg-white dark:bg-[#0E1628] border-b border-gray-200 dark:border-gray-800/80 sticky top-0 z-30 shadow-xs backdrop-blur-md">
+      <header className="w-full bg-white dark:bg-[#0d1117] border-b border-gray-200/80 dark:border-white/10 sticky top-0 z-30 shadow-xs backdrop-blur-md">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <SmartLotLogo className="h-7" />
@@ -214,9 +215,21 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/10">
-            <ShieldCheck size={14} className="text-[#00D4B2]" />
-            <span>Zero Login Required</span>
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200/80 dark:border-white/10">
+              <ShieldCheck size={14} className="text-[#00D4B2]" />
+              <span className="hidden sm:inline">Zero Login Required</span>
+              <span className="sm:hidden">Zero Login</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => store.setTheme(store.theme === 'dark' ? 'light' : 'dark')}
+              className="p-1.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-all cursor-pointer"
+              title={`Switch to ${store.theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {store.theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
           </div>
         </div>
       </header>
@@ -238,8 +251,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
         )}
 
         {/* Survey Hero Card */}
-        <div className="bg-white dark:bg-[#0F182E] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 sm:p-8 shadow-sm mb-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#00D4B2] via-[#0055FF] to-purple-600" />
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm mb-6 relative overflow-hidden">
 
           {/* Scheme & Category Badges */}
           <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -255,7 +267,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2 leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white mb-2 leading-tight">
             {survey.title}
           </h1>
 
@@ -272,14 +284,14 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
         </div>
 
         {/* Privacy & Unit Identifier Section */}
-        <div className="bg-white dark:bg-[#0F182E] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-sm mb-6">
+        <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2.5">
               <div className={`p-2 rounded-xl ${isAnonymous ? 'bg-emerald-500/15 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>
                 {isAnonymous ? <Lock size={18} /> : <Home size={18} />}
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">
+                <h3 className="text-sm font-heading font-bold text-gray-900 dark:text-white">
                   {isAnonymous ? 'Anonymous Submission Active' : 'Unit Identification'}
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -320,7 +332,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                     setSelectedUnit(e.target.value);
                     setValidationError(null);
                   }}
-                  className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
                 >
                   <option value="">Select your unit...</option>
                   {Array.from({ length: 32 }, (_, i) => `Unit ${i + 1}`).map(u => (
@@ -340,7 +352,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                   value={residentName}
                   onChange={(e) => setResidentName(e.target.value)}
                   placeholder="e.g. Sarah Connor"
-                  className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                 />
               </div>
             </div>
@@ -360,7 +372,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             return (
               <div 
                 key={q.id}
-                className="bg-white dark:bg-[#0F182E] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-sm hover:border-[#00D4B2]/40 transition-all"
+                className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 transition-all"
               >
                 {/* Question Header */}
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -374,7 +386,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                   )}
                 </div>
 
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-base sm:text-lg font-heading font-bold text-gray-900 dark:text-white mb-4">
                   {q.questionText}
                 </h2>
 
@@ -466,13 +478,13 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                           onClick={() => handleChoiceSelect(q.id, opt)}
                           className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold ${
                             isSelected
-                              ? 'border-[#00D4B2] bg-[#00D4B2]/10 text-gray-900 dark:text-white font-bold shadow-xs'
-                              : 'border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#15203B]/50 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700'
+                              ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/60 dark:bg-[#00D4B2]/10 text-gray-900 dark:text-white font-bold shadow-xs'
+                              : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
                           }`}
                         >
                           <span>{opt}</span>
                           <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            isSelected ? 'border-[#00D4B2] bg-[#00D4B2]' : 'border-gray-300 dark:border-gray-600'
+                            isSelected ? 'border-[#0055FF] dark:border-[#00D4B2] bg-[#0055FF] dark:bg-[#00D4B2]' : 'border-gray-300 dark:border-white/20'
                           }`}>
                             {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                           </span>
@@ -496,13 +508,13 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                           onClick={() => handleMultiChoiceToggle(q.id, opt)}
                           className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold ${
                             isSelected
-                              ? 'border-[#00D4B2] bg-[#00D4B2]/10 text-gray-900 dark:text-white font-bold shadow-xs'
-                              : 'border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#15203B]/50 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700'
+                              ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/60 dark:bg-[#00D4B2]/10 text-gray-900 dark:text-white font-bold shadow-xs'
+                              : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
                           }`}
                         >
                           <span>{opt}</span>
                           <span className={`w-4 h-4 rounded-md border flex items-center justify-center ${
-                            isSelected ? 'border-[#00D4B2] bg-[#00D4B2] text-white' : 'border-gray-300 dark:border-gray-600'
+                            isSelected ? 'border-[#0055FF] dark:border-[#00D4B2] bg-[#0055FF] dark:bg-[#00D4B2] text-white dark:text-[#0a0a0f]' : 'border-gray-300 dark:border-white/20'
                           }`}>
                             {isSelected && <CheckCircle2 size={12} className="stroke-[3]" />}
                           </span>
@@ -521,7 +533,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                       value={currentAns || ''}
                       onChange={(e) => handleTextChange(q.id, e.target.value)}
                       placeholder="Share your specific thoughts, ideas, or issues for the committee..."
-                      className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-2xl p-3.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] resize-none"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] resize-none"
                     />
                   </div>
                 )}
@@ -544,7 +556,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#0055FF] via-[#0088FF] to-[#00D4B2] hover:opacity-95 active:scale-[0.99] text-white font-extrabold text-base shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                className="w-full py-4 px-6 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-base shadow-md shadow-blue-500/20 active:scale-[0.99] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

@@ -12,7 +12,6 @@ import {
   LogIn, 
   Home, 
   ShieldCheck, 
-  Sparkles,
   ArrowRight,
   LogOut
 } from 'lucide-react';

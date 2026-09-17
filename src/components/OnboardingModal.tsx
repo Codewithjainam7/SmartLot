@@ -1,7 +1,7 @@
 // @smartlot/component
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { X, Sparkles, Building, ArrowRight } from 'lucide-react';
+import { X, Building, ArrowRight } from 'lucide-react';
 import { SmartLotStore } from '../store/smartLotStore';
 
 interface OnboardingModalProps {

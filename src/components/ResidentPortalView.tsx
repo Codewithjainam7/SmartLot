@@ -15,8 +15,7 @@ import {
   Calendar,
   ExternalLink,
   ChevronRight,
-  User,
-  Sparkles
+  User
 } from 'lucide-react';
 import { ResidentRequest, SmartLotStore, Member } from '../store/smartLotStore';
 

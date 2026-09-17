@@ -1,7 +1,7 @@
 // @smartlot/component
 import React from 'react';
 import { useState } from 'react';
-import { Moon, Sun, Monitor, Shield, Sparkles, Check, User, Mail, Phone, Lock, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Moon, Sun, Monitor, Shield, Check, User, Mail, Phone, Lock, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface SettingsViewProps {
   theme: 'light' | 'dark';
@@ -309,7 +309,7 @@ export function SettingsView({
       {/* General Compliance / Audit Section */}
       <div className="bg-gray-50 dark:bg-[#0d1117]/50 p-6 rounded-3xl border border-gray-200/60 dark:border-gray-800 space-y-3">
         <h4 className="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-          <Sparkles size={14} className="text-[#00D4B2]" /> Global Scheme Sandbox Preferences
+          <Shield size={14} className="text-[#00D4B2]" /> Global Scheme Sandbox Preferences
         </h4>
         <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
           Preferences set here apply across all switchable schemes ({theme === 'dark' ? 'Dark theme active' : 'Light theme active'}). Context state modifications sync automatically to your local storage device.

@@ -38,7 +38,6 @@ import {
   TrendingUp,
   RotateCcw,
   Printer,
-  Sparkles,
   Lock,
   Unlock,
   Shield,
@@ -418,7 +417,7 @@ export function VotingHubView({
       {/* ── Toast Notification ────────────────────────────────── */}
       {actionNotification && (
         <div className="fixed top-6 right-4 sm:right-8 z-50 bg-gray-950 text-white dark:bg-white dark:text-black px-4 sm:px-5 py-3 rounded-2xl shadow-2xl border border-white/20 text-xs font-bold flex items-center gap-2.5 animate-in fade-in slide-in-from-top duration-200">
-          <Sparkles size={15} className="text-[#00D4B2]" />
+          <CheckCircle2 size={15} className="text-[#00D4B2]" />
           <span>{actionNotification}</span>
         </div>
       )}

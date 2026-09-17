@@ -2,7 +2,6 @@
 // Strata Manager & Committee feedback dashboard with live analytics, AI executive sentiment synthesis, and guest link sharing.
 import React, { useState } from 'react';
 import { 
-  Sparkles, 
   Plus, 
   Share2, 
   ExternalLink, 
@@ -22,6 +21,7 @@ import {
   Check,
   RefreshCw,
   FileCheck,
+  FileText,
   BarChart3,
   Calendar
 } from 'lucide-react';
@@ -118,10 +118,10 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#F4F6F9] dark:bg-[#070C18] overflow-y-auto font-sans">
+    <div className="flex-1 flex flex-col h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] overflow-y-auto font-sans">
       
       {/* Top Header */}
-      <div className="bg-white dark:bg-[#0E1628] border-b border-gray-200 dark:border-gray-800/80 px-6 py-5 shrink-0">
+      <div className="bg-white dark:bg-[#0d1117] border-b border-gray-200/80 dark:border-white/10 px-6 py-5 shrink-0">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -129,9 +129,9 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <Building2 size={13} />
                 {activeScheme.name} ({activeScheme.id})
               </span>
-              <span className="text-xs text-gray-400 font-bold">• Part 1 Feedback Engine</span>
+
             </div>
-            <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-heading font-black text-gray-900 dark:text-white">
               Resident Feedback & Surveys
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -143,7 +143,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             <button
               type="button"
               onClick={() => setIsBuilderOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] hover:opacity-95 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-blue-500/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-105 active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 cursor-pointer transition-all"
             >
               <Plus size={16} />
               <span>Create New Questionnaire</span>
@@ -157,14 +157,14 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         
         {/* Survey Picker & Controls Toolbar */}
         {selectedSurvey && (
-          <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-wrap">
               <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Active Feedback Round:</label>
               
               <select
                 value={selectedSurvey.id}
                 onChange={(e) => setSelectedSurveyId(e.target.value)}
-                className="bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
+                className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
               >
                 {store.surveys.map(s => (
                   <option key={s.id} value={s.id}>
@@ -196,7 +196,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 transition-all cursor-pointer"
                 title="Copy direct guest survey link"
               >
                 {copiedLink ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
@@ -223,15 +223,15 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 type="button"
                 onClick={handleGenerateSummary}
                 disabled={isGeneratingSummary || responses.length === 0}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:opacity-90 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40"
+                className="px-3.5 py-1.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40"
                 title="Synthesize resident feedback into executive summary"
               >
                 {isGeneratingSummary ? (
                   <RefreshCw size={14} className="animate-spin" />
                 ) : (
-                  <Sparkles size={14} />
+                  <FileText size={14} />
                 )}
-                <span>{isGeneratingSummary ? 'Analyzing...' : 'Generate AI Brief'}</span>
+                <span>{isGeneratingSummary ? 'Synthesizing...' : 'Executive Brief'}</span>
               </button>
 
               {selectedSurvey.status === 'active' && (
@@ -252,7 +252,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Card 1: Responses */}
-          <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-5 shadow-xs">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Submissions
@@ -261,7 +261,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <Users size={16} />
               </div>
             </div>
-            <div className="text-2xl font-black text-gray-900 dark:text-white">
+            <div className="text-2xl font-heading font-black text-gray-900 dark:text-white">
               {responses.length} <span className="text-xs font-medium text-gray-400">/ {activeScheme.lots} Lots</span>
             </div>
             <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1 flex items-center gap-1">
@@ -271,7 +271,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
 
           {/* Card 2: Overall Satisfaction */}
-          <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-5 shadow-xs">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Building Satisfaction
@@ -280,7 +280,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <Star size={16} className="fill-amber-400" />
               </div>
             </div>
-            <div className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+            <div className="text-2xl font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
               <span>{avgSatisfaction}</span>
               <span className="text-xs font-medium text-gray-400">/ 5.0 ⭐</span>
             </div>
@@ -290,7 +290,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
 
           {/* Card 3: Net Promoter Score */}
-          <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-5 shadow-xs">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Community NPS
@@ -299,7 +299,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <Award size={16} />
               </div>
             </div>
-            <div className="text-2xl font-black text-gray-900 dark:text-white">
+            <div className="text-2xl font-heading font-black text-gray-900 dark:text-white">
               +{npsScore}
             </div>
             <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1">
@@ -308,7 +308,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
 
           {/* Card 4: Anonymous vs Tagged */}
-          <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-5 shadow-xs">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Privacy Breakdown
@@ -317,7 +317,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <Lock size={16} />
               </div>
             </div>
-            <div className="text-2xl font-black text-gray-900 dark:text-white">
+            <div className="text-2xl font-heading font-black text-gray-900 dark:text-white">
               {anonymousCount} <span className="text-xs font-medium text-gray-400">Anonymous</span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -327,57 +327,57 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-800 flex items-center gap-2">
+        {/* Navigation Tabs - Modern Segmented Capsule */}
+        <div className="flex items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-white/5 rounded-2xl border border-gray-200/80 dark:border-white/10 w-fit flex-wrap">
           <button
             type="button"
             onClick={() => setActiveTab('analytics')}
-            className={`py-3 px-4 text-xs sm:text-sm font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'analytics'
-                ? 'border-[#0055FF] dark:border-[#00D4B2] text-[#0055FF] dark:text-[#00D4B2]'
-                : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-white'
+                ? 'bg-white dark:bg-[#1a1d27] text-gray-900 dark:text-white shadow-xs'
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            <BarChart3 size={16} />
+            <BarChart3 size={15} />
             <span>Ratings & Analytics</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('comments')}
-            className={`py-3 px-4 text-xs sm:text-sm font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'comments'
-                ? 'border-[#0055FF] dark:border-[#00D4B2] text-[#0055FF] dark:text-[#00D4B2]'
-                : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-white'
+                ? 'bg-white dark:bg-[#1a1d27] text-gray-900 dark:text-white shadow-xs'
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            <MessageSquare size={16} />
+            <MessageSquare size={15} />
             <span>Resident Feedback ({responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string')).length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('ai_summary')}
-            className={`py-3 px-4 text-xs sm:text-sm font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'ai_summary'
-                ? 'border-[#0055FF] dark:border-[#00D4B2] text-[#0055FF] dark:text-[#00D4B2]'
-                : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-white'
+                ? 'bg-white dark:bg-[#1a1d27] text-gray-900 dark:text-white shadow-xs'
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            <Sparkles size={16} className="text-purple-500" />
-            <span>AI Executive Brief</span>
+            <FileText size={15} />
+            <span>Executive Synthesis</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('questions')}
-            className={`py-3 px-4 text-xs sm:text-sm font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'questions'
-                ? 'border-[#0055FF] dark:border-[#00D4B2] text-[#0055FF] dark:text-[#00D4B2]'
-                : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-white'
+                ? 'bg-white dark:bg-[#1a1d27] text-gray-900 dark:text-white shadow-xs'
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            <FileCheck size={16} />
+            <FileCheck size={15} />
             <span>Survey Blueprint ({selectedSurvey?.questions.length})</span>
           </button>
         </div>
@@ -388,8 +388,8 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Left 2 Cols: Question Breakdown Bars */}
-              <div className="lg:col-span-2 bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-xs space-y-6">
-                <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <div className="lg:col-span-2 bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-xs space-y-6">
+                <h3 className="text-base font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
                   <span>Rating Breakdown by Question</span>
                 </h3>
 
@@ -448,7 +448,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               <div className="space-y-6">
                 
                 {/* NPS Card */}
-                <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-xs space-y-4">
+                <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-xs space-y-4">
                   <h4 className="text-sm font-black text-gray-900 dark:text-white">
                     NPS Sentiment Distribution
                   </h4>
@@ -527,7 +527,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         {/* TAB 2: Resident Comments & Open Feedback */}
         {activeTab === 'comments' && selectedSurvey && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-2xl p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-2xl p-4">
               <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
                 Filter by Respondent Type:
               </div>
@@ -588,7 +588,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   return (
                     <div 
                       key={r.id}
-                      className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-5 shadow-xs flex flex-col justify-between"
+                      className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs flex flex-col justify-between"
                     >
                       <div>
                         {/* Header Badge */}
@@ -618,7 +618,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                         {textAnswers.length > 0 ? (
                           <div className="space-y-2">
                             {textAnswers.map((item, idx) => (
-                              <div key={idx} className="bg-gray-50 dark:bg-[#15203B] rounded-2xl p-3 border border-gray-100 dark:border-white/5">
+                              <div key={idx} className="bg-gray-50 dark:bg-[#1a1d27] rounded-2xl p-3 border border-gray-100 dark:border-white/5">
                                 <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">
                                   {item.qText}
                                 </p>
@@ -657,16 +657,16 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           <div className="space-y-6 animate-in fade-in duration-200">
             
             {/* Action Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-purple-950/20 via-indigo-950/20 to-blue-950/20 border border-purple-500/30 rounded-3xl p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-blue-50/60 dark:bg-white/[0.03] border border-blue-200/70 dark:border-white/10 rounded-2xl p-5">
               <div>
-                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-black uppercase tracking-wider mb-0.5">
-                  <Sparkles size={16} />
-                  <span>AI Executive Sentiment Brief</span>
+                <div className="flex items-center gap-2 text-[#0055FF] dark:text-[#00D4B2] text-xs font-black uppercase tracking-wider mb-0.5">
+                  <FileText size={15} />
+                  <span>Executive Sentiment Digest</span>
                 </div>
-                <h3 className="text-lg font-black text-gray-900 dark:text-white">
+                <h3 className="text-lg font-heading font-black text-gray-900 dark:text-white">
                   AGM & Strata Committee Digest
                 </h3>
-                <p className="text-xs text-gray-600 dark:text-gray-300">
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                   Synthesizes all resident feedback, ratings, and open complaints into prioritized action items.
                 </p>
               </div>
@@ -675,21 +675,21 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 type="button"
                 onClick={handleGenerateSummary}
                 disabled={isGeneratingSummary}
-                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-purple-600/30 flex items-center gap-2 cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0"
+                className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-xs sm:text-sm shadow-sm flex items-center gap-2 cursor-pointer transition-all shrink-0"
               >
                 <RefreshCw size={14} className={isGeneratingSummary ? 'animate-spin' : ''} />
-                <span>{isGeneratingSummary ? 'Synthesizing...' : 'Re-analyze with AI'}</span>
+                <span>{isGeneratingSummary ? 'Synthesizing...' : 'Re-analyze Feedback'}</span>
               </button>
             </div>
 
             {selectedSurvey.aiExecutiveSummary ? (
-              <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
                 
                 {/* Top Sentiment Verdict Pill */}
                 <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
                   <div className="flex items-center gap-3">
                     <span className="px-4 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black text-sm uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1.5">
-                      <Sparkles size={14} />
+                      <CheckCircle2 size={14} />
                       {selectedSurvey.aiExecutiveSummary.overallSentiment} Sentiment
                     </span>
                     <span className="text-xs font-bold text-gray-500">
@@ -703,7 +703,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 </div>
 
                 {/* Executive Brief Paragraph */}
-                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#15203B] border border-gray-100 dark:border-white/5">
+                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-100 dark:border-white/5">
                   <h4 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-1">
                     Executive Brief (AGM Ready)
                   </h4>
@@ -769,21 +769,21 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
               </div>
             ) : (
-              <div className="p-8 rounded-3xl bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 text-center">
-                <Sparkles size={32} className="text-purple-500 mx-auto mb-3" />
-                <h4 className="font-black text-base text-gray-900 dark:text-white mb-1">
-                  AI Summary Not Yet Generated
+              <div className="p-8 rounded-2xl bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 text-center">
+                <FileCheck size={32} className="text-[#0055FF] dark:text-[#00D4B2] mx-auto mb-3" />
+                <h4 className="font-heading font-black text-base text-gray-900 dark:text-white mb-1">
+                  Executive Summary Not Yet Generated
                 </h4>
-                <p className="text-xs text-gray-500 mb-4 max-w-md mx-auto">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto font-medium">
                   Click the button below to synthesize all {responses.length} resident submissions into top strengths and action items.
                 </p>
                 <button
                   type="button"
                   onClick={handleGenerateSummary}
                   disabled={isGeneratingSummary}
-                  className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-extrabold text-xs cursor-pointer shadow-md shadow-purple-600/30 hover:bg-purple-500 transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-xs cursor-pointer shadow-sm transition-all"
                 >
-                  Generate AI Executive Report
+                  Generate Executive Report
                 </button>
               </div>
             )}
@@ -793,10 +793,10 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
         {/* TAB 4: Survey Blueprint */}
         {activeTab === 'questions' && selectedSurvey && (
-          <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800/80 rounded-3xl p-6 shadow-xs space-y-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-xs space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
               <div>
-                <h3 className="text-base font-black text-gray-900 dark:text-white">
+                <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
                   Active Survey Questions ({selectedSurvey.questions.length})
                 </h3>
                 <p className="text-xs text-gray-500">
@@ -809,7 +809,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
             <div className="space-y-3">
               {selectedSurvey.questions.map((q, idx) => (
-                <div key={q.id} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#15203B]/70 border border-gray-200 dark:border-gray-700/60 flex items-start gap-3">
+                <div key={q.id} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#1a1d27]/70 border border-gray-200 dark:border-white/10 flex items-start gap-3">
                   <span className="w-6 h-6 rounded-lg bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
                     {idx + 1}
                   </span>

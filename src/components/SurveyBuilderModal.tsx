@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { 
   X, 
-  Sparkles, 
+  ClipboardCheck,
+  Wand2,
   Plus, 
   Trash2, 
   MoveUp, 
@@ -204,23 +205,23 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#0E1628] border border-gray-200 dark:border-gray-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-black/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00D4B2] to-[#0055FF] text-white flex items-center justify-center shadow-md shadow-[#00D4B2]/20">
-              <Sparkles size={20} />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 flex items-center justify-center shrink-0">
+              <ClipboardCheck size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-lg font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
                 <span>Create Feedback Questionnaire</span>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2]">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20">
                   {activeScheme.name}
                 </span>
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Design custom surveys with AI or strata templates and dispatch guest links via email.
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                Design custom surveys with smart assistance or strata templates and dispatch guest links via email.
               </p>
             </div>
           </div>
@@ -234,7 +235,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
         </div>
 
         {/* Stepper Navigation */}
-        <div className="px-6 py-2.5 bg-gray-100/60 dark:bg-black/30 border-b border-gray-200 dark:border-gray-800/80 flex items-center justify-between shrink-0 text-xs font-bold">
+        <div className="px-6 py-2.5 bg-gray-100/60 dark:bg-black/30 border-b border-gray-200 dark:border-white/10/80 flex items-center justify-between shrink-0 text-xs font-bold">
           <div className="flex items-center gap-6">
             <button
               type="button"
@@ -246,7 +247,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
               <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black ${
                 currentStep === 1 ? 'bg-[#0055FF] dark:bg-[#00D4B2] text-white dark:text-black' : 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400'
               }`}>1</span>
-              <span>Survey Details & AI</span>
+              <span>Survey Details & Questions</span>
             </button>
 
             <span className="text-gray-300 dark:text-gray-700">&rarr;</span>
@@ -290,14 +291,14 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
           {currentStep === 1 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              {/* AI Quick Generator Card */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-[#00D4B2]/10 via-blue-500/10 to-purple-500/10 border border-[#00D4B2]/30 shadow-xs">
-                <div className="flex items-center gap-2 mb-2 text-[#00A38C] dark:text-[#00D4B2] font-black text-xs uppercase tracking-wider">
-                  <Sparkles size={15} />
-                  <span>AI Survey Question Generator</span>
+              {/* Quick Strata Question Composer */}
+              <div className="p-5 rounded-2xl bg-blue-50/60 dark:bg-white/[0.03] border border-blue-200/70 dark:border-white/10 shadow-xs">
+                <div className="flex items-center gap-2 mb-2 text-[#0055FF] dark:text-[#00D4B2] font-black text-xs uppercase tracking-wider">
+                  <Wand2 size={15} />
+                  <span>Strata Question Assistant</span>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-300 mb-3">
-                  Describe what you want to assess (e.g. <em>"Evaluate elevator reliability, noise insulation after 10 PM, and lobby renovations"</em>). AI will automatically compose strata-tailored questions.
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 font-medium">
+                  Describe building areas to assess (e.g. <em>"Evaluate lift reliability, corridor acoustics after 10 PM, and pool maintenance"</em>). SmartLot will compose strata-tailored questions.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
@@ -305,7 +306,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="e.g. Ask residents about recent lift repairs and weekend visitor parking..."
-                    className="flex-1 bg-white dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                    className="flex-1 bg-white dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2]"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -317,7 +318,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     type="button"
                     onClick={handleGenerateAI}
                     disabled={isGeneratingAI || !aiPrompt.trim()}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00D4B2] to-[#0055FF] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#00D4B2]/20 flex items-center justify-center gap-2 hover:opacity-95 cursor-pointer disabled:opacity-50 shrink-0"
+                    className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-xs sm:text-sm shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shrink-0 transition-all"
                   >
                     {isGeneratingAI ? (
                       <>
@@ -326,8 +327,8 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                       </>
                     ) : (
                       <>
-                        <Sparkles size={15} />
-                        <span>Generate with AI</span>
+                        <Wand2 size={15} />
+                        <span>Generate Questions</span>
                       </>
                     )}
                   </button>
@@ -345,7 +346,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                       key={tmpl.id}
                       type="button"
                       onClick={() => handleSelectTemplate(tmpl.id)}
-                      className="text-left p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#15203B]/50 hover:border-[#00D4B2] dark:hover:border-[#00D4B2] transition-all cursor-pointer group"
+                      className="text-left p-3.5 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/50 hover:border-[#00D4B2] dark:hover:border-[#00D4B2] transition-all cursor-pointer group"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-extrabold text-xs text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors">
@@ -373,7 +374,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                   />
                 </div>
 
@@ -384,7 +385,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as SurveyCategory)}
-                    className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
                   >
                     <option value="Annual Satisfaction">Annual Satisfaction</option>
                     <option value="Strata Management Performance">Strata Management Performance</option>
@@ -404,7 +405,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] resize-none"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] resize-none"
                 />
               </div>
 
@@ -416,7 +417,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full sm:w-64 bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
+                  className="w-full sm:w-64 bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
                 />
                 <p className="text-[11px] text-gray-400 mt-1">
                   Leave blank for an open, continuous feedback collection round.
@@ -451,7 +452,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
               {questions.map((q, idx) => (
                 <div 
                   key={q.id}
-                  className="p-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111A2E] shadow-xs space-y-3"
+                  className="p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d1117] shadow-xs space-y-3"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 flex items-center justify-center text-xs font-black">
@@ -493,7 +494,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     value={q.questionText}
                     onChange={(e) => handleUpdateQuestion(q.id, { questionText: e.target.value })}
                     placeholder="Enter question text..."
-                    className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                   />
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
@@ -502,7 +503,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                       <select
                         value={q.type}
                         onChange={(e) => handleUpdateQuestion(q.id, { type: e.target.value as SurveyQuestionType })}
-                        className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-gray-900 dark:text-white cursor-pointer"
+                        className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-gray-900 dark:text-white cursor-pointer"
                       >
                         <option value="star_rating">⭐ 1-5 Star Rating</option>
                         <option value="nps_score">📊 0-10 Net Promoter Score</option>
@@ -518,7 +519,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                         type="text"
                         value={q.category}
                         onChange={(e) => handleUpdateQuestion(q.id, { category: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-gray-900 dark:text-white"
+                        className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-gray-900 dark:text-white"
                       />
                     </div>
 
@@ -555,7 +556,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
                       audienceFilter === 'all'
                         ? 'border-[#00D4B2] bg-[#00D4B2]/10 text-gray-900 dark:text-white font-extrabold shadow-xs'
-                        : 'border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#15203B]/50 text-gray-600 dark:text-gray-400'
+                        : 'border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/50 text-gray-600 dark:text-gray-400'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -573,7 +574,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
                       audienceFilter === 'owners'
                         ? 'border-[#00D4B2] bg-[#00D4B2]/10 text-gray-900 dark:text-white font-extrabold shadow-xs'
-                        : 'border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#15203B]/50 text-gray-600 dark:text-gray-400'
+                        : 'border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/50 text-gray-600 dark:text-gray-400'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -591,7 +592,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
                       audienceFilter === 'tenants'
                         ? 'border-[#00D4B2] bg-[#00D4B2]/10 text-gray-900 dark:text-white font-extrabold shadow-xs'
-                        : 'border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#15203B]/50 text-gray-600 dark:text-gray-400'
+                        : 'border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/50 text-gray-600 dark:text-gray-400'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -615,7 +616,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                   value={recipientEmails}
                   onChange={(e) => setRecipientEmails(e.target.value)}
                   placeholder="sarah.jones@duplex.com, michael.chen@coronation.com, ..."
-                  className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-xs sm:text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                  className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs sm:text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                 />
               </div>
 
@@ -629,7 +630,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     value={ccEmails}
                     onChange={(e) => setCcEmails(e.target.value)}
                     placeholder="emma.wilson@agency.com"
-                    className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                   />
                 </div>
 
@@ -642,7 +643,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                     value={bccEmails}
                     onChange={(e) => setBccEmails(e.target.value)}
                     placeholder="audit@smartlot.com"
-                    className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                   />
                 </div>
               </div>
@@ -700,7 +701,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                 type="button"
                 onClick={handlePublish}
                 disabled={isSubmitting || questions.length === 0}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#0055FF] to-[#00D4B2] text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-blue-500/25 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

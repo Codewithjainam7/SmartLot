@@ -11,7 +11,6 @@ import {
   Clock, 
   AlertTriangle, 
   Vote, 
-  Sparkles, 
   Building2, 
   Layers, 
   ArrowRight,

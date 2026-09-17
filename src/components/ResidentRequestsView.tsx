@@ -32,7 +32,6 @@ import {
   Send,
   Mail,
   MapPin,
-  Sparkles,
   Building,
   Lock,
   Shield,
