@@ -243,20 +243,20 @@ export function Dashboard({ store }: DashboardProps) {
         <UnitDetailCard store={store} />
 
         {/* Committee Motions & Voting Hub Preview */}
-        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
+        <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 space-y-3.5 sm:space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] flex items-center justify-center font-bold">
+              <div className="w-9 h-9 rounded-2xl bg-[#0055FF]/10 text-[#0055FF] flex items-center justify-center font-bold shrink-0">
                 <Vote size={20} />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Committee Motions & Voting</h3>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">Committee Motions & Voting</h3>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 shrink-0">
                     {allMotions.length} Motions
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                   Statutory strata voting records, resolutions & active ballots
                 </p>
               </div>
@@ -266,7 +266,7 @@ export function Dashboard({ store }: DashboardProps) {
               <button
                 type="button"
                 onClick={() => store.setActiveView('voting')}
-                className="px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-[#0044CC] text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#0055FF]/20"
+                className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-[#0044CC] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#0055FF]/20 select-none active:scale-95"
               >
                 <span>Voting Hub</span>
                 <ArrowRight size={13} />
@@ -275,11 +275,11 @@ export function Dashboard({ store }: DashboardProps) {
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar touch-pan-x">
             <button
               type="button"
               onClick={() => setMotionFilter('all')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer select-none active:scale-95 whitespace-nowrap shrink-0 ${
                 motionFilter === 'all'
                   ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs'
                   : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -290,7 +290,7 @@ export function Dashboard({ store }: DashboardProps) {
             <button
               type="button"
               onClick={() => setMotionFilter('active')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer select-none active:scale-95 whitespace-nowrap shrink-0 ${
                 motionFilter === 'active'
                   ? 'bg-amber-500 text-black shadow-xs'
                   : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -301,7 +301,7 @@ export function Dashboard({ store }: DashboardProps) {
             <button
               type="button"
               onClick={() => setMotionFilter('passed')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer select-none active:scale-95 whitespace-nowrap shrink-0 ${
                 motionFilter === 'passed'
                   ? 'bg-emerald-500 text-white shadow-xs'
                   : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -312,7 +312,7 @@ export function Dashboard({ store }: DashboardProps) {
             <button
               type="button"
               onClick={() => setMotionFilter('rejected')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer select-none active:scale-95 whitespace-nowrap shrink-0 ${
                 motionFilter === 'rejected'
                   ? 'bg-red-500 text-white shadow-xs'
                   : 'bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-900 dark:hover:text-white'
@@ -338,10 +338,10 @@ export function Dashboard({ store }: DashboardProps) {
                   <div
                     key={motion.id}
                     onClick={() => store.setActiveView('voting')}
-                    className="p-4 rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/60 dark:border-white/5 hover:border-[#0055FF]/40 dark:hover:border-[#0055FF]/40 transition-all cursor-pointer group"
+                    className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-[#121620] border border-gray-200/60 dark:border-white/5 hover:border-[#0055FF]/40 dark:hover:border-[#0055FF]/40 transition-all cursor-pointer group select-none active:scale-[0.99]"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-mono text-[11px] font-black px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/10 text-gray-800 dark:text-gray-200">
                           {motion.id}
                         </span>
@@ -352,36 +352,36 @@ export function Dashboard({ store }: DashboardProps) {
 
                       {/* Status Badge */}
                       {motion.status === 'active' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1 shrink-0">
                           <Clock size={11} /> Voting Open
                         </span>
                       )}
                       {motion.status === 'passed' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1 shrink-0">
                           <CheckCircle2 size={11} /> Passed & Executed
                         </span>
                       )}
                       {(motion.status === 'rejected' || motion.status === 'unresolved') && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-500 border border-red-500/30 flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-500 border border-red-500/30 flex items-center gap-1 shrink-0">
                           <XCircle size={11} /> Rejected
                         </span>
                       )}
                     </div>
 
-                    <h4 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#3880ff] transition-colors leading-snug">
+                    <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white group-hover:text-[#0055FF] dark:group-hover:text-[#3880ff] transition-colors leading-snug">
                       {motion.heading || motion.title}
                     </h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed">
                       {motion.summary}
                     </p>
 
-                    <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    <div className="mt-3 pt-2.5 border-t border-gray-200/50 dark:border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300 text-[11px] sm:text-xs">
                           Votes: <strong className="text-gray-900 dark:text-white">{yesVotes} of {quorumTarget} needed</strong>
                         </span>
                         {noVotes > 0 && (
-                          <span className="text-red-500 font-semibold">
+                          <span className="text-red-500 font-semibold text-[11px]">
                             ({noVotes} NO)
                           </span>
                         )}
@@ -393,7 +393,7 @@ export function Dashboard({ store }: DashboardProps) {
                       </div>
 
                       <span className="text-[#0055FF] dark:text-[#3880ff] text-xs font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                        <span>{motion.status === 'active' ? 'Vote / Review' : 'View Resolution'}</span>
+                        <span>{motion.status === 'active' ? 'Vote' : 'View'}</span>
                         <ArrowRight size={12} />
                       </span>
                     </div>
@@ -405,10 +405,10 @@ export function Dashboard({ store }: DashboardProps) {
         </div>
 
 
-        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Activity Log</h3>
-            <button className="text-sm font-semibold text-[#0055FF] hover:text-[#0033CC]">View All</button>
+        <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Activity Log</h3>
+            <button className="text-xs sm:text-sm font-semibold text-[#0055FF] hover:text-[#0033CC]">View All</button>
           </div>
           
           <div className="space-y-6">
