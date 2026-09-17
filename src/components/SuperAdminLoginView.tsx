@@ -1,6 +1,6 @@
 // @smartlot/component
 import React, { useState } from 'react';
-import { ShieldAlert, ArrowLeft, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, KeyRound, Sparkles, Server, Zap, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, KeyRound, Server, Zap, CheckCircle2 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 
 interface SuperAdminLoginViewProps {
@@ -24,16 +24,10 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
       if (adminId === 'admin' && password === 'admin123') {
         onLoginSuccess();
       } else {
-        setError('Invalid Admin Identifier or Security Key. (Hint: admin / admin123)');
+        setError('Invalid Admin Identifier or Security Key.');
         setIsLoading(false);
       }
     }, 500);
-  };
-
-  const autoFillDemo = () => {
-    setAdminId('admin');
-    setPassword('admin123');
-    setError('');
   };
 
   return (
@@ -208,18 +202,6 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
                 )}
               </button>
             </form>
-
-            {/* Interactive Demo Quick-Fill Pill */}
-            <div className="pt-2 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={autoFillDemo}
-                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2]/10 hover:border-[#00D4B2]/30 border border-gray-200 dark:border-white/5 text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-[#00A38C] transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <Sparkles size={13} className="text-[#00D4B2]" />
-                <span>Auto-fill Demo Credentials (<code>admin / admin123</code>)</span>
-              </button>
-            </div>
 
           </div>
         </div>

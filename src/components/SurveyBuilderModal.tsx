@@ -614,7 +614,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
                   rows={3}
                   value={recipientEmails}
                   onChange={(e) => setRecipientEmails(e.target.value)}
-                  placeholder="cameron.chair@cavalloscm.org, joana.treasurer@cavalloscm.org, ..."
+                  placeholder="sarah.jones@duplex.com, michael.chen@coronation.com, ..."
                   className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-xs sm:text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                 />
               </div>
@@ -622,13 +622,13 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                    CC Inboxes (e.g. Managing Agency, Building Manager)
+                    CC Inboxes (e.g. Managing Agency, Strata Manager)
                   </label>
                   <input
                     type="text"
                     value={ccEmails}
                     onChange={(e) => setCcEmails(e.target.value)}
-                    placeholder="peter.bm@cavallosydney.com.au"
+                    placeholder="emma.wilson@agency.com"
                     className="w-full bg-gray-50 dark:bg-[#15203B] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2]"
                   />
                 </div>

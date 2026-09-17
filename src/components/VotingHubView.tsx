@@ -153,8 +153,8 @@ export function VotingHubView({
   const isBuildingManager = roleLower.includes('building manager');
   const isSystemAdmin = roleLower.includes('admin') || roleLower.includes('system');
   
-  // SCM is elected Strata Committee Member (Cameron, Joana, Jake, George, Lisa, John)
-  const isSCM = roleLower.includes('committee') || ['cameron', 'joana', 'jake', 'george', 'lisa', 'john'].some(scm => nameLower.includes(scm));
+  // SCM is elected Strata Committee Member (Michael Chen, Sarah Jones)
+  const isSCM = roleLower.includes('committee') || ['michael', 'sarah'].some(scm => nameLower.includes(scm));
   const isLotOwnerOrResident = !isStrataManager && !isBuildingManager && !isSystemAdmin && !isSCM;
 
   // Tenants (renters / non-owner occupants) have zero statutory authority to generate official legal/statutory committee certificates or Certified Vote Reports
@@ -214,12 +214,12 @@ export function VotingHubView({
     if (votersInBallots.length > 0) {
       const existingNames = new Set(votersInBallots.map(v => v.name.toLowerCase()));
       const defaultCavallo = [
-        { id: 'scm-1', name: 'Cameron', office: 'Chairperson' as SCMOffice, email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
-        { id: 'scm-2', name: 'Joana', office: 'Treasurer' as SCMOffice, email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
-        { id: 'scm-3', name: 'Jake', office: 'Secretary' as SCMOffice, email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
-        { id: 'scm-4', name: 'George', office: 'Committee Member' as SCMOffice, email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
-        { id: 'scm-5', name: 'Lisa', office: 'Committee Member' as SCMOffice, email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
-        { id: 'scm-6', name: 'John', office: 'Committee Member' as SCMOffice, email: 'john.member@cavalloscm.org', unit: 'Unit 21' },
+        { id: 'scm-1', name: 'Michael Chen', office: 'Chairperson' as SCMOffice, email: 'michael.chen@coronation.com', unit: 'Unit 2' },
+        { id: 'scm-2', name: 'Sarah Jones', office: 'Treasurer' as SCMOffice, email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
+        { id: 'scm-3', name: 'David Miller', office: 'Secretary' as SCMOffice, email: 'david.m@duplex.com', unit: 'Unit 3' },
+        { id: 'scm-4', name: 'Elena Vance', office: 'Committee Member' as SCMOffice, email: 'elena.vance@strata.com', unit: 'Unit 5' },
+        { id: 'scm-5', name: 'David Ward', office: 'Committee Member' as SCMOffice, email: 'david.ward@strata.com', unit: 'Unit 7' },
+        { id: 'scm-6', name: 'Lisa Ray', office: 'Committee Member' as SCMOffice, email: 'lisa.ray@strata.com', unit: 'Unit 8' },
       ];
       const combined = [...votersInBallots];
       if (activeMotion?.schemeId === 'SP52042' || !activeMotion?.schemeId) {
@@ -233,12 +233,12 @@ export function VotingHubView({
     }
 
     return [
-      { id: 'scm-1', name: 'Cameron', office: 'Chairperson' as SCMOffice, email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
-      { id: 'scm-2', name: 'Joana', office: 'Treasurer' as SCMOffice, email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
-      { id: 'scm-3', name: 'Jake', office: 'Secretary' as SCMOffice, email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
-      { id: 'scm-4', name: 'George', office: 'Committee Member' as SCMOffice, email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
-      { id: 'scm-5', name: 'Lisa', office: 'Committee Member' as SCMOffice, email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
-      { id: 'scm-6', name: 'John', office: 'Committee Member' as SCMOffice, email: 'john.member@cavalloscm.org', unit: 'Unit 21' },
+      { id: 'scm-1', name: 'Michael Chen', office: 'Chairperson' as SCMOffice, email: 'michael.chen@coronation.com', unit: 'Unit 2' },
+      { id: 'scm-2', name: 'Sarah Jones', office: 'Treasurer' as SCMOffice, email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
+      { id: 'scm-3', name: 'David Miller', office: 'Secretary' as SCMOffice, email: 'david.m@duplex.com', unit: 'Unit 3' },
+      { id: 'scm-4', name: 'Elena Vance', office: 'Committee Member' as SCMOffice, email: 'elena.vance@strata.com', unit: 'Unit 5' },
+      { id: 'scm-5', name: 'David Ward', office: 'Committee Member' as SCMOffice, email: 'david.ward@strata.com', unit: 'Unit 7' },
+      { id: 'scm-6', name: 'Lisa Ray', office: 'Committee Member' as SCMOffice, email: 'lisa.ray@strata.com', unit: 'Unit 8' },
     ];
   }, [activeMotion]);
 
@@ -1520,11 +1520,11 @@ export function VotingHubView({
             {/* Statutory Certification Block */}
             <div className="border-t border-gray-200 dark:border-white/10 pt-4 grid grid-cols-2 gap-6 text-xs">
               <div className="border-t border-dashed border-gray-400 pt-2 text-gray-500">
-                <div>Steve (StrataChoice)</div>
+                <div>Emma Wilson (Strata Managing Agent)</div>
                 <div className="text-[10px]">Strata Managing Agent Certification</div>
               </div>
               <div className="border-t border-dashed border-gray-400 pt-2 text-gray-500">
-                <div>Cameron (Chairperson)</div>
+                <div>Michael Chen (Chairperson)</div>
                 <div className="text-[10px]">Strata Committee Endorsement</div>
               </div>
             </div>
@@ -1577,7 +1577,7 @@ export function VotingHubView({
                 <label className="font-bold text-gray-700 dark:text-gray-300 mb-1 block">Reason for Restarting Vote</label>
                 <textarea
                   rows={3}
-                  placeholder="e.g. Requester Jack submitted revised green mockup design following John's RFI. Fresh vote required..."
+                  placeholder="e.g. Requester Sarah submitted revised mockup design following committee RFI. Fresh vote required..."
                   value={restartReason}
                   onChange={e => setRestartReason(e.target.value)}
                   className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-amber-500"

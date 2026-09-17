@@ -509,47 +509,47 @@ export const INITIAL_MOTIONS: Motion[] = [
     originalDeadline: '2026-09-19',
     status: 'active',
     committeeRoster: [
-      { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
-      { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
-      { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
-      { id: 'scm-4', name: 'George', office: 'Committee Member', email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
-      { id: 'scm-5', name: 'Lisa', office: 'Committee Member', email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
-      { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.member@cavalloscm.org', unit: 'Unit 21' }
+      { id: 'scm-1', name: 'Michael Chen', office: 'Chairperson', email: 'michael.chen@coronation.com', unit: 'Unit 2' },
+      { id: 'scm-2', name: 'Sarah Jones', office: 'Treasurer', email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
+      { id: 'scm-3', name: 'David Miller', office: 'Secretary', email: 'david.m@duplex.com', unit: 'Unit 3' },
+      { id: 'scm-4', name: 'Elena Vance', office: 'Committee Member', email: 'elena.vance@strata.com', unit: 'Unit 5' },
+      { id: 'scm-5', name: 'David Ward', office: 'Committee Member', email: 'david.ward@strata.com', unit: 'Unit 7' },
+      { id: 'scm-6', name: 'Lisa Ray', office: 'Committee Member', email: 'lisa.ray@strata.com', unit: 'Unit 8' }
     ],
     ballots: [
-      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Looks clean and fits building design guidelines.' },
-      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Cost is within our maintenance budget.' },
-      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'Contractor license and insurance verified.' }
+      { voterName: 'Michael Chen', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Looks clean and fits building design guidelines.' },
+      { voterName: 'Sarah Jones', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'YES', votedAt: '2026-09-11', comment: 'Cost is within our maintenance budget.' },
+      { voterName: 'David Miller', voterRole: 'Tenant / Resident', voterOffice: 'Secretary', vote: 'YES', votedAt: '2026-09-12', comment: 'Contractor license and insurance verified.' }
     ],
     quotes: [
       { vendorId: 'VND-002', vendorName: 'Apex Architectural Facades NSW', amount: 3850, gstIncluded: true, recommended: true },
       { vendorId: 'VND-005', vendorName: 'Sydney Signcraft & Cladding Co.', amount: 4400, gstIncluded: true }
     ],
     attachments: [
-      { name: 'Original_Signage_Submission_Jack_Lot4.pdf', url: '#', size: '2.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Jack (Lot Owner)' },
-      { name: 'Cavallo_Lobby_Existing_Photo.jpg', url: '#', size: '3.1 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Jack (Lot Owner)' }
+      { name: 'Original_Signage_Submission_Sarah_Lot1.pdf', url: '#', size: '2.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Sarah Jones (Lot Owner)' },
+      { name: 'Cavallo_Lobby_Existing_Photo.jpg', url: '#', size: '3.1 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Sarah Jones (Lot Owner)' }
     ],
     revisedAttachments: [
-      { name: 'Revised_Signage_Mockup_Photo_v2.jpg', url: '#', size: '2.8 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Jack (Lot Owner)', note: 'Updated mockup with dark bronze frame and green accents.' }
+      { name: 'Revised_Signage_Mockup_Photo_v2.jpg', url: '#', size: '2.8 MB', type: 'revised', uploadedAt: '12 Sep 2026', uploadedBy: 'Sarah Jones (Lot Owner)', note: 'Updated mockup with dark bronze frame and green accents.' }
     ],
     comments: [
       {
         id: 'C-CAV-1',
-        authorName: 'John',
+        authorName: 'Michael Chen',
         authorRole: 'Committee Member',
         text: 'New design looks clean and matches our foyer.',
         createdAt: '1 day ago'
       },
       {
         id: 'C-CAV-2',
-        authorName: 'Peter',
-        authorRole: 'Building Manager',
+        authorName: 'David Miller',
+        authorRole: 'Tenant / Resident',
         text: 'Checked the wall anchors. Installation takes under 4 hours.',
         createdAt: '18 hours ago'
       },
       {
         id: 'C-CAV-3',
-        authorName: 'Steve',
+        authorName: 'Emma Wilson',
         authorRole: 'Strata Manager',
         text: 'Currently at 3 YES votes. Need 1 more vote to pass.',
         createdAt: '4 hours ago'
@@ -573,45 +573,45 @@ export const INITIAL_MOTIONS: Motion[] = [
     closeReason: 'Rejected by committee due to high cost ($8,250) and missing engineer sign-off.',
     closedAt: '2026-09-12',
     closedBy: {
-      name: 'Joana',
+      name: 'Sarah Jones',
       role: 'Treasurer'
     },
     committeeRoster: [
-      { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
-      { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
-      { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 9' },
-      { id: 'scm-4', name: 'George', office: 'Committee Member', email: 'george.scm@cavalloscm.org', unit: 'Unit 12' },
-      { id: 'scm-5', name: 'Lisa', office: 'Committee Member', email: 'lisa.scm@cavalloscm.org', unit: 'Unit 18' },
-      { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.member@cavalloscm.org', unit: 'Unit 21' }
+      { id: 'scm-1', name: 'Michael Chen', office: 'Chairperson', email: 'michael.chen@coronation.com', unit: 'Unit 2' },
+      { id: 'scm-2', name: 'Sarah Jones', office: 'Treasurer', email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
+      { id: 'scm-3', name: 'David Miller', office: 'Secretary', email: 'david.m@duplex.com', unit: 'Unit 3' },
+      { id: 'scm-4', name: 'Elena Vance', office: 'Committee Member', email: 'elena.vance@strata.com', unit: 'Unit 5' },
+      { id: 'scm-5', name: 'David Ward', office: 'Committee Member', email: 'david.ward@strata.com', unit: 'Unit 7' },
+      { id: 'scm-6', name: 'Lisa Ray', office: 'Committee Member', email: 'lisa.ray@strata.com', unit: 'Unit 8' }
     ],
     quotes: [
       { vendorId: 'VND-006', vendorName: 'SoundShield Acoustic Engineering NSW', amount: 8250, gstIncluded: true, recommended: true },
       { vendorId: 'VND-007', vendorName: 'Aeroflow HVAC & Sound Dampeners Pty Ltd', amount: 9600, gstIncluded: true },
     ],
     attachments: [
-      { name: 'Rooftop_HVAC_Cooling_Tower_Survey.pdf', url: '#', size: '3.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Peter (Building Manager)' },
-      { name: 'SoundShield_Engineering_Quote_8250.pdf', url: '#', size: '1.2 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Peter (Building Manager)' },
+      { name: 'Rooftop_HVAC_Cooling_Tower_Survey.pdf', url: '#', size: '3.4 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Emma Wilson (Strata Manager)' },
+      { name: 'SoundShield_Engineering_Quote_8250.pdf', url: '#', size: '1.2 MB', type: 'original', uploadedAt: '10 Sep 2026', uploadedBy: 'Emma Wilson (Strata Manager)' },
     ],
     comments: [
       {
         id: 'CMT-CAV-502-1',
-        authorName: 'Joana',
+        authorName: 'Sarah Jones',
         authorRole: 'Treasurer',
         text: 'Voted NO. Cost is unbudgeted and no structural engineer sign-off.',
         createdAt: '1 day ago'
       },
       {
         id: 'CMT-CAV-502-2',
-        authorName: 'Steve',
+        authorName: 'Emma Wilson',
         authorRole: 'Strata Manager',
         text: 'Motion concluded as rejected. Requester notified.',
         createdAt: '1 day ago'
       }
     ],
     ballots: [
-      { voterName: 'Cameron', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Need to reduce noise for top-floor units.' },
-      { voterName: 'Joana', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'NO', votedAt: '2026-09-11', comment: 'Too expensive ($8,250) and missing structural engineer approval.' },
-      { voterName: 'Jake', voterRole: 'Committee Member', voterOffice: 'Secretary', vote: 'NO', votedAt: '2026-09-12', comment: 'Missing council permits and crane access plan.' }
+      { voterName: 'Michael Chen', voterRole: 'Committee Member', voterOffice: 'Chairperson', vote: 'YES', votedAt: '2026-09-10', comment: 'Need to reduce noise for top-floor units.' },
+      { voterName: 'Sarah Jones', voterRole: 'Committee Member', voterOffice: 'Treasurer', vote: 'NO', votedAt: '2026-09-11', comment: 'Too expensive ($8,250) and missing structural engineer approval.' },
+      { voterName: 'David Miller', voterRole: 'Tenant / Resident', voterOffice: 'Secretary', vote: 'NO', votedAt: '2026-09-12', comment: 'Missing council permits and crane access plan.' }
     ]
   },
   {
@@ -730,21 +730,19 @@ export const INITIAL_SURVEYS: Survey[] = [
     status: 'active',
     targetAudience: 'All Residents',
     recipientEmails: [
-      'cameron.chair@cavalloscm.org',
-      'joana.treasurer@cavalloscm.org',
-      'jake.secretary@cavalloscm.org',
-      'george.scm@cavalloscm.org',
-      'lisa.scm@cavalloscm.org',
-      'john.member@cavalloscm.org',
-      'jack.owner@cavallosydney.com.au',
-      'sam.resident@cavallosydney.com.au'
+      'sarah.jones@duplex.com',
+      'michael.chen@coronation.com',
+      'david.m@duplex.com',
+      'elena.vance@strata.com',
+      'lisa.ray@strata.com',
+      'sam.resident@strata.com'
     ],
     deadline: '2026-10-31',
     createdAt: '2026-09-01T09:00:00.000Z',
     createdBy: {
-      name: 'Steve',
+      name: 'Emma Wilson',
       role: 'Strata Manager',
-      email: 'steve@stratachoice.com.au'
+      email: 'emma.wilson@agency.com'
     },
     questions: [
       {
@@ -820,8 +818,8 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
     id: 'RSP-CAV-001',
     surveyId: 'SRV-CAV-2026',
     schemeId: 'SP52042',
-    unitId: 'Unit 28',
-    respondentName: 'Cameron (Chairperson)',
+    unitId: 'Unit 2',
+    respondentName: 'Michael Chen (Chairperson)',
     isAnonymous: false,
     submittedAt: '2026-09-02T10:15:00.000Z',
     answers: {
@@ -830,15 +828,15 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
       q_cav_3: 4,
       q_cav_4: 4,
       q_cav_5: 10,
-      q_cav_6: 'Steve and Peter have done a great job coordinating the lobby directory upgrade. Very prompt communication.'
+      q_cav_6: 'Emma Wilson has done a great job coordinating the lobby directory upgrade. Very prompt communication.'
     }
   },
   {
     id: 'RSP-CAV-002',
     surveyId: 'SRV-CAV-2026',
     schemeId: 'SP52042',
-    unitId: 'Unit 15',
-    respondentName: 'Joana (Treasurer)',
+    unitId: 'Unit 1',
+    respondentName: 'Sarah Jones (Treasurer)',
     isAnonymous: false,
     submittedAt: '2026-09-03T14:30:00.000Z',
     answers: {
@@ -855,7 +853,7 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
     surveyId: 'SRV-CAV-2026',
     schemeId: 'SP52042',
     unitId: 'Unit 4',
-    respondentName: 'Jack (Lot Owner)',
+    respondentName: 'Elena Vance (Lot Owner)',
     isAnonymous: false,
     submittedAt: '2026-09-04T09:45:00.000Z',
     answers: {
@@ -886,8 +884,8 @@ export const INITIAL_SURVEY_RESPONSES: SurveyResponse[] = [
     id: 'RSP-CAV-005',
     surveyId: 'SRV-CAV-2026',
     schemeId: 'SP52042',
-    unitId: 'Unit 9',
-    respondentName: 'Jake (Secretary)',
+    unitId: 'Unit 3',
+    respondentName: 'David Miller (Resident / Tenant)',
     isAnonymous: false,
     submittedAt: '2026-09-06T11:00:00.000Z',
     answers: {
@@ -1153,25 +1151,25 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     priority: 'Medium',
     location: 'Ground Floor Main Lobby & Entryway',
     contactPreference: 'Email',
-    strataManagerEmail: 'steve@stratachoice.com.au',
+    strataManagerEmail: 'emma.wilson@agency.com',
     attachmentUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop',
     attachmentUrls: [
       'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop'
     ],
     status: 'in_voting',
     createdAt: '10 Sep 2026',
-    requestorName: 'Jack',
-    reportedBy: 'Jack (Lot Owner / Resident)',
-    requestorEmail: 'jack.resident@cavallosydney.com.au',
+    requestorName: 'Sarah Jones',
+    reportedBy: 'Sarah Jones (Lot Owner - Unit 1)',
+    requestorEmail: 'sarah.jones@duplex.com',
     requestorPhone: '0412 888 777',
     requestorRole: 'Lot Owner',
     linkedMotionId: 'MOT-CAV-501',
     comments: [
       {
         id: 'C-CAV-101-1',
-        authorName: 'Steve',
+        authorName: 'Emma Wilson',
         authorRole: 'Strata Manager',
-        text: 'Hi Jack, I have published this request as official Strata Committee Motion MOT-CAV-501. 4 committee votes required to pass under NSW Strata Schemes Management Act 2015.',
+        text: 'Hi Sarah, I have published this request as official Strata Committee Motion MOT-CAV-501. 4 committee votes required to pass under NSW Strata Schemes Management Act 2015.',
         createdAt: '10 Sep 2026'
       }
     ],
@@ -1179,15 +1177,15 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
       {
         id: 'AUD-CAV-101-1',
         type: 'created',
-        actor: 'Jack',
+        actor: 'Sarah Jones',
         actorRole: 'Lot Owner',
         timestamp: '10 Sep 2026',
-        note: 'Request #CAV-101 submitted for Unit 4 common area signage.',
+        note: 'Request #CAV-101 submitted for Unit 1 common area signage.',
       },
       {
         id: 'AUD-CAV-101-2',
         type: 'status_change',
-        actor: 'Steve',
+        actor: 'Emma Wilson',
         actorRole: 'Strata Manager',
         timestamp: '10 Sep 2026',
         fromStatus: 'new',
@@ -1209,12 +1207,12 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     priority: 'Emergency',
     location: 'Lift',
     contactPreference: 'Email',
-    strataManagerEmail: 'steve@stratachoice.com.au',
+    strataManagerEmail: 'emma.wilson@agency.com',
     status: 'approved',
     createdAt: 'Today, 8:45 AM',
-    requestorName: 'Cameron',
-    reportedBy: 'Cameron (Chairperson - Unit 28)',
-    requestorEmail: 'cameron.chair@cavalloscm.org',
+    requestorName: 'Michael Chen',
+    reportedBy: 'Michael Chen (Chairperson - Unit 2)',
+    requestorEmail: 'michael.chen@coronation.com',
     requestorPhone: '0412 999 333',
     requestorRole: 'Committee Member',
     tenderStatus: 'quoting',
@@ -1235,7 +1233,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         estimatedDays: 1,
         submittedAt: 'Today, 9:20 AM',
         recommended: true,
-        committeeVotes: ['Cameron', 'Joana']
+        committeeVotes: ['Michael Chen', 'Sarah Jones']
       },
       {
         id: 'QTE-102-2',
@@ -1252,7 +1250,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         estimatedDays: 2,
         submittedAt: 'Today, 10:15 AM',
         recommended: false,
-        committeeVotes: ['Jake']
+        committeeVotes: ['David Miller']
       },
       {
         id: 'QTE-102-3',
@@ -1275,7 +1273,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     comments: [
       {
         id: 'C-CAV-102-1',
-        authorName: 'Steve',
+        authorName: 'Emma Wilson',
         authorRole: 'Strata Manager',
         text: 'Received 3 competitive quotes under strata guidelines. Quotes are posted for Committee review.',
         createdAt: 'Today, 11:30 AM'
@@ -1285,7 +1283,7 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
       {
         id: 'AUD-CAV-102-1',
         type: 'created',
-        actor: 'Cameron',
+        actor: 'Michael Chen',
         actorRole: 'Committee Member',
         timestamp: 'Today, 8:45 AM',
         note: 'Emergency lift fault logged by Committee Chair.',
@@ -1296,12 +1294,12 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
         actor: 'SmartLot',
         actorRole: 'System',
         timestamp: 'Today, 8:46 AM',
-        note: 'Emergency notification dispatched to Strata Manager Steve.',
+        note: 'Emergency notification dispatched to Strata Manager Emma Wilson.',
       },
       {
         id: 'AUD-CAV-102-3',
         type: 'triage_approved',
-        actor: 'Steve',
+        actor: 'Emma Wilson',
         actorRole: 'Strata Manager',
         timestamp: 'Today, 9:00 AM',
         note: 'Tender initiated: Requested quotes from 3 vertical transport contractors.',
@@ -2034,6 +2032,15 @@ export function useSmartLotStore() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // If activePersona is an obsolete/removed profile (e.g. Cameron, Steve, Peter, Jake, Joana, John, Jack), auto-heal to Emma Wilson
+    const isKnownPersona = PERSONAS.some(p => p.id === activePersona?.id || p.name.toLowerCase() === activePersona?.name?.toLowerCase());
+    const isCustom = activePersona?.id?.startsWith('custom_') || activePersona?.id?.startsWith('user_');
+    if (!isKnownPersona && !isCustom) {
+      setActivePersona(PERSONAS[1]); // Emma Wilson
+    }
+  }, [activePersona]);
+
+  useEffect(() => {
     const syncUserProfile = async (authUser: any) => {
       if (!authUser?.email) return;
       const email = authUser.email.toLowerCase();
@@ -2435,12 +2442,12 @@ export function useSmartLotStore() {
             comments: motionComments,
             attachments: motionAttachments,
             committeeRoster: [
-              { id: 'scm-1', name: 'Cameron', office: 'Chairperson', email: 'cameron.chair@cavalloscm.org', unit: 'Unit 28' },
-              { id: 'scm-2', name: 'Joana', office: 'Treasurer', email: 'joana.treasurer@cavalloscm.org', unit: 'Unit 15' },
-              { id: 'scm-3', name: 'Jake', office: 'Secretary', email: 'jake.secretary@cavalloscm.org', unit: 'Unit 4' },
-              { id: 'scm-4', name: 'Elena', office: 'Committee Member', email: 'elena.m@cavalloscm.org', unit: 'Unit 19' },
-              { id: 'scm-5', name: 'David', office: 'Committee Member', email: 'david.w@cavalloscm.org', unit: 'Unit 7' },
-              { id: 'scm-6', name: 'John', office: 'Committee Member', email: 'john.d@cavalloscm.org', unit: 'Unit 12' }
+              { id: 'scm-1', name: 'Michael Chen', office: 'Chairperson', email: 'michael.chen@coronation.com', unit: 'Unit 2' },
+              { id: 'scm-2', name: 'Sarah Jones', office: 'Treasurer', email: 'sarah.jones@duplex.com', unit: 'Unit 1' },
+              { id: 'scm-3', name: 'David Miller', office: 'Secretary', email: 'david.m@duplex.com', unit: 'Unit 3' },
+              { id: 'scm-4', name: 'Elena Vance', office: 'Committee Member', email: 'elena.vance@strata.com', unit: 'Unit 5' },
+              { id: 'scm-5', name: 'David Ward', office: 'Committee Member', email: 'david.ward@strata.com', unit: 'Unit 7' },
+              { id: 'scm-6', name: 'Lisa Ray', office: 'Committee Member', email: 'lisa.ray@strata.com', unit: 'Unit 8' }
             ]
           };
         });
