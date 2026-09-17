@@ -564,7 +564,7 @@ export default function App() {
   ).length;
 
   return (
-    <div className="flex flex-col h-screen bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100 overflow-hidden relative">
+    <div className="flex flex-col h-screen h-[100dvh] w-full overflow-x-hidden bg-[#F4F6F9] dark:bg-[#0B1121] font-sans text-gray-900 dark:text-gray-100 overflow-hidden relative">
       
       {/* Super Admin Remote Inspection Banner */}
       {inspectingSession && (
@@ -739,7 +739,7 @@ export default function App() {
           />
         
         {/* Dynamic View Rendering */}
-        <div className="flex-1 overflow-hidden relative pb-16 md:pb-0">
+        <div className="flex-1 overflow-hidden relative pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           
           {/* Shimmer Skeleton during initial bootstrap only (prevents full unmount on background sync) */}
           {store.isLoading && store.schemes.length === 0 ? (
