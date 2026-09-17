@@ -332,7 +332,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
                   {/* Bottom Row: Deadline Info Capsule */}
                   {selectedSurvey.deadline ? (
-                    <div className="inline-flex items-center gap-3 bg-gray-50 dark:bg-[#081525] border border-gray-200 dark:border-white/5 rounded-xl px-3.5 py-1.5 text-xs text-gray-700 dark:text-gray-300 w-fit shadow-xs">
+                    <div className="inline-flex items-center gap-2 sm:gap-3 bg-gray-50 dark:bg-[#081525] border border-gray-200 dark:border-white/5 rounded-xl px-3 sm:px-3.5 py-1.5 text-xs text-gray-700 dark:text-gray-300 w-full sm:w-fit shadow-xs flex-wrap">
                       <Calendar size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
                       <span>
                         <span className="text-gray-500 dark:text-gray-400 font-medium">Deadline:</span>{' '}
@@ -340,16 +340,18 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       </span>
                       {calculateDaysRemaining(selectedSurvey.deadline) && (
                         <>
-                          <span className="text-gray-300 dark:text-gray-600 select-none">|</span>
-                          <Clock size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
-                          <span className="text-gray-600 dark:text-gray-300 font-medium">
-                            {calculateDaysRemaining(selectedSurvey.deadline)}
-                          </span>
+                          <span className="text-gray-300 dark:text-gray-600 select-none hidden xs:inline">|</span>
+                          <div className="inline-flex items-center gap-1.5">
+                            <Clock size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+                            <span className="text-gray-600 dark:text-gray-300 font-medium">
+                              {calculateDaysRemaining(selectedSurvey.deadline)}
+                            </span>
+                          </div>
                         </>
                       )}
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#081525] border border-gray-200 dark:border-white/5 rounded-xl px-3.5 py-1.5 text-xs text-gray-500 dark:text-gray-400 w-fit shadow-xs">
+                    <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-[#081525] border border-gray-200 dark:border-white/5 rounded-xl px-3 sm:px-3.5 py-1.5 text-xs text-gray-500 dark:text-gray-400 w-full sm:w-fit shadow-xs">
                       <Clock size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
                       <span>Continuous open feedback round (No expiry)</span>
                     </div>
