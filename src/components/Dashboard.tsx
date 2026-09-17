@@ -423,7 +423,7 @@ export function Dashboard({ store }: DashboardProps) {
       <div className="lg:col-span-3 space-y-6">
         
         {/* Strata Manager Performance & SLA Summary Card */}
-        <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
+        <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-gray-100 dark:border-white/5 space-y-3.5 sm:space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-[#00D4B2]/10 text-[#00D4B2] flex items-center justify-center">
@@ -439,7 +439,7 @@ export function Dashboard({ store }: DashboardProps) {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-[#121620] p-3 rounded-2xl border border-gray-200/50 dark:border-white/5">
+          <div className="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-[#121620] p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-gray-200/50 dark:border-white/5">
             <div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Avg Response</span>
               <div className="text-sm font-black text-gray-900 dark:text-white mt-0.5">2.1 hrs</div>
@@ -454,7 +454,7 @@ export function Dashboard({ store }: DashboardProps) {
 
           <button
             onClick={() => store.setActiveView('performance')}
-            className="w-full bg-[#0B1121] dark:bg-white/5 hover:bg-black dark:hover:bg-white/10 text-[#00D4B2] rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/20 shadow-sm"
+            className="w-full h-10 bg-[#0B1121] dark:bg-white/5 hover:bg-black dark:hover:bg-white/10 text-[#00D4B2] rounded-xl py-2 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-[#00D4B2]/20 shadow-sm select-none active:scale-95"
           >
             <span>View Full SLA Report</span>
             <ArrowRight size={13} />
@@ -463,8 +463,8 @@ export function Dashboard({ store }: DashboardProps) {
 
         {/* Electric Lime Card - Quick Action */}
         {vacantCount > 0 && (
-          <div className="bg-[#00D4B2] rounded-3xl p-6 shadow-md border border-[#00A38C]">
-            <div className="flex items-start justify-between mb-4">
+          <div className="bg-[#00D4B2] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md border border-[#00A38C]">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
               <div className="w-10 h-10 rounded-full bg-[#0B1121] text-[#00D4B2] flex items-center justify-center">
                 <Zap size={20} />
               </div>
@@ -472,42 +472,42 @@ export function Dashboard({ store }: DashboardProps) {
                 Action Required
               </span>
             </div>
-            <h3 className="text-lg font-bold text-[#0B1121] mb-2 leading-tight">Missing Resident Registrations</h3>
-            <p className="text-sm text-[#0B1121]/70 mb-6 font-medium">
+            <h3 className="text-base sm:text-lg font-bold text-[#0B1121] mb-1.5 sm:mb-2 leading-tight">Missing Resident Registrations</h3>
+            <p className="text-xs sm:text-sm text-[#0B1121]/70 mb-4 sm:mb-6 font-medium">
               {vacantCount} {vacantCount === 1 ? 'unit has' : 'units have'} not completed profile setup.
             </p>
             
-            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between border border-[#0B1121]/10 mb-2">
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 flex items-center justify-between border border-[#0B1121]/10 mb-2.5 sm:mb-3">
               <span className="text-xs font-semibold text-[#0B1121] truncate">
                 {activeScheme.id === 'NO_SCHEME' ? 'smartlot.io/register' : `smartlot.io/join/${activeScheme.id}`}
               </span>
-              <button className="text-[#0B1121] hover:bg-white/50 p-1.5 rounded-lg transition-colors">
+              <button className="text-[#0B1121] hover:bg-white/50 p-1.5 rounded-lg transition-colors select-none active:scale-90">
                 <Share2 size={16} />
               </button>
             </div>
 
             {/* Quick Invite SMS / Email Toggles */}
             {store.hasPermission('Role & Permission Setup') && (
-              <div className="grid grid-cols-2 gap-1.5 mb-4">
+              <div className="grid grid-cols-2 gap-1.5 mb-3 sm:mb-4">
                 <button 
                   type="button"
                   onClick={handleQuickEmailInvite} 
                   disabled={inviteStatus === 'sending'}
-                  className="bg-white/20 hover:bg-white/35 text-[#0B1121] text-[10px] font-black py-2 rounded-xl border border-[#0B1121]/15 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                  className="h-10 bg-white/20 hover:bg-white/35 text-[#0B1121] text-[10px] font-black py-2 rounded-xl border border-[#0B1121]/15 flex items-center justify-center gap-1 transition-all cursor-pointer select-none active:scale-95"
                 >
                   <Mail size={11} /> {inviteStatus === 'sending' ? 'Sending...' : inviteStatus === 'sent' ? 'Sent!' : 'Email Invite'}
                 </button>
                 <button 
                   type="button"
                   onClick={() => alert('SMS invite dispatched via notification service.')} 
-                  className="bg-white/20 hover:bg-white/35 text-[#0B1121] text-[10px] font-black py-2 rounded-xl border border-[#0B1121]/15 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                  className="h-10 bg-white/20 hover:bg-white/35 text-[#0B1121] text-[10px] font-black py-2 rounded-xl border border-[#0B1121]/15 flex items-center justify-center gap-1 transition-all cursor-pointer select-none active:scale-95"
                 >
                   <Phone size={11} /> SMS Invite
                 </button>
               </div>
             )}
 
-            <button className="w-full bg-[#0B1121] hover:bg-black text-white rounded-xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all">
+            <button className="w-full h-11 sm:h-12 bg-[#0B1121] hover:bg-black text-white rounded-xl py-2.5 sm:py-3 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all select-none active:scale-98">
               Send Reminders <ArrowRight size={16} />
             </button>
           </div>
