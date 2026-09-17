@@ -609,7 +609,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                 {/* Question Type: NPS Score (0 to 10) */}
                 {q.type === 'nps_score' && (
                   <div className="space-y-3">
-                    <div className="grid grid-cols-6 sm:grid-cols-11 gap-1.5">
+                    <div className="flex sm:grid sm:grid-cols-11 gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 touch-pan-x">
                       {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
                         const isSelected = currentAns === score;
                         let colorClass = 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10';
@@ -626,7 +626,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                             type="button"
                             disabled={isClosed}
                             onClick={() => handleNpsClick(q.id, score)}
-                            className={`py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer border border-transparent disabled:opacity-50 ${colorClass}`}
+                            className={`min-w-[38px] sm:min-w-0 flex-1 h-11 sm:h-10 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer border border-transparent disabled:opacity-50 flex items-center justify-center select-none active:scale-90 ${colorClass}`}
                           >
                             {score}
                           </button>
@@ -636,6 +636,11 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
 
                     <div className="flex justify-between text-[11px] text-gray-400 dark:text-gray-500 font-semibold px-1">
                       <span>0 = Not likely at all</span>
+                      {currentAns !== undefined && (
+                        <span className="font-bold text-gray-900 dark:text-white">
+                          Rating: {currentAns}/10 ({currentAns >= 9 ? 'Promoter' : currentAns >= 7 ? 'Passive' : 'Detractor'})
+                        </span>
+                      )}
                       <span>10 = Extremely likely</span>
                     </div>
                   </div>
@@ -669,7 +674,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                                 handleChoiceSelect(q.id, opt);
                               }
                             }}
-                            className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold select-none min-h-[48px] active:scale-[0.99] ${
+                            className={`w-full text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold select-none min-h-[50px] active:scale-[0.98] ${
                               isSelected
                                 ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/90 dark:bg-[#00D4B2]/15 text-gray-900 dark:text-white font-bold shadow-xs ring-2 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
                                 : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#1f2433]'
@@ -729,7 +734,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                                 handleMultiChoiceToggle(q.id, opt);
                               }
                             }}
-                            className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold select-none min-h-[48px] active:scale-[0.99] ${
+                            className={`w-full text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs sm:text-sm font-semibold select-none min-h-[50px] active:scale-[0.98] ${
                               isSelected
                                 ? 'border-[#0055FF] dark:border-[#00D4B2] bg-blue-50/90 dark:bg-[#00D4B2]/15 text-gray-900 dark:text-white font-bold shadow-xs ring-2 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
                                 : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#1a1d27]/60 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-[#1f2433]'
@@ -769,7 +774,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
                       value={currentAns || ''}
                       onChange={(e) => handleTextChange(q.id, e.target.value)}
                       placeholder="Share your specific thoughts, ideas, or issues for the committee..."
-                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] resize-none"
+                      className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl sm:rounded-2xl p-3.5 text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] transition-all resize-none shadow-2xs"
                     />
                   </div>
                 )}
