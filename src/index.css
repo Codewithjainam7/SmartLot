@@ -269,3 +269,36 @@ button, a, input, select, textarea {
   scrollbar-width: none;
 }
 
+/* ── Mobile Native App Experience & Touch Optimizations ────── */
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+.touch-pan-x {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+.touch-pan-y {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent unwanted callout/magnifier on touch press */
+.select-none {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* App-like spring feedback on mobile interactive elements */
+@media (max-width: 768px) {
+  .interactive-tap {
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .interactive-tap:active {
+    transform: scale(0.96);
+  }
+}
+
