@@ -1253,13 +1253,13 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           <div className="space-y-6 animate-in fade-in duration-200">
             
             {/* Action Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl p-5 shadow-sm dark:shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm dark:shadow-xs">
               <div>
                 <div className="flex items-center gap-2 text-[#00897B] dark:text-[#00D4B2] text-xs font-black uppercase tracking-wider mb-0.5">
                   <FileText size={15} />
                   <span>Executive Sentiment Digest</span>
                 </div>
-                <h3 className="text-lg font-heading font-black text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-heading font-black text-gray-900 dark:text-white">
                   AGM & Strata Committee Digest
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -1271,7 +1271,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 type="button"
                 onClick={handleGenerateSummary}
                 disabled={isGeneratingSummary}
-                className="px-5 py-2.5 rounded-xl bg-[#00897B] hover:bg-[#00796B] text-white dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] dark:text-[#050A15] font-black text-xs sm:text-sm shadow-sm flex items-center gap-2 cursor-pointer transition-all shrink-0"
+                className="w-full sm:w-auto h-11 sm:h-10 px-5 rounded-xl bg-[#00897B] hover:bg-[#00796B] text-white dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] dark:text-[#050A15] font-black text-xs sm:text-sm shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0 select-none active:scale-95"
               >
                 <RefreshCw size={14} className={isGeneratingSummary ? 'animate-spin' : ''} />
                 <span>{isGeneratingSummary ? 'Synthesizing...' : 'Re-analyze Feedback'}</span>
@@ -1279,12 +1279,12 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </div>
 
             {selectedSurvey.aiExecutiveSummary ? (
-              <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm space-y-5 sm:space-y-6">
                 
                 {/* Top Sentiment Verdict Pill */}
-                <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
-                  <div className="flex items-center gap-3">
-                    <span className="px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-black text-sm uppercase tracking-wider border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
+                  <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+                    <span className="px-3.5 sm:px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-black text-xs sm:text-sm uppercase tracking-wider border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1.5">
                       <CheckCircle2 size={14} />
                       {selectedSurvey.aiExecutiveSummary.overallSentiment} Sentiment
                     </span>
@@ -1293,7 +1293,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     </span>
                   </div>
 
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500">
                     Generated on {new Date(selectedSurvey.aiExecutiveSummary.generatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
@@ -1303,16 +1303,16 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <h4 className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
                     Executive Brief (AGM Ready)
                   </h4>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
+                  <p className="text-xs sm:text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
                     {selectedSurvey.aiExecutiveSummary.executiveBrief}
                   </p>
                 </div>
 
                 {/* Two Columns: Strengths vs Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   
                   {/* Top 3 Strengths */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                       <CheckCircle2 size={16} />
                       <span>Top 3 Building Strengths</span>
@@ -1329,7 +1329,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   </div>
 
                   {/* Top 3 Action Items */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     <h4 className="text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                       <AlertCircle size={16} />
                       <span>Top 3 Priority Actions for Committee</span>
@@ -1348,38 +1348,38 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 </div>
 
                 {/* Copy Button */}
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2">
                   <button
                     type="button"
                     onClick={() => {
-                      const text = `SMARTLOT STRATA FEEDBACK REPORT\nBuilding: ${activeScheme.name} (${activeScheme.id})\nSurvey: ${selectedSurvey.title}\nSentiment: ${selectedSurvey.aiExecutiveSummary?.overallSentiment}\n\nEXECUTIVE BRIEF:\n${selectedSurvey.aiExecutiveSummary?.executiveBrief}\n\nTOP STRENGTHS:\n${selectedSurvey.aiExecutiveSummary?.topStrengths.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\nCOMMITTEE ACTION ITEMS:\n${selectedSurvey.aiExecutiveSummary?.topActionItems.map((a, i) => `${i+1}. ${a}`).join('\n')}`;
-                      navigator.clipboard.writeText(text);
-                      alert('Executive Report copied to clipboard!');
+                      if (!selectedSurvey.aiExecutiveSummary) return;
+                      const textToCopy = `SMARTLOT STRATA EXECUTIVE SYNTHESIS\nBuilding: ${activeScheme.name} (${activeScheme.id})\nSurvey: ${selectedSurvey.title}\nOverall Sentiment: ${selectedSurvey.aiExecutiveSummary.overallSentiment} (${selectedSurvey.aiExecutiveSummary.sentimentScore}/100)\n\nEXECUTIVE BRIEF:\n${selectedSurvey.aiExecutiveSummary.executiveBrief}\n\nTOP STRENGTHS:\n${selectedSurvey.aiExecutiveSummary.topStrengths.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\nACTION ITEMS:\n${selectedSurvey.aiExecutiveSummary.topActionItems.map((a, i) => `${i + 1}. ${a}`).join('\n')}`;
+                      navigator.clipboard.writeText(textToCopy);
+                      alert('Copied executive digest to clipboard!');
                     }}
-                    className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-xs font-bold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-transparent flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="w-full sm:w-auto h-10 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-700 dark:text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors select-none active:scale-95"
                   >
-                    <Copy size={14} />
-                    <span>Copy Full Report for Meeting Minutes</span>
+                    <Copy size={13} />
+                    <span>Copy Full Brief for AGM Notice</span>
                   </button>
                 </div>
-
               </div>
             ) : (
-              <div className="p-8 rounded-2xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 text-center shadow-sm">
-                <FileCheck size={32} className="text-[#00897B] dark:text-[#00D4B2] mx-auto mb-3" />
-                <h4 className="font-heading font-black text-base text-gray-900 dark:text-white mb-1">
-                  Executive Summary Not Yet Generated
+              <div className="p-8 rounded-2xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 text-center shadow-xs">
+                <FileText size={32} className="text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                <h4 className="font-heading font-black text-sm text-gray-900 dark:text-white mb-1">
+                  No Executive Report Generated Yet
                 </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto font-medium">
-                  Click the button below to synthesize all {responses.length} resident submissions into top strengths and action items.
+                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
+                  Run our resident feedback synthesis engine to produce an AGM-ready executive briefing with top strengths and action items.
                 </p>
                 <button
                   type="button"
                   onClick={handleGenerateSummary}
                   disabled={isGeneratingSummary}
-                  className="px-6 py-2.5 rounded-xl bg-[#00897B] hover:bg-[#00796B] text-white dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] dark:text-[#050A15] font-black text-xs cursor-pointer shadow-sm transition-all"
+                  className="px-4 py-2 rounded-xl bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] font-black text-xs cursor-pointer shadow-sm active:scale-95"
                 >
-                  Generate Executive Report
+                  Generate Initial Brief
                 </button>
               </div>
             )}
@@ -1389,7 +1389,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
         {/* ── 8. TAB 4: Survey Blueprint ───────────────────────────────── */}
         {activeTab === 'questions' && selectedSurvey && (
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 shadow-sm dark:shadow-xs space-y-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm dark:shadow-xs space-y-4 animate-in fade-in duration-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
               <div>
                 <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
@@ -1400,19 +1400,19 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
                     setEditingSurvey(selectedSurvey);
                     setIsBuilderOpen(true);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  className="flex-1 sm:flex-initial h-10 sm:h-9 px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95 select-none"
                 >
                   <Edit3 size={13} />
                   <span>Edit Questionnaire</span>
                 </button>
-                <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-white/5">
+                <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-2 sm:py-1 rounded-lg border border-gray-200/60 dark:border-white/5 shrink-0">
                   ID: {selectedSurvey.id}
                 </span>
               </div>
