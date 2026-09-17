@@ -103,6 +103,8 @@ export interface SurveyBuilderFormContentProps {
   store: SmartLotStore;
   onClose?: () => void;
   onSurveyCreated?: (newSurvey: Survey) => void;
+  surveyToEdit?: Survey | null;
+  onSurveyUpdated?: (updatedSurvey: Survey) => void;
 }
 
 export const getDeadlinePreset = (daysFromNow: number): string => {
@@ -135,7 +137,13 @@ export const formatDeadlineSummary = (deadlineDateStr: string): string => {
   return `${formatted} (${diffDays} days remaining)`;
 };
 
-export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: SurveyBuilderFormContentProps) {
+export function SurveyBuilderFormContent({ 
+  store, 
+  onClose, 
+  onSurveyCreated, 
+  surveyToEdit, 
+  onSurveyUpdated 
+}: SurveyBuilderFormContentProps) {
   const morphContext = useMorphingPopoverContext();
 
   const handleClose = () => {
@@ -219,13 +227,13 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
   // Form State
-  const [title, setTitle] = useState(`Annual Strata Satisfaction Survey ${new Date().getFullYear()}`);
+  const [title, setTitle] = useState(() => surveyToEdit?.title || `Annual Strata Satisfaction Survey ${new Date().getFullYear()}`);
   const [description, setDescription] = useState(
-    `We invite all residents and lot owners at ${activeScheme.name} to share their feedback to guide our Strata Committee and Management priorities for the coming year.`
+    () => surveyToEdit?.description || `We invite all residents and lot owners at ${activeScheme.name} to share their feedback to guide our Strata Committee and Management priorities for the coming year.`
   );
-  const [category, setCategory] = useState<SurveyCategory>('Annual Satisfaction');
-  const [deadline, setDeadline] = useState(() => getDeadlinePreset(14));
-  const [bannerImage, setBannerImage] = useState<string>('/bg_img_building.png');
+  const [category, setCategory] = useState<SurveyCategory>(() => surveyToEdit?.category || 'Annual Satisfaction');
+  const [deadline, setDeadline] = useState(() => surveyToEdit?.deadline || getDeadlinePreset(14));
+  const [bannerImage, setBannerImage] = useState<string>(() => surveyToEdit?.bannerImage || '/bg_img_building.png');
   const [isBannerPickerOpen, setIsBannerPickerOpen] = useState(false);
   const [customBannerUrl, setCustomBannerUrl] = useState('');
   const bannerFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -272,6 +280,9 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   
   // Questions State
   const [questions, setQuestions] = useState<SurveyQuestion[]>(() => {
+    if (surveyToEdit && surveyToEdit.questions && surveyToEdit.questions.length > 0) {
+      return surveyToEdit.questions;
+    }
     const defaultTemplate = STRATA_SURVEY_TEMPLATES[0];
     return defaultTemplate.questions.map((q, idx) => ({
       ...q,
@@ -285,22 +296,52 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   // Recipients State (MCQ A1: All residents + role filtering + To/CC/BCC)
-  const [audienceFilter, setAudienceFilter] = useState<'all' | 'owners' | 'tenants'>('all');
+  const [audienceFilter, setAudienceFilter] = useState<'all' | 'owners' | 'tenants'>(() => {
+    if (surveyToEdit) {
+      return surveyToEdit.targetAudience === 'Owners Only' ? 'owners' :
+        surveyToEdit.targetAudience === 'Tenants Only' ? 'tenants' : 'all';
+    }
+    return 'all';
+  });
   const [recipientEmails, setRecipientEmails] = useState<string[]>(() => {
+    if (surveyToEdit && surveyToEdit.recipientEmails && surveyToEdit.recipientEmails.length > 0) {
+      return surveyToEdit.recipientEmails;
+    }
     return schemeMembers.map(m => m.email);
   });
-  const [ccEmails, setCcEmails] = useState<string>('');
-  const [bccEmails, setBccEmails] = useState<string>('');
+  const [ccEmails, setCcEmails] = useState<string>(() => surveyToEdit?.ccEmails?.join(', ') || '');
+  const [bccEmails, setBccEmails] = useState<string>(() => surveyToEdit?.bccEmails?.join(', ') || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Keep form in sync when surveyToEdit changes
+  useEffect(() => {
+    if (surveyToEdit) {
+      setTitle(surveyToEdit.title);
+      setDescription(surveyToEdit.description);
+      setCategory(surveyToEdit.category);
+      setDeadline(surveyToEdit.deadline || '');
+      setBannerImage(surveyToEdit.bannerImage || '/bg_img_building.png');
+      setQuestions(surveyToEdit.questions || []);
+      setAudienceFilter(
+        surveyToEdit.targetAudience === 'Owners Only' ? 'owners' :
+        surveyToEdit.targetAudience === 'Tenants Only' ? 'tenants' : 'all'
+      );
+      if (surveyToEdit.recipientEmails && surveyToEdit.recipientEmails.length > 0) {
+        setRecipientEmails(surveyToEdit.recipientEmails);
+      }
+      setCcEmails(surveyToEdit.ccEmails?.join(', ') || '');
+      setBccEmails(surveyToEdit.bccEmails?.join(', ') || '');
+    }
+  }, [surveyToEdit]);
 
   // Ensure recipient emails are loaded once schemeMembers is ready if initially empty
   const hasPopulatedRecipients = useRef(false);
   useEffect(() => {
-    if (!hasPopulatedRecipients.current && schemeMembers.length > 0 && recipientEmails.length === 0) {
+    if (!surveyToEdit && !hasPopulatedRecipients.current && schemeMembers.length > 0 && recipientEmails.length === 0) {
       setRecipientEmails(schemeMembers.map(m => m.email));
       hasPopulatedRecipients.current = true;
     }
-  }, [schemeMembers, recipientEmails.length]);
+  }, [surveyToEdit, schemeMembers, recipientEmails.length]);
 
   const recipientCount = recipientEmails.length;
 
@@ -432,30 +473,49 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
       .filter(e => e.length > 0 && e.includes('@'));
 
     try {
-      const newSurvey = await store.createSurvey({
-        schemeId: activeScheme.id,
-        title: title.trim(),
-        description: description.trim(),
-        category,
-        status: 'active',
-        targetAudience: audienceFilter === 'all' ? 'All Residents' : audienceFilter === 'owners' ? 'Owners Only' : 'Tenants Only',
-        recipientEmails: parsedRecipients.length > 0 ? parsedRecipients : [store.activePersona.email || 'resident@smartlot.com'],
-        ccEmails: parsedCc.length > 0 ? parsedCc : undefined,
-        bccEmails: parsedBcc.length > 0 ? parsedBcc : undefined,
-        deadline: deadline.trim() || undefined,
-        bannerImage: bannerImage.trim() || undefined,
-        questions,
-        createdBy: {
-          name: store.activePersona.name,
-          role: store.activePersona.role,
-          email: store.activePersona.email,
-        },
-      });
+      if (surveyToEdit) {
+        const updated = await store.updateSurvey(surveyToEdit.id, {
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          targetAudience: audienceFilter === 'all' ? 'All Residents' : audienceFilter === 'owners' ? 'Owners Only' : 'Tenants Only',
+          recipientEmails: parsedRecipients.length > 0 ? parsedRecipients : surveyToEdit.recipientEmails,
+          ccEmails: parsedCc.length > 0 ? parsedCc : undefined,
+          bccEmails: parsedBcc.length > 0 ? parsedBcc : undefined,
+          deadline: deadline.trim() || undefined,
+          bannerImage: bannerImage.trim() || undefined,
+          questions,
+        });
+        if (updated) {
+          onSurveyUpdated?.(updated);
+        }
+        handleClose();
+      } else {
+        const newSurvey = await store.createSurvey({
+          schemeId: activeScheme.id,
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          status: 'active',
+          targetAudience: audienceFilter === 'all' ? 'All Residents' : audienceFilter === 'owners' ? 'Owners Only' : 'Tenants Only',
+          recipientEmails: parsedRecipients.length > 0 ? parsedRecipients : [store.activePersona.email || 'resident@smartlot.com'],
+          ccEmails: parsedCc.length > 0 ? parsedCc : undefined,
+          bccEmails: parsedBcc.length > 0 ? parsedBcc : undefined,
+          deadline: deadline.trim() || undefined,
+          bannerImage: bannerImage.trim() || undefined,
+          questions,
+          createdBy: {
+            name: store.activePersona.name,
+            role: store.activePersona.role,
+            email: store.activePersona.email,
+          },
+        });
 
-      onSurveyCreated?.(newSurvey);
-      handleClose();
+        onSurveyCreated?.(newSurvey);
+        handleClose();
+      }
     } catch (err) {
-      console.error('Error creating survey:', err);
+      console.error('Error saving survey:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -472,10 +532,15 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
           </div>
           <div>
             <h2 className="text-lg font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
-              <span>Create Feedback Questionnaire</span>
+              <span>{surveyToEdit ? 'Edit Feedback Questionnaire' : 'Create Feedback Questionnaire'}</span>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20">
                 {activeScheme.name}
               </span>
+              {surveyToEdit && (
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                  {surveyToEdit.id}
+                </span>
+              )}
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
               Design custom surveys with smart assistance or strata templates and dispatch guest links via email.
@@ -1575,12 +1640,12 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                 {isSubmitting ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    <span>Publishing & Sending Emails...</span>
+                    <span>{surveyToEdit ? 'Saving Changes...' : 'Publishing & Sending Emails...'}</span>
                   </>
                 ) : (
                   <>
                     <Send size={15} />
-                    <span>Publish & Dispatch Emails</span>
+                    <span>{surveyToEdit ? 'Save Changes' : 'Publish & Dispatch Emails'}</span>
                   </>
                 )}
               </button>
@@ -1597,9 +1662,18 @@ export interface SurveyBuilderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSurveyCreated?: (newSurvey: Survey) => void;
+  surveyToEdit?: Survey | null;
+  onSurveyUpdated?: (updatedSurvey: Survey) => void;
 }
 
-export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: SurveyBuilderModalProps) {
+export function SurveyBuilderModal({ 
+  store, 
+  isOpen, 
+  onClose, 
+  onSurveyCreated,
+  surveyToEdit,
+  onSurveyUpdated
+}: SurveyBuilderModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -1620,7 +1694,13 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <SurveyBuilderFormContent store={store} onClose={onClose} onSurveyCreated={onSurveyCreated} />
+        <SurveyBuilderFormContent 
+          store={store} 
+          onClose={onClose} 
+          onSurveyCreated={onSurveyCreated} 
+          surveyToEdit={surveyToEdit}
+          onSurveyUpdated={onSurveyUpdated}
+        />
       </div>
     </div>,
     document.body

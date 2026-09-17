@@ -26,7 +26,11 @@ import {
   Calendar,
   Download,
   ChevronDown,
-  X
+  X,
+  Edit3,
+  Trash2,
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
@@ -58,6 +62,9 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   // UI State
   const [activeTab, setActiveTab] = useState<'analytics' | 'comments' | 'ai_summary' | 'questions'>('analytics');
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [editingSurvey, setEditingSurvey] = useState<Survey | null>(null);
+  const [surveyToDelete, setSurveyToDelete] = useState<Survey | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [commentFilter, setCommentFilter] = useState<'all' | 'anonymous' | 'unit_tagged'>('all');
@@ -181,8 +188,30 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
   const handleCloseEarly = () => {
     if (!selectedSurvey) return;
-    if (confirm(`Are you sure you want to close "${selectedSurvey.title}" early? No further resident submissions will be accepted.`)) {
-      store.closeSurvey(selectedSurvey.id);
+    store.closeSurvey(selectedSurvey.id);
+  };
+
+  const handleReopenSurvey = () => {
+    if (!selectedSurvey) return;
+    store.reopenSurvey(selectedSurvey.id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!surveyToDelete) return;
+    setIsDeleting(true);
+    try {
+      await store.deleteSurvey(surveyToDelete.id);
+      const remaining = store.surveys.filter(s => s.id !== surveyToDelete.id);
+      if (remaining.length > 0) {
+        setSelectedSurveyId(remaining[0].id);
+      } else {
+        setSelectedSurveyId('');
+      }
+      setSurveyToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete survey:', err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -287,10 +316,17 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       />
                     </div>
 
-                    <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-[#032427] border border-emerald-200 dark:border-[#00D4B2]/40 text-emerald-700 dark:text-[#00D4B2] text-xs font-black tracking-wider shadow-xs shrink-0">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-[#00D4B2] shadow-[0_0_8px_#00D4B2] animate-pulse shrink-0" />
-                      <span>ACTIVE</span>
-                    </span>
+                    {selectedSurvey.status === 'active' ? (
+                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-[#032427] border border-emerald-200 dark:border-[#00D4B2]/40 text-emerald-700 dark:text-[#00D4B2] text-xs font-black tracking-wider shadow-xs shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-[#00D4B2] shadow-[0_0_8px_#00D4B2] animate-pulse shrink-0" />
+                        <span>ACTIVE</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-[#231505] border border-amber-200 dark:border-amber-500/40 text-amber-700 dark:text-amber-400 text-xs font-black tracking-wider shadow-xs shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 shrink-0" />
+                        <span>CLOSED</span>
+                      </span>
+                    )}
                   </div>
 
                   {/* Bottom Row: Deadline Info Capsule */}
@@ -330,16 +366,16 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
             {/* Right Section: Quick Action Buttons */}
             {selectedSurvey && (
-              <div className="flex items-center gap-2.5 flex-wrap xl:justify-end shrink-0">
+              <div className="flex items-center gap-2 flex-wrap xl:justify-end shrink-0">
                 {/* 1. Copy Link */}
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="h-10 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#0C1728] dark:hover:bg-[#122238] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 shadow-xs"
+                  className="h-9 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#0C1728] dark:hover:bg-[#122238] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
                   title="Copy direct guest survey link"
                 >
-                  {copiedLink ? <Check size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" /> : <Copy size={16} className="text-gray-500 dark:text-gray-400 shrink-0" />}
-                  <span>{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
+                  {copiedLink ? <Check size={14} className="text-emerald-500 dark:text-emerald-400 shrink-0" /> : <Copy size={14} className="text-gray-500 dark:text-gray-400 shrink-0" />}
+                  <span>{copiedLink ? 'Copied!' : 'Copy Link'}</span>
                 </button>
 
                 {/* 2. Test Survey */}
@@ -352,25 +388,60 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       window.open(`/?survey_token=${encodeURIComponent(selectedSurvey.id)}`, '_blank');
                     }
                   }}
-                  className="h-10 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-[#041D27] dark:hover:bg-[#072B3A] border border-emerald-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 shadow-xs"
+                  className="h-9 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-[#041D27] dark:hover:bg-[#072B3A] border border-emerald-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
                   title="Preview standalone guest survey"
                 >
-                  <ExternalLink size={16} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
-                  <span>Test Survey</span>
+                  <ExternalLink size={14} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+                  <span>Preview</span>
                 </button>
 
-                {/* 3. Close Early */}
-                {selectedSurvey.status === 'active' && (
+                {/* 3. Edit Survey Form */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSurvey(selectedSurvey);
+                    setIsBuilderOpen(true);
+                  }}
+                  className="h-9 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-[#07192F] dark:hover:bg-[#0C2442] border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                  title="Edit survey title, questions, deadline, and banner"
+                >
+                  <Edit3 size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>Edit Form</span>
+                </button>
+
+                {/* 4. Close Round or Reopen */}
+                {selectedSurvey.status === 'active' ? (
                   <button
                     type="button"
                     onClick={handleCloseEarly}
-                    className="h-10 px-4 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-[#1D080E] dark:hover:bg-[#2A0C14] border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 shadow-xs"
-                    title="Close survey round immediately"
+                    className="h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-[#231505] dark:hover:bg-[#331E07] border border-amber-200 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                    title="Conclude survey round and freeze responses"
                   >
-                    <X size={15} className="text-red-500 dark:text-red-400 stroke-[2.5] shrink-0" />
-                    <span>Close Early</span>
+                    <Clock size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>Close Round</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleReopenSurvey}
+                    className="h-9 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-[#032427] dark:hover:bg-[#06373B] border border-teal-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                    title="Reopen closed feedback round"
+                  >
+                    <RotateCcw size={14} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+                    <span>Reopen</span>
                   </button>
                 )}
+
+                {/* 5. Delete Form */}
+                <button
+                  type="button"
+                  onClick={() => setSurveyToDelete(selectedSurvey)}
+                  className="h-9 px-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-[#1D080E] dark:hover:bg-[#2A0C14] border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                  title="Delete survey questionnaire and responses"
+                >
+                  <Trash2 size={14} className="text-red-500 dark:text-red-400 shrink-0" />
+                  <span>Delete</span>
+                </button>
               </div>
             )}
 
@@ -1256,7 +1327,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         {/* ── 8. TAB 4: Survey Blueprint ───────────────────────────────── */}
         {activeTab === 'questions' && selectedSurvey && (
           <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 shadow-sm dark:shadow-xs space-y-4 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
               <div>
                 <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
                   Active Survey Questions ({selectedSurvey.questions.length})
@@ -1266,7 +1337,22 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 </p>
               </div>
 
-              <span className="text-xs font-mono text-gray-400 dark:text-gray-500">ID: {selectedSurvey.id}</span>
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSurvey(selectedSurvey);
+                    setIsBuilderOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                >
+                  <Edit3 size={13} />
+                  <span>Edit Questionnaire</span>
+                </button>
+                <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-white/5">
+                  ID: {selectedSurvey.id}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -1298,15 +1384,95 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
       </div>
 
-      {/* Survey Builder Modal */}
+      {/* Survey Builder Modal (Create & Edit) */}
       <SurveyBuilderModal
         store={store}
         isOpen={isBuilderOpen}
-        onClose={() => setIsBuilderOpen(false)}
+        surveyToEdit={editingSurvey}
+        onClose={() => {
+          setIsBuilderOpen(false);
+          setEditingSurvey(null);
+        }}
         onSurveyCreated={(newSurvey) => {
           setSelectedSurveyId(newSurvey.id);
+          setIsBuilderOpen(false);
+          setEditingSurvey(null);
+        }}
+        onSurveyUpdated={(updatedSurvey) => {
+          setSelectedSurveyId(updatedSurvey.id);
+          setIsBuilderOpen(false);
+          setEditingSurvey(null);
         }}
       />
+
+      {/* Delete Confirmation Modal */}
+      {surveyToDelete && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center shrink-0">
+                <Trash2 size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-heading font-black text-gray-900 dark:text-white">
+                  Delete Survey Form?
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium leading-relaxed">
+                  Are you sure you want to permanently delete this questionnaire?
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-[#060D1A] border border-gray-200/80 dark:border-white/5 rounded-2xl p-4 mb-5 space-y-2">
+              <div className="text-xs font-bold text-gray-900 dark:text-white">
+                {surveyToDelete.title}
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+                <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-bold">
+                  {surveyToDelete.id}
+                </span>
+                <span>•</span>
+                <span>{surveyToDelete.category}</span>
+              </div>
+              <div className="pt-2 border-t border-gray-200/80 dark:border-white/5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5 font-medium">
+                <AlertCircle size={14} className="shrink-0" />
+                <span>
+                  This will also permanently delete <strong>{store.surveyResponses.filter(r => r.surveyId === surveyToDelete.id).length} resident responses</strong>.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setSurveyToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-md shadow-red-600/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} />
+                    <span>Delete Survey</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

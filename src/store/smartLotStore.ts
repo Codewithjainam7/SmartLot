@@ -4717,6 +4717,98 @@ export function useSmartLotStore() {
     })();
   };
 
+  const reopenSurvey = (surveyId: string) => {
+    setSurveys(prev => {
+      const updated = prev.map(s => {
+        if (s.id !== surveyId) return s;
+        return {
+          ...s,
+          status: 'active' as const,
+          closedAt: undefined,
+        };
+      });
+      try {
+        window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    (async () => {
+      try {
+        await supabase.from('surveys').update({
+          status: 'active',
+          closed_at: null
+        }).eq('id', surveyId);
+      } catch (e) {
+        console.warn('[SmartLot Store] Supabase reopenSurvey notice:', e);
+      }
+    })();
+  };
+
+  const updateSurvey = async (surveyId: string, updates: Partial<Omit<Survey, 'id' | 'createdAt'>>): Promise<Survey | undefined> => {
+    let updatedSurvey: Survey | undefined;
+
+    setSurveys(prev => {
+      const target = prev.find(s => s.id === surveyId);
+      if (!target) return prev;
+      updatedSurvey = {
+        ...target,
+        ...updates,
+      };
+      const nextList = prev.map(s => s.id === surveyId ? updatedSurvey! : s);
+      try {
+        window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(nextList));
+      } catch {}
+      return nextList;
+    });
+
+    if (updatedSurvey) {
+      try {
+        const u = updatedSurvey as Survey;
+        await supabase.from('surveys').update({
+          title: u.title,
+          description: u.description,
+          category: u.category,
+          status: u.status,
+          target_audience: u.targetAudience,
+          recipient_emails: u.recipientEmails,
+          cc_emails: u.ccEmails || [],
+          bcc_emails: u.bccEmails || [],
+          questions: u.questions,
+          deadline: u.deadline || null,
+          banner_image: u.bannerImage || null,
+        }).eq('id', surveyId);
+      } catch (err) {
+        console.warn('[SmartLot Store] Failed to update survey in Supabase:', err);
+      }
+    }
+    return updatedSurvey;
+  };
+
+  const deleteSurvey = async (surveyId: string): Promise<boolean> => {
+    setSurveys(prev => {
+      const next = prev.filter(s => s.id !== surveyId);
+      try {
+        window.localStorage.setItem('smartlot_global_surveys_v2', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setSurveyResponses(prev => {
+      const next = prev.filter(r => r.surveyId !== surveyId);
+      try {
+        window.localStorage.setItem('smartlot_global_survey_responses_v2', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    try {
+      await supabase.from('surveys').delete().eq('id', surveyId);
+    } catch (err) {
+      console.warn('[SmartLot Store] Failed to delete survey from Supabase:', err);
+    }
+    return true;
+  };
+
   const submitSurveyResponse = (payload: Omit<SurveyResponse, 'id' | 'submittedAt'>): SurveyResponse => {
     const newResponse: SurveyResponse = {
       ...payload,
@@ -4774,11 +4866,6 @@ export function useSmartLotStore() {
     }));
 
     return summary;
-  };
-
-  const deleteSurvey = (surveyId: string) => {
-    setSurveys(prev => prev.filter(s => s.id !== surveyId));
-    setSurveyResponses(prev => prev.filter(r => r.surveyId !== surveyId));
   };
 
 
@@ -4977,11 +5064,13 @@ export function useSmartLotStore() {
     surveyResponses,
     setSurveyResponses,
     createSurvey,
+    updateSurvey,
     closeSurvey,
+    reopenSurvey,
+    deleteSurvey,
     submitSurveyResponse,
     generateAISurveyQuestions,
     generateAISurveySummary,
-    deleteSurvey,
   };
 }
 
