@@ -31,6 +31,7 @@ import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
 import { SurveyBuilderModal } from './SurveyBuilderModal';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
+import QRCode from 'qrcode';
 
 interface SurveysViewProps {
   store: SmartLotStore;
@@ -93,6 +94,22 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   // Origin URL for guest link
   const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
   const guestSurveyUrl = selectedSurvey ? `${origin}/?survey_token=${encodeURIComponent(selectedSurvey.id)}` : '';
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+
+  React.useEffect(() => {
+    if (guestSurveyUrl) {
+      QRCode.toDataURL(guestSurveyUrl, {
+        margin: 1,
+        width: 160,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      })
+        .then(url => setQrDataUrl(url))
+        .catch(err => console.error('Error generating QR:', err));
+    }
+  }, [guestSurveyUrl]);
 
   const handleCopyLink = () => {
     if (!guestSurveyUrl) return;
@@ -796,11 +813,16 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
                 {/* QR Code Block */}
                 <div className="flex items-center gap-3.5 pt-1">
-                  <div className="w-16 h-16 rounded-xl bg-white p-1.5 shrink-0 flex items-center justify-center shadow-md">
-                    {/* Embedded Scalable QR Code SVG */}
-                    <svg viewBox="0 0 29 29" className="w-full h-full text-black fill-current">
-                      <path d="M0 0h7v7H0zm2 2v3h3V2zm7-2h2v2H9zm3 0h1v1h-1zm2 0h1v2h-1zm2 0h1v1h-1zm3 0h1v1h-1zm2 0h1v2h-1zm2 0h7v7h-7zm2 2v3h3V2zm-9 1h1v1h-1zm2 0h1v1h-1zm-3 1h1v1h-1zm-4 1h1v1H7zm5 0h1v2h-1zm-3 1h2v1H9zm-7 2h1v1H2zm3 0h1v1H5zm15 0h1v1h-1zm2 0h1v1h-1zm-13 1h1v1H9zm6 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm-8 1h1v1h-1zm2 0h2v1h-2zm-9 1h1v2H4zm2 0h1v1H6zm5 0h1v2h-1zm3 0h1v1h-1zm2 0h1v2h-1zm2 0h1v1h-1zm4 0h1v1h-1zm2 0h1v1h-1zm-19 1h1v1H1zm2 0h1v1H3zm19 0h1v1h-1zm2 0h2v1h-2zm-15 1h1v1H8zm2 0h1v1h-1zm8 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm-21 1h7v7H0zm2 2v3h3v-3zm7-2h1v1H9zm2 0h2v1h-2zm3 0h1v1h-1zm2 0h2v1h-2zm5 0h1v1h-1zm2 0h1v1h-1zm-13 1h1v1H9zm7 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm-10 1h1v1H10zm4 0h1v1h-1zm2 0h2v1h-2zm-8 1h1v1H8zm3 0h2v1h-2zm3 0h1v1h-1zm3 0h1v1h-1zm-8 1h1v1H9zm2 0h1v1h-1zm2 0h1v1h-1zm4 0h1v1h-1zm-10 1h2v1H7zm5 0h2v1h-2zm3 0h1v1h-1zm4 0h1v1h-1z"/>
-                    </svg>
+                  <div className="w-16 h-16 rounded-xl bg-white p-1 shrink-0 flex items-center justify-center shadow-md overflow-hidden">
+                    {qrDataUrl ? (
+                      <img 
+                        src={qrDataUrl} 
+                        alt="Survey QR Code" 
+                        className="w-full h-full object-contain" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg" />
+                    )}
                   </div>
                   <div>
                     <p className="text-xs font-bold text-white">Scan QR Code</p>
