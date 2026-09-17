@@ -572,66 +572,66 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
         {/* ── 4. Capsule Navigation Tabs & Create Action ──────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-[#070E1F] rounded-2xl border border-gray-200 dark:border-white/10 w-fit flex-wrap">
+          <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-[#070E1F] rounded-2xl border border-gray-200 dark:border-white/10 w-full sm:w-fit overflow-x-auto no-scrollbar scroll-smooth">
             <button
               type="button"
               onClick={() => setActiveTab('analytics')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none active:scale-95 ${
                 activeTab === 'analytics'
                   ? 'bg-white dark:bg-[#00D4B2]/15 text-gray-900 dark:text-[#00D4B2] border border-gray-200 dark:border-[#00D4B2]/30 shadow-xs'
                   : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
-              <BarChart3 size={15} />
+              <BarChart3 size={15} className="shrink-0" />
               <span>Ratings & Analytics</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('comments')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none active:scale-95 ${
                 activeTab === 'comments'
                   ? 'bg-white dark:bg-[#00D4B2]/15 text-gray-900 dark:text-[#00D4B2] border border-gray-200 dark:border-[#00D4B2]/30 shadow-xs'
                   : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
-              <MessageSquare size={15} />
+              <MessageSquare size={15} className="shrink-0" />
               <span>Resident Feedback ({responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string')).length})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('ai_summary')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none active:scale-95 ${
                 activeTab === 'ai_summary'
                   ? 'bg-white dark:bg-[#00D4B2]/15 text-gray-900 dark:text-[#00D4B2] border border-gray-200 dark:border-[#00D4B2]/30 shadow-xs'
                   : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
-              <FileText size={15} />
+              <FileText size={15} className="shrink-0" />
               <span>Executive Synthesis</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('questions')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none active:scale-95 ${
                 activeTab === 'questions'
                   ? 'bg-white dark:bg-[#00D4B2]/15 text-gray-900 dark:text-[#00D4B2] border border-gray-200 dark:border-[#00D4B2]/30 shadow-xs'
                   : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
-              <FileCheck size={15} />
+              <FileCheck size={15} className="shrink-0" />
               <span>Survey Blueprint ({selectedSurvey?.questions.length})</span>
             </button>
           </div>
 
           {/* Morphing Capsule Button for Create New Questionnaire */}
-          <div className="relative z-10 shrink-0">
+          <div className="relative z-10 shrink-0 w-full sm:w-auto">
             <MorphingPopover>
               <MorphingPopoverTrigger>
                 <div
-                  className="h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-11 sm:h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00D4B2]/20 active:scale-[0.98] w-full select-none"
                   title="Create a new survey questionnaire"
                 >
                   <Plus size={16} className="stroke-[3]" />
