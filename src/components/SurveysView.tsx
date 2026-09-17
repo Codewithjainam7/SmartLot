@@ -367,12 +367,12 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
             {/* Right Section: Quick Action Buttons */}
             {selectedSurvey && (
-              <div className="flex items-center gap-2 flex-wrap xl:justify-end shrink-0">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full xl:w-auto xl:justify-end shrink-0 pt-2 xl:pt-0 border-t border-gray-100 dark:border-white/5 xl:border-t-0">
                 {/* 1. Copy Link */}
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="h-9 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#0C1728] dark:hover:bg-[#122238] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                  className="h-10 sm:h-9 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#0C1728] dark:hover:bg-[#122238] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                   title="Copy direct guest survey link"
                 >
                   {copiedLink ? <Check size={14} className="text-emerald-500 dark:text-emerald-400 shrink-0" /> : <Copy size={14} className="text-gray-500 dark:text-gray-400 shrink-0" />}
@@ -389,7 +389,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       window.open(`/?survey_token=${encodeURIComponent(selectedSurvey.id)}`, '_blank');
                     }
                   }}
-                  className="h-9 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-[#041D27] dark:hover:bg-[#072B3A] border border-emerald-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                  className="h-10 sm:h-9 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-[#041D27] dark:hover:bg-[#072B3A] border border-emerald-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                   title="Preview standalone guest survey"
                 >
                   <ExternalLink size={14} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
@@ -403,7 +403,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     setEditingSurvey(selectedSurvey);
                     setIsBuilderOpen(true);
                   }}
-                  className="h-9 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-[#07192F] dark:hover:bg-[#0C2442] border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                  className="h-10 sm:h-9 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-[#07192F] dark:hover:bg-[#0C2442] border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                   title="Edit survey title, questions, deadline, and banner"
                 >
                   <Edit3 size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
@@ -415,7 +415,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <button
                     type="button"
                     onClick={handleCloseEarly}
-                    className="h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-[#231505] dark:hover:bg-[#331E07] border border-amber-200 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                    className="h-10 sm:h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-[#231505] dark:hover:bg-[#331E07] border border-amber-200 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                     title="Conclude survey round and freeze responses"
                   >
                     <Clock size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
@@ -425,7 +425,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <button
                     type="button"
                     onClick={handleReopenSurvey}
-                    className="h-9 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-[#032427] dark:hover:bg-[#06373B] border border-teal-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                    className="h-10 sm:h-9 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-[#032427] dark:hover:bg-[#06373B] border border-teal-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                     title="Reopen closed feedback round"
                   >
                     <RotateCcw size={14} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
@@ -437,11 +437,11 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 <button
                   type="button"
                   onClick={() => setSurveyToDelete(selectedSurvey)}
-                  className="h-9 px-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-[#1D080E] dark:hover:bg-[#2A0C14] border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+                  className="col-span-2 sm:col-span-1 h-10 sm:h-9 px-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-[#1D080E] dark:hover:bg-[#2A0C14] border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                   title="Delete survey questionnaire and responses"
                 >
                   <Trash2 size={14} className="text-red-500 dark:text-red-400 shrink-0" />
-                  <span>Delete</span>
+                  <span>Delete Form</span>
                 </button>
               </div>
             )}
