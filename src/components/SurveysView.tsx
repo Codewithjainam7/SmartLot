@@ -28,6 +28,7 @@ import {
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
 import { SurveyBuilderModal } from './SurveyBuilderModal';
+import { CustomSelect, SelectOption } from './core/CustomSelect';
 
 interface SurveysViewProps {
   store: SmartLotStore;
@@ -117,6 +118,13 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
     }
   };
 
+  const surveyOptions: SelectOption[] = store.surveys.map(s => ({
+    value: s.id,
+    label: s.title,
+    description: `${s.category} • ${s.status.toUpperCase()}`,
+    icon: <Building2 size={14} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+  }));
+
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] overflow-y-auto font-sans">
       
@@ -157,93 +165,98 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         
         {/* Survey Picker & Controls Toolbar */}
         {selectedSurvey && (
-          <div className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Active Feedback Round:</label>
+          <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
               
-              <select
-                value={selectedSurvey.id}
-                onChange={(e) => setSelectedSurveyId(e.target.value)}
-                className="bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#00D4B2] cursor-pointer"
-              >
-                {store.surveys.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.title} ({s.status.toUpperCase()})
-                  </option>
-                ))}
-              </select>
-
-              {/* Status Badge */}
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-                selectedSurvey.status === 'active'
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                  : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10'
-              }`}>
-                {selectedSurvey.status === 'active' && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
-                {selectedSurvey.status}
-              </span>
-
-              {selectedSurvey.deadline && (
-                <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-lg">
-                  <Calendar size={13} />
-                  Deadline: {selectedSurvey.deadline}
+              {/* Left Side: Survey Selector & Status Badges */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0">
+                  Active Survey:
                 </span>
-              )}
-            </div>
 
-            {/* Quick Actions */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 transition-all cursor-pointer"
-                title="Copy direct guest survey link"
-              >
-                {copiedLink ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                <span>{copiedLink ? 'Link Copied!' : 'Copy Guest Link'}</span>
-              </button>
+                {/* Custom Design-System Dropdown Menu */}
+                <div className="w-64 sm:w-80 shrink-0">
+                  <CustomSelect
+                    options={surveyOptions}
+                    value={selectedSurvey.id}
+                    onChange={(val) => setSelectedSurveyId(val)}
+                    size="sm"
+                  />
+                </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (onOpenGuestView) {
-                    onOpenGuestView(selectedSurvey.id);
-                  } else {
-                    window.open(`/?survey_token=${encodeURIComponent(selectedSurvey.id)}`, '_blank');
-                  }
-                }}
-                className="px-3.5 py-1.5 rounded-xl border border-[#00D4B2]/40 bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] hover:bg-[#00D4B2]/20 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                title="Preview standalone guest survey"
-              >
-                <ExternalLink size={14} />
-                <span>Test as Resident</span>
-              </button>
+                {/* Status Badge */}
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shrink-0 ${
+                  selectedSurvey.status === 'active'
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                    : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10'
+                }`}>
+                  {selectedSurvey.status === 'active' && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />}
+                  {selectedSurvey.status}
+                </span>
 
-              <button
-                type="button"
-                onClick={handleGenerateSummary}
-                disabled={isGeneratingSummary || responses.length === 0}
-                className="px-3.5 py-1.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40"
-                title="Synthesize resident feedback into executive summary"
-              >
-                {isGeneratingSummary ? (
-                  <RefreshCw size={14} className="animate-spin" />
-                ) : (
-                  <FileText size={14} />
+                {selectedSurvey.deadline && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-xl border border-gray-200/60 dark:border-white/5 shrink-0 font-medium">
+                    <Calendar size={13} className="shrink-0" />
+                    <span>Deadline: {selectedSurvey.deadline}</span>
+                  </span>
                 )}
-                <span>{isGeneratingSummary ? 'Synthesizing...' : 'Executive Brief'}</span>
-              </button>
+              </div>
 
-              {selectedSurvey.status === 'active' && (
+              {/* Right Side: Quick Action Buttons (Fixed sizes prevent layout shift & width jitter) */}
+              <div className="flex items-center gap-2 flex-wrap xl:justify-end shrink-0">
                 <button
                   type="button"
-                  onClick={handleCloseEarly}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer border border-red-200 dark:border-red-900/40"
-                  title="Close survey round immediately"
+                  onClick={handleCopyLink}
+                  className="w-32 h-9 px-3 rounded-xl border border-gray-200/80 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                  title="Copy direct guest survey link"
                 >
-                  Close Early
+                  {copiedLink ? <Check size={14} className="text-emerald-500 shrink-0" /> : <Copy size={14} className="shrink-0" />}
+                  <span className="truncate">{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
                 </button>
-              )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenGuestView) {
+                      onOpenGuestView(selectedSurvey.id);
+                    } else {
+                      window.open(`/?survey_token=${encodeURIComponent(selectedSurvey.id)}`, '_blank');
+                    }
+                  }}
+                  className="h-9 px-3.5 rounded-xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] hover:bg-blue-100/60 dark:hover:bg-blue-500/20 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                  title="Preview standalone guest survey"
+                >
+                  <ExternalLink size={14} className="shrink-0" />
+                  <span>Test Survey</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleGenerateSummary}
+                  disabled={isGeneratingSummary || responses.length === 0}
+                  className="w-36 h-9 px-3.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#0a0a0f] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-xs"
+                  title="Synthesize resident feedback into executive summary"
+                >
+                  {isGeneratingSummary ? (
+                    <RefreshCw size={14} className="animate-spin shrink-0" />
+                  ) : (
+                    <FileText size={14} className="shrink-0" />
+                  )}
+                  <span className="truncate">{isGeneratingSummary ? 'Analyzing...' : 'Executive Brief'}</span>
+                </button>
+
+                {selectedSurvey.status === 'active' && (
+                  <button
+                    type="button"
+                    onClick={handleCloseEarly}
+                    className="h-9 px-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer border border-red-200/80 dark:border-red-900/40 shrink-0"
+                    title="Close survey round immediately"
+                  >
+                    Close Early
+                  </button>
+                )}
+              </div>
+
             </div>
           </div>
         )}
@@ -387,61 +400,84 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              {/* Left 2 Cols: Question Breakdown Bars */}
-              <div className="lg:col-span-2 bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-xs space-y-6">
-                <h3 className="text-base font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
-                  <span>Rating Breakdown by Question</span>
-                </h3>
+              {/* Left 2 Cols: Clean Rating Breakdown by Question */}
+              <div className="lg:col-span-2 bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/5">
+                  <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
+                    Rating Breakdown by Question
+                  </h3>
+                  <span className="text-xs text-gray-400 font-medium">
+                    {selectedSurvey.questions.filter(q => q.type === 'star_rating' || q.type === 'nps_score').length} Metrics Tracked
+                  </span>
+                </div>
 
-                {selectedSurvey.questions
-                  .filter(q => q.type === 'star_rating' || q.type === 'nps_score')
-                  .map((q) => {
-                    let scoreSum = 0;
-                    let count = 0;
-                    responses.forEach(r => {
-                      const v = r.answers[q.id];
-                      if (typeof v === 'number') {
-                        scoreSum += v;
-                        count += 1;
-                      }
-                    });
+                <div className="space-y-3">
+                  {selectedSurvey.questions
+                    .filter(q => q.type === 'star_rating' || q.type === 'nps_score')
+                    .map((q, qIdx) => {
+                      let scoreSum = 0;
+                      let count = 0;
+                      responses.forEach(r => {
+                        const v = r.answers[q.id];
+                        if (typeof v === 'number') {
+                          scoreSum += v;
+                          count += 1;
+                        }
+                      });
 
-                    const avg = count > 0 ? (scoreSum / count).toFixed(1) : '4.5';
-                    const percent = q.type === 'star_rating' 
-                      ? Math.round((Number(avg) / 5) * 100)
-                      : Math.round((Number(avg) / 10) * 100);
+                      const avg = count > 0 ? (scoreSum / count).toFixed(1) : '4.5';
+                      const percent = q.type === 'star_rating' 
+                        ? Math.round((Number(avg) / 5) * 100)
+                        : Math.round((Number(avg) / 10) * 100);
 
-                    return (
-                      <div key={q.id} className="space-y-2">
-                        <div className="flex justify-between items-start text-xs sm:text-sm gap-2">
-                          <div>
-                            <span className="font-extrabold text-gray-900 dark:text-white">
-                              {q.questionText}
-                            </span>
-                            <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-500">
-                              {q.category}
-                            </span>
+                      return (
+                        <div 
+                          key={q.id} 
+                          className="p-4 rounded-2xl bg-gray-50/60 dark:bg-white/[0.02] border border-gray-200/70 dark:border-white/5 space-y-3 transition-colors hover:border-gray-300 dark:hover:border-white/10"
+                        >
+                          {/* Question header row: Clean, crisp, legible typography */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500">
+                                  Metric {qIdx + 1}
+                                </span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+                                  {q.category}
+                                </span>
+                              </div>
+                              <p className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200 leading-relaxed font-sans">
+                                {q.questionText}
+                              </p>
+                            </div>
+
+                            {/* Clean Score Badge */}
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs shrink-0">
+                              <Star size={13} className="fill-amber-400 text-amber-400 shrink-0" />
+                              <span className="font-heading font-black text-sm">{avg}</span>
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-normal">
+                                / {q.type === 'star_rating' ? '5.0' : '10'}
+                              </span>
+                            </div>
                           </div>
-                          <div className="font-black text-gray-900 dark:text-white shrink-0">
-                            {q.type === 'star_rating' ? `${avg} / 5.0 ⭐` : `${avg} / 10 NPS`}
+
+                          {/* Slim, Minimal Indicator Bar (Clean SmartLot Accent, No Gradients) */}
+                          <div className="w-full h-2 rounded-full bg-gray-200/70 dark:bg-white/10 overflow-hidden">
+                            <div 
+                              className="h-full rounded-full bg-[#0055FF] dark:bg-[#00D4B2] transition-all duration-500"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+
+                          {/* Clean Footer Metadata */}
+                          <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                            <span>{count} verified responses</span>
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{percent}% satisfaction index</span>
                           </div>
                         </div>
-
-                        {/* Progress Bar */}
-                        <div className="w-full h-3 rounded-full bg-gray-100 dark:bg-white/5 overflow-hidden">
-                          <div 
-                            className="h-full rounded-full bg-gradient-to-r from-[#00D4B2] to-[#0055FF] transition-all duration-500"
-                            style={{ width: `${percent}%` }}
-                          />
-                        </div>
-
-                        <div className="flex justify-between text-[10px] text-gray-400">
-                          <span>{count} responses received</span>
-                          <span>{percent}% satisfaction index</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                </div>
               </div>
 
               {/* Right Col: NPS & Distribution Card */}
@@ -491,9 +527,9 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 </div>
 
                 {/* Direct Share Card */}
-                <div className="bg-gradient-to-br from-[#00D4B2]/15 via-blue-500/10 to-purple-500/10 border border-[#00D4B2]/30 rounded-3xl p-6 shadow-xs">
+                <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 shadow-xs">
                   <h4 className="text-sm font-black text-gray-900 dark:text-white mb-1 flex items-center gap-1.5">
-                    <Share2 size={16} className="text-[#00D4B2]" />
+                    <Share2 size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
                     <span>Distribute to More Residents</span>
                   </h4>
                   <p className="text-xs text-gray-600 dark:text-gray-300 mb-4">
