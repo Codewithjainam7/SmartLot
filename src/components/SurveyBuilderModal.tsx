@@ -30,7 +30,8 @@ import {
   Calendar,
   ChevronRight,
   Image as ImageIcon,
-  Palette
+  Palette,
+  Upload
 } from 'lucide-react';
 import { SurveyQuestion, SurveyCategory, SurveyQuestionType, Survey } from '../types';
 import { STRATA_SURVEY_TEMPLATES } from '../services/aiSurveyService';
@@ -196,6 +197,47 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   const [bannerImage, setBannerImage] = useState<string>('/bg_img_building.png');
   const [isBannerPickerOpen, setIsBannerPickerOpen] = useState(false);
   const [customBannerUrl, setCustomBannerUrl] = useState('');
+  const bannerFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isDraggingBanner, setIsDraggingBanner] = useState(false);
+
+  // File Upload Handlers for Custom Form Banner
+  const handleBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (PNG, JPG, WebP, SVG)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setBannerImage(dataUrl);
+        setIsBannerPickerOpen(false);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleBannerDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingBanner(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setBannerImage(dataUrl);
+        setIsBannerPickerOpen(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
   
   // Questions State
   const [questions, setQuestions] = useState<SurveyQuestion[]>(() => {
@@ -477,7 +519,16 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
               
               {/* Form Header Banner (Google Forms Style) */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                {/* Hidden File Input for Custom Banner Upload */}
+                <input
+                  ref={bannerFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleBannerFileChange}
+                />
+
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                       <ImageIcon size={14} className="text-[#00897B] dark:text-[#00D4B2]" />
@@ -488,7 +539,7 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {bannerImage && (
                       <button
                         type="button"
@@ -500,118 +551,222 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                     )}
                     <button
                       type="button"
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      className="px-3 py-1 rounded-xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 hover:bg-[#00897B]/20 dark:hover:bg-[#00D4B2]/25 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/25 dark:border-[#00D4B2]/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <Upload size={13} strokeWidth={2.5} />
+                      <span>Upload Image</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setIsBannerPickerOpen(!isBannerPickerOpen)}
                       className="px-3 py-1 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <Palette size={13} />
-                      <span>{isBannerPickerOpen ? 'Close Gallery' : bannerImage ? 'Change Banner' : 'Add Banner'}</span>
+                      <span>{isBannerPickerOpen ? 'Close Themes' : 'Browse Themes'}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Active Banner Preview Card */}
+                {/* Active Banner Preview Card with Drag-and-Drop */}
                 {bannerImage ? (
-                  <div className="relative h-36 sm:h-44 w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xs group bg-gray-900">
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDraggingBanner(true);
+                    }}
+                    onDragLeave={() => setIsDraggingBanner(false)}
+                    onDrop={handleBannerDrop}
+                    className={`relative h-36 sm:h-44 w-full rounded-2xl overflow-hidden border shadow-xs group bg-gray-900 transition-all ${
+                      isDraggingBanner
+                        ? 'border-[#00D4B2] ring-4 ring-[#00D4B2]/40 scale-[1.01]'
+                        : 'border-gray-200 dark:border-white/10'
+                    }`}
+                  >
                     <img
                       src={bannerImage}
                       alt="Form Header Banner Preview"
                       className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-4">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#00D4B2] font-mono mb-0.5">
-                        BANNER PREVIEW • VISIBLE TO RESIDENTS
-                      </span>
-                      <h4 className="text-white font-extrabold text-sm sm:text-base truncate">
-                        {title || 'Survey Questionnaire Banner'}
-                      </h4>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#00D4B2] font-mono mb-0.5 block">
+                            BANNER PREVIEW • VISIBLE TO RESIDENTS
+                          </span>
+                          <h4 className="text-white font-extrabold text-sm sm:text-base truncate">
+                            {title || 'Survey Questionnaire Banner'}
+                          </h4>
+                        </div>
+                        <div className="hidden group-hover:flex items-center gap-1.5 shrink-0 bg-black/60 backdrop-blur-md rounded-xl p-1 border border-white/20">
+                          <button
+                            type="button"
+                            onClick={() => bannerFileInputRef.current?.click()}
+                            className="px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <Upload size={11} />
+                            <span>Upload New</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsBannerPickerOpen(true)}
+                            className="px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <Palette size={11} />
+                            <span>Themes</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
+
+                    {isDraggingBanner && (
+                      <div className="absolute inset-0 bg-[#00897B]/80 dark:bg-[#00D4B2]/80 backdrop-blur-xs flex flex-col items-center justify-center text-white dark:text-[#050A15] z-20">
+                        <Upload size={32} className="animate-bounce mb-1" />
+                        <span className="text-sm font-black">Drop image here to update banner</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsBannerPickerOpen(true)}
-                    className="w-full h-24 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-[#00897B] dark:hover:border-[#00D4B2] bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer group"
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDraggingBanner(true);
+                    }}
+                    onDragLeave={() => setIsDraggingBanner(false)}
+                    onDrop={handleBannerDrop}
+                    className={`w-full p-6 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 text-center ${
+                      isDraggingBanner
+                        ? 'border-[#00D4B2] bg-[#00D4B2]/10 ring-4 ring-[#00D4B2]/30 scale-[1.01]'
+                        : 'border-gray-300 dark:border-white/15 bg-gray-50/60 dark:bg-white/[0.02]'
+                    }`}
                   >
-                    <ImageIcon size={20} className="text-gray-400 group-hover:text-[#00897B] dark:group-hover:text-[#00D4B2] transition-colors" />
-                    <span className="text-xs font-bold">Click to add a cover banner to this survey</span>
-                    <span className="text-[10px] text-gray-400">Renders as a Google Forms-style hero banner on resident mobile screens</span>
-                  </button>
-                )}
-
-                {/* Expandable Curated Preset & Custom URL Picker */}
-                {isBannerPickerOpen && (
-                  <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 shadow-sm space-y-3 animate-in fade-in zoom-in-98 duration-200">
-                    <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                      Choose a Curated Strata Banner:
+                    <div className="w-12 h-12 rounded-2xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] flex items-center justify-center">
+                      <Upload size={22} strokeWidth={2.5} />
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                      {PRESET_SURVEY_BANNERS.map((preset) => {
-                        const isSelected = bannerImage === preset.url;
-                        return (
-                          <button
-                            key={preset.id}
-                            type="button"
-                            onClick={() => {
-                              setBannerImage(preset.url);
-                              setIsBannerPickerOpen(false);
-                            }}
-                            className={`relative h-20 rounded-xl overflow-hidden border text-left cursor-pointer group transition-all ${
-                              isSelected
-                                ? 'border-[#00897B] dark:border-[#00D4B2] ring-2 ring-[#00897B]/40 dark:ring-[#00D4B2]/40 shadow-xs'
-                                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
-                            }`}
-                          >
-                            <img
-                              src={preset.url}
-                              alt={preset.label}
-                              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-2">
-                              <span className="text-[10px] font-extrabold text-white leading-tight truncate">
-                                {preset.label}
-                              </span>
-                            </div>
-                            {isSelected && (
-                              <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] flex items-center justify-center text-[10px]">
-                                <Check size={10} strokeWidth={3} />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
+                    <div className="space-y-0.5 max-w-sm">
+                      <div className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white">
+                        Add a Custom Form Header Banner
+                      </div>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                        Drag and drop an image file here, or choose an upload method below.
+                      </p>
                     </div>
-
-                    {/* Custom Image URL Bar */}
-                    <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex gap-2">
-                      <input
-                        type="url"
-                        value={customBannerUrl}
-                        onChange={(e) => setCustomBannerUrl(e.target.value)}
-                        placeholder="Or paste custom image URL (https://...)"
-                        className="flex-1 bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2]"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (customBannerUrl.trim()) {
-                              setBannerImage(customBannerUrl.trim());
-                              setIsBannerPickerOpen(false);
-                            }
-                          }
-                        }}
-                      />
+                    <div className="flex items-center gap-2 flex-wrap justify-center">
                       <button
                         type="button"
-                        onClick={() => {
-                          if (customBannerUrl.trim()) {
-                            setBannerImage(customBannerUrl.trim());
-                            setIsBannerPickerOpen(false);
-                          }
-                        }}
-                        disabled={!customBannerUrl.trim()}
-                        className="px-3 py-1.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer"
+                        onClick={() => bannerFileInputRef.current?.click()}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] text-xs font-black hover:opacity-90 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                       >
-                        Apply URL
+                        <Upload size={13} strokeWidth={2.5} />
+                        <span>Upload From Computer</span>
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsBannerPickerOpen(true)}
+                        className="px-3.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/15 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Palette size={13} />
+                        <span>Pick Preset Theme</span>
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-gray-400">Supports PNG, JPG, WebP, SVG • 16:9 or 3:1 recommended</span>
+                  </div>
+                )}
+
+                {/* Expandable Curated Preset & Custom URL / File Picker */}
+                {isBannerPickerOpen && (
+                  <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 shadow-sm space-y-4 animate-in fade-in zoom-in-98 duration-200">
+                    {/* Custom File Upload & URL Bar */}
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Upload size={13} className="text-[#00897B] dark:text-[#00D4B2]" />
+                        <span>Custom Banner Upload:</span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                          type="button"
+                          onClick={() => bannerFileInputRef.current?.click()}
+                          className="px-4 py-2 rounded-xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/30 dark:border-[#00D4B2]/30 hover:bg-[#00897B]/20 dark:hover:bg-[#00D4B2]/25 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs shrink-0"
+                        >
+                          <Upload size={14} strokeWidth={2.5} />
+                          <span>Choose File from Computer</span>
+                        </button>
+                        <div className="flex-1 flex gap-2">
+                          <input
+                            type="url"
+                            value={customBannerUrl}
+                            onChange={(e) => setCustomBannerUrl(e.target.value)}
+                            placeholder="Or paste web image URL (https://...)"
+                            className="flex-1 bg-gray-50 dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00D4B2]"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (customBannerUrl.trim()) {
+                                  setBannerImage(customBannerUrl.trim());
+                                  setIsBannerPickerOpen(false);
+                                }
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (customBannerUrl.trim()) {
+                                setBannerImage(customBannerUrl.trim());
+                                setIsBannerPickerOpen(false);
+                              }
+                            }}
+                            disabled={!customBannerUrl.trim()}
+                            className="px-3 py-1.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer shrink-0"
+                          >
+                            Apply URL
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Curated Presets Grid */}
+                    <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-white/5">
+                      <div className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Palette size={13} className="text-[#00897B] dark:text-[#00D4B2]" />
+                        <span>Or Select Curated Strata Architectural Banner:</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                        {PRESET_SURVEY_BANNERS.map((preset) => {
+                          const isSelected = bannerImage === preset.url;
+                          return (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => {
+                                setBannerImage(preset.url);
+                                setIsBannerPickerOpen(false);
+                              }}
+                              className={`relative h-20 rounded-xl overflow-hidden border text-left cursor-pointer group transition-all ${
+                                isSelected
+                                  ? 'border-[#00897B] dark:border-[#00D4B2] ring-2 ring-[#00897B]/40 dark:ring-[#00D4B2]/40 shadow-xs'
+                                  : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                              }`}
+                            >
+                              <img
+                                src={preset.url}
+                                alt={preset.label}
+                                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-2">
+                                <span className="text-[10px] font-extrabold text-white leading-tight truncate">
+                                  {preset.label}
+                                </span>
+                              </div>
+                              {isSelected && (
+                                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] flex items-center justify-center text-[10px]">
+                                  <Check size={10} strokeWidth={3} />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
