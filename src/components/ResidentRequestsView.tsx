@@ -1773,12 +1773,12 @@ export function ResidentRequestsView({
         /* Requests Grid with Fading & Shrinking Depth Exit Animation */
         filteredRequests.length === 0 ? (
           filterStatus === 'needs_triage' ? (
-            <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
-              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
-                <CheckCircle2 size={32} />
+            <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
+                <CheckCircle2 size={28} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
                   <span>🎉 Inbox Zero — All Requests Triaged!</span>
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-1.5 leading-relaxed">
@@ -1787,17 +1787,17 @@ export function ResidentRequestsView({
               </div>
               <button
                 onClick={() => setFilterStatus('all')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-xs font-bold text-gray-900 dark:text-white transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-xs font-bold text-gray-900 dark:text-white transition-colors cursor-pointer min-h-[40px] active:scale-95"
               >
                 <span>View All Scheme Requests</span>
               </button>
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
+            <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-gray-100 dark:border-white/5 text-center space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 mx-auto flex items-center justify-center">
                 <Inbox size={24} />
               </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">No activities found</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                 {filterStatus === 'all' 
                   ? "No activities have been recorded yet. Click '+ Create New Request' to submit an issue."
@@ -1806,7 +1806,7 @@ export function ResidentRequestsView({
             </div>
           )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             <AnimatePresence mode="popLayout">
               {filteredRequests.map(req => {
                 const streamInfo = getRequestStreamInfo(req);
@@ -1820,15 +1820,15 @@ export function ResidentRequestsView({
                     exit={{ opacity: 0, scale: 0.93, y: 10, filter: 'blur(3px)' }}
                     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     onClick={() => setSelectedRequest(req)}
-                    className="bg-white dark:bg-[#121316] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[300px]"
+                    className="bg-white dark:bg-[#121316] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[220px] sm:min-h-[300px] select-none active:scale-[0.99]"
                   >
                     <div>
-                      <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00D4B2] border border-[#00D4B2]/25 tracking-wider">
                             {req.referenceId || req.id}
                           </span>
-                          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {req.buildingName ? `${req.buildingName} • ${req.unit}` : req.unit}
                           </span>
                         </div>
@@ -1869,12 +1869,12 @@ export function ResidentRequestsView({
                         </div>
                       )}
 
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{req.title}</h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">{req.description}</p>
+                      <h3 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white mb-1.5 sm:mb-2 leading-snug">{req.title}</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 sm:line-clamp-3 leading-relaxed mb-3 sm:mb-4">{req.description}</p>
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-3 mt-auto">
-                      <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="pt-3 sm:pt-4 border-t border-gray-100 dark:border-white/5 dark:border-gray-800 space-y-2.5 sm:space-y-3 mt-auto">
+                      <div className="flex items-center justify-between text-[11px] sm:text-xs text-gray-400">
                         <span>By {req.requestorName}</span>
                         <span className="flex items-center gap-1"><Clock size={12} /> {req.createdAt}</span>
                       </div>
@@ -1888,7 +1888,7 @@ export function ResidentRequestsView({
                               e.stopPropagation();
                               setRejectModalRequest(req);
                             }}
-                            className="flex-1 py-1.5 px-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            className="flex-1 py-2 sm:py-1.5 px-3 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[40px] active:scale-95"
                             title="Reject with statutory reason"
                           >
                             <XCircle size={13} />
@@ -1900,7 +1900,7 @@ export function ResidentRequestsView({
                               e.stopPropagation();
                               handleQuickApprove(req.id);
                             }}
-                            className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                            className="flex-1 py-2 sm:py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer min-h-[40px] active:scale-95"
                             title="Approve and direct dispatch"
                           >
                             <CheckCircle2 size={13} />
@@ -1910,7 +1910,7 @@ export function ResidentRequestsView({
                       )}
 
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
+                        <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-semibold">
                           <MessageSquare size={14} className="text-[#0055FF]" /> {req.comments.length} Comments
                         </span>
 
@@ -1920,7 +1920,7 @@ export function ResidentRequestsView({
                               e.stopPropagation();
                               setCloseModalRequest(req);
                             }}
-                            className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer"
+                            className="text-xs font-bold text-[#FF4757] hover:text-red-700 bg-[#FF4757]/10 px-3 py-1.5 rounded-xl border border-[#FF4757]/30 cursor-pointer active:scale-95"
                           >
                             Close Request
                           </button>
