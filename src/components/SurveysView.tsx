@@ -30,8 +30,9 @@ import {
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
-import { SurveyBuilderModal } from './SurveyBuilderModal';
+import { SurveyBuilderModal, SurveyBuilderFormContent } from './SurveyBuilderModal';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
+import { MorphingPopover, MorphingPopoverTrigger, MorphingPopoverContent } from './core/morphing-popover';
 import QRCode from 'qrcode';
 
 interface SurveysViewProps {
@@ -480,15 +481,29 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsBuilderOpen(true)}
-            className="h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98]"
-            title="Create a new survey questionnaire"
-          >
-            <Plus size={16} className="stroke-[3]" />
-            <span>Create New Questionnaire</span>
-          </button>
+          {/* Morphing Capsule Button for Create New Questionnaire */}
+          <div className="relative z-10 shrink-0">
+            <MorphingPopover>
+              <MorphingPopoverTrigger>
+                <div
+                  className="h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98]"
+                  title="Create a new survey questionnaire"
+                >
+                  <Plus size={16} className="stroke-[3]" />
+                  <span>Create New Questionnaire</span>
+                </div>
+              </MorphingPopoverTrigger>
+
+              <MorphingPopoverContent className="w-full max-w-4xl max-h-[90vh] !p-0 overflow-hidden rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-2xl">
+                <SurveyBuilderFormContent
+                  store={store}
+                  onSurveyCreated={(newSurvey) => {
+                    setSelectedSurveyId(newSurvey.id);
+                  }}
+                />
+              </MorphingPopoverContent>
+            </MorphingPopover>
+          </div>
         </div>
 
         {/* ── 5. TAB 1: Ratings & Analytics (2-Column Mockup Layout) ──── */}

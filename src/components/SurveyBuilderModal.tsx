@@ -24,16 +24,37 @@ import {
 import { SurveyQuestion, SurveyCategory, SurveyQuestionType, Survey } from '../types';
 import { STRATA_SURVEY_TEMPLATES } from '../services/aiSurveyService';
 import { SmartLotStore } from '../store/smartLotStore';
+import { useMorphingPopover } from './core/morphing-popover';
 
-interface SurveyBuilderModalProps {
+function useMorphingPopoverContext() {
+  try {
+    return useMorphingPopover();
+  } catch {
+    return null;
+  }
+}
+
+export interface SurveyBuilderFormContentProps {
   store: SmartLotStore;
-  isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onSurveyCreated?: (newSurvey: Survey) => void;
 }
 
-export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: SurveyBuilderModalProps) {
-  if (!isOpen) return null;
+export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: SurveyBuilderFormContentProps) {
+  const morphContext = useMorphingPopoverContext();
+
+  const handleClose = () => {
+    if (morphContext) morphContext.setIsOpen(false);
+    if (onClose) onClose();
+  };
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const activeScheme = store.activeScheme;
   const currentMembers = store.members.filter(m => m.schemeId === activeScheme.id && m.email);
@@ -195,7 +216,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
       });
 
       onSurveyCreated?.(newSurvey);
-      onClose();
+      handleClose();
     } catch (err) {
       console.error('Error creating survey:', err);
     } finally {
@@ -204,34 +225,33 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-        
-        {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-black/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 flex items-center justify-center shrink-0">
-              <ClipboardCheck size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
-                <span>Create Feedback Questionnaire</span>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20">
-                  {activeScheme.name}
-                </span>
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Design custom surveys with smart assistance or strata templates and dispatch guest links via email.
-              </p>
-            </div>
+    <div className="bg-white dark:bg-[#0d1117] w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      
+      {/* Modal Header */}
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-black/20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 flex items-center justify-center shrink-0">
+            <ClipboardCheck size={20} />
           </div>
+          <div>
+            <h2 className="text-lg font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <span>Create Feedback Questionnaire</span>
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20">
+                {activeScheme.name}
+              </span>
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              Design custom surveys with smart assistance or strata templates and dispatch guest links via email.
+            </p>
+          </div>
+        </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
-          >
-            <X size={20} />
-          </button>
+        <button
+          onClick={handleClose}
+          className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
+        >
+          <X size={20} />
+        </button>
         </div>
 
         {/* Stepper Navigation */}
@@ -681,7 +701,7 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all cursor-pointer"
             >
               Cancel
@@ -719,6 +739,24 @@ export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: 
           </div>
         </div>
 
+    </div>
+  );
+}
+
+export interface SurveyBuilderModalProps {
+  store: SmartLotStore;
+  isOpen: boolean;
+  onClose: () => void;
+  onSurveyCreated?: (newSurvey: Survey) => void;
+}
+
+export function SurveyBuilderModal({ store, isOpen, onClose, onSurveyCreated }: SurveyBuilderModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/10 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <SurveyBuilderFormContent store={store} onClose={onClose} onSurveyCreated={onSurveyCreated} />
       </div>
     </div>
   );
