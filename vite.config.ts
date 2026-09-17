@@ -83,30 +83,17 @@ function mailtrapPlugin() {
   };
 }
 
-function noAutoReloadPlugin() {
-  return {
-    name: 'no-auto-reload',
-    handleHotUpdate() {
-      // Explicitly return empty array to prevent Vite from sending full-reload or HMR events to the client
-      return [];
-    },
-  };
-}
-
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), mailtrapPlugin(), noAutoReloadPlugin()],
+    plugins: [react(), tailwindcss(), mailtrapPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
     },
     server: {
-      // Auto-reload completely disabled to prevent page flickering and session resets
-      hmr: false,
-      watch: {
-        ignored: ['**/*'],
-      },
+      port: 3000,
+      host: '0.0.0.0',
     },
   };
 });
