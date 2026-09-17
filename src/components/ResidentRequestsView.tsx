@@ -1617,7 +1617,7 @@ export function ResidentRequestsView({
 
 
   return (
-    <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
+    <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-6 md:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-[#00D4B2]/10 relative overflow-hidden">
@@ -1632,10 +1632,10 @@ export function ResidentRequestsView({
         </div>
 
         {/* Morphing Capsule Button */}
-        <div className="relative z-10">
+        <div className="relative z-10 w-full sm:w-auto">
           <MorphingPopover>
             <MorphingPopoverTrigger>
-              <div className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 cursor-pointer">
+              <div className="w-full sm:w-auto bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer min-h-[44px]">
                 <Plus size={18} className="text-[#00D4B2]" /> 
                 <span>Create New Request</span>
               </div>
@@ -1657,19 +1657,19 @@ export function ResidentRequestsView({
       </div>
 
       {/* Filter & View Controls Bar */}
-      <div className="space-y-3 bg-white dark:bg-[#0d1117] p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+      <div className="space-y-3 bg-white dark:bg-[#0d1117] p-3.5 sm:p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
         
         {/* Status Filter Pills Row */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar touch-pan-x pb-1 w-full md:w-auto">
             {/* Primary Needs Triage Pill for Managers & Committee */}
             {isManagerOrCommittee && (
               <button
                 type="button"
                 onClick={() => setFilterStatus('needs_triage')}
-                className={`relative px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer border flex items-center gap-1.5 ${
+                className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer border flex items-center gap-1.5 shrink-0 whitespace-nowrap select-none active:scale-95 ${
                   filterStatus === 'needs_triage'
-                    ? 'bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/20 scale-105'
+                    ? 'bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/20'
                     : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
                 }`}
               >
@@ -1695,13 +1695,13 @@ export function ResidentRequestsView({
           </div>
 
           {/* View Controls: Mode Toggle & Scope Toggle */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto">
+          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar touch-pan-x pb-1 shrink-0 w-full md:w-auto">
             {/* View Mode Switcher: Cards vs Table vs Calendar */}
-            <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
+            <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0">
               <button
                 type="button"
                 onClick={() => setViewMode('cards')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 ${
                   viewMode === 'cards' 
                     ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
@@ -1714,7 +1714,7 @@ export function ResidentRequestsView({
               <button
                 type="button"
                 onClick={() => setViewMode('table')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 ${
                   viewMode === 'table' 
                     ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
@@ -1727,7 +1727,7 @@ export function ResidentRequestsView({
               <button
                 type="button"
                 onClick={() => setViewMode('calendar')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 ${
                   viewMode === 'calendar' 
                     ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
@@ -1740,11 +1740,11 @@ export function ResidentRequestsView({
             </div>
 
             {/* View Scope Toggle */}
-            <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5">
+            <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0">
               <button
                 type="button"
                 onClick={() => setViewScope('all')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
                   viewScope === 'all' 
                     ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
@@ -1755,13 +1755,13 @@ export function ResidentRequestsView({
               <button
                 type="button"
                 onClick={() => setViewScope('my')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
                   viewScope === 'my' 
                     ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
                 }`}
               >
-                My Requests Only
+                My Requests
               </button>
             </div>
           </div>
@@ -4461,7 +4461,7 @@ function StatusPill({ label, active, onClick, count }: any) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer border ${
+      className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border shrink-0 whitespace-nowrap select-none active:scale-95 ${
         active 
           ? 'bg-[#0B1121] dark:bg-[#00D4B2]/10 text-[#00D4B2] border-[#00D4B2]/30 shadow-md' 
           : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 border-transparent dark:border-white/5'
