@@ -238,3 +238,34 @@ body[data-modal-open="true"] .smartlot-mobile-nav {
   pointer-events: none !important;
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out !important;
 }
+
+/* ── Mobile App Polish & Safe Area Support ─────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
