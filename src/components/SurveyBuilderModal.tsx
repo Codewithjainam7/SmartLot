@@ -1,6 +1,6 @@
 // @smartlot/component SurveyBuilderModal
 // Interactive questionnaire builder for Strata Managers & Committee Members with AI question generation and recipient auto-fill.
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   X, 
@@ -125,6 +125,11 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
   const tenantCount = currentMembers.filter(m => m.role.toLowerCase().includes('tenant') || m.role.toLowerCase().includes('resident')).length;
   const recipientCount = recipientEmails.split(',').map(e => e.trim()).filter(Boolean).length;
 
+  // Scroll & input focus refs for dynamic question addition
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const questionInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [highlightedQuestionId, setHighlightedQuestionId] = useState<string | null>(null);
+
   // Handler: Apply Strata Template
   const handleSelectTemplate = (templateId: string) => {
     const template = STRATA_SURVEY_TEMPLATES.find(t => t.id === templateId);
@@ -177,15 +182,37 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
 
   // Question manipulation handlers
   const handleAddQuestion = () => {
+    const newId = `q_user_${Date.now()}`;
     const newQ: SurveyQuestion = {
-      id: `q_user_${Date.now()}`,
-      questionText: 'New Question',
+      id: newId,
+      questionText: '',
       category: 'General Feedback',
       type: 'star_rating',
       required: true,
       order: questions.length + 1,
     };
     setQuestions(prev => [...prev, newQ]);
+    setHighlightedQuestionId(newId);
+
+    // Smoothly scroll to the newly created question and focus its input for editing
+    setTimeout(() => {
+      const inputEl = questionInputRefs.current[newId];
+      if (inputEl) {
+        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        inputEl.focus();
+        inputEl.select();
+      } else if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+
+    // Auto clear highlight ring after 3 seconds
+    setTimeout(() => {
+      setHighlightedQuestionId(prev => prev === newId ? null : prev);
+    }, 3000);
   };
 
   const handleUpdateQuestion = (id: string, updates: Partial<SurveyQuestion>) => {
@@ -337,7 +364,7 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* STEP 1: Details & AI Generation */}
           {currentStep === 1 && (
@@ -497,58 +524,78 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                 </button>
               </div>
 
-              {questions.map((q, idx) => (
-                <div 
-                  key={q.id}
-                  className="p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/40 dark:bg-[#0e1320] shadow-2xs space-y-3.5 hover:border-gray-300 dark:hover:border-white/20 transition-all"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-lg bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20 flex items-center justify-center text-xs font-black">
-                        {idx + 1}
-                      </span>
-                      <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                        Question #{idx + 1}
-                      </span>
+              {questions.map((q, idx) => {
+                const isHighlighted = highlightedQuestionId === q.id;
+
+                return (
+                  <div 
+                    key={q.id}
+                    id={`survey-question-${q.id}`}
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 space-y-3.5 ${
+                      isHighlighted
+                        ? 'border-[#00897B] dark:border-[#00D4B2] ring-2 ring-[#00897B]/40 dark:ring-[#00D4B2]/40 bg-emerald-50/40 dark:bg-[#00D4B2]/10 shadow-lg shadow-[#00897B]/10 dark:shadow-[#00D4B2]/10'
+                        : 'border-gray-200 dark:border-white/10 bg-gray-50/40 dark:bg-[#0e1320] shadow-2xs hover:border-gray-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black transition-colors ${
+                          isHighlighted
+                            ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15]'
+                            : 'bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20'
+                        }`}>
+                          {idx + 1}
+                        </span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                          Question #{idx + 1}
+                        </span>
+                        {isHighlighted && (
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00897B]/15 dark:bg-[#00D4B2]/20 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/30 dark:border-[#00D4B2]/40 animate-pulse">
+                            New
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleMoveQuestion(idx, 'up')}
+                          disabled={idx === 0}
+                          className="p-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-all shadow-2xs"
+                          title="Move Up"
+                        >
+                          <MoveUp size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveQuestion(idx, 'down')}
+                          disabled={idx === questions.length - 1}
+                          className="p-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-all shadow-2xs"
+                          title="Move Down"
+                        >
+                          <MoveDown size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteQuestion(q.id)}
+                          className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors cursor-pointer shadow-2xs"
+                          title="Delete Question"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveQuestion(idx, 'up')}
-                        disabled={idx === 0}
-                        className="p-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-all shadow-2xs"
-                        title="Move Up"
-                      >
-                        <MoveUp size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveQuestion(idx, 'down')}
-                        disabled={idx === questions.length - 1}
-                        className="p-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-all shadow-2xs"
-                        title="Move Down"
-                      >
-                        <MoveDown size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteQuestion(q.id)}
-                        className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors cursor-pointer shadow-2xs"
-                        title="Delete Question"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <input
-                    type="text"
-                    value={q.questionText}
-                    onChange={(e) => handleUpdateQuestion(q.id, { questionText: e.target.value })}
-                    placeholder="Enter question prompt for residents..."
-                    className="w-full bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] transition-all shadow-2xs"
-                  />
+                    <input
+                      ref={(el) => {
+                        questionInputRefs.current[q.id] = el;
+                      }}
+                      type="text"
+                      value={q.questionText}
+                      onChange={(e) => handleUpdateQuestion(q.id, { questionText: e.target.value })}
+                      placeholder="Enter question prompt for residents..."
+                      className="w-full bg-white dark:bg-[#161a26] border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] transition-all shadow-2xs"
+                    />
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs items-end">
                     <div>
@@ -647,8 +694,9 @@ export function SurveyBuilderFormContent({ store, onClose, onSurveyCreated }: Su
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
           )}
 
           {/* STEP 3: Audience & Dispatch */}
