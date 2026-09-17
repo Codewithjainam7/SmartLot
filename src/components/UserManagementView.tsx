@@ -308,41 +308,41 @@ export function UserManagementView({
   ]);
 
   return (
-    <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
+    <div className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Morphing Popover Wrapper */}
       <MorphingPopover>
         
         {/* Header with Title, Stats & Action Buttons (Identical to Admin View Global Directory) */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 bg-white/60 dark:bg-[#0d1117]/80 backdrop-blur-md p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                <Users size={18} />
+              <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+                <Users size={16} />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">
                     Team Access Directory
                   </h2>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[11px] font-extrabold font-mono">
+                  <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[10px] sm:text-[11px] font-extrabold font-mono">
                     {filteredMembers.length} of {members.length} Members
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Strata Plan {activeSchemeId} • Manage strata council, lot owners, tenants, and scheme credentials.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Tab switcher: Member Roster | Role Permissions */}
             <div className="flex bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-2xl text-xs font-bold border border-gray-200 dark:border-white/5">
               <button
                 type="button"
                 onClick={() => setActiveTab('roster')}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 rounded-xl transition-all cursor-pointer select-none active:scale-95 text-center min-h-[38px] sm:min-h-0 ${
                   activeTab === 'roster'
                     ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10 font-bold'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
@@ -353,7 +353,7 @@ export function UserManagementView({
               <button
                 type="button"
                 onClick={() => setActiveTab('permissions')}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 rounded-xl transition-all cursor-pointer select-none active:scale-95 text-center min-h-[38px] sm:min-h-0 ${
                   activeTab === 'permissions'
                     ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10 font-bold'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
@@ -367,7 +367,7 @@ export function UserManagementView({
               <MorphingPopoverTrigger>
                 <div 
                   onClick={() => setPrefillLotData(null)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer min-h-[42px]"
                 >
                   <UserPlus size={15} /> 
                   <span>Invite Member</span>
@@ -401,9 +401,9 @@ export function UserManagementView({
             transition={{ duration: 0.2 }}
             className="space-y-4"
           >
-            {/* Quick Role Filter Preset Pills Row (identical to Admin Global Directory) */}
+            {/* Quick Role Filter Preset Pills Row (horizontal scroll on mobile) */}
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
+              <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5 max-w-full">
                 {[
                   { label: 'All Roles', value: 'ALL', count: members.length },
                   { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
@@ -425,7 +425,7 @@ export function UserManagementView({
                           setColFilterRole(isActive && tab.value !== 'ALL' ? 'ALL' : tab.value);
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer select-none active:scale-95 min-h-[34px] ${
                         isActive
                           ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10'
                           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
