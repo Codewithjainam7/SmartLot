@@ -289,95 +289,122 @@ export function VendorView({
       </div>
 
       {/* Senior-Friendly KPI Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
-          <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Active Work Orders</span>
-          <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1">
-            {workOrders.filter(wo => wo.status !== 'completed').length}
+      {!isCommitteeMember ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Active Work Orders</span>
+            <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1">
+              {workOrders.filter(wo => wo.status !== 'completed').length}
+            </div>
+            <span className="text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium">Ongoing repair jobs</span>
           </div>
-          <span className="text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium">Ongoing repair jobs</span>
-        </div>
 
-        <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
-          <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Quotes Under Review</span>
-          <div className="text-xl sm:text-2xl font-black text-[#0055FF] dark:text-[#00D4B2] mt-1">
-            {tenderRequests.length}
+          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Quotes Under Review</span>
+            <div className="text-xl sm:text-2xl font-black text-[#0055FF] dark:text-[#00D4B2] mt-1">
+              {tenderRequests.length}
+            </div>
+            <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">Repair tenders</span>
           </div>
-          <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">Repair tenders</span>
-        </div>
 
-        <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-amber-200 dark:border-amber-500/30 bg-amber-50/40 dark:bg-amber-950/10 shadow-2xs">
-          <span className="text-[10px] sm:text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">Needs Sign-Off</span>
-          <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-            {workOrders.filter(wo => wo.status === 'completion_submitted').length}
+          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-amber-200 dark:border-amber-500/30 bg-amber-50/40 dark:bg-amber-950/10 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">Needs Sign-Off</span>
+            <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+              {workOrders.filter(wo => wo.status === 'completion_submitted').length}
+            </div>
+            <span className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-500 font-medium">Photos submitted</span>
           </div>
-          <span className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-500 font-medium">Photos submitted</span>
-        </div>
 
-        <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
-          <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Verified Directory</span>
-          <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-            {vendors.filter(v => v.insuranceStatus === 'Active').length}
+          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Verified Directory</span>
+            <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+              {vendors.filter(v => v.insuranceStatus === 'Active').length}
+            </div>
+            <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">Insured trades</span>
           </div>
-          <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">Insured trades</span>
         </div>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-gray-200 dark:border-white/10 pb-3 sm:pb-4">
-        <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl border border-gray-200/80 dark:border-white/10 max-w-full">
-          <button
-            onClick={() => setActiveTab('work_orders')}
-            className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 min-h-[38px] ${
-              activeTab === 'work_orders'
-                ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            Work Orders ({workOrders.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('tenders')}
-            className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 min-h-[38px] ${
-              activeTab === 'tenders'
-                ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            Quotes & Tenders ({tenderRequests.length})
-            {tenderRequests.length > 0 && (
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('directory')}
-            className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 min-h-[38px] ${
-              activeTab === 'directory'
-                ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            Verified Trades ({vendors.length})
-          </button>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Quote Polls Requiring Your Vote</span>
+            <div className="text-2xl font-black text-[#0055FF] dark:text-[#00D4B2] mt-1">
+              {tenderRequests.length}
+            </div>
+            <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Active committee polls</span>
+          </div>
+          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Your Voting Status</span>
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+              {tenderRequests.filter(r => r.tenderQuotes?.some(q => q.committeeVotes?.includes(activePersonaName))).length} / {tenderRequests.length}
+            </div>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Ballots cast by you</span>
+          </div>
         </div>
+      )}
 
-        {/* Search Bar */}
-        <div className="relative w-full sm:w-72">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search trades, orders, PIN..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] min-h-[40px]"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
-              <X size={13} />
+      {/* Tabs Navigation (Restricted to Quote Poll for Committee Members) */}
+      {!isCommitteeMember ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-gray-200 dark:border-white/10 pb-3 sm:pb-4">
+          <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl border border-gray-200/80 dark:border-white/10 max-w-full">
+            <button
+              onClick={() => setActiveTab('work_orders')}
+              className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 min-h-[38px] ${
+                activeTab === 'work_orders'
+                  ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Work Orders ({workOrders.length})
             </button>
-          )}
+            <button
+              onClick={() => setActiveTab('tenders')}
+              className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 min-h-[38px] ${
+                activeTab === 'tenders'
+                  ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Quotes & Tenders ({tenderRequests.length})
+              {tenderRequests.length > 0 && (
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('directory')}
+              className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 min-h-[38px] ${
+                activeTab === 'directory'
+                  ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Verified Trades ({vendors.length})
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-72">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input 
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search trades, orders..."
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] min-h-[40px]"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <X size={13} />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="border-b border-gray-200 dark:border-white/10 pb-3 flex items-center justify-between">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-white/5 border border-blue-200 dark:border-white/10 text-blue-700 dark:text-[#00D4B2] text-xs font-bold">
+            <Vote size={14} /> Active Quote Polls ({tenderRequests.length})
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: ACTIVE WORK ORDERS */}
       {activeTab === 'work_orders' && (
@@ -465,14 +492,14 @@ export function VendorView({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      {/* Button to test the tradie frictionless link */}
+                      {/* Button to view contractor dispatch portal */}
                       <button
                         onClick={() => onOpenGuestPortal(wo.id)}
                         className="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-900 dark:text-white text-xs font-bold flex items-center gap-1.5 border border-gray-200 dark:border-white/10 transition-all cursor-pointer"
-                        title="Simulate what the tradie sees on their phone without logging in"
+                        title="View contractor dispatch portal"
                       >
                         <ExternalLink size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                        <span>Open Tradie Portal (Test)</span>
+                        <span>View Contractor Portal</span>
                       </button>
 
                       {wo.status === 'completion_submitted' && !isCommitteeMember && (
@@ -504,23 +531,23 @@ export function VendorView({
                       <div className="font-black text-gray-900 dark:text-white text-sm mt-0.5">
                         ${wo.budgetCap.toLocaleString()} <span className="text-[10px] font-normal text-gray-500">ex GST</span>
                       </div>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Approved by Committee</span>
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30">
-                      <span className="text-blue-600 dark:text-blue-400 font-bold uppercase text-[10px] block">Gate & Key PIN</span>
-                      <div className="font-black text-blue-700 dark:text-blue-300 text-base mt-0.5 flex items-center gap-1">
-                        <Key size={14} /> PIN {wo.siteAccessPin}
-                      </div>
-                      <span className="text-[10px] text-blue-600/80 dark:text-blue-400/80 font-medium">Lift motor / trades gate</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Approved by Strata</span>
                     </div>
 
                     <div className="p-3 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
-                      <span className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] block">Tradie Link</span>
-                      <div className="font-medium text-gray-600 dark:text-gray-300 truncate mt-0.5">
-                        smartlot.io/wo/{wo.id}
+                      <span className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] block">Status</span>
+                      <div className="font-bold text-gray-900 dark:text-white text-sm mt-0.5 capitalize">
+                        {wo.status.replace('_', ' ')}
                       </div>
-                      <span className="text-[10px] text-gray-400 block">Zero login needed</span>
+                      <span className="text-[10px] text-gray-400 block">Digital Work Order</span>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
+                      <span className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] block">Encrypted Contractor Link</span>
+                      <div className="font-mono text-[11px] text-blue-600 dark:text-[#00D4B2] truncate mt-0.5 font-semibold" title={`https://smartlot-five.vercel.app/work-orders/${btoa(wo.id).replace(/=+$/, '')}`}>
+                        https://smartlot-five.vercel.app/wo/enc_{btoa(wo.id).substring(0, 10)}...
+                      </div>
+                      <span className="text-[10px] text-gray-400 block">Secure Token Dispatch</span>
                     </div>
                   </div>
 
