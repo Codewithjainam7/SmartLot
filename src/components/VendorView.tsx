@@ -65,7 +65,12 @@ export function VendorView({
   activeSchemeName = 'Cavalier Grand Residences',
   activeSchemeId = 'SP103'
 }: VendorViewProps) {
-  const [activeTab, setActiveTab] = useState<'work_orders' | 'tenders' | 'directory'>('work_orders');
+  const isCommitteeMember = Boolean(activePersonaRole?.toLowerCase().includes('committee'));
+  const isManagerOrAdmin = Boolean(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Admin'));
+
+  const [activeTab, setActiveTab] = useState<'work_orders' | 'tenders' | 'directory'>(
+    isCommitteeMember ? 'tenders' : 'work_orders'
+  );
   const [workOrderFilter, setWorkOrderFilter] = useState<'all' | 'needs_signoff' | 'in_progress' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -255,28 +260,32 @@ export function VendorView({
             <Wrench size={13} /> Trades & Work Orders Lifecycle
           </div>
           <h1 className="font-sans text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-            Trades & Work Orders
+            {isCommitteeMember ? 'Trades & Quote Poll' : 'Trades & Work Orders'}
           </h1>
           <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 max-w-2xl">
-            Compare quotes from local trades, issue digital work orders with key PINs, verify repair completion photos, and sign off invoices.
+            {isCommitteeMember
+              ? 'Review pending vendor quote polls and cast your official vote on preferred trades.'
+              : 'Compare quotes from local trades, issue digital work orders with key PINs, verify repair completion photos, and sign off invoices.'}
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
-          <button
-            onClick={() => setShowCreateTenderModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[44px]"
-          >
-            <Vote size={15} /> Get Quotes (Tender Job)
-          </button>
-          <button
-            onClick={() => setShowAddVendorModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer min-h-[44px]"
-          >
-            <Plus size={15} /> Add Verified Trade
-          </button>
-        </div>
+        {/* Action Buttons (Restricted for Committee Members) */}
+        {!isCommitteeMember && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+            <button
+              onClick={() => setShowCreateTenderModal(true)}
+              className="px-4 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[44px]"
+            >
+              <Vote size={15} /> Get Quotes (Tender Job)
+            </button>
+            <button
+              onClick={() => setShowAddVendorModal(true)}
+              className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer min-h-[44px]"
+            >
+              <Plus size={15} /> Add Verified Trade
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Senior-Friendly KPI Summary Cards */}
@@ -466,7 +475,7 @@ export function VendorView({
                         <span>Open Tradie Portal (Test)</span>
                       </button>
 
-                      {wo.status === 'completion_submitted' && (
+                      {wo.status === 'completion_submitted' && !isCommitteeMember && (
                         <button
                           onClick={() => setSignOffModalWo(wo)}
                           className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer animate-pulse"
@@ -603,19 +612,23 @@ export function VendorView({
               </div>
               <div>
                 <h3 className="text-sm font-black text-gray-900 dark:text-white">
-                  Committee Quote Poll & Comparison (The "Broken Lift" Lifecycle)
+                  {isCommitteeMember ? 'Committee Quote Voting Poll' : 'Committee Quote Poll & Comparison (The "Broken Lift" Lifecycle)'}
                 </h3>
                 <p className="text-xs text-gray-600 dark:text-gray-300">
-                  Under Australian strata rules, compare 2–3 trade quotes side-by-side with insurance compliance checks before awarding the work order.
+                  {isCommitteeMember 
+                    ? 'Review available contractor options below and cast your official committee vote on your preferred trade.' 
+                    : 'Under Australian strata rules, compare 2–3 trade quotes side-by-side with insurance compliance checks before awarding the work order.'}
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setShowCreateTenderModal(true)}
-              className="px-4 py-2 rounded-xl bg-[#0055FF] text-white font-bold text-xs flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm hover:bg-blue-600"
-            >
-              <Plus size={14} /> Request New Quotes
-            </button>
+            {!isCommitteeMember && (
+              <button
+                onClick={() => setShowCreateTenderModal(true)}
+                className="px-4 py-2 rounded-xl bg-[#0055FF] text-white font-bold text-xs flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm hover:bg-blue-600"
+              >
+                <Plus size={14} /> Request New Quotes
+              </button>
+            )}
           </div>
 
           {tenderRequests.length === 0 ? (
@@ -658,12 +671,12 @@ export function VendorView({
                   </div>
                 </div>
 
-                {/* Side-by-Side Quote Comparison Cards */}
+                {/* Side-by-Side Quote Comparison / Voting Poll Cards */}
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center justify-between">
-                    <span>Received Contractor Quotes ({req.tenderQuotes?.length || 0})</span>
+                    <span>{isCommitteeMember ? `Vote Poll Ballot (${req.tenderQuotes?.length || 0} Trades)` : `Received Contractor Quotes (${req.tenderQuotes?.length || 0})`}</span>
                     <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold lowercase">
-                      committee members can click to vote
+                      {isCommitteeMember ? 'click below to cast your ballot' : 'committee members can click to vote'}
                     </span>
                   </h4>
 
@@ -705,12 +718,14 @@ export function VendorView({
                               </div>
 
                               {/* Price */}
-                              <div className="text-right">
-                                <div className="text-lg font-black text-gray-900 dark:text-white">
-                                  ${quote.amount.toLocaleString()}
+                              {!isCommitteeMember && (
+                                <div className="text-right">
+                                  <div className="text-lg font-black text-gray-900 dark:text-white">
+                                    ${quote.amount.toLocaleString()}
+                                  </div>
+                                  <span className="text-[9px] font-bold text-gray-400 uppercase">ex GST</span>
                                 </div>
-                                <span className="text-[9px] font-bold text-gray-400 uppercase">ex GST</span>
-                              </div>
+                              )}
                             </div>
 
                             {/* Insurance & Accreditation Gate Badge */}
@@ -734,15 +749,23 @@ export function VendorView({
                             </div>
 
                             {/* Scope & Warranty Details */}
-                            <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1.5">
-                              <p className="text-[11px] text-gray-700 dark:text-gray-300 line-clamp-3">
-                                {quote.scopeNotes}
-                              </p>
-                              <div className="flex items-center justify-between text-[11px] text-gray-500 pt-1">
-                                <span>Warranty: <strong className="text-gray-700 dark:text-gray-200">{quote.warranty || '12 Months'}</strong></span>
-                                <span>Duration: <strong className="text-gray-700 dark:text-gray-200">{quote.estimatedDays || 1} day</strong></span>
+                            {!isCommitteeMember ? (
+                              <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1.5">
+                                <p className="text-[11px] text-gray-700 dark:text-gray-300 line-clamp-3">
+                                  {quote.scopeNotes}
+                                </p>
+                                <div className="flex items-center justify-between text-[11px] text-gray-500 pt-1">
+                                  <span>Warranty: <strong className="text-gray-700 dark:text-gray-200">{quote.warranty || '12 Months'}</strong></span>
+                                  <span>Duration: <strong className="text-gray-700 dark:text-gray-200">{quote.estimatedDays || 1} day</strong></span>
+                                </div>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 py-1">
+                                <span className="text-[11px] font-medium bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-lg inline-block">
+                                  Trade Option • {quote.isAccredited ? 'Verified Directory Contractor' : 'Invited Trade'}
+                                </span>
+                              </div>
+                            )}
 
                             {/* Committee Voting Chips */}
                             <div className="pt-2 border-t border-gray-200/60 dark:border-white/5 space-y-1.5">
@@ -759,43 +782,45 @@ export function VendorView({
                               <button
                                 type="button"
                                 onClick={() => onVoteForQuote && onVoteForQuote(req.id, quote.id)}
-                                className={`w-full py-1.5 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-98 ${
                                   hasMyVote
-                                    ? 'bg-blue-600 text-white shadow-2xs'
+                                    ? 'bg-blue-600 text-white'
                                     : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10'
                                 }`}
                               >
-                                {hasMyVote ? <Check size={13} /> : <Vote size={13} />}
+                                {hasMyVote ? <Check size={14} /> : <Vote size={14} />}
                                 <span>{hasMyVote ? 'I Voted for This Quote' : 'Vote for This Quote'}</span>
                               </button>
                             </div>
                           </div>
 
                           {/* Action: Select Quote & Issue Work Order */}
-                          <div className="pt-2 border-t border-gray-200/60 dark:border-white/5">
-                            {isWinning ? (
-                              <div className="w-full py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1">
-                                <CheckCircle2 size={14} /> Quote Awarded & Work Order Issued
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (hasExpiredInsurance) {
-                                    alert(`Insurance Warning: ${quote.vendorName}'s Public Liability Insurance is expired. Please verify their Certificate of Currency before dispatching to site.`);
-                                  }
-                                  onAwardQuote && onAwardQuote(req.id, quote.id, quote.amount);
-                                }}
-                                className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                                  hasExpiredInsurance
-                                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                                    : 'bg-[#0B1121] dark:bg-[#00D4B2] hover:bg-black dark:hover:bg-[#00b89a] text-white dark:text-black shadow-xs'
-                                }`}
-                              >
-                                <span>Select & Issue Work Order</span>
-                              </button>
-                            )}
-                          </div>
+                          {!isCommitteeMember && (
+                            <div className="pt-2 border-t border-gray-200/60 dark:border-white/5">
+                              {isWinning ? (
+                                <div className="w-full py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+                                  <CheckCircle2 size={14} /> Quote Awarded & Work Order Issued
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (hasExpiredInsurance) {
+                                      alert(`Insurance Warning: ${quote.vendorName}'s Public Liability Insurance is expired. Please verify their Certificate of Currency before dispatching to site.`);
+                                    }
+                                    onAwardQuote && onAwardQuote(req.id, quote.id, quote.amount);
+                                  }}
+                                  className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                    hasExpiredInsurance
+                                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                      : 'bg-[#0B1121] dark:bg-[#00D4B2] hover:bg-black dark:hover:bg-[#00b89a] text-white dark:text-black shadow-xs'
+                                  }`}
+                                >
+                                  <span>Select & Issue Work Order</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -815,12 +840,14 @@ export function VendorView({
             <h3 className="text-base font-bold text-gray-900 dark:text-white">
               Accredited Building Contractors
             </h3>
-            <button
-              onClick={() => setShowAddVendorModal(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-[#0055FF] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <Plus size={14} /> Add New Contractor
-            </button>
+            {!isCommitteeMember && (
+              <button
+                onClick={() => setShowAddVendorModal(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-[#0055FF] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <Plus size={14} /> Add New Contractor
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -838,7 +865,7 @@ export function VendorView({
                     <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
                       <ShieldCheck size={12} /> Active Ins.
                     </span>
-                  ) : (
+                  ) : !isCommitteeMember ? (
                     <button
                       onClick={() => {
                         setInsuranceVerifyVendor(v);
@@ -849,6 +876,10 @@ export function VendorView({
                     >
                       <AlertTriangle size={12} /> Expired Ins. (Renew)
                     </button>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
+                      <AlertTriangle size={12} /> Expired Ins.
+                    </span>
                   )}
                 </div>
 
