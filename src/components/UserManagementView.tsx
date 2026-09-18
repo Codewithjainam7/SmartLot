@@ -1,5 +1,5 @@
 // @smartlot/component
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Member, MemberRole, AdditionalOccupant, getDefaultPermissionsForRole } from '../store/smartLotStore';
 import { dispatchMemberInviteEmail } from '../services/emailService';
@@ -40,7 +40,8 @@ import {
   Copy,
   SlidersHorizontal,
   Eye,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -101,6 +102,22 @@ export function UserManagementView({
   const [permTab, setPermTab] = useState<'default' | 'individual'>('default');
   const [permViewMode, setPermViewMode] = useState<'focused' | 'matrix'>('focused');
   const [focusedRole, setFocusedRole] = useState<string>('Committee Member');
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const roleDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (roleDropdownRef.current && !roleDropdownRef.current.contains(e.target as Node)) {
+        setIsRoleDropdownOpen(false);
+      }
+    };
+    if (isRoleDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isRoleDropdownOpen]);
 
   // Column-Specific Search & Filter States (Enterprise AG-Grid style matching Global Platform Directory)
   const [colSearchName, setColSearchName] = useState('');
@@ -529,16 +546,15 @@ export function UserManagementView({
               </div>
 
               {permTab === 'default' && (
-                <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
+                <div className="hidden md:flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
                   <button 
                     type="button"
                     onClick={() => setPermViewMode('focused')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${permViewMode === 'focused' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-[#0055FF] dark:text-[#00D4B2] border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
-                    title="Mobile-optimized single role cards"
+                    title="Role-focused permission cards"
                   >
                     <SlidersHorizontal size={13} />
-                    <span className="hidden sm:inline">Role View</span>
-                    <span className="sm:hidden">Role</span>
+                    <span>Role View</span>
                   </button>
                   <button 
                     type="button"
@@ -547,8 +563,7 @@ export function UserManagementView({
                     title="Full 8-role grid comparison"
                   >
                     <List size={13} />
-                    <span className="hidden sm:inline">Grid Matrix</span>
-                    <span className="sm:hidden">Grid</span>
+                    <span>Grid Matrix</span>
                   </button>
                 </div>
               )}
@@ -590,48 +605,126 @@ export function UserManagementView({
                   return m;
                 })();
 
-                // Check if mobile / focused role view is selected
-                if (permViewMode === 'focused') {
+                const renderFocusedView = () => {
                   const currentRolePerms = activePerms[focusedRole] || [];
                   const activeCount = currentRolePerms.filter(p => p.active).length;
 
                   return (
                     <div className="space-y-4 sm:space-y-6">
-                      {/* Horizontal Role Selector Pills */}
-                      <div className="space-y-2">
+                      {/* Role Selector Dropdown (SmartLot Design System) */}
+                      <div ref={roleDropdownRef} className="relative z-30 space-y-2">
                         <div className="flex items-center justify-between text-xs font-bold text-gray-500 dark:text-gray-400 px-1">
-                          <span>Select Role to Configure:</span>
-                          <span className="text-[11px] font-mono text-[#0055FF] dark:text-[#00D4B2]">
-                            {activeCount} of {currentRolePerms.length} Enabled
+                          <span className="flex items-center gap-1.5">
+                            <span>Select Role to Configure</span>
+                          </span>
+                          <span className="text-[11px] font-mono font-bold text-[#0055FF] dark:text-[#00D4B2]">
+                            {activeCount} of {currentRolePerms.length} Active
                           </span>
                         </div>
-                        
-                        <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 p-1.5 bg-gray-100/80 dark:bg-[#151a28] rounded-2xl border border-gray-200/80 dark:border-white/5">
-                          {ROLES_ORDER.map(role => {
-                            const rPerms = activePerms[role] || [];
-                            const rActive = rPerms.filter(p => p.active).length;
-                            const isSelected = focusedRole === role;
-                            return (
-                              <button
-                                key={role}
-                                type="button"
-                                onClick={() => setFocusedRole(role)}
-                                className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none active:scale-95 min-h-[38px] ${
-                                  isSelected
-                                    ? 'bg-gradient-to-r from-[#0055FF] to-[#00D4B2] text-white shadow-md shadow-blue-500/20'
-                                    : 'bg-white dark:bg-[#1a1f2e] text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200/60 dark:border-white/10'
-                                }`}
-                              >
-                                <span>{role}</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
-                                  isSelected ? 'bg-white/25 text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'
-                                }`}>
-                                  {rActive}/{rPerms.length}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+
+                        {/* Dropdown Trigger Button */}
+                        <button
+                          type="button"
+                          onClick={() => setIsRoleDropdownOpen(prev => !prev)}
+                          className="w-full flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#121622] hover:bg-gray-50/80 dark:hover:bg-[#161c2c] border border-gray-200/90 dark:border-white/10 shadow-sm transition-all text-left cursor-pointer group select-none active:scale-[0.99]"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+                              <Shield size={18} />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                                Active Strata Role
+                              </div>
+                              <div className="text-sm sm:text-base font-extrabold text-gray-900 dark:text-white truncate">
+                                {focusedRole}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 shrink-0">
+                            <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20">
+                              {activeCount} / {currentRolePerms.length} Enabled
+                            </span>
+                            <div className={`w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 dark:text-gray-400 transition-transform duration-200 group-hover:text-gray-900 dark:group-hover:text-white ${isRoleDropdownOpen ? 'rotate-180 text-[#0055FF] dark:text-[#00D4B2]' : ''}`}>
+                              <ChevronDown size={16} />
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Animated Dropdown Menu */}
+                        <AnimatePresence>
+                          {isRoleDropdownOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                              transition={{ duration: 0.15, ease: 'easeOut' }}
+                              className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-2xl border border-gray-200 dark:border-white/15 shadow-2xl shadow-black/20 overflow-hidden divide-y divide-gray-100 dark:divide-white/5 max-h-[380px] overflow-y-auto"
+                            >
+                              <div className="p-2 space-y-1">
+                                {ROLES_ORDER.map(role => {
+                                  const rPerms = activePerms[role] || [];
+                                  const rActive = rPerms.filter(p => p.active).length;
+                                  const isSelected = focusedRole === role;
+                                  return (
+                                    <button
+                                      key={role}
+                                      type="button"
+                                      onClick={() => {
+                                        setFocusedRole(role);
+                                        setIsRoleDropdownOpen(false);
+                                      }}
+                                      className={`w-full px-3 py-2.5 rounded-xl flex items-center justify-between text-left transition-all cursor-pointer ${
+                                        isSelected
+                                          ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]'
+                                          : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04] text-gray-700 dark:text-gray-200'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2.5 min-w-0">
+                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                          isSelected
+                                            ? 'bg-[#0055FF] text-white dark:bg-[#00D4B2] dark:text-[#0b1120]'
+                                            : 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-400'
+                                        }`}>
+                                          <Shield size={14} />
+                                        </div>
+                                        <div className="min-w-0">
+                                          <div className="text-xs sm:text-sm font-bold truncate flex items-center gap-1.5">
+                                            <span>{role}</span>
+                                            {isSelected && (
+                                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0055FF]/20 dark:bg-[#00D4B2]/20 text-[#0055FF] dark:text-[#00D4B2]">
+                                                Active
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="text-[11px] text-gray-400 dark:text-gray-500">
+                                            {rActive} of {rPerms.length} permissions enabled
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                                          isSelected
+                                            ? 'bg-[#0055FF]/20 dark:bg-[#00D4B2]/20 text-[#0055FF] dark:text-[#00D4B2]'
+                                            : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'
+                                        }`}>
+                                          {rActive}/{rPerms.length}
+                                        </span>
+                                        {isSelected ? (
+                                          <Check size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                                        ) : (
+                                          <div className="w-4" />
+                                        )}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
 
                       {/* Role Scope Info Banner */}
@@ -653,7 +746,7 @@ export function UserManagementView({
                         <button
                           type="button"
                           onClick={() => setPermViewMode('matrix')}
-                          className="text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline flex items-center gap-1 cursor-pointer"
+                          className="hidden md:flex items-center gap-1 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline cursor-pointer"
                         >
                           <span>Compare in Full Matrix</span>
                           <ChevronRight size={12} />
@@ -721,76 +814,74 @@ export function UserManagementView({
                       </div>
                     </div>
                   );
+                };
+
+                if (permViewMode === 'focused') {
+                  return renderFocusedView();
                 }
 
-                // Grid Matrix View (Scrollable enterprise table with responsive sticky column)
+                // Grid Matrix View (Desktop only - mobile screens always display clean role-focused view)
                 return (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between px-3 py-2 bg-blue-50/80 dark:bg-[#00D4B2]/10 rounded-xl border border-blue-200/60 dark:border-white/10 text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold md:hidden">
-                      <span>← Swipe horizontally to see all 8 role columns →</span>
-                      <button
-                        type="button"
-                        onClick={() => setPermViewMode('focused')}
-                        className="underline text-[11px] cursor-pointer"
-                      >
-                        Switch to Role View
-                      </button>
+                  <>
+                    <div className="md:hidden">
+                      {renderFocusedView()}
                     </div>
-
-                    <div className="overflow-x-auto rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
-                      <table className="w-full text-left border-collapse text-sm min-w-max">
-                        <thead>
-                          <tr className="bg-gray-50/80 dark:bg-[#1a1d27]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
-                            <th className="p-3.5 sm:p-5 font-black text-[10px] sm:text-[11px] uppercase tracking-widest text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-[#1a1d27] z-20 w-48 sm:w-64 border-r border-gray-200 dark:border-white/5">
-                              Feature / Role Access
-                            </th>
-                            {ROLES_ORDER.map(role => (
-                              <th key={role} className="p-3.5 sm:p-5 font-bold text-gray-900 dark:text-white text-center min-w-[130px] sm:min-w-[140px] whitespace-nowrap text-xs">
-                                {role}
+                    <div className="hidden md:block space-y-2">
+                      <div className="overflow-x-auto rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+                        <table className="w-full text-left border-collapse text-sm min-w-max">
+                          <thead>
+                            <tr className="bg-gray-50/80 dark:bg-[#1a1d27]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
+                              <th className="p-3.5 sm:p-5 font-black text-[10px] sm:text-[11px] uppercase tracking-widest text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-[#1a1d27] z-20 w-48 sm:w-64 border-r border-gray-200 dark:border-white/5">
+                                Feature / Role Access
                               </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {CATEGORY_MAP.map(cat => (
-                            <React.Fragment key={cat.name}>
-                              <tr className="bg-gray-50 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
-                                <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-4 sm:px-5 font-black text-gray-800 dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-gray-100 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
-                                  {cat.name}
-                                </td>
-                              </tr>
-                              {cat.perms.map(permName => (
-                                <tr key={permName} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
-                                  <td className="p-3 sm:p-3.5 px-4 sm:px-5 text-gray-700 dark:text-gray-300 text-xs font-semibold sticky left-0 bg-white dark:bg-[#0d1117] group-hover:bg-gray-50 dark:group-hover:bg-[#141820] z-10 border-r border-gray-100 dark:border-white/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_10px_-2px_rgba(0,0,0,0.2)] transition-colors">
-                                    {permName}
-                                  </td>
-                                  {ROLES_ORDER.map(role => {
-                                    const rolePerms = activePerms[role] || [];
-                                    const permObj = rolePerms.find(p => p.label === permName);
-                                    if (!permObj) return <td key={role} className="p-3 sm:p-3.5 text-center text-gray-300 dark:text-gray-600 border-r border-gray-50 dark:border-white/[0.02] last:border-0">-</td>;
-                                    return (
-                                      <td key={role} className="p-3 sm:p-3.5 text-center border-r border-gray-50 dark:border-white/[0.02] last:border-0">
-                                        <div className="flex justify-center">
-                                          {permObj.locked ? (
-                                            <span className="text-[9px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md">Locked</span>
-                                          ) : (
-                                            <CustomCheckbox
-                                              checked={permObj.active}
-                                              onChange={() => onTogglePermission(role, permName)}
-                                            />
-                                          )}
-                                        </div>
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
+                              {ROLES_ORDER.map(role => (
+                                <th key={role} className="p-3.5 sm:p-5 font-bold text-gray-900 dark:text-white text-center min-w-[130px] sm:min-w-[140px] whitespace-nowrap text-xs">
+                                  {role}
+                                </th>
                               ))}
-                            </React.Fragment>
-                          ))}
-                        </tbody>
-                      </table>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {CATEGORY_MAP.map(cat => (
+                              <React.Fragment key={cat.name}>
+                                <tr className="bg-gray-50 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
+                                  <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-4 sm:px-5 font-black text-gray-800 dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-gray-100 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
+                                    {cat.name}
+                                  </td>
+                                </tr>
+                                {cat.perms.map(permName => (
+                                  <tr key={permName} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
+                                    <td className="p-3 sm:p-3.5 px-4 sm:px-5 text-gray-700 dark:text-gray-300 text-xs font-semibold sticky left-0 bg-white dark:bg-[#0d1117] group-hover:bg-gray-50 dark:group-hover:bg-[#141820] z-10 border-r border-gray-100 dark:border-white/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_10px_-2px_rgba(0,0,0,0.2)] transition-colors">
+                                      {permName}
+                                    </td>
+                                    {ROLES_ORDER.map(role => {
+                                      const rolePerms = activePerms[role] || [];
+                                      const permObj = rolePerms.find(p => p.label === permName);
+                                      if (!permObj) return <td key={role} className="p-3 sm:p-3.5 text-center text-gray-300 dark:text-gray-600 border-r border-gray-50 dark:border-white/[0.02] last:border-0">-</td>;
+                                      return (
+                                        <td key={role} className="p-3 sm:p-3.5 text-center border-r border-gray-50 dark:border-white/[0.02] last:border-0">
+                                          <div className="flex justify-center">
+                                            {permObj.locked ? (
+                                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md">Locked</span>
+                                            ) : (
+                                              <CustomCheckbox
+                                                checked={permObj.active}
+                                                onChange={() => onTogglePermission(role, permName)}
+                                              />
+                                            )}
+                                          </div>
+                                        </td>
+                                      );
+                                    })}
+                                  </tr>
+                                ))}
+                              </React.Fragment>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 );
               })()}
             </div>
@@ -1307,7 +1398,7 @@ function MemberRosterGrid({
           )}
         </div>
 
-        <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl">
+        <div className="hidden md:flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl">
           <button
             type="button"
             onClick={() => setViewMode('cards')}
@@ -1337,8 +1428,8 @@ function MemberRosterGrid({
         </div>
       </div>
 
-      {/* Cards View (Mobile-Optimized) */}
-      {viewMode === 'cards' ? (
+      {/* Cards View (Always displayed on mobile, and on desktop when viewMode === 'cards') */}
+      <div className={viewMode === 'table' ? 'md:hidden' : 'block'}>
         <div className="p-3.5 sm:p-5">
           {members.length === 0 ? (
             <div className="py-16 text-center">
@@ -1520,13 +1611,11 @@ function MemberRosterGrid({
             </div>
           )}
         </div>
-      ) : (
-        /* Table View */
-        <div>
-          <div className="flex items-center justify-between px-4 py-2 bg-blue-50/70 dark:bg-[#00D4B2]/10 border-b border-gray-200 dark:border-white/10 text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold md:hidden">
-            <span>← Swipe horizontally to view all table columns →</span>
-          </div>
+      </div>
 
+      {/* Table View (Strictly Desktop Only) */}
+      {viewMode === 'table' && (
+        <div className="hidden md:block">
           <div className="overflow-x-auto w-full min-h-[440px]">
             <table className="w-full min-w-[720px] text-left text-xs border-collapse font-sans table-auto">
               <thead>
