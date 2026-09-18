@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ShieldAlert, ArrowLeft, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, KeyRound, Server, Zap, CheckCircle2 } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
+import { supabase } from '../lib/supabase';
 
 interface SuperAdminLoginViewProps {
   onLoginSuccess: () => void;
@@ -15,19 +16,40 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      if (adminId === 'admin' && password === 'admin123') {
-        onLoginSuccess();
-      } else {
+    try {
+      const email = adminId.includes('@') ? adminId.trim() : `${adminId.trim()}@smartlot.internal`;
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError || !data?.user) {
         setError('Invalid Admin Identifier or Security Key.');
         setIsLoading(false);
+        return;
       }
-    }, 500);
+
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles')
+        .select('is_system_admin')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (!profileErr && profile?.is_system_admin) {
+        onLoginSuccess();
+      } else {
+        setError('Access denied: Unauthorized administrative account.');
+      }
+    } catch {
+      setError('Administrative authentication failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

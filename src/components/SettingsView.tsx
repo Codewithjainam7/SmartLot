@@ -1,5 +1,5 @@
 // @smartlot/component
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Users, 
@@ -18,7 +18,8 @@ import {
   AlertCircle, 
   CheckCircle2,
   Eye,
-  EyeOff
+  EyeOff,
+  Trash2
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -29,7 +30,8 @@ interface SettingsViewProps {
   activePersonaEmail?: string;
   activePersonaPhone?: string;
   activePersonaUnit?: string;
-  onUpdateProfile?: (updates: { name: string; email: string; phone: string; password?: string; avatarUrl?: string }) => Promise<void> | void;
+  activePersonaAvatar?: string | null;
+  onUpdateProfile?: (updates: { name: string; email: string; phone: string; password?: string; avatarUrl?: string | null }) => Promise<void> | void;
 }
 
 export function SettingsView({ 
@@ -40,14 +42,42 @@ export function SettingsView({
   activePersonaEmail = '',
   activePersonaPhone = '',
   activePersonaUnit = '',
+  activePersonaAvatar = null,
   onUpdateProfile
 }: SettingsViewProps) {
   const [name, setName] = useState(activePersonaName || 'Sarah Jones');
   const [email, setEmail] = useState(activePersonaEmail || 'sarah.jones@duplex.com');
   const [phone, setPhone] = useState(activePersonaPhone || '0400 000 000');
   
-  // Avatar image state
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  // Storage key for avatar persistence across page refreshes
+  const effectiveEmail = (activePersonaEmail || email || '').toLowerCase();
+  const avatarStorageKey = effectiveEmail ? `smartlot_avatar_${effectiveEmail}` : 'smartlot_active_avatar';
+
+  // Avatar image state: initialized from prop OR browser storage fallback
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
+    if (activePersonaAvatar) return activePersonaAvatar;
+    try {
+      if (typeof window !== 'undefined') {
+        return window.localStorage.getItem(avatarStorageKey) || window.localStorage.getItem('smartlot_active_avatar') || null;
+      }
+    } catch {}
+    return null;
+  });
+
+  // Keep state in sync if activePersona changes
+  useEffect(() => {
+    if (activePersonaAvatar !== undefined) {
+      setAvatarUrl(activePersonaAvatar);
+    } else {
+      try {
+        if (typeof window !== 'undefined') {
+          const stored = window.localStorage.getItem(avatarStorageKey) || window.localStorage.getItem('smartlot_active_avatar');
+          if (stored) setAvatarUrl(stored);
+        }
+      } catch {}
+    }
+  }, [activePersonaAvatar, avatarStorageKey]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password state
@@ -61,14 +91,115 @@ export function SettingsView({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  // Helper to downscale/compress avatar to max 400x400 for instant snappy loading & reliable storage
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
+      reader.onerror = reject;
       reader.onload = () => {
-        setAvatarUrl(reader.result as string);
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const MAX_SIZE = 400;
+          let { width, height } = img;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(reader.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.88));
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 8 * 1024 * 1024) {
+        setErrorMessage('Image file must be under 8MB.');
+        return;
+      }
+      try {
+        setErrorMessage('');
+        const compressedUrl = await compressImage(file);
+        setAvatarUrl(compressedUrl);
+
+        // Immediate persistence to browser storage
+        try {
+          if (typeof window !== 'undefined') {
+            if (effectiveEmail) window.localStorage.setItem(`smartlot_avatar_${effectiveEmail}`, compressedUrl);
+            window.localStorage.setItem('smartlot_active_avatar', compressedUrl);
+          }
+        } catch (err) {
+          console.warn('Could not cache avatar locally:', err);
+        }
+
+        // Auto-persist immediately via onUpdateProfile so it saves without requiring manual form submit
+        if (onUpdateProfile) {
+          await onUpdateProfile({
+            name,
+            email,
+            phone,
+            avatarUrl: compressedUrl,
+          });
+        }
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 3000);
+      } catch (uploadErr: any) {
+        console.error('Failed to process image:', uploadErr);
+        setErrorMessage('Failed to upload image. Please try another image.');
+      }
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    try {
+      setErrorMessage('');
+      setAvatarUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // Remove from browser storage
+      try {
+        if (typeof window !== 'undefined') {
+          if (effectiveEmail) window.localStorage.removeItem(`smartlot_avatar_${effectiveEmail}`);
+          window.localStorage.removeItem('smartlot_active_avatar');
+        }
+      } catch {}
+
+      // Delete from database & global state
+      if (onUpdateProfile) {
+        await onUpdateProfile({
+          name,
+          email,
+          phone,
+          avatarUrl: null,
+        });
+      }
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (delErr: any) {
+      console.error('Failed to delete photo:', delErr);
+      setErrorMessage('Failed to delete photo.');
     }
   };
 
@@ -94,7 +225,7 @@ export function SettingsView({
           email,
           phone,
           password: password || undefined,
-          avatarUrl: avatarUrl || undefined,
+          avatarUrl: avatarUrl === null ? null : (avatarUrl || undefined),
         });
       }
       setIsSaved(true);
@@ -201,9 +332,9 @@ export function SettingsView({
           
           {/* Top Profile Bar: Shows avatar & change photo */}
           {theme === 'dark' ? (
-            /* Dark Mode Layout: Avatar row with SJ, Name, Role and Change Photo button */
+            /* Dark Mode Layout: Avatar row with SJ, Name, Role, Change Photo & Delete Photo buttons */
             <>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3.5">
                   <div className="w-12 h-12 rounded-full bg-[#0B2533] text-[#00D4B2] border border-[#00D4B2]/30 font-black text-base flex items-center justify-center select-none shadow-sm overflow-hidden shrink-0">
                     {avatarUrl ? (
@@ -213,19 +344,33 @@ export function SettingsView({
                     )}
                   </div>
                   <div>
-                    <h2 className="text-base sm:text-lg font-bold text-white leading-tight">{name || activePersonaName}</h2>
+                    <h2 className="text-base sm:text-lg font-bold text-white font-sans leading-tight">{name || activePersonaName}</h2>
                     <p className="text-xs text-gray-400 mt-0.5">{activePersonaRole} • {activePersonaUnit || 'Unit 1'}</p>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 sm:py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-transparent text-gray-300 hover:text-white text-xs sm:text-sm font-medium flex items-center gap-2 transition-all cursor-pointer active:scale-95"
-                >
-                  <Camera size={16} className="text-gray-400" />
-                  <span>Change Photo</span>
-                </button>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3.5 py-2 sm:py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-gray-200 hover:text-white text-xs sm:text-sm font-medium flex items-center gap-2 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                  >
+                    <Camera size={16} className="text-gray-300" />
+                    <span>Change Photo</span>
+                  </button>
+
+                  {avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleDeletePhoto}
+                      className="px-3.5 py-2 sm:py-2.5 rounded-xl border border-red-500/25 hover:border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                      title="Delete current photo"
+                    >
+                      <Trash2 size={15} />
+                      <span>Delete Photo</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Divider */}
@@ -237,36 +382,50 @@ export function SettingsView({
                   <User size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white leading-tight">Personal Information</h3>
+                  <h3 className="text-base font-bold text-white font-sans leading-tight">Personal Information</h3>
                   <p className="text-xs text-gray-400 mt-0.5">Update your basic details here.</p>
                 </div>
               </div>
             </>
           ) : (
-            /* Light Mode Layout: Header with blue User icon, Personal Information and Change Photo on right */
-            <div className="flex items-center justify-between gap-4">
+            /* Light Mode Layout: Header with User icon, Personal Information, Change Photo & Delete Photo */
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1D63ED] border border-blue-100 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1D63ED] border border-blue-100 flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-2xl" />
                   ) : (
-                    <User size={22} />
+                    <span className="font-bold text-base text-[#1D63ED]">{initials}</span>
                   )}
                 </div>
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Personal Information</h2>
-                  <p className="text-xs text-gray-500 mt-0.5">Update your basic details here.</p>
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900 font-sans leading-tight">Personal Information</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Update your basic details and profile photo.</p>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 sm:py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1D63ED] border border-blue-100 text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer active:scale-95"
-              >
-                <Camera size={16} className="text-[#1D63ED]" />
-                <span>Change Photo</span>
-              </button>
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1D63ED] border border-blue-100 text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                >
+                  <Camera size={16} className="text-[#1D63ED]" />
+                  <span>Change Photo</span>
+                </button>
+
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleDeletePhoto}
+                    className="px-3.5 py-2 sm:py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                    title="Delete current photo"
+                  >
+                    <Trash2 size={15} />
+                    <span>Delete Photo</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -475,7 +634,7 @@ export function SettingsView({
         {/* ── 5. Display Theme Preference Cards ──────────────── */}
         <div className="space-y-3 sm:space-y-4 pt-2">
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white tracking-tight uppercase">
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white font-sans tracking-normal">
               Display Theme Preference
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">

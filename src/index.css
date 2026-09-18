@@ -109,8 +109,8 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Acorn", "Plus Jakarta Sans", sans-serif;
-  --font-display: "Acorn", "Plus Jakarta Sans", sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-acorn: "Acorn", sans-serif;
 }
 
@@ -143,14 +143,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Main Headings preserve the signature Acorn font */
-h1, h2, h3, .font-heading, .font-display, .font-acorn {
-  font-family: "Acorn", "Plus Jakarta Sans", sans-serif;
+/* All Headings: Clean, modern, highly legible Plus Jakarta Sans for maximum accessibility */
+h1, h2, h3, h4, h5, h6, .font-heading, .font-display {
+  font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+/* Acorn font strictly for explicit brand hero display elements */
+.font-acorn {
+  font-family: "Acorn", "Plus Jakarta Sans", sans-serif !important;
   letter-spacing: -0.01em;
   line-height: 1.25;
 }
 
-/* Explicit high-contrast accessible headings (overrides default Acorn on h1/h2/h3) */
+/* Explicit high-contrast accessible headings */
 h1.font-sans, h2.font-sans, h3.font-sans, h4.font-sans, .font-sans {
   font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }

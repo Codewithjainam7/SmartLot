@@ -299,13 +299,17 @@ export default function App() {
 
     const unitContext = (siteInfo as any)?.unit || (siteInfo ? `Unit 1 (${siteInfo.name})` : 'Unit 1');
 
+    const memberEmail = seeded?.email || `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
+    const savedAvatar = typeof window !== 'undefined' ? (window.localStorage.getItem(`smartlot_avatar_${memberEmail.toLowerCase()}`) || window.localStorage.getItem('smartlot_active_avatar')) : null;
+
     const newPersona = {
       ...seeded,
       id: personaId,
       role: userRole,
       name: name,
       context: unitContext,
-      email: seeded?.email || `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`,
+      email: memberEmail,
+      avatarUrl: savedAvatar || seeded?.avatarUrl,
       memberships
     };
 
@@ -315,7 +319,6 @@ export default function App() {
     store.setActiveView('dashboard');
 
     // Register member context in store - deduplicate by email+schemeId
-    const memberEmail = newPersona.email || `${name.toLowerCase().replace(/\s+/g, '.')}@strata.com.au`;
     store.setMembers(prev => {
       if (prev.some(m => m.email === memberEmail && m.schemeId === scheme.id)) return prev;
       return [
@@ -768,6 +771,7 @@ export default function App() {
           activePersonaName={store.activePersona.name}
           activePersonaRole={store.activePersona.role}
           activePersonaContext={store.activePersona.context}
+          activePersonaAvatar={store.activePersona.avatarUrl || null}
           activeSchemeName={store.activeScheme?.name}
           activeSchemeId={store.activeScheme?.id}
           theme={store.theme}
@@ -933,13 +937,51 @@ export default function App() {
               activePersonaEmail={store.activePersona.email || ''}
               activePersonaPhone="0400 000 000"
               activePersonaUnit={store.activePersona.context || ''}
+              activePersonaAvatar={store.activePersona.avatarUrl || null}
               onUpdateProfile={async (updates) => {
                 store.setActivePersona(prev => ({
                   ...prev,
                   name: updates.name,
                   email: updates.email,
+                  avatarUrl: updates.avatarUrl !== undefined ? (updates.avatarUrl || undefined) : prev.avatarUrl,
                 }));
-                const existingMember = store.members.find(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
+
+                const targetEmail = (updates.email || store.activePersona.email || '').toLowerCase();
+
+                // 1. Persist avatar in browser storage
+                if (updates.avatarUrl) {
+                  try {
+                    if (targetEmail) localStorage.setItem(`smartlot_avatar_${targetEmail}`, updates.avatarUrl);
+                    localStorage.setItem('smartlot_active_avatar', updates.avatarUrl);
+                  } catch (e) {
+                    console.warn("Could not write avatar to localStorage:", e);
+                  }
+                } else if (updates.avatarUrl === null) {
+                  try {
+                    if (targetEmail) localStorage.removeItem(`smartlot_avatar_${targetEmail}`);
+                    localStorage.removeItem('smartlot_active_avatar');
+                  } catch (e) {
+                    console.warn("Could not remove avatar from localStorage:", e);
+                  }
+                }
+
+                // 2. Persist avatar and name in Supabase profiles table
+                if (targetEmail) {
+                  try {
+                    await supabase
+                      .from('profiles')
+                      .update({
+                        full_name: updates.name,
+                        avatar_url: updates.avatarUrl === null ? null : (updates.avatarUrl || undefined),
+                      })
+                      .ilike('email', targetEmail);
+                  } catch (pErr) {
+                    console.warn("Could not update supabase profile avatar:", pErr);
+                  }
+                }
+
+                // 3. Update matching member record in store
+                const existingMember = store.members.find(m => m.email?.toLowerCase() === targetEmail);
                 if (existingMember) {
                   await store.updateMember(existingMember.id, {
                     name: updates.name,
@@ -947,6 +989,8 @@ export default function App() {
                     phone: updates.phone,
                   });
                 }
+
+                // 4. Update auth password if provided
                 if (updates.password) {
                   try {
                     await supabase.auth.updateUser({ password: updates.password });

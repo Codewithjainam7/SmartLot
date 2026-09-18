@@ -191,8 +191,12 @@ export function Topbar({
           aria-expanded={profileDropdownOpen}
           className="min-w-[44px] min-h-[44px] flex items-center gap-2 bg-white dark:bg-[#121316] border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm p-1.5 sm:p-2 rounded-full transition-all cursor-pointer active:scale-95 select-none"
         >
-          <div className="w-8 h-8 rounded-full bg-[#0F172A] dark:bg-gray-800 flex items-center justify-center text-white font-bold text-xs">
-            {activePersona.name.split(" ").map(n => n[0]).join("")}
+          <div className="w-8 h-8 rounded-full bg-[#0F172A] dark:bg-gray-800 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
+            {activePersona.avatarUrl ? (
+              <img src={activePersona.avatarUrl} alt={activePersona.name} className="w-full h-full object-cover" />
+            ) : (
+              activePersona.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+            )}
           </div>
           <ChevronDown size={16} className={`text-gray-400 mr-1 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
         </button>

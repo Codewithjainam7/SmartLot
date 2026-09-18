@@ -1,4 +1,4 @@
-﻿-- =========================================================================
+-- =========================================================================
 -- Migration: Surveys & Resident Feedback System
 -- Real-time cloud persistence for surveys and zero-login resident responses
 -- =========================================================================
@@ -45,18 +45,27 @@ ALTER TABLE public.surveys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.survey_responses ENABLE ROW LEVEL SECURITY;
 
 -- Grants for Supabase Data API
-GRANT ALL ON TABLE public.surveys TO anon, authenticated;
-GRANT ALL ON TABLE public.survey_responses TO anon, authenticated;
+GRANT SELECT ON TABLE public.surveys TO anon;
+GRANT ALL ON TABLE public.surveys TO authenticated;
+GRANT INSERT ON TABLE public.survey_responses TO anon;
+GRANT ALL ON TABLE public.survey_responses TO authenticated;
 
--- RLS policies: allow read/write for seamless zero-login guest responses & manager access
+-- RLS policies: Scoped read/write access
 DROP POLICY IF EXISTS "Public and auth full access surveys" ON public.surveys;
-CREATE POLICY "Public and auth full access surveys" ON public.surveys
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
+CREATE POLICY "Allow select surveys" ON public.surveys
+  FOR SELECT TO anon, authenticated
+  USING (status IN ('Active', 'active', 'Closed', 'closed'));
+
+CREATE POLICY "Allow authenticated write surveys" ON public.surveys
+  FOR ALL TO authenticated
+  USING (auth.uid() IS NOT NULL)
+  WITH CHECK (auth.uid() IS NOT NULL);
 
 DROP POLICY IF EXISTS "Public and auth full access survey_responses" ON public.survey_responses;
-CREATE POLICY "Public and auth full access survey_responses" ON public.survey_responses
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
+CREATE POLICY "Allow insert survey_responses" ON public.survey_responses
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (survey_id IS NOT NULL);
+
+CREATE POLICY "Allow authenticated read survey_responses" ON public.survey_responses
+  FOR SELECT TO authenticated
+  USING (auth.uid() IS NOT NULL);

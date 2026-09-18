@@ -7,7 +7,6 @@ import {
   PanelLeftClose, 
   PanelLeftOpen,
   Wrench,
-  FileText,
   Settings,
   ClipboardList,
   Award,
@@ -30,6 +29,7 @@ interface SidebarProps {
   activePersonaName?: string;
   activePersonaRole?: string;
   activePersonaContext?: string;
+  activePersonaAvatar?: string | null;
   activeSchemeName?: string;
   activeSchemeId?: string;
   theme?: 'light' | 'dark';
@@ -52,6 +52,7 @@ export function Sidebar({
   activePersonaName = 'Alex Vance',
   activePersonaRole = 'Strata Manager',
   activePersonaContext,
+  activePersonaAvatar,
   activeSchemeName,
   activeSchemeId,
   theme = 'light',
@@ -253,16 +254,6 @@ export function Sidebar({
               )}
 
               <NavItem 
-                icon={<FileText size={18} />} 
-                label="Bylaws Library" 
-                active={false} 
-                onClick={() => {
-                  alert("SmartLot Bylaws Library: Opening standard scheme by-laws...");
-                  onCloseMobile?.();
-                }}
-                isCollapsed={isCollapsed && !isMobileOpen} 
-              />
-              <NavItem 
                 icon={<Settings size={18} />} 
                 label="Settings" 
                 active={activeView === 'settings'} 
@@ -309,8 +300,12 @@ export function Sidebar({
           {/* Desktop User Profile Footer */}
           {!isMobileOpen && (
             <div className={`flex items-center gap-2.5 py-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-2'}`}>
-              <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#0055FF]/20 to-[#00D4B2]/20 border border-[#0055FF]/25 dark:border-[#00D4B2]/30 text-[#0055FF] dark:text-[#00D4B2] font-black text-xs flex items-center justify-center select-none">
-                {authorInitials}
+              <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#0055FF]/20 to-[#00D4B2]/20 border border-[#0055FF]/25 dark:border-[#00D4B2]/30 text-[#0055FF] dark:text-[#00D4B2] font-black text-xs flex items-center justify-center select-none overflow-hidden">
+                {activePersonaAvatar ? (
+                  <img src={activePersonaAvatar} alt={activePersonaName} className="w-full h-full object-cover" />
+                ) : (
+                  authorInitials
+                )}
               </div>
               {!isCollapsed && (
                 <div className="whitespace-nowrap flex-1 min-w-0">

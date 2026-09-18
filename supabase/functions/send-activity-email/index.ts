@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 // @smartlot/edge-function send-activity-email
 // Sends transactional emails (activity conduit, member invites, triage/status updates, comment alerts).
 // Primary provider: Mailtrap (Sandbox testing or Sending API) with fallback to Resend API.
@@ -444,6 +446,35 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: "Method not allowed" }),
       { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
+  }
+
+  // ── Authorization Verification (Prevent Unauthenticated Relay) ──
+  const authHeader = req.headers.get("Authorization");
+  const apiKeyHeader = req.headers.get("apikey");
+  if (!authHeader && !apiKeyHeader) {
+    return new Response(
+      JSON.stringify({ error: "Missing authorization credentials" }),
+      { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+  const token = authHeader ? authHeader.replace(/^Bearer\s+/i, "") : apiKeyHeader;
+  
+  if (token !== supabaseAnonKey && token !== supabaseServiceKey) {
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized access: invalid or expired token" }),
+        { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
   }
 
   let payload: AnyEmailPayload;

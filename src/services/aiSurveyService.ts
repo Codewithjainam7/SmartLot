@@ -205,7 +205,6 @@ export async function generateSurveyQuestionsWithAI(
   schemeName: string
 ): Promise<SurveyQuestion[]> {
   const geminiKey = (
-    import.meta.env.VITE_GEMINI_API_KEY ||
     import.meta.env.GEMINI_API_KEY ||
     ''
   ) as string;
@@ -475,7 +474,6 @@ export async function generateSurveySummaryWithAI(
 
   // Check for live Gemini API
   const geminiKey = (
-    import.meta.env.VITE_GEMINI_API_KEY ||
     import.meta.env.GEMINI_API_KEY ||
     ''
   ) as string;

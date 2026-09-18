@@ -3,11 +3,9 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 
-import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const resend = new Resend(process.env.RESEND_API_KEY || 're_mock_key');
 
 function mailtrapPlugin() {
   return {
@@ -20,8 +18,15 @@ function mailtrapPlugin() {
           req.on('end', async () => {
             try {
               const data = JSON.parse(body);
-              const token = process.env.MAILTRAP_API_TOKEN || 'b68d42639db12dd9c3a52f87968d94de';
-              const inboxId = process.env.MAILTRAP_INBOX_ID || '4900976';
+              const token = process.env.MAILTRAP_API_TOKEN;
+              const inboxId = process.env.MAILTRAP_INBOX_ID;
+
+              if (!token || !inboxId) {
+                res.statusCode = 503;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, error: 'Mailtrap environment credentials not configured' }));
+                return;
+              }
               
               const toEmail = data.toEmail || data.managerEmail;
               if (!toEmail) throw new Error('Missing recipient email (toEmail or managerEmail)');

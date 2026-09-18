@@ -12,6 +12,7 @@ export type Persona = {
   name: string;
   context: string;
   email?: string;
+  avatarUrl?: string;
   memberships?: UserSiteMembership[];
   isSystemAdmin?: boolean;
 };

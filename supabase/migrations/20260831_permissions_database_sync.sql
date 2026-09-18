@@ -12,11 +12,21 @@ ALTER TABLE public.role_permissions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow authenticated read role_permissions" ON public.role_permissions;
 CREATE POLICY "Allow authenticated read role_permissions" 
-ON public.role_permissions FOR SELECT TO authenticated USING (true);
+ON public.role_permissions FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
 
 DROP POLICY IF EXISTS "Allow authenticated insert/update role_permissions" ON public.role_permissions;
 CREATE POLICY "Allow authenticated insert/update role_permissions" 
-ON public.role_permissions FOR ALL TO authenticated USING (true) WITH CHECK (true);
+ON public.role_permissions FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_system_admin = TRUE
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_system_admin = TRUE
+  )
+);
 
 -- 2. Ensure individual_permissions table exists with RLS enabled
 CREATE TABLE IF NOT EXISTS public.individual_permissions (
@@ -32,8 +42,18 @@ ALTER TABLE public.individual_permissions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow authenticated read individual_permissions" ON public.individual_permissions;
 CREATE POLICY "Allow authenticated read individual_permissions" 
-ON public.individual_permissions FOR SELECT TO authenticated USING (true);
+ON public.individual_permissions FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
 
 DROP POLICY IF EXISTS "Allow authenticated insert/update individual_permissions" ON public.individual_permissions;
 CREATE POLICY "Allow authenticated insert/update individual_permissions" 
-ON public.individual_permissions FOR ALL TO authenticated USING (true) WITH CHECK (true);
+ON public.individual_permissions FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_system_admin = TRUE
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_system_admin = TRUE
+  )
+);

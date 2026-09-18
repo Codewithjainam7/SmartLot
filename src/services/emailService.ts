@@ -4,10 +4,6 @@
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-// Direct client-side Mailtrap testing configuration (optional, for rapid local sandbox testing)
-const mailtrapApiToken = (import.meta.env.VITE_MAILTRAP_API_TOKEN || import.meta.env.MAILTRAP_API_TOKEN) as string | undefined;
-const mailtrapInboxId = (import.meta.env.VITE_MAILTRAP_INBOX_ID || import.meta.env.MAILTRAP_INBOX_ID) as string | undefined;
-
 export interface ActivityEmailPayload {
   referenceId: string;
   activityTitle: string;
@@ -249,52 +245,6 @@ function buildHtmlForType(body: Record<string, any>): { subject: string; html: s
   };
 }
 
-/**
- * Sends directly to Mailtrap Sandbox API from client if token is present in .env
- */
-async function sendDirectToMailtrap(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; provider?: string } | null> {
-  if (!mailtrapApiToken) return null;
-
-  try {
-    const endpoint = mailtrapInboxId
-      ? `https://sandbox.api.mailtrap.io/api/send/${mailtrapInboxId}`
-      : `https://send.api.mailtrap.io/api/send`;
-
-    const toEmail = body.toEmail || body.managerEmail;
-    if (!toEmail) return null;
-
-    const toList = [{ email: toEmail, name: body.toName || body.requestorName || 'Recipient' }];
-    const ccList = body.requestorEmail && body.managerEmail ? [{ email: body.requestorEmail }] : undefined;
-    const { subject, html } = buildHtmlForType(body);
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${mailtrapApiToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: { email: 'notifications@smartlot.app', name: 'SmartLot' },
-        to: toList,
-        cc: ccList,
-        headers: body.referenceId ? { 'Reply-To': `requests+${String(body.referenceId).replace('#', '')}@mail.smartlot.app` } : undefined,
-        subject,
-        html,
-        category: `smartlot-${body.type || 'general'}`,
-      }),
-    });
-
-    if (res.ok) {
-      console.log(`[SmartLot Email] 📬 Direct Mailtrap dispatch successful to ${toEmail}`);
-      return { success: true, provider: 'mailtrap_direct' };
-    }
-    return null;
-  } catch (err) {
-    console.warn('[SmartLot Email] Direct Mailtrap dispatch notice:', err);
-    return null;
-  }
-}
-
 async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; error?: string; provider?: string }> {
   const { subject, html } = buildHtmlForType(body);
 
@@ -312,12 +262,6 @@ async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success
     }
   } catch (relayErr) {
     // If running in an environment without the local Vite proxy, fallback gracefully
-  }
-
-  // 2. Try direct Mailtrap dispatch if configured in Vite .env
-  const directResult = await sendDirectToMailtrap(body);
-  if (directResult?.success) {
-    return directResult;
   }
 
   // 2. Dispatch via Supabase Edge function

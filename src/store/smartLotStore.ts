@@ -374,6 +374,7 @@ export type Member = {
   role: MemberRole;
   unitId: string;
   lotNumber: number;
+  avatarUrl?: string;
   hasCoOwner?: boolean;
   coOwnerName?: string;
   coOwnerEmail?: string;
@@ -2027,6 +2028,23 @@ export const getDefaultPermissionsForRole = (role: string): { label: string; act
 };
 
 // usePersistedState REMOVED - all state now comes from Supabase, not localStorage.
+
+function generateSecurePin(min = 1000, max = 9999): string {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const arr = new Uint32Array(1);
+    window.crypto.getRandomValues(arr);
+    const range = max - min + 1;
+    return (min + (arr[0] % range)).toString();
+  }
+  return Math.floor(min + Math.random() * (max - min + 1)).toString();
+}
+
+function generateSecureToken(prefix = 'INV'): string {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return `${prefix}-${window.crypto.randomUUID().replace(/-/g, '').substring(0, 10).toUpperCase()}`;
+  }
+  return `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+}
 // This wrapper keeps the same API signature so we don't have to refactor every call site,
 // but it no longer reads/writes localStorage at all.
 function usePersistedState<T>(_key: string, defaultValue: T | (() => T)): [T, React.Dispatch<React.SetStateAction<T>>] {
@@ -2037,7 +2055,31 @@ function usePersistedState<T>(_key: string, defaultValue: T | (() => T)): [T, Re
 }
 
 export function useSmartLotStore() {
-  const [activePersona, setActivePersona] = usePersistedState<Persona>('smartlot_activePersona_v8', PERSONAS[1]); // We'll keep this temporarily for backward compatibility while refactoring
+  const [activePersona, setActivePersona] = useState<Persona>(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('smartlot_activePersona_v8') : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name) {
+          const email = (parsed.email || '').toLowerCase();
+          const savedAvatar = typeof window !== 'undefined' ? (window.localStorage.getItem(`smartlot_avatar_${email}`) || window.localStorage.getItem('smartlot_active_avatar')) : null;
+          if (savedAvatar) {
+            parsed.avatarUrl = savedAvatar;
+          }
+          return parsed;
+        }
+      }
+    } catch {}
+    const defaultPersona = { ...PERSONAS[1] };
+    try {
+      const email = (defaultPersona.email || '').toLowerCase();
+      const savedAvatar = typeof window !== 'undefined' ? (window.localStorage.getItem(`smartlot_avatar_${email}`) || window.localStorage.getItem('smartlot_active_avatar')) : null;
+      if (savedAvatar) {
+        defaultPersona.avatarUrl = savedAvatar;
+      }
+    } catch {}
+    return defaultPersona;
+  });
   const pId = activePersona?.id || 'default';
 
   const [session, setSession] = useState<any>(null);
@@ -2050,6 +2092,22 @@ export function useSmartLotStore() {
   );
 
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('smartlot_activePersona_v8', JSON.stringify(activePersona));
+        const email = (activePersona?.email || '').toLowerCase();
+        if (activePersona?.avatarUrl) {
+          if (email) window.localStorage.setItem(`smartlot_avatar_${email}`, activePersona.avatarUrl);
+          window.localStorage.setItem('smartlot_active_avatar', activePersona.avatarUrl);
+        } else if (activePersona?.avatarUrl === null) {
+          if (email) window.localStorage.removeItem(`smartlot_avatar_${email}`);
+          window.localStorage.removeItem('smartlot_active_avatar');
+        }
+      }
+    } catch {}
+  }, [activePersona]);
 
   useEffect(() => {
     // If activePersona is an obsolete/removed profile (e.g. Cameron, Steve, Peter, Jake, Joana, John, Jack), auto-heal to Emma Wilson
@@ -2076,6 +2134,7 @@ export function useSmartLotStore() {
         const role = firstMember?.role || (profile?.is_system_admin ? 'Strata Manager' : 'Lot Owner');
         const unit = firstMember?.unit_id || 'Unit 1';
         const schemeId = firstMember?.scheme_id;
+        const avatarUrl = profile?.avatar_url || (typeof window !== 'undefined' ? (window.localStorage.getItem(`smartlot_avatar_${email}`) || window.localStorage.getItem('smartlot_active_avatar')) : null) || undefined;
 
         setActivePersona(prev => ({
           ...prev,
@@ -2083,7 +2142,8 @@ export function useSmartLotStore() {
           name,
           email: authUser.email,
           role: role as any,
-          context: unit
+          context: unit,
+          avatarUrl: avatarUrl || prev.avatarUrl,
         }));
 
         if (schemeId) {
@@ -2203,12 +2263,29 @@ export function useSmartLotStore() {
             role: m.role as any,
             unitId: isMgmt || m.unit_id === 'Admin' ? 'HQ / Management' : (m.unit_id || 'Unit 1'),
             lotNumber: isMgmt ? 0 : (m.lot_number || 1),
+            avatarUrl: profilesData?.find(p => p.email?.toLowerCase() === m.email?.toLowerCase())?.avatar_url || undefined,
             status: m.status || 'Active',
             joinedAt: m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
           };
         });
       }
       setMembers(formattedMembers);
+
+      // Reconcile activePersona avatar from profilesData if available
+      if (profilesData && profilesData.length > 0) {
+        const currentEmail = (activePersona?.email || '').toLowerCase();
+        const myProfile = profilesData.find(p => p.email?.toLowerCase() === currentEmail);
+        if (myProfile?.avatar_url && myProfile.avatar_url !== activePersona?.avatarUrl) {
+          setActivePersona(prev => ({
+            ...prev,
+            avatarUrl: myProfile.avatar_url
+          }));
+          try {
+            if (currentEmail) window.localStorage.setItem(`smartlot_avatar_${currentEmail}`, myProfile.avatar_url);
+            window.localStorage.setItem('smartlot_active_avatar', myProfile.avatar_url);
+          } catch {}
+        }
+      }
 
       // Process units
       let allUnits: UnitData[] = [];
@@ -2975,7 +3052,7 @@ export function useSmartLotStore() {
   }) => {
     const targetSchemeId = memberData.schemeId || activeScheme.id;
     const id = `MEM-${Date.now()}`;
-    const token = memberData.inviteToken || `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const token = memberData.inviteToken || generateSecureToken('INV');
     const status = memberData.initialStatus || 'Invited';
 
     const newMember: Member = {
@@ -3196,7 +3273,7 @@ export function useSmartLotStore() {
     strataManagerEmail?: string;
   }) => {
     // ── 1. Derive stable values ──────────────────────────────────────────────
-    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
+    const randomSuffix = generateSecurePin(10000, 99999);
     const slRef = `SL-${randomSuffix}`;
     const id = `REQ-${slRef}`;
 
@@ -4057,7 +4134,7 @@ export function useSmartLotStore() {
             vendorName: recQuote?.vendorName || 'Contractor',
             scopeOfWork: m.summary,
             budgetCap: recQuote?.amount || 2500,
-            siteAccessPin: Math.floor(1000 + Math.random() * 9000).toString(),
+            siteAccessPin: generateSecurePin(1000, 9999),
             guestMagicToken: `tok_${(m.schemeId || activeScheme.id).toLowerCase()}_${Date.now()}`,
             status: 'issued',
           };
@@ -4351,7 +4428,7 @@ export function useSmartLotStore() {
         vendorName: recQuote?.vendorName || 'Selected Vendor',
         scopeOfWork: targetMotion.summary,
         budgetCap: recQuote?.amount || 2500,
-        siteAccessPin: Math.floor(1000 + Math.random() * 9000).toString(),
+        siteAccessPin: generateSecurePin(1000, 9999),
         guestMagicToken: `tok_${(targetMotion.schemeId || activeScheme.id).toLowerCase()}_${Date.now()}`,
         status: 'issued',
       };
@@ -4451,7 +4528,7 @@ export function useSmartLotStore() {
 
 
   const createWorkOrder = (payload: CreateWorkOrderPayload) => {
-    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
+    const randomPin = generateSecurePin(1000, 9999);
     const token = `tok_${payload.schemeId.toLowerCase()}_${Date.now()}`;
     const newWo: WorkOrder = {
       ...payload,
@@ -4570,7 +4647,7 @@ export function useSmartLotStore() {
     const targetQuote = targetReq.tenderQuotes?.find(q => q.id === quoteId);
     if (!targetQuote) return null;
 
-    const randomPin = customPin || Math.floor(1000 + Math.random() * 9000).toString();
+    const randomPin = customPin || generateSecurePin(1000, 9999);
     const token = `tok_${targetReq.schemeId.toLowerCase()}_wo_${Date.now()}`;
     const newWoId = `WO-${Date.now().toString().slice(-5)}`;
 

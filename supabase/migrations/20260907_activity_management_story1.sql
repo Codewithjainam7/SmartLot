@@ -60,14 +60,30 @@ ALTER TABLE public.request_comments
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'request_comments' AND policyname = 'Public select request_comments'
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'request_comments' AND policyname = 'Authenticated select request_comments'
   ) THEN
-    CREATE POLICY "Public select request_comments" ON public.request_comments FOR SELECT USING (true);
+    CREATE POLICY "Authenticated select request_comments" ON public.request_comments
+      FOR SELECT TO authenticated
+      USING (
+        EXISTS (
+          SELECT 1 FROM public.resident_requests rr
+          JOIN public.members m ON m.scheme_id = rr.scheme_id
+          WHERE rr.id = request_comments.request_id AND m.user_id = auth.uid()
+        )
+      );
   END IF;
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'request_comments' AND policyname = 'Public write request_comments'
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'request_comments' AND policyname = 'Authenticated insert request_comments'
   ) THEN
-    CREATE POLICY "Public write request_comments" ON public.request_comments FOR ALL USING (true) WITH CHECK (true);
+    CREATE POLICY "Authenticated insert request_comments" ON public.request_comments
+      FOR INSERT TO authenticated
+      WITH CHECK (
+        EXISTS (
+          SELECT 1 FROM public.resident_requests rr
+          JOIN public.members m ON m.scheme_id = rr.scheme_id
+          WHERE rr.id = request_comments.request_id AND m.user_id = auth.uid()
+        )
+      );
   END IF;
 END $$;
 
@@ -90,14 +106,21 @@ ALTER TABLE public.activity_notes ENABLE ROW LEVEL SECURITY;
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'activity_notes' AND policyname = 'Public select activity_notes'
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'activity_notes' AND policyname = 'Managers can write internal notes'
   ) THEN
-    CREATE POLICY "Public select activity_notes" ON public.activity_notes FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'activity_notes' AND policyname = 'Public write activity_notes'
-  ) THEN
-    CREATE POLICY "Public write activity_notes" ON public.activity_notes FOR ALL USING (true) WITH CHECK (true);
+    CREATE POLICY "Managers can write internal notes" ON public.activity_notes
+      FOR INSERT TO authenticated
+      WITH CHECK (
+        EXISTS (
+          SELECT 1
+          FROM public.resident_requests rr
+          JOIN public.members m ON m.scheme_id = rr.scheme_id
+          WHERE rr.id = activity_notes.request_id
+            AND m.user_id = auth.uid()
+            AND m.role IN ('Strata Manager', 'Building Manager')
+            AND m.status = 'Active'
+        )
+      );
   END IF;
 END $$;
 

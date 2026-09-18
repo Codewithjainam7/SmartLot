@@ -1597,7 +1597,9 @@ function AddMemberFormContent({
     if (!formName || !formEmail) return;
     setIsSubmitting(true);
 
-    const primaryToken = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const primaryToken = typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID
+      ? `INV-${window.crypto.randomUUID().replace(/-/g, '').substring(0, 10).toUpperCase()}`
+      : `INV-${Date.now().toString(36).toUpperCase()}`;
     const primaryJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${primaryToken}&email=${encodeURIComponent(formEmail.trim())}&role=${encodeURIComponent(formRole)}&unit=${encodeURIComponent(formUnit)}&lot=${encodeURIComponent(formLot)}&name=${encodeURIComponent(formName.trim())}`;
 
     try {
@@ -1617,7 +1619,9 @@ function AddMemberFormContent({
       // 2. Dispatch invite emails to any additional occupants
       const validOccupants = additionalOccupants.filter(o => o.name.trim() && o.email.trim());
       for (const occ of validOccupants) {
-        const occToken = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        const occToken = typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID
+          ? `INV-${window.crypto.randomUUID().replace(/-/g, '').substring(0, 10).toUpperCase()}`
+          : `INV-${Date.now().toString(36).toUpperCase()}`;
         const occJoinUrl = `${window.location.origin}/#/join/${activeSchemeId}?token=${occToken}&email=${encodeURIComponent(occ.email.trim())}&role=${encodeURIComponent(occ.role)}&unit=${encodeURIComponent(formUnit)}&lot=${encodeURIComponent(formLot)}&name=${encodeURIComponent(occ.name.trim())}`;
         await dispatchMemberInviteEmail({
           toEmail: occ.email.trim(),

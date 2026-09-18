@@ -175,21 +175,152 @@ ALTER TABLE motion_quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE motion_attachments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE motion_comments ENABLE ROW LEVEL SECURITY;
 
--- Permissive RLS Policies (for authenticated and client app access)
-CREATE POLICY "Allow public read on motions" ON motions FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public write on motions" ON motions FOR ALL TO public USING (true) WITH CHECK (true);
+-- Secure Authenticated RLS Policies
+CREATE POLICY "Allow authenticated read on motions" ON motions
+    FOR SELECT TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.members m
+                WHERE m.scheme_id = motions.scheme_id
+                AND m.user_id = auth.uid()
+            ) OR EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = auth.uid() AND p.is_system_admin = TRUE
+            )
+        )
+    );
 
-CREATE POLICY "Allow public read on motion_ballots" ON motion_ballots FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public write on motion_ballots" ON motion_ballots FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow manager write on motions" ON motions
+    FOR ALL TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.members m
+                WHERE m.scheme_id = motions.scheme_id
+                AND m.user_id = auth.uid()
+                AND m.role IN ('Strata Manager', 'Building Manager', 'Committee Member')
+            ) OR EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = auth.uid() AND p.is_system_admin = TRUE
+            )
+        )
+    )
+    WITH CHECK (
+        auth.uid() IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.members m
+                WHERE m.scheme_id = motions.scheme_id
+                AND m.user_id = auth.uid()
+                AND m.role IN ('Strata Manager', 'Building Manager', 'Committee Member')
+            ) OR EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = auth.uid() AND p.is_system_admin = TRUE
+            )
+        )
+    );
 
-CREATE POLICY "Allow public read on motion_quotes" ON motion_quotes FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public write on motion_quotes" ON motion_quotes FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated read on motion_ballots" ON motion_ballots
+    FOR SELECT TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND (
+            voter_id = auth.uid() OR
+            EXISTS (
+                SELECT 1 FROM public.motions mo
+                JOIN public.members m ON m.scheme_id = mo.scheme_id
+                WHERE mo.id = motion_ballots.motion_id
+                AND m.user_id = auth.uid()
+                AND m.role IN ('Strata Manager', 'Building Manager', 'Committee Member')
+            )
+        )
+    );
 
-CREATE POLICY "Allow public read on motion_attachments" ON motion_attachments FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public write on motion_attachments" ON motion_attachments FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated vote on motion_ballots" ON motion_ballots
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        auth.uid() IS NOT NULL AND voter_id = auth.uid()
+    );
 
-CREATE POLICY "Allow public read on motion_comments" ON motion_comments FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public write on motion_comments" ON motion_comments FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated read on motion_quotes" ON motion_quotes
+    FOR SELECT TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_quotes.motion_id
+            AND m.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Allow manager write on motion_quotes" ON motion_quotes
+    FOR ALL TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_quotes.motion_id
+            AND m.user_id = auth.uid()
+            AND m.role IN ('Strata Manager', 'Building Manager')
+        )
+    )
+    WITH CHECK (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_quotes.motion_id
+            AND m.user_id = auth.uid()
+            AND m.role IN ('Strata Manager', 'Building Manager')
+        )
+    );
+
+CREATE POLICY "Allow authenticated read on motion_attachments" ON motion_attachments
+    FOR SELECT TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_attachments.motion_id
+            AND m.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Allow manager write on motion_attachments" ON motion_attachments
+    FOR ALL TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_attachments.motion_id
+            AND m.user_id = auth.uid()
+            AND m.role IN ('Strata Manager', 'Building Manager')
+        )
+    )
+    WITH CHECK (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_attachments.motion_id
+            AND m.user_id = auth.uid()
+            AND m.role IN ('Strata Manager', 'Building Manager')
+        )
+    );
+
+CREATE POLICY "Allow authenticated read on motion_comments" ON motion_comments
+    FOR SELECT TO authenticated
+    USING (
+        auth.uid() IS NOT NULL AND EXISTS (
+            SELECT 1 FROM public.motions mo
+            JOIN public.members m ON m.scheme_id = mo.scheme_id
+            WHERE mo.id = motion_comments.motion_id
+            AND m.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Allow member insert motion_comments" ON motion_comments
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        auth.uid() IS NOT NULL AND author_id = auth.uid()
+    );
 
 
 -- ============================================================================
