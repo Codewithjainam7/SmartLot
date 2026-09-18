@@ -665,7 +665,11 @@ export function SurveyBuilderFormContent({
       </div>
 
       {/* Modal Scrollable Body */}
-      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
+      <div 
+        ref={scrollContainerRef} 
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y p-4 sm:p-6 space-y-5 sm:space-y-6"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
           
           {/* STEP 1: Details & AI Generation */}
           {currentStep === 1 && (
@@ -2010,8 +2014,14 @@ export function SurveyBuilderModal({
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-0 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#0d1117] border-0 sm:border sm:border-gray-200/80 dark:border-white/10 rounded-none sm:rounded-3xl w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] max-w-4xl flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div 
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-0 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white dark:bg-[#0d1117] border-0 sm:border sm:border-gray-200/80 dark:border-white/10 rounded-none sm:rounded-3xl w-full h-[100dvh] sm:h-[90vh] sm:max-h-[90vh] max-w-4xl flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         <SurveyBuilderFormContent 
           store={store} 
           onClose={onClose} 
