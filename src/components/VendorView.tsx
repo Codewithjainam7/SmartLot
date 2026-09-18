@@ -626,8 +626,8 @@ export function VendorView({
                               <Camera size={14} className="text-blue-500" /> On-Site Repair Photo Attached
                             </div>
                             <div className="text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                              <FileText size={14} className="text-amber-500" />
-                              <span className="font-semibold">{wo.invoicePdf || 'Tax_Invoice.pdf'}</span>
+                              <CheckCircle2 size={14} className="text-emerald-500" />
+                              <span className="font-semibold">Repair Verification Photo</span>
                             </div>
                             <p className="text-[11px] text-gray-500">
                               Uploaded by {wo.vendorName} via zero-login mobile form.

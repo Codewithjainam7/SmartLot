@@ -519,8 +519,9 @@ export default function App() {
       return (
         <GuestPortalView 
           workOrder={activeGuestWo}
-          onSubmitCompletion={(woId, photoUrl, finalCost, invoicePdf) => {
-            store.submitGuestWorkOrderCompletion(woId, photoUrl, finalCost, invoicePdf);
+          store={store}
+          onSubmitCompletion={(woId, photoUrl, finalCost) => {
+            store.submitGuestWorkOrderCompletion(woId, photoUrl, finalCost);
           }}
           onBack={() => setActiveGuestWorkOrderId(null)}
         />
