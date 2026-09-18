@@ -132,29 +132,32 @@ export function SettingsView({
           onChange={handlePhotoUpload}
         />
 
-        {/* ── 1. Hero Banner with Building Background Image ──────────────── */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-200/80 dark:border-white/10 p-5 sm:p-8 shadow-sm dark:shadow-2xl bg-white dark:bg-[#070E1F]">
+        {/* ── 1. Hero Banner with Building Background Image & Blue Gradient Theme ──────────────── */}
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-200/70 dark:border-blue-500/20 p-5 sm:p-8 shadow-sm dark:shadow-2xl bg-gradient-to-r from-[#DFEEFF] via-[#E8F3FF] to-[#D5E9FF] dark:bg-gradient-to-r dark:from-[#051024] dark:via-[#091D3A] dark:to-[#0D2A54]">
+          {/* Ambient gradient glow in both light and dark modes */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#1D63ED]/10 via-transparent to-sky-400/15 dark:from-[#0055FF]/20 dark:via-transparent dark:to-[#00D4B2]/15 pointer-events-none" />
+
           {/* Light Mode Banner Image: /bg_img_profile.png */}
           <div 
             className="dark:hidden absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-3/5 bg-cover bg-right bg-no-repeat pointer-events-none opacity-90 sm:opacity-95 transition-opacity duration-300"
             style={{ 
               backgroundImage: "url('/bg_img_profile.png')",
-              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.2) 15%, black 45%)",
-              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.2) 15%, black 45%)"
+              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)"
             }}
           />
           {/* Dark Mode Banner Image: /bg_img_building.png */}
           <div 
-            className="hidden dark:block absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-3/5 bg-cover bg-right bg-no-repeat pointer-events-none opacity-50 sm:opacity-85 transition-opacity duration-300"
+            className="hidden dark:block absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-3/5 bg-cover bg-right bg-no-repeat pointer-events-none opacity-60 sm:opacity-90 transition-opacity duration-300"
             style={{ 
               backgroundImage: "url('/bg_img_building.png')",
-              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 15%, black 40%)",
-              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 15%, black 40%)"
+              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 38%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 38%)"
             }}
           />
 
           {/* Smooth gradient mask overlay to guarantee text contrast on the left */}
-          <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-2/3 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-[#070E1F] dark:via-[#070E1F]/90 dark:to-transparent pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-3/5 bg-gradient-to-r from-[#DFEEFF] via-[#E8F3FF]/95 to-transparent dark:from-[#051024] dark:via-[#051024]/95 dark:to-transparent pointer-events-none" />
 
           {/* Banner Content */}
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -170,38 +173,27 @@ export function SettingsView({
               </h1>
 
               {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-medium">
                 Keep your information up to date so we can serve you better.
               </p>
 
               {/* Feature pills with vertical divider lines */}
-              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-gray-700 dark:text-gray-200">
+              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-gray-800 dark:text-gray-200">
                 <div className="flex items-center gap-1.5">
                   <ShieldCheck size={16} className="text-[#1D63ED] dark:text-[#00D4B2]" />
                   <span>Secure</span>
                 </div>
-                <div className="h-3.5 w-px bg-gray-300 dark:bg-white/20" />
+                <div className="h-3.5 w-px bg-blue-300/60 dark:bg-white/20" />
                 <div className="flex items-center gap-1.5">
                   <Users size={16} className="text-[#1D63ED] dark:text-[#00D4B2]" />
                   <span>Personalized</span>
                 </div>
-                <div className="h-3.5 w-px bg-gray-300 dark:bg-white/20" />
+                <div className="h-3.5 w-px bg-blue-300/60 dark:bg-white/20" />
                 <div className="flex items-center gap-1.5">
                   <Clock size={16} className="text-[#1D63ED] dark:text-[#00D4B2]" />
                   <span>Always up to date</span>
                 </div>
               </div>
-            </div>
-
-            {/* Right Quote Block */}
-            <div className="hidden md:flex flex-col justify-center border-l border-blue-200/60 dark:border-white/10 pl-6 my-auto shrink-0 z-10">
-              <div className="font-serif italic text-base sm:text-lg font-medium text-gray-800 dark:text-gray-100 leading-snug tracking-tight">
-                {theme === 'dark' ? '“Better' : 'Better'}<br />
-                Communities<br />
-                Brighter<br />
-                {theme === 'dark' ? 'Tomorrows”' : 'Tomorrows'}
-              </div>
-              <div className="w-12 h-1 bg-[#1D63ED] dark:bg-[#00D4B2] rounded-full mt-2.5" />
             </div>
           </div>
         </div>
