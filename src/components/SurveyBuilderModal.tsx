@@ -110,26 +110,26 @@ export interface SurveyBuilderFormContentProps {
   onSurveyUpdated?: (updatedSurvey: Survey) => void;
 }
 
-export const getDeadlinePreset = (daysFromNow: number): string => {
+const getDeadlinePreset = (daysFromNow: number): string => {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
   return d.toISOString().split('T')[0];
 };
 
-export const getEndOfMonthDeadline = (): string => {
+const getEndOfMonthDeadline = (): string => {
   const now = new Date();
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   return endOfMonth.toISOString().split('T')[0];
 };
 
-export const normalizeDateInput = (val?: string | null): string => {
+const normalizeDateInput = (val?: string | null): string => {
   if (!val) return '';
   if (val.includes('T')) return val.split('T')[0];
   if (val.includes(' ')) return val.split(' ')[0];
   return val;
 };
 
-export const formatDeadlineDate = (deadlineDateStr?: string | null): string => {
+const formatDeadlineDate = (deadlineDateStr?: string | null): string => {
   if (!deadlineDateStr) return '';
   const clean = normalizeDateInput(deadlineDateStr);
   const parts = clean.split('-');
@@ -147,7 +147,7 @@ export const formatDeadlineDate = (deadlineDateStr?: string | null): string => {
   return deadlineDateStr;
 };
 
-export const formatDeadlineSummary = (deadlineDateStr: string): string => {
+const formatDeadlineSummary = (deadlineDateStr: string): string => {
   if (!deadlineDateStr) return 'No deadline set (Continuous open feedback round)';
   const clean = normalizeDateInput(deadlineDateStr);
   const parts = clean.split('-');
