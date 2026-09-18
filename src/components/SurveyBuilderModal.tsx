@@ -32,7 +32,9 @@ import {
   ChevronRight,
   Image as ImageIcon,
   Palette,
-  Upload
+  Upload,
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 import { SurveyQuestion, SurveyCategory, SurveyQuestionType, Survey } from '../types';
 import { STRATA_SURVEY_TEMPLATES } from '../services/aiSurveyService';
@@ -119,9 +121,24 @@ export const getEndOfMonthDeadline = (): string => {
   return endOfMonth.toISOString().split('T')[0];
 };
 
+export const normalizeDateInput = (val?: string | null): string => {
+  if (!val) return '';
+  if (val.includes('T')) return val.split('T')[0];
+  if (val.includes(' ')) return val.split(' ')[0];
+  return val;
+};
+
 export const formatDeadlineSummary = (deadlineDateStr: string): string => {
   if (!deadlineDateStr) return 'No deadline set (Continuous open feedback round)';
-  const date = new Date(deadlineDateStr);
+  const clean = normalizeDateInput(deadlineDateStr);
+  const parts = clean.split('-');
+  let date: Date;
+  if (parts.length === 3) {
+    const [year, month, day] = parts.map(Number);
+    date = new Date(year, month - 1, day);
+  } else {
+    date = new Date(deadlineDateStr);
+  }
   if (isNaN(date.getTime())) return deadlineDateStr;
   const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
   const formatted = date.toLocaleDateString('en-AU', options);
@@ -232,7 +249,8 @@ export function SurveyBuilderFormContent({
     () => surveyToEdit?.description || `We invite all residents and lot owners at ${activeScheme.name} to share their feedback to guide our Strata Committee and Management priorities for the coming year.`
   );
   const [category, setCategory] = useState<SurveyCategory>(() => surveyToEdit?.category || 'Annual Satisfaction');
-  const [deadline, setDeadline] = useState(() => surveyToEdit?.deadline || getDeadlinePreset(14));
+  const [deadline, setDeadline] = useState(() => normalizeDateInput(surveyToEdit?.deadline) || getDeadlinePreset(14));
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [bannerImage, setBannerImage] = useState<string>(() => surveyToEdit?.bannerImage || '/bg_img_building.png');
   const [isBannerPickerOpen, setIsBannerPickerOpen] = useState(false);
   const [customBannerUrl, setCustomBannerUrl] = useState('');
@@ -319,7 +337,7 @@ export function SurveyBuilderFormContent({
       setTitle(surveyToEdit.title);
       setDescription(surveyToEdit.description);
       setCategory(surveyToEdit.category);
-      setDeadline(surveyToEdit.deadline || '');
+      setDeadline(normalizeDateInput(surveyToEdit.deadline) || '');
       setBannerImage(surveyToEdit.bannerImage || '/bg_img_building.png');
       setQuestions(surveyToEdit.questions || []);
       setAudienceFilter(
@@ -355,6 +373,7 @@ export function SurveyBuilderFormContent({
     const template = STRATA_SURVEY_TEMPLATES.find(t => t.id === templateId);
     if (!template) return;
 
+    setSelectedTemplateId(templateId);
     setTitle(template.name);
     setCategory(template.category);
     setDescription(template.description);
@@ -534,7 +553,7 @@ export function SurveyBuilderFormContent({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0d1117] w-full max-w-4xl h-full sm:max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="bg-white dark:bg-[#0d1117] w-full max-w-4xl h-full flex flex-col min-h-0 flex-1 overflow-hidden">
       
       {/* Modal Header */}
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-black/20 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:pt-4">
@@ -571,61 +590,63 @@ export function SurveyBuilderFormContent({
         </button>
       </div>
 
-      {/* Stepper Navigation */}
-      <div className="px-3 sm:px-6 py-2 sm:py-2.5 bg-gray-50 dark:bg-[#090e19] border-b border-gray-200 dark:border-white/10 flex items-center justify-between shrink-0 text-xs font-bold overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-3 sm:gap-6 min-w-max">
+      {/* Stepper Navigation Tabs (Mobile-Friendly Pill Buttons) */}
+      <div className="px-3 sm:px-6 py-2 sm:py-2.5 bg-gray-50 dark:bg-[#090e19] border-b border-gray-200 dark:border-white/10 flex items-center justify-between shrink-0 text-xs font-bold gap-2">
+        <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 sm:gap-3 flex-1">
           <button
             type="button"
             onClick={() => setCurrentStep(1)}
-            className={`flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-all ${
-              currentStep === 1 ? 'text-[#00897B] dark:text-[#00D4B2] font-black' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+            className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 rounded-xl cursor-pointer transition-all ${
+              currentStep === 1 
+                ? 'bg-[#00897B]/15 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] font-black border border-[#00897B]/30 dark:border-[#00D4B2]/40 shadow-xs' 
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black ${
+            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-black shrink-0 ${
               currentStep === 1 ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] shadow-xs' : 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400'
             }`}>1</span>
-            <span className="hidden sm:inline">Survey Details & Setup</span>
-            <span className="sm:hidden text-[11px]">Details</span>
+            <span className="hidden sm:inline">Survey Details</span>
+            <span className="sm:hidden text-[11px] truncate">1. Details</span>
           </button>
-
-          <span className="text-gray-300 dark:text-gray-700 text-xs">&rarr;</span>
 
           <button
             type="button"
             onClick={() => setCurrentStep(2)}
-            className={`flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-all ${
-              currentStep === 2 ? 'text-[#00897B] dark:text-[#00D4B2] font-black' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+            className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 rounded-xl cursor-pointer transition-all ${
+              currentStep === 2 
+                ? 'bg-[#00897B]/15 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] font-black border border-[#00897B]/30 dark:border-[#00D4B2]/40 shadow-xs' 
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black ${
+            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-black shrink-0 ${
               currentStep === 2 ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] shadow-xs' : 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400'
             }`}>2</span>
             <span className="hidden sm:inline">Questions ({questions.length})</span>
-            <span className="sm:hidden text-[11px]">Questions ({questions.length})</span>
+            <span className="sm:hidden text-[11px] truncate">2. Qs ({questions.length})</span>
           </button>
-
-          <span className="text-gray-300 dark:text-gray-700 text-xs">&rarr;</span>
 
           <button
             type="button"
             onClick={() => setCurrentStep(3)}
-            className={`flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-all ${
-              currentStep === 3 ? 'text-[#00897B] dark:text-[#00D4B2] font-black' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+            className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 rounded-xl cursor-pointer transition-all ${
+              currentStep === 3 
+                ? 'bg-[#00897B]/15 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] font-black border border-[#00897B]/30 dark:border-[#00D4B2]/40 shadow-xs' 
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black ${
+            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] font-black shrink-0 ${
               currentStep === 3 ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15] shadow-xs' : 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400'
             }`}>3</span>
             <span className="hidden sm:inline">Audience & Dispatch</span>
-            <span className="sm:hidden text-[11px]">Audience</span>
+            <span className="sm:hidden text-[11px] truncate">3. Audience</span>
           </button>
         </div>
 
-        <span className="text-gray-400 text-[10px] sm:text-[11px] shrink-0 ml-2">Step {currentStep} of 3</span>
+        <span className="text-gray-400 text-[10px] sm:text-[11px] shrink-0 font-mono hidden md:inline">Step {currentStep} of 3</span>
       </div>
 
       {/* Modal Scrollable Body */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
           
           {/* STEP 1: Details & AI Generation */}
           {currentStep === 1 && (
@@ -642,7 +663,7 @@ export function SurveyBuilderFormContent({
                   onChange={handleBannerFileChange}
                 />
 
-                <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                       <ImageIcon size={14} className="text-[#00897B] dark:text-[#00D4B2]" />
@@ -658,15 +679,16 @@ export function SurveyBuilderFormContent({
                       <button
                         type="button"
                         onClick={() => setBannerImage('')}
-                        className="text-xs text-rose-500 hover:text-rose-600 font-semibold cursor-pointer px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                        className="h-8 px-2.5 rounded-xl text-xs text-rose-500 hover:text-rose-600 font-bold hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors flex items-center gap-1 cursor-pointer"
                       >
-                        Remove Banner
+                        <Trash2 size={12} />
+                        <span>Remove</span>
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={() => bannerFileInputRef.current?.click()}
-                      className="px-3 py-1 rounded-xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 hover:bg-[#00897B]/20 dark:hover:bg-[#00D4B2]/25 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/25 dark:border-[#00D4B2]/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      className="h-8 px-3 rounded-xl bg-[#00897B]/10 dark:bg-[#00D4B2]/15 hover:bg-[#00897B]/20 dark:hover:bg-[#00D4B2]/25 text-[#00897B] dark:text-[#00D4B2] border border-[#00897B]/25 dark:border-[#00D4B2]/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95"
                     >
                       <Upload size={13} strokeWidth={2.5} />
                       <span>Upload Image</span>
@@ -674,7 +696,7 @@ export function SurveyBuilderFormContent({
                     <button
                       type="button"
                       onClick={() => setIsBannerPickerOpen(!isBannerPickerOpen)}
-                      className="px-3 py-1 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                      className="h-8 px-3 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                     >
                       <Palette size={13} />
                       <span>{isBannerPickerOpen ? 'Close Themes' : 'Browse Themes'}</span>
@@ -702,29 +724,29 @@ export function SurveyBuilderFormContent({
                       alt="Form Header Banner Preview"
                       className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3.5 sm:p-4">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <span className="text-[10px] font-black uppercase tracking-wider text-[#00D4B2] font-mono mb-0.5 block">
                             BANNER PREVIEW • VISIBLE TO RESIDENTS
                           </span>
-                          <h4 className="text-white font-extrabold text-sm sm:text-base truncate">
+                          <h4 className="text-white font-extrabold text-xs sm:text-base truncate">
                             {title || 'Survey Questionnaire Banner'}
                           </h4>
                         </div>
-                        <div className="hidden group-hover:flex items-center gap-1.5 shrink-0 bg-black/60 backdrop-blur-md rounded-xl p-1 border border-white/20">
+                        <div className="flex items-center gap-1.5 shrink-0 bg-black/60 backdrop-blur-md rounded-xl p-1 border border-white/20">
                           <button
                             type="button"
                             onClick={() => bannerFileInputRef.current?.click()}
-                            className="px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                            className="px-2 sm:px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                           >
                             <Upload size={11} />
-                            <span>Upload New</span>
+                            <span>Upload</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => setIsBannerPickerOpen(true)}
-                            className="px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                            className="px-2 sm:px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                           >
                             <Palette size={11} />
                             <span>Themes</span>
@@ -930,32 +952,90 @@ export function SurveyBuilderFormContent({
                 </div>
               </div>
 
-              {/* Template Quick Selectors */}
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                  Or Load a Curated Australian Strata Template:
-                </label>
+              {/* Template Quick Selectors (Unmistakably Interactive on Mobile & Desktop) */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-[#00897B] dark:text-[#00D4B2]" />
+                    <span>Curated Australian Strata Templates</span>
+                  </label>
+                  <span className="text-[10px] text-[#00897B] dark:text-[#00D4B2] font-bold bg-[#00D4B2]/10 px-2 py-0.5 rounded-full border border-[#00D4B2]/20 font-mono">
+                    TAP TO LOAD
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  Select any pre-configured strata template below to populate verified questions, categories, and descriptions.
+                </p>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {STRATA_SURVEY_TEMPLATES.map((tmpl) => (
-                    <button
-                      key={tmpl.id}
-                      type="button"
-                      onClick={() => handleSelectTemplate(tmpl.id)}
-                      className="text-left p-3.5 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121622] hover:border-[#00897B] dark:hover:border-[#00D4B2] hover:shadow-xs transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-extrabold text-xs text-gray-900 dark:text-white group-hover:text-[#00897B] dark:group-hover:text-[#00D4B2] transition-colors">
-                          {tmpl.name}
-                        </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-emerald-200 dark:border-[#00D4B2]/30">
-                          {tmpl.questions.length} Qs
-                        </span>
+                  {STRATA_SURVEY_TEMPLATES.map((tmpl) => {
+                    const isSelected = selectedTemplateId === tmpl.id;
+                    return (
+                      <div
+                        key={tmpl.id}
+                        onClick={() => handleSelectTemplate(tmpl.id)}
+                        className={`text-left p-4 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between select-none ${
+                          isSelected
+                            ? 'border-[#00897B] dark:border-[#00D4B2] ring-2 ring-[#00897B]/40 dark:ring-[#00D4B2]/40 bg-[#00897B]/5 dark:bg-[#00D4B2]/10 shadow-md'
+                            : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121622] hover:border-[#00897B]/50 dark:hover:border-[#00D4B2]/50 hover:bg-gray-50/60 dark:hover:bg-[#161d2d] shadow-2xs active:scale-[0.99]'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                                isSelected 
+                                  ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15]' 
+                                  : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 group-hover:bg-[#00D4B2]/10 group-hover:text-[#00897B] dark:group-hover:text-[#00D4B2]'
+                              }`}>
+                                <FileText size={14} />
+                              </div>
+                              <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white group-hover:text-[#00897B] dark:group-hover:text-[#00D4B2] transition-colors leading-tight">
+                                {tmpl.name}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-emerald-200 dark:border-[#00D4B2]/30 shrink-0 font-mono">
+                              {tmpl.questions.length} Qs
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed ml-9">
+                            {tmpl.description}
+                          </p>
+                        </div>
+
+                        {/* Explicit Interactive CTA button that makes clickability 100% obvious on both desktop and mobile */}
+                        <div className="mt-3.5 pt-2.5 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 font-mono">
+                            {tmpl.category}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelectTemplate(tmpl.id);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-black inline-flex items-center gap-1.5 transition-all shadow-2xs ${
+                              isSelected
+                                ? 'bg-[#00897B] dark:bg-[#00D4B2] text-white dark:text-[#050A15]'
+                                : 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 group-hover:bg-[#00897B] group-hover:text-white dark:group-hover:bg-[#00D4B2] dark:group-hover:text-[#050A15]'
+                            }`}
+                          >
+                            {isSelected ? (
+                              <>
+                                <Check size={12} strokeWidth={3} />
+                                <span>Loaded</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>Use Template</span>
+                                <ArrowRight size={12} strokeWidth={2.5} />
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2">
-                        {tmpl.description}
-                      </p>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1095,7 +1175,7 @@ export function SurveyBuilderFormContent({
                     <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" />
                     <input
                       type="date"
-                      value={deadline}
+                      value={normalizeDateInput(deadline)}
                       onChange={(e) => setDeadline(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full bg-white dark:bg-[#121622] border border-gray-200 dark:border-white/10 rounded-xl pl-9 pr-3.5 py-2 text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40 focus:border-[#00D4B2] cursor-pointer shadow-2xs"
@@ -1114,6 +1194,30 @@ export function SurveyBuilderFormContent({
                     )}
                   </p>
                 </div>
+              </div>
+
+              {/* Step 1 Inline Next Section Button (Mobile & Desktop) */}
+              <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                    <span>Survey Setup Ready</span>
+                  </h4>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Proceed to configure, reorder, or add strata questions ({questions.length} questions loaded).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentStep(2);
+                    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="h-11 px-5 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer select-none active:scale-95 shrink-0"
+                >
+                  <span>Next: Questions ({questions.length})</span>
+                  <ArrowRight size={15} />
+                </button>
               </div>
 
             </div>
@@ -1365,7 +1469,45 @@ export function SurveyBuilderFormContent({
                 </div>
               );
             })}
-          </div>
+
+              {/* Step 2 Inline Next Section Button (Mobile & Desktop) */}
+              <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                    <span>{questions.length} Questions Configured</span>
+                  </h4>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Proceed to target resident recipients, manage CC/BCC, and review submission window.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(1);
+                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="h-11 flex-1 sm:flex-initial px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                  >
+                    <ArrowLeft size={14} />
+                    <span>Back to Details</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(3);
+                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="h-11 flex-1 sm:flex-initial px-5 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer select-none active:scale-95 shrink-0"
+                  >
+                    <span>Next: Audience & Dispatch</span>
+                    <ArrowRight size={15} />
+                  </button>
+                </div>
+              </div>
+
+            </div>
           )}
 
           {/* STEP 3: Audience & Dispatch */}
@@ -1663,49 +1805,126 @@ export function SurveyBuilderFormContent({
                 </div>
               </div>
 
+              {/* Step 3 Inline Action Card (Mobile & Desktop) */}
+              <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <Send size={14} className="text-[#00897B] dark:text-[#00D4B2]" />
+                    <span>Ready to {surveyToEdit ? 'Save Changes' : 'Dispatch Survey'}</span>
+                  </h4>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    {recipientCount} recipients queued across {activeScheme.name}.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(2);
+                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="h-11 flex-1 sm:flex-initial px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                  >
+                    <ArrowLeft size={14} />
+                    <span>Back to Questions</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={isSubmitting || questions.length === 0}
+                    className="h-11 flex-1 sm:flex-initial px-6 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#00897B]/20 dark:shadow-[#00D4B2]/20 cursor-pointer select-none active:scale-95 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        <span>{surveyToEdit ? 'Saving...' : 'Publishing...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={15} />
+                        <span>{surveyToEdit ? 'Save Changes' : 'Publish & Dispatch'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
 
         </div>
 
-        {/* Modal Action Footer */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50/90 dark:bg-black/40 backdrop-blur-xs">
+        {/* Modal Action Footer (Sticky Guaranteed Visible on Mobile) */}
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-3.5 border-t border-gray-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-gray-50/95 dark:bg-[#0a0f1d]/95 backdrop-blur-md sticky bottom-0 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
           <div>
-            {currentStep > 1 && (
+            {currentStep > 1 ? (
               <button
                 type="button"
-                onClick={() => setCurrentStep((currentStep - 1) as any)}
-                className="h-10 sm:h-9 px-3 sm:px-4 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-all cursor-pointer select-none active:scale-95"
+                onClick={() => {
+                  setCurrentStep((currentStep - 1) as any);
+                  scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="h-11 sm:h-10 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer select-none active:scale-95 flex items-center gap-1.5 shadow-2xs"
               >
-                &larr; Back
+                <ArrowLeft size={14} />
+                <span>Back</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleClose}
+                className="h-11 sm:h-10 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all cursor-pointer select-none active:scale-95"
+              >
+                Cancel
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="h-10 sm:h-9 px-3 sm:px-4 rounded-xl text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all cursor-pointer select-none active:scale-95"
-            >
-              Cancel
-            </button>
-
-            {currentStep < 3 ? (
+            {currentStep > 1 && (
               <button
                 type="button"
-                onClick={() => setCurrentStep((currentStep + 1) as any)}
-                className="h-11 sm:h-10 px-4 sm:px-5 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 font-extrabold text-xs sm:text-sm hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-xs select-none active:scale-95"
+                onClick={handleClose}
+                className="h-11 sm:h-10 px-3 rounded-xl text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all cursor-pointer select-none hidden sm:block"
               >
-                <span>Continue</span>
-                <span>&rarr;</span>
+                Cancel
               </button>
-            ) : (
+            )}
+
+            {currentStep === 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(2);
+                  scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="h-11 sm:h-10 px-4 sm:px-6 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm shadow-md shadow-[#00897B]/20 dark:shadow-[#00D4B2]/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 select-none active:scale-95"
+              >
+                <span>Next: Questions ({questions.length})</span>
+                <ArrowRight size={15} />
+              </button>
+            )}
+
+            {currentStep === 2 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(3);
+                  scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="h-11 sm:h-10 px-4 sm:px-6 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm shadow-md shadow-[#00897B]/20 dark:shadow-[#00D4B2]/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 select-none active:scale-95"
+              >
+                <span>Next: Audience & Dispatch</span>
+                <ArrowRight size={15} />
+              </button>
+            )}
+
+            {currentStep === 3 && (
               <button
                 type="button"
                 onClick={handlePublish}
                 disabled={isSubmitting || questions.length === 0}
-                className="h-11 sm:h-10 px-4 sm:px-6 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm shadow-md shadow-[#00897B]/20 dark:shadow-[#00D4B2]/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 select-none active:scale-95"
+                className="h-11 sm:h-10 px-5 sm:px-6 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm shadow-md shadow-[#00897B]/20 dark:shadow-[#00D4B2]/20 hover:opacity-95 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 select-none active:scale-95"
               >
                 {isSubmitting ? (
                   <>

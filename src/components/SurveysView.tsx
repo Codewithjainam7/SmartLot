@@ -131,6 +131,25 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
     return `${diffDays} days remaining`;
   };
 
+  // Format clean human-readable deadline (e.g. 17 Oct 2026)
+  const formatDeadlineDate = (deadlineStr?: string | null): string => {
+    if (!deadlineStr) return '';
+    const clean = deadlineStr.includes('T') ? deadlineStr.split('T')[0] : deadlineStr.split(' ')[0];
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts.map(Number);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        const date = new Date(year, month - 1, day);
+        return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+    const d = new Date(deadlineStr);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    return deadlineStr;
+  };
+
   // Origin URL for guest link
   const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
   const guestSurveyUrl = selectedSurvey ? `${origin}/?survey_token=${encodeURIComponent(selectedSurvey.id)}` : '';
@@ -367,7 +386,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       <Calendar size={13} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
                       <span>
                         <span className="text-gray-500 dark:text-gray-400 font-medium">Deadline:</span>{' '}
-                        <strong className="text-gray-900 dark:text-white font-bold">{selectedSurvey.deadline}</strong>
+                        <strong className="text-gray-900 dark:text-white font-bold">{formatDeadlineDate(selectedSurvey.deadline)}</strong>
                       </span>
                       {calculateDaysRemaining(selectedSurvey.deadline) && (
                         <>

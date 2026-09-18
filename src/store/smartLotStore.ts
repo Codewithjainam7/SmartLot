@@ -2490,7 +2490,7 @@ export function useSmartLotStore() {
             ccEmails: s.cc_emails || [],
             bccEmails: s.bcc_emails || [],
             questions: Array.isArray(s.questions) ? s.questions : [],
-            deadline: s.deadline || undefined,
+            deadline: s.deadline ? (s.deadline.includes('T') ? s.deadline.split('T')[0] : s.deadline.split(' ')[0]) : undefined,
             createdAt: s.created_at,
             createdBy: s.created_by || { name: 'Strata Manager', role: 'Strata Manager' },
             closedAt: s.closed_at || undefined,

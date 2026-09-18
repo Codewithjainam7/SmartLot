@@ -215,6 +215,24 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
 
   const isClosed = survey.status === 'closed' || (survey.deadline && new Date(survey.deadline).getTime() < Date.now());
 
+  const formatDeadlineDate = (deadlineStr?: string | null): string => {
+    if (!deadlineStr) return '';
+    const clean = deadlineStr.includes('T') ? deadlineStr.split('T')[0] : deadlineStr.split(' ')[0];
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts.map(Number);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        const date = new Date(year, month - 1, day);
+        return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+    const d = new Date(deadlineStr);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    return deadlineStr;
+  };
+
   const handleStarClick = (questionId: string, rating: number) => {
     setAnswers(prev => ({ ...prev, [questionId]: rating }));
     setValidationError(null);
@@ -403,7 +421,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             <div>
               <h3 className="font-extrabold text-xs sm:text-sm mb-0.5">This Survey Round Has Concluded</h3>
               <p className="text-[11px] sm:text-xs text-amber-800/80 dark:text-amber-300/80">
-                The deadline for this feedback round was {survey.deadline || 'reached'}. New submissions are currently disabled.
+                The deadline for this feedback round was {formatDeadlineDate(survey.deadline) || 'reached'}. New submissions are currently disabled.
               </p>
             </div>
           </div>
@@ -456,7 +474,7 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             {survey.deadline && (
               <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                 <span>Closing Deadline:</span>
-                <span className="font-bold text-gray-800 dark:text-gray-200">{survey.deadline}</span>
+                <span className="font-bold text-gray-800 dark:text-gray-200">{formatDeadlineDate(survey.deadline)}</span>
               </div>
             )}
           </div>
