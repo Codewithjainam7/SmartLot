@@ -118,9 +118,23 @@ export default function App() {
       const lot = getParam('lot');
       const schemeFromParam = getParam('scheme');
       const surveyParam = getParam('survey_token') || getParam('survey');
+      const woTokenParam = getParam('wo_token') || getParam('token_wo');
 
       if (surveyParam) {
         setSurveyToken(surveyParam);
+      }
+
+      if (woTokenParam) {
+        try {
+          const decoded = atob(woTokenParam);
+          const [woId] = decoded.split(':');
+          if (woId) {
+            setActiveGuestWorkOrderId(woId);
+          }
+        } catch {
+          // If already plain ID
+          setActiveGuestWorkOrderId(woTokenParam);
+        }
       }
 
       // Match path or hash like #/join/SP101 or #/join?scheme=SP101 or /lander?scheme=SP101

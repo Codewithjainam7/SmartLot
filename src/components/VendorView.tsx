@@ -19,6 +19,7 @@ import {
   Building2,
   Vote,
   Check,
+  Copy,
   Calendar,
   DollarSign,
   X,
@@ -73,6 +74,7 @@ export function VendorView({
   );
   const [workOrderFilter, setWorkOrderFilter] = useState<'all' | 'needs_signoff' | 'in_progress' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedWoId, setCopiedWoId] = useState<string | null>(null);
 
   // Modals state
   const [signOffModalWo, setSignOffModalWo] = useState<WorkOrder | null>(null);
@@ -542,12 +544,45 @@ export function VendorView({
                       <span className="text-[10px] text-gray-400 block">Digital Work Order</span>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5">
-                      <span className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] block">Encrypted Contractor Link</span>
-                      <div className="font-mono text-[11px] text-blue-600 dark:text-[#00D4B2] truncate mt-0.5 font-semibold" title={`https://smartlot-five.vercel.app/work-orders/${btoa(wo.id).replace(/=+$/, '')}`}>
-                        https://smartlot-five.vercel.app/wo/enc_{btoa(wo.id).substring(0, 10)}...
+                    <div className="p-3 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] block">Encrypted Access Token</span>
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                            Active Token
+                          </span>
+                        </div>
+                        {(() => {
+                          const token = btoa(`${wo.id}:${wo.schemeId || 'SP101'}:${wo.vendorId}`).replace(/=+$/, '');
+                          const fullContractorUrl = `https://smartlot-five.vercel.app/?wo_token=${token}`;
+                          const isCopied = copiedWoId === wo.id;
+
+                          return (
+                            <div className="mt-1.5 space-y-1.5">
+                              <div className="font-mono text-[10px] text-gray-700 dark:text-gray-300 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 px-2 py-1 rounded-lg truncate select-all" title={fullContractorUrl}>
+                                {fullContractorUrl}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(fullContractorUrl);
+                                  setCopiedWoId(wo.id);
+                                  setTimeout(() => setCopiedWoId(null), 2500);
+                                }}
+                                className={`w-full py-1.5 px-2 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                                  isCopied
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/15 text-gray-900 dark:text-white border border-gray-200 dark:border-white/15'
+                                }`}
+                                title="Copy full encrypted dispatch link to clipboard"
+                              >
+                                {isCopied ? <Check size={12} className="text-white" /> : <Copy size={12} className="text-blue-600 dark:text-[#00D4B2]" />}
+                                <span>{isCopied ? 'Link Copied to Clipboard!' : 'Copy Contractor Link'}</span>
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
-                      <span className="text-[10px] text-gray-400 block">Secure Token Dispatch</span>
                     </div>
                   </div>
 
