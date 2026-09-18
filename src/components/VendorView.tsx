@@ -1014,11 +1014,6 @@ export function VendorView({
                   }}
                   placeholder="Choose an open repair ticket..."
                 />
-                {!tenderRequestId && (
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 ml-1 font-medium">
-                    * Required: Please select an open issue to tender.
-                  </p>
-                )}
               </div>
 
               {/* Scope Brief */}
@@ -1152,12 +1147,6 @@ export function VendorView({
                       );
                     })}
                   </div>
-                )}
-
-                {selectedVendorsForTender.length === 0 && !adHocVendorName.trim() && (
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 ml-1 font-medium">
-                    * Please select at least 1 contractor from dropdown (or invite an ad-hoc contractor below).
-                  </p>
                 )}
               </div>
 
