@@ -71,6 +71,19 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   const [commentFilter, setCommentFilter] = useState<'all' | 'anonymous' | 'unit_tagged'>('all');
   const [ratingFilter, setRatingFilter] = useState<'all' | 'category'>('all');
 
+  // Permissions: Only Strata Managers, Strata Admins, and Committee Members can create, edit, or delete surveys
+  const currentMembership = store.activePersona?.memberships?.find(m => m.schemeId === store.activeScheme?.id);
+  const userRoles = [
+    store.activePersona?.role,
+    ...(currentMembership?.roles || [])
+  ].filter(Boolean).map(r => (r as string).toLowerCase());
+
+  const canManageSurveys = userRoles.some(r => 
+    r.includes('manager') || 
+    r.includes('admin') || 
+    r.includes('committee')
+  );
+
   // Quantitative Metrics Calculation (100% Truthful Real-Time Submissions)
   let totalRatingScore = 0;
   let totalRatingCount = 0;
@@ -447,53 +460,59 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <span>Preview</span>
                 </button>
 
-                {/* 3. Edit Survey Form */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingSurvey(selectedSurvey);
-                    setIsBuilderOpen(true);
-                  }}
-                  className="h-10 sm:h-9 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-[#07192F] dark:hover:bg-[#0C2442] border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                  title="Edit survey title, questions, deadline, and banner"
-                >
-                  <Edit3 size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
-                  <span>Edit Form</span>
-                </button>
-
-                {/* 4. Close Round or Reopen */}
-                {selectedSurvey.status === 'active' ? (
+                {/* 3. Edit Survey Form (Managers & Committee Members only) */}
+                {canManageSurveys && (
                   <button
                     type="button"
-                    onClick={handleCloseEarly}
-                    className="h-10 sm:h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-[#231505] dark:hover:bg-[#331E07] border border-amber-200 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                    title="Conclude survey round and freeze responses"
+                    onClick={() => {
+                      setEditingSurvey(selectedSurvey);
+                      setIsBuilderOpen(true);
+                    }}
+                    className="h-10 sm:h-9 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-[#07192F] dark:hover:bg-[#0C2442] border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                    title="Edit survey title, questions, deadline, and banner"
                   >
-                    <Clock size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                    <span>Close Round</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleReopenSurvey}
-                    className="h-10 sm:h-9 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-[#032427] dark:hover:bg-[#06373B] border border-teal-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                    title="Reopen closed feedback round"
-                  >
-                    <RotateCcw size={14} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
-                    <span>Reopen</span>
+                    <Edit3 size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span>Edit Form</span>
                   </button>
                 )}
 
-                {/* 5. Delete Form */}
-                <button
-                  type="button"
-                  onClick={() => setSurveyToDelete(selectedSurvey)}
-                  className="col-span-2 sm:col-span-1 h-10 sm:h-9 px-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-[#1D080E] dark:hover:bg-[#2A0C14] border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                  title="Delete survey questionnaire and responses"
-                >
-                  <Trash2 size={14} className="text-red-500 dark:text-red-400 shrink-0" />
-                  <span>Delete Form</span>
-                </button>
+                {/* 4. Close Round or Reopen (Managers & Committee Members only) */}
+                {canManageSurveys && (
+                  selectedSurvey.status === 'active' ? (
+                    <button
+                      type="button"
+                      onClick={handleCloseEarly}
+                      className="h-10 sm:h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-[#231505] dark:hover:bg-[#331E07] border border-amber-200 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                      title="Conclude survey round and freeze responses"
+                    >
+                      <Clock size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span>Close Round</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleReopenSurvey}
+                      className="h-10 sm:h-9 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-[#032427] dark:hover:bg-[#06373B] border border-teal-200 dark:border-[#00D4B2]/40 text-[#00897B] dark:text-[#00D4B2] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                      title="Reopen closed feedback round"
+                    >
+                      <RotateCcw size={14} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+                      <span>Reopen</span>
+                    </button>
+                  )
+                )}
+
+                {/* 5. Delete Form (Managers & Committee Members only) */}
+                {canManageSurveys && (
+                  <button
+                    type="button"
+                    onClick={() => setSurveyToDelete(selectedSurvey)}
+                    className="col-span-2 sm:col-span-1 h-10 sm:h-9 px-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-[#1D080E] dark:hover:bg-[#2A0C14] border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                    title="Delete survey questionnaire and responses"
+                  >
+                    <Trash2 size={14} className="text-red-500 dark:text-red-400 shrink-0" />
+                    <span>Delete Form</span>
+                  </button>
+                )}
               </div>
             )}
 
@@ -696,21 +715,23 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             </button>
           </div>
 
-          {/* Button for Create New Questionnaire */}
-          <div className="relative z-10 shrink-0 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={() => {
-                setEditingSurvey(null);
-                setIsBuilderOpen(true);
-              }}
-              className="h-11 sm:h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00D4B2]/20 active:scale-[0.98] w-full select-none"
-              title="Create a new survey questionnaire"
-            >
-              <Plus size={16} className="stroke-[3]" />
-              <span>Create New Questionnaire</span>
-            </button>
-          </div>
+          {/* Button for Create New Questionnaire (Managers & Committee Members only) */}
+          {canManageSurveys && (
+            <div className="relative z-10 shrink-0 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingSurvey(null);
+                  setIsBuilderOpen(true);
+                }}
+                className="h-11 sm:h-10 px-4 rounded-xl bg-[#00D4B2] hover:bg-[#00BFA0] text-[#050A15] text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00D4B2]/20 active:scale-[0.98] w-full select-none"
+                title="Create a new survey questionnaire"
+              >
+                <Plus size={16} className="stroke-[3]" />
+                <span>Create New Questionnaire</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── 5. TAB 1: Ratings & Analytics (2-Column Mockup Layout) ──── */}
@@ -1463,17 +1484,19 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </div>
 
               <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingSurvey(selectedSurvey);
-                    setIsBuilderOpen(true);
-                  }}
-                  className="flex-1 sm:flex-initial h-10 sm:h-9 px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95 select-none"
-                >
-                  <Edit3 size={13} />
-                  <span>Edit Questionnaire</span>
-                </button>
+                {canManageSurveys && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingSurvey(selectedSurvey);
+                      setIsBuilderOpen(true);
+                    }}
+                    className="flex-1 sm:flex-initial h-10 sm:h-9 px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95 select-none"
+                  >
+                    <Edit3 size={13} />
+                    <span>Edit Questionnaire</span>
+                  </button>
+                )}
                 <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2.5 py-2 sm:py-1 rounded-lg border border-gray-200/60 dark:border-white/5 shrink-0">
                   ID: {selectedSurvey.id}
                 </span>
