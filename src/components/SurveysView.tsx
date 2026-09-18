@@ -31,7 +31,8 @@ import {
   Trash2,
   RotateCcw,
   Loader2,
-  ListFilter
+  ListFilter,
+  Layers
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
@@ -222,6 +223,36 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
     description: `${s.category} • ${s.status.toUpperCase()}`,
     icon: <Building2 size={14} className="text-[#00D4B2] shrink-0" />
   }));
+
+  const commentCount = responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string' && v.trim())).length;
+  const questionCount = selectedSurvey?.questions.length || 0;
+
+  const sectionTabOptions: SelectOption[] = [
+    {
+      value: 'analytics',
+      label: 'Ratings & Analytics',
+      description: 'Satisfaction breakdown, NPS gauge & participation',
+      icon: <BarChart3 size={16} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+    },
+    {
+      value: 'comments',
+      label: `Resident Feedback (${commentCount})`,
+      description: 'Verbatim resident submissions & suggestions',
+      icon: <MessageSquare size={16} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+    },
+    {
+      value: 'ai_summary',
+      label: 'Executive Synthesis',
+      description: 'AI sentiment briefing & strata manager synthesis',
+      icon: <FileText size={16} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+    },
+    {
+      value: 'questions',
+      label: `Survey Blueprint (${questionCount})`,
+      description: 'Question definitions, format types & preview',
+      icon: <FileCheck size={16} className="text-[#00897B] dark:text-[#00D4B2] shrink-0" />
+    }
+  ];
 
   // Category Badge Colors matching mockup
   const getCategoryBadgeColor = (category: string) => {
@@ -571,28 +602,25 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         </div>
 
         {/* ── 4. Capsule Navigation Tabs & Create Action ──────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Mobile Dropdown Menu for Survey Sections */}
-          <div className="sm:hidden w-full">
-            <label className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 block">
-              Survey Section
-            </label>
-            <div className="relative">
-              <select
-                value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as any)}
-                aria-label="Select survey section"
-                className="w-full appearance-none bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl py-3 pl-4 pr-10 text-xs font-bold text-gray-900 dark:text-white shadow-xs focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40"
-              >
-                <option value="analytics">📊 Ratings & Analytics</option>
-                <option value="comments">💬 Resident Feedback ({responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string')).length})</option>
-                <option value="ai_summary">🤖 Executive Synthesis</option>
-                <option value="questions">📋 Survey Blueprint ({selectedSurvey?.questions.length})</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-400">
-                <ChevronDown size={16} />
-              </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-30">
+          {/* Mobile Dropdown Menu for Survey Sections (SmartLot CustomSelect design) */}
+          <div className="sm:hidden w-full space-y-1.5">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5 font-mono">
+                <Layers size={12} className="text-[#00897B] dark:text-[#00D4B2]" />
+                <span>SURVEY SECTION VIEW</span>
+              </span>
+              <span className="text-[10px] font-bold text-[#00897B] dark:text-[#00D4B2]">
+                {sectionTabOptions.find(o => o.value === activeTab)?.label || 'Sections'}
+              </span>
             </div>
+            <CustomSelect
+              options={sectionTabOptions}
+              value={activeTab}
+              onChange={(val) => setActiveTab(val as any)}
+              buttonClassName="h-11 px-4 rounded-2xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 hover:border-[#00D4B2]/40 text-xs font-bold text-gray-900 dark:text-white shadow-xs focus:ring-2 focus:ring-[#00D4B2]/40"
+              className="w-full"
+            />
           </div>
 
           {/* Desktop Capsule Navigation Tabs */}

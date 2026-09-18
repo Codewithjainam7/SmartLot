@@ -17,6 +17,7 @@ interface CustomSelectProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  buttonClassName?: string;
   direction?: 'down' | 'up' | 'auto';
   size?: 'sm' | 'md';
   menuAlign?: 'left' | 'right';
@@ -29,6 +30,7 @@ export function CustomSelect({
   placeholder = 'Select option...',
   label,
   className = '',
+  buttonClassName,
   direction = 'auto',
   size = 'md',
   menuAlign = 'left',
@@ -106,14 +108,21 @@ export function CustomSelect({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={
-          isSm
-            ? "w-full h-8 px-2.5 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#0e121d] hover:bg-gray-50 dark:hover:bg-[#161a26] focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all duration-200 flex items-center justify-between text-[11px] font-semibold text-gray-900 dark:text-white shadow-2xs cursor-pointer active:scale-[0.99]"
-            : "w-full h-10 px-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#161a26] hover:bg-white dark:hover:bg-[#1f2434] focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between text-xs font-bold text-gray-900 dark:text-white shadow-xs cursor-pointer active:scale-[0.99]"
+          buttonClassName
+            ? `w-full transition-all duration-200 flex items-center justify-between cursor-pointer active:scale-[0.99] ${buttonClassName}`
+            : (isSm
+                ? "w-full h-8 px-2.5 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#0e121d] hover:bg-gray-50 dark:hover:bg-[#161a26] focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all duration-200 flex items-center justify-between text-[11px] font-semibold text-gray-900 dark:text-white shadow-2xs cursor-pointer active:scale-[0.99]"
+                : "w-full h-10 px-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#161a26] hover:bg-white dark:hover:bg-[#1f2434] focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between text-xs font-bold text-gray-900 dark:text-white shadow-xs cursor-pointer active:scale-[0.99]"
+              )
         }
       >
-        <span className="truncate flex items-center gap-2">
-          {selectedOption?.icon}
-          <span className={!selectedOption ? "text-gray-400 dark:text-gray-500 font-normal" : ""}>
+        <span className="truncate flex items-center gap-2.5 min-w-0">
+          {selectedOption?.icon && (
+            <span className="shrink-0">
+              {selectedOption.icon}
+            </span>
+          )}
+          <span className={!selectedOption ? "text-gray-400 dark:text-gray-500 font-normal truncate" : "truncate"}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </span>
@@ -135,7 +144,7 @@ export function CustomSelect({
               damping: 28,
               mass: 0.7
             }}
-            className={`absolute ${isUp ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'} ${menuAlign === 'right' ? 'right-0' : 'left-0'} ${isSm ? 'min-w-full w-max max-w-[240px] rounded-xl p-1 shadow-xl max-h-56' : 'left-0 right-0 rounded-2xl p-1.5 shadow-2xl max-h-64'} z-50 bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 overflow-y-auto dark-scrollbar`}
+            className={`absolute ${isUp ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'} ${menuAlign === 'right' ? 'right-0' : 'left-0'} ${isSm ? 'min-w-full w-max max-w-[240px] rounded-xl p-1 shadow-xl max-h-56' : 'left-0 right-0 rounded-2xl p-1.5 shadow-2xl max-h-72'} z-50 bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 overflow-y-auto dark-scrollbar`}
           >
             {options.map(option => {
               const isSelected = option.value === value;
@@ -153,12 +162,22 @@ export function CustomSelect({
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2 truncate">
-                    {option.icon}
-                    <div>
-                      <div>{option.label}</div>
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    {option.icon && (
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                        isSelected 
+                          ? 'bg-white/20 dark:bg-black/20 text-white dark:text-[#0B1121]' 
+                          : 'bg-gray-100 dark:bg-white/5 text-[#0055FF] dark:text-[#00D4B2]'
+                      }`}>
+                        {option.icon}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate">{option.label}</div>
                       {option.description && (
-                        <div className={`text-[10px] ${isSelected ? 'text-white/80 dark:text-[#0B1121]/70' : 'text-gray-400'}`}>{option.description}</div>
+                        <div className={`text-[10px] truncate leading-tight mt-0.5 ${isSelected ? 'text-white/80 dark:text-[#0B1121]/75' : 'text-gray-400 dark:text-gray-400'}`}>
+                          {option.description}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -168,7 +187,7 @@ export function CustomSelect({
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                     >
-                      <Check size={isSm ? 12 : 14} className="shrink-0 text-white dark:text-[#0B1121]" />
+                      <Check size={isSm ? 12 : 14} className="shrink-0 text-white dark:text-[#0B1121] ml-2" />
                     </motion.div>
                   )}
                 </button>
