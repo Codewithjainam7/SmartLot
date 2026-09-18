@@ -8,8 +8,6 @@ import {
   User, 
   Mail, 
   Phone, 
-  Home, 
-  ChevronDown, 
   ChevronRight, 
   Lock, 
   Save, 
@@ -287,74 +285,66 @@ export function SettingsView({
             </div>
           )}
 
-          {/* 4 Input Fields Form */}
-          <form id="profile-settings-form" onSubmit={handleSaveProfile} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          {/* Personal Details Form */}
+          <form id="profile-settings-form" onSubmit={handleSaveProfile} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               
               {/* 1. Full Name */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 mb-2">
                   Full Name
                 </label>
                 <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center justify-center">
+                    <User size={18} />
+                  </div>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                     placeholder="Sarah Jones"
-                    className="w-full bg-[#F8FAFC] dark:bg-[#050B14] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-colors"
+                    className="w-full bg-gray-50/90 dark:bg-[#121622] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1D63ED]/25 dark:focus:ring-[#00D4B2]/25 focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-all shadow-2xs"
                   />
-                  <User size={16} className="absolute left-3.5 top-3.5 text-gray-400 dark:text-gray-500" />
                 </div>
               </div>
 
               {/* 2. Email Address */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center justify-center">
+                    <Mail size={18} />
+                  </div>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="sarah.jones@duplex.com"
-                    className="w-full bg-[#F8FAFC] dark:bg-[#050B14] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-colors"
+                    className="w-full bg-gray-50/90 dark:bg-[#121622] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1D63ED]/25 dark:focus:ring-[#00D4B2]/25 focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-all shadow-2xs"
                   />
-                  <Mail size={16} className="absolute left-3.5 top-3.5 text-gray-400 dark:text-gray-500" />
                 </div>
               </div>
 
               {/* 3. Mobile Phone Number */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <div className="md:col-span-2 lg:col-span-1">
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 mb-2">
                   Mobile Phone Number
                 </label>
                 <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center justify-center">
+                    <Phone size={18} />
+                  </div>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="0400 000 000"
-                    className="w-full bg-[#F8FAFC] dark:bg-[#050B14] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-colors"
+                    className="w-full bg-gray-50/90 dark:bg-[#121622] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1D63ED]/25 dark:focus:ring-[#00D4B2]/25 focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-all shadow-2xs"
                   />
-                  <Phone size={16} className="absolute left-3.5 top-3.5 text-gray-400 dark:text-gray-500" />
-                </div>
-              </div>
-
-              {/* 4. Role & Unit (Context Selector) */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Role & Unit
-                </label>
-                <div className="relative flex items-center justify-between bg-[#F8FAFC] dark:bg-[#050B14] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-gray-900 dark:text-white select-none">
-                  <Home size={16} className="absolute left-3.5 top-3.5 text-gray-400 dark:text-gray-500" />
-                  <span className="font-medium">
-                    {activePersonaRole} • {activePersonaUnit || 'Unit 1'}
-                  </span>
-                  <ChevronDown size={16} className="text-gray-400 dark:text-gray-500" />
                 </div>
               </div>
 
@@ -392,41 +382,45 @@ export function SettingsView({
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                      <label className="block text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 mb-2">
                         New Password
                       </label>
                       <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center justify-center">
+                          <Lock size={18} />
+                        </div>
                         <input
                           type={showPasswordText ? "text" : "password"}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Min. 6 characters"
-                          className="w-full bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 pr-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#1D63ED] dark:focus:border-[#00D4B2]"
+                          className="w-full bg-white dark:bg-[#0E1320] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-12 text-sm font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1D63ED]/25 dark:focus:ring-[#00D4B2]/25 focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-all shadow-2xs"
                         />
-                        <Lock size={15} className="absolute left-3.5 top-3 text-gray-400" />
                         <button
                           type="button"
                           onClick={() => setShowPasswordText(!showPasswordText)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-lg cursor-pointer"
                         >
-                          {showPasswordText ? <EyeOff size={15} /> : <Eye size={15} />}
+                          {showPasswordText ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                      <label className="block text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 ml-1 mb-2">
                         Confirm New Password
                       </label>
                       <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none flex items-center justify-center">
+                          <Lock size={18} />
+                        </div>
                         <input
                           type={showPasswordText ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="Repeat new password"
-                          className="w-full bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#1D63ED] dark:focus:border-[#00D4B2]"
+                          className="w-full bg-white dark:bg-[#0E1320] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1D63ED]/25 dark:focus:ring-[#00D4B2]/25 focus:border-[#1D63ED] dark:focus:border-[#00D4B2] transition-all shadow-2xs"
                         />
-                        <Lock size={15} className="absolute left-3.5 top-3 text-gray-400" />
                       </div>
                     </div>
                   </div>
