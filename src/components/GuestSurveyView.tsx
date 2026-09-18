@@ -281,7 +281,6 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
     setIsSubmitting(true);
     setValidationError(null);
 
-    const responseId = `RSP-${Date.now().toString().slice(-6)}`;
     const newResponsePayload = {
       surveyId: survey.id,
       schemeId: survey.schemeId,
@@ -292,23 +291,13 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
     };
 
     try {
-      await supabase.from('survey_responses').insert({
-        id: responseId,
-        survey_id: survey.id,
-        scheme_id: survey.schemeId,
-        unit_id: isAnonymous ? null : selectedUnit.trim(),
-        respondent_name: isAnonymous ? null : (residentName.trim() || null),
-        is_anonymous: isAnonymous,
-        submitted_at: new Date().toISOString(),
-        answers,
-      });
-    } catch (dbErr) {
-      console.warn('Supabase survey_responses save error:', dbErr);
+      await store.submitSurveyResponse(newResponsePayload);
+    } catch (err) {
+      console.warn('Error submitting survey response:', err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
     }
-
-    store.submitSurveyResponse(newResponsePayload);
-    setIsSubmitting(false);
-    setSubmitted(true);
   };
 
   // Star label helpers
@@ -352,7 +341,11 @@ export function GuestSurveyView({ surveyToken, store, onClose }: GuestSurveyView
             <div className="flex justify-between items-center gap-2">
               <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">Privacy Mode:</span>
               <span className="font-bold text-[#00D4B2]">
-                {isAnonymous ? '🔒 Total Anonymity' : `Unit ${selectedUnit || 'Submitted'}`}
+                {isAnonymous 
+                  ? '🔒 Total Anonymity' 
+                  : selectedUnit 
+                    ? (selectedUnit.trim().toLowerCase().startsWith('unit') ? selectedUnit.trim() : `Unit ${selectedUnit.trim()}`)
+                    : 'Unit Identified'}
               </span>
             </div>
             <div className="flex justify-between items-center gap-2">

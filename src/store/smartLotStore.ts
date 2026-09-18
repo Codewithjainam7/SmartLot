@@ -4826,33 +4826,31 @@ export function useSmartLotStore() {
     return true;
   };
 
-  const submitSurveyResponse = (payload: Omit<SurveyResponse, 'id' | 'submittedAt'>): SurveyResponse => {
+  const submitSurveyResponse = async (payload: Omit<SurveyResponse, 'id' | 'submittedAt'>): Promise<SurveyResponse> => {
     const newResponse: SurveyResponse = {
       ...payload,
       id: `RSP-${Date.now().toString().slice(-6)}`,
       submittedAt: new Date().toISOString(),
     };
 
-    // Fire-and-forget Supabase persist
-    (async () => {
-      try {
-        const { error } = await supabase.from('survey_responses').insert({
-          id: newResponse.id,
-          survey_id: newResponse.surveyId,
-          scheme_id: newResponse.schemeId,
-          unit_id: newResponse.unitId || null,
-          respondent_name: newResponse.respondentName || null,
-          is_anonymous: newResponse.isAnonymous,
-          submitted_at: newResponse.submittedAt,
-          answers: newResponse.answers,
-        });
-        if (error) console.warn('[SmartLot Store] Supabase survey_responses insert error:', error);
-      } catch (err) {
-        console.warn('[SmartLot Store] Supabase survey_responses catch error:', err);
-      }
-    })();
+    try {
+      const { error } = await supabase.from('survey_responses').insert({
+        id: newResponse.id,
+        survey_id: newResponse.surveyId,
+        scheme_id: newResponse.schemeId,
+        unit_id: newResponse.unitId || null,
+        respondent_name: newResponse.respondentName || null,
+        is_anonymous: newResponse.isAnonymous,
+        submitted_at: newResponse.submittedAt,
+        answers: newResponse.answers,
+      });
+      if (error) console.warn('[SmartLot Store] Supabase survey_responses insert error:', error);
+    } catch (err) {
+      console.warn('[SmartLot Store] Supabase survey_responses catch error:', err);
+    }
 
     setSurveyResponses(prev => {
+      if (prev.some(r => r.id === newResponse.id)) return prev;
       const updated = [newResponse, ...prev];
       try {
         window.localStorage.setItem('smartlot_global_survey_responses_v2', JSON.stringify(updated));

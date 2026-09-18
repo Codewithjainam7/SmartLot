@@ -1209,28 +1209,19 @@ export function SurveyBuilderFormContent({
                 </div>
               </div>
 
-              {/* Step 1 Inline Next Section Button (Mobile & Desktop) */}
-              <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
+              {/* Step 1 Setup Status */}
+              <div className="pt-3 border-t border-gray-200 dark:border-white/10 flex items-center gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-3.5 sm:p-4 rounded-2xl">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                  <CheckCircle2 size={16} />
+                </div>
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                    <span>Survey Setup Ready</span>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white">
+                    Survey Details Configured
                   </h4>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                    Proceed to configure, reorder, or add strata questions ({questions.length} questions loaded).
+                    Basic information saved. Proceed below to review or add questions ({questions.length} loaded).
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentStep(2);
-                    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="h-11 px-5 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer select-none active:scale-95 shrink-0"
-                >
-                  <span>Next: Questions ({questions.length})</span>
-                  <ArrowRight size={15} />
-                </button>
               </div>
 
             </div>
@@ -1493,40 +1484,18 @@ export function SurveyBuilderFormContent({
                 <span>Add Another Question</span>
               </button>
 
-              {/* Step 2 Inline Next Section Button (Mobile & Desktop) */}
-              <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
+              {/* Step 2 Questions Status */}
+              <div className="pt-3 border-t border-gray-200 dark:border-white/10 flex items-center gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-3.5 sm:p-4 rounded-2xl">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                  <CheckCircle2 size={16} />
+                </div>
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                    <span>{questions.length} Questions Configured</span>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white">
+                    {questions.length} Questions Configured
                   </h4>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                    Proceed to target resident recipients, manage CC/BCC, and review submission window.
+                    All question prompts and choices ready. Proceed below to configure audience and dispatch.
                   </p>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentStep(1);
-                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="h-11 flex-1 sm:flex-initial px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                  >
-                    <ArrowLeft size={14} />
-                    <span>Back to Details</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentStep(3);
-                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="h-11 flex-1 sm:flex-initial px-5 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer select-none active:scale-95 shrink-0"
-                  >
-                    <span>Next: Audience & Dispatch</span>
-                    <ArrowRight size={15} />
-                  </button>
                 </div>
               </div>
 
@@ -1838,47 +1807,18 @@ export function SurveyBuilderFormContent({
                 </div>
               </div>
 
-              {/* Step 3 Inline Action Card (Mobile & Desktop) */}
-              <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
+              {/* Step 3 Audience Status */}
+              <div className="pt-3 border-t border-gray-200 dark:border-white/10 flex items-center gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-3.5 sm:p-4 rounded-2xl">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                  <CheckCircle2 size={16} />
+                </div>
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <Send size={14} className="text-[#00897B] dark:text-[#00D4B2]" />
-                    <span>Ready to {surveyToEdit ? 'Save Changes' : 'Dispatch Survey'}</span>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white">
+                    Ready to {surveyToEdit ? 'Save Changes' : 'Dispatch Survey'}
                   </h4>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                    {recipientCount} recipients queued across {activeScheme.name}.
+                    {recipientCount} recipients queued across {activeScheme.name}. Use the bottom action bar to publish.
                   </p>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentStep(2);
-                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="h-11 flex-1 sm:flex-initial px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                  >
-                    <ArrowLeft size={14} />
-                    <span>Back to Questions</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handlePublish}
-                    disabled={isSubmitting || questions.length === 0}
-                    className="h-11 flex-1 sm:flex-initial px-6 rounded-xl bg-[#00897B] hover:bg-[#00796B] dark:bg-[#00D4B2] dark:hover:bg-[#00BFA0] text-white dark:text-[#050A15] font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#00897B]/20 dark:shadow-[#00D4B2]/20 cursor-pointer select-none active:scale-95 disabled:opacity-50"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                        <span>{surveyToEdit ? 'Saving...' : 'Publishing...'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send size={15} />
-                        <span>{surveyToEdit ? 'Save Changes' : 'Publish & Dispatch'}</span>
-                      </>
-                    )}
-                  </button>
                 </div>
               </div>
 
