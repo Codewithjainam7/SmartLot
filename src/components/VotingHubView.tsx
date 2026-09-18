@@ -1,5 +1,6 @@
 // @smartlot/component
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import { 
   Motion, 
@@ -28,6 +29,7 @@ import {
   Search, 
   ChevronRight, 
   ChevronLeft,
+  ChevronDown,
   ExternalLink, 
   Check, 
   AlertTriangle, 
@@ -107,8 +109,24 @@ export function VotingHubView({
   // View state: 'list' (Executive Motions Hub) or 'detail' (Full-Page Motion Governance Workspace)
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'passed' | 'unresolved'>('all');
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMotionFilterDropdownOpen, setIsMotionFilterDropdownOpen] = useState(false);
+  const motionFilterDropdownRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (motionFilterDropdownRef.current && !motionFilterDropdownRef.current.contains(e.target as Node)) {
+        setIsMotionFilterDropdownOpen(false);
+      }
+    };
+    if (isMotionFilterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMotionFilterDropdownOpen]);
 
   // Create New Vote Modal (Strata Manager)
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -267,6 +285,17 @@ export function VotingHubView({
   const statsAwaitingQuorum = schemeMotions.filter(
     m => m.status === 'active' && (m.ballots?.filter(b => b.vote === 'YES').length || 0) < (m.quorumTarget || 4)
   ).length;
+
+  const motionFilterOptions = useMemo(() => [
+    { label: 'All Motions', value: 'all' as const, count: schemeMotions.length, dot: 'bg-gray-400' },
+    { label: 'Active', value: 'active' as const, count: statsActive, dot: 'bg-blue-400' },
+    { label: 'Passed & Binding', value: 'passed' as const, count: statsPassed, dot: 'bg-emerald-400' },
+    { label: 'Closed / Rejected', value: 'unresolved' as const, count: statsUnresolved, dot: 'bg-red-400' },
+  ], [schemeMotions.length, statsActive, statsPassed, statsUnresolved]);
+
+  const activeMotionFilterOption = useMemo(() => {
+    return motionFilterOptions.find(opt => opt.value === activeFilter) || motionFilterOptions[0];
+  }, [activeFilter, motionFilterOptions]);
 
   const handleVoteSubmit = (vote: MotionVote) => {
     if (!activeMotion) return;
@@ -598,52 +627,83 @@ export function VotingHubView({
               </div>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0">
+            {/* Filter Dropdown Menu (Site Design) */}
+            <div className="relative w-full sm:w-auto" ref={motionFilterDropdownRef}>
               <button
                 type="button"
-                onClick={() => setActiveFilter('all')}
-                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeFilter === 'all'
-                    ? 'bg-gray-900 text-white dark:bg-white dark:text-black shadow-xs'
-                    : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
-                }`}
+                onClick={() => setIsMotionFilterDropdownOpen(prev => !prev)}
+                className="w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2 rounded-2xl bg-white dark:bg-[#121622] hover:bg-gray-50/80 dark:hover:bg-[#161c2c] border border-gray-200/90 dark:border-white/10 shadow-xs transition-all cursor-pointer text-xs font-semibold text-gray-800 dark:text-gray-200 min-w-[190px]"
               >
-                All Motions ({schemeMotions.length})
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shrink-0 shadow-xs">
+                    <Filter className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-[10px] uppercase font-bold tracking-wider text-gray-400 dark:text-gray-500 leading-none">
+                      Filter Motions
+                    </span>
+                    <span className="text-xs font-bold text-gray-900 dark:text-white leading-tight flex items-center gap-1.5 mt-0.5">
+                      <span className={`w-2 h-2 rounded-full ${activeMotionFilterOption.dot}`} />
+                      {activeMotionFilterOption.label}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]">
+                    {activeMotionFilterOption.count}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isMotionFilterDropdownOpen ? 'rotate-180 text-blue-500' : ''}`} />
+                </div>
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveFilter('active')}
-                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeFilter === 'active'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20'
-                }`}
-              >
-                Active ({statsActive})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveFilter('passed')}
-                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeFilter === 'passed'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-                }`}
-              >
-                Passed & Binding ({statsPassed})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveFilter('unresolved')}
-                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeFilter === 'unresolved'
-                    ? 'bg-red-600 text-white shadow-xs'
-                    : 'bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20'
-                }`}
-              >
-                Closed / Rejected ({statsUnresolved})
-              </button>
+
+              <AnimatePresence>
+                {isMotionFilterDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-50 w-full sm:w-64 rounded-2xl bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-2xl border border-gray-200 dark:border-white/15 shadow-2xl p-1.5 space-y-1"
+                  >
+                    <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">
+                      Filter by Status
+                    </div>
+                    {motionFilterOptions.map(option => {
+                      const isSelected = activeFilter === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setActiveFilter(option.value);
+                            setIsMotionFilterDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-50/90 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 font-medium'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${option.dot}`} />
+                            <span>{option.label}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                              isSelected
+                                ? 'bg-blue-600 text-white dark:bg-blue-500'
+                                : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400'
+                            }`}>
+                              {option.count}
+                            </span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 

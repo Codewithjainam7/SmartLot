@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ResidentRequest, CaseStatus, AuditEvent, WorkOrder, Vendor, RequestQuote } from '../store/smartLotStore';
 import { 
@@ -163,6 +163,63 @@ export function ResidentRequestsView({
     initialFilter || (isManagerOrCommittee && pendingTriageRequests.length > 0 ? 'needs_triage' : 'all')
   );
   const [filterStream, setFilterStream] = useState<string>('all');
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+    if (isStatusDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isStatusDropdownOpen]);
+
+  const statusCounts = useMemo(() => {
+    return {
+      needs_triage: pendingTriageRequests.length,
+      all: requests.length,
+      new: requests.filter(r => r.status === 'new').length,
+      acknowledged: requests.filter(r => r.status === 'acknowledged').length,
+      in_progress: requests.filter(r => r.status === 'in_progress').length,
+      waiting: requests.filter(r => r.status === 'waiting').length,
+      resolved: requests.filter(r => r.status === 'resolved').length,
+      closed: requests.filter(r => r.status === 'closed').length,
+    };
+  }, [requests, pendingTriageRequests.length]);
+
+  const requestStatusOptions = useMemo(() => {
+    const options = [];
+    if (isManagerOrCommittee) {
+      options.push({
+        value: 'needs_triage',
+        label: 'Needs Triage',
+        icon: Zap,
+        dot: 'bg-amber-400',
+        count: statusCounts.needs_triage,
+      });
+    }
+    options.push(
+      { value: 'all', label: 'All Requests', icon: Layers, dot: 'bg-gray-400', count: statusCounts.all },
+      { value: 'new', label: 'New / Unassigned', icon: Clock, dot: 'bg-blue-400', count: statusCounts.new },
+      { value: 'acknowledged', label: 'Acknowledged', icon: CheckCircle2, dot: 'bg-purple-400', count: statusCounts.acknowledged },
+      { value: 'in_progress', label: 'In Progress', icon: Clock, dot: 'bg-amber-400', count: statusCounts.in_progress },
+      { value: 'waiting', label: 'Waiting / Blocked', icon: AlertCircle, dot: 'bg-rose-400', count: statusCounts.waiting },
+      { value: 'resolved', label: 'Resolved', icon: CheckCircle2, dot: 'bg-emerald-400', count: statusCounts.resolved },
+      { value: 'closed', label: 'Closed Archive', icon: Lock, dot: 'bg-gray-500', count: statusCounts.closed },
+    );
+    return options;
+  }, [isManagerOrCommittee, statusCounts]);
+
+  const activeRequestStatusOption = useMemo(() => {
+    return requestStatusOptions.find(opt => opt.value === filterStatus) || requestStatusOptions[0];
+  }, [filterStatus, requestStatusOptions]);
+
   const [rejectModalRequest, setRejectModalRequest] = useState<ResidentRequest | null>(null);
   const [rejectionReasonText, setRejectionReasonText] = useState('');
 
@@ -1668,39 +1725,103 @@ export function ResidentRequestsView({
       {/* Filter & View Controls Bar */}
       <div className="space-y-3 bg-white dark:bg-[#0d1117] p-3.5 sm:p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
         
-        {/* Status Filter Pills Row */}
+        {/* Status Filter & View Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar touch-pan-x pb-1 w-full md:w-auto">
-            {/* Primary Needs Triage Pill for Managers & Committee */}
-            {isManagerOrCommittee && (
-              <button
-                type="button"
-                onClick={() => setFilterStatus('needs_triage')}
-                className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer border flex items-center gap-1.5 shrink-0 whitespace-nowrap select-none active:scale-95 ${
-                  filterStatus === 'needs_triage'
-                    ? 'bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/20'
-                    : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
-                }`}
-              >
-                <Zap size={13} className={filterStatus === 'needs_triage' ? 'fill-black' : 'fill-amber-400'} />
-                <span>Needs Triage</span>
-                {pendingTriageRequests.length > 0 && (
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                    filterStatus === 'needs_triage' ? 'bg-black text-amber-400' : 'bg-amber-500 text-black'
-                  }`}>
-                    {pendingTriageRequests.length}
+          {/* Status Filter Dropdown Menu (Site Design) */}
+          <div className="relative w-full md:w-auto" ref={statusDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsStatusDropdownOpen(prev => !prev)}
+              className="w-full md:w-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-[#121622] hover:bg-gray-50/80 dark:hover:bg-[#161c2c] border border-gray-200/90 dark:border-white/10 shadow-xs transition-all cursor-pointer text-xs font-semibold text-gray-800 dark:text-gray-200 min-w-[210px]"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs ${
+                  activeRequestStatusOption.value === 'needs_triage'
+                    ? 'bg-amber-500 text-black shadow-amber-500/20'
+                    : 'bg-gradient-to-tr from-[#0055FF] to-[#00D4B2]'
+                }`}>
+                  {activeRequestStatusOption.value === 'needs_triage' ? (
+                    <Zap className="w-3.5 h-3.5 fill-black" />
+                  ) : (
+                    <Filter className="w-3.5 h-3.5" />
+                  )}
+                </div>
+                <div className="text-left">
+                  <span className="block text-[10px] uppercase font-bold tracking-wider text-gray-400 dark:text-gray-500 leading-none">
+                    Status Filter
                   </span>
-                )}
-              </button>
-            )}
+                  <span className="text-xs font-bold text-gray-900 dark:text-white leading-tight flex items-center gap-1.5 mt-0.5">
+                    <span className={`w-2 h-2 rounded-full ${activeRequestStatusOption.dot}`} />
+                    {activeRequestStatusOption.label}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
+                  activeRequestStatusOption.value === 'needs_triage'
+                    ? 'bg-amber-500/20 text-amber-500 dark:text-amber-400'
+                    : 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]'
+                }`}>
+                  {activeRequestStatusOption.count ?? 0}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isStatusDropdownOpen ? 'rotate-180 text-blue-500' : ''}`} />
+              </div>
+            </button>
 
-            <StatusPill label="All" active={filterStatus === 'all'} onClick={() => setFilterStatus('all')} count={requests.length} />
-            <StatusPill label="New" active={filterStatus === 'new'} onClick={() => setFilterStatus('new')} />
-            <StatusPill label="Acknowledged" active={filterStatus === 'acknowledged'} onClick={() => setFilterStatus('acknowledged')} />
-            <StatusPill label="In Progress" active={filterStatus === 'in_progress'} onClick={() => setFilterStatus('in_progress')} />
-            <StatusPill label="Waiting" active={filterStatus === 'waiting'} onClick={() => setFilterStatus('waiting')} />
-            <StatusPill label="Resolved" active={filterStatus === 'resolved'} onClick={() => setFilterStatus('resolved')} />
-            <StatusPill label="Closed" active={filterStatus === 'closed'} onClick={() => setFilterStatus('closed')} />
+            <AnimatePresence>
+              {isStatusDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 top-full mt-2 z-50 w-full sm:w-72 rounded-2xl bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-2xl border border-gray-200 dark:border-white/15 shadow-2xl p-1.5 space-y-1"
+                >
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">
+                    Select Request Status
+                  </div>
+                  {requestStatusOptions.map(option => {
+                    const isSelected = filterStatus === option.value;
+                    const IconComp = option.icon;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setFilterStatus(option.value);
+                          setIsStatusDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer ${
+                          isSelected
+                            ? option.value === 'needs_triage'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold'
+                              : 'bg-blue-50/90 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 font-medium'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className={`w-2 h-2 rounded-full ${option.dot}`} />
+                          <IconComp className="w-3.5 h-3.5 opacity-70" />
+                          <span>{option.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                            isSelected
+                              ? option.value === 'needs_triage'
+                                ? 'bg-amber-500 text-black'
+                                : 'bg-blue-600 text-white dark:bg-blue-500'
+                              : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400'
+                          }`}>
+                            {option.count}
+                          </span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* View Controls: Mode Toggle & Scope Toggle */}
@@ -1723,7 +1844,7 @@ export function ResidentRequestsView({
               <button
                 type="button"
                 onClick={() => setViewMode('table')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 ${
+                className={`hidden md:flex px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer items-center gap-1.5 select-none active:scale-95 ${
                   viewMode === 'table' 
                     ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
@@ -1778,9 +1899,9 @@ export function ResidentRequestsView({
       </div>
 
       {/* Content Area: Cards Grid, Enterprise Table View, or Maintenance Calendar */}
-      {viewMode === 'cards' && (
-        /* Requests Grid with Fading & Shrinking Depth Exit Animation */
-        filteredRequests.length === 0 ? (
+      {(viewMode === 'cards' || viewMode === 'table') && (
+        <div className={viewMode === 'table' ? 'block md:hidden' : 'block'}>
+          {filteredRequests.length === 0 ? (
           filterStatus === 'needs_triage' ? (
             <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
               <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20">
@@ -1941,12 +2062,13 @@ export function ResidentRequestsView({
               })}
             </AnimatePresence>
           </div>
-        )
+        )}
+        </div>
       )}
 
       {/* Enterprise Table View */}
       {viewMode === 'table' && (
-        <div className="space-y-3">
+        <div className="hidden md:block space-y-3">
           {/* Table Header Meta Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs">
             <div className="flex items-center gap-2">
