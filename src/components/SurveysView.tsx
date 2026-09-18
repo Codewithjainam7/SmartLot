@@ -452,118 +452,118 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         </div>
 
         {/* ── 3. 4 Top KPI Metrics with Sparkline Mini-Graphs ─────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           
           {/* Card 1: Submissions */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 dark:border-blue-500/30 flex items-center justify-center shrink-0">
-                <Users size={18} />
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-xl sm:rounded-3xl p-3 sm:p-5 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <div className="w-7 sm:w-9 h-7 sm:h-9 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 dark:border-blue-500/30 flex items-center justify-center shrink-0">
+                <Users size={15} className="sm:w-[18px] sm:h-[18px]" />
               </div>
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">
                 Submissions
               </span>
             </div>
             
-            <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1">
-              {responses.length} <span className="text-xs font-medium text-gray-500 dark:text-gray-400">/ {totalLots} Lots</span>
+            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
+              {responses.length} <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">/ {totalLots} Lots</span>
             </div>
 
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-gray-100 dark:border-white/5">
               {/* Upward green sparkline or neutral line */}
-              <svg viewBox="0 0 40 16" className={`w-9 h-4 ${responses.length > 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-600'} stroke-current fill-none stroke-2 shrink-0`}>
+              <svg viewBox="0 0 40 16" className={`w-7 sm:w-9 h-3.5 sm:h-4 ${responses.length > 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-600'} stroke-current fill-none stroke-2 shrink-0`}>
                 <path d="M1 14 L12 11 L22 13 L38 2" />
               </svg>
-              <span className={`text-xs font-bold ${responses.length > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
+              <span className={`text-[10px] sm:text-xs font-bold ${responses.length > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
                 ↗ {responseRate}%
               </span>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                {responses.length > 0 ? 'Participation Rate' : 'Participation (Awaiting)'}
+              <span className="text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 truncate hidden xs:inline">
+                {responses.length > 0 ? 'Rate' : 'Awaiting'}
               </span>
             </div>
           </div>
 
           {/* Card 2: Building Satisfaction */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30 flex items-center justify-center shrink-0">
-                <Star size={18} className="fill-amber-400 text-amber-500 dark:text-amber-400" />
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-xl sm:rounded-3xl p-3 sm:p-5 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <div className="w-7 sm:w-9 h-7 sm:h-9 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30 flex items-center justify-center shrink-0">
+                <Star size={15} className="sm:w-[18px] sm:h-[18px] fill-amber-400 text-amber-500 dark:text-amber-400" />
               </div>
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Building Satisfaction
+              <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">
+                Satisfaction
               </span>
             </div>
 
-            <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1 flex items-center gap-2">
+            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1 flex items-center gap-1.5 sm:gap-2">
               <span>{hasRatings ? avgSatisfaction : '0.0'}</span>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">/ 5.0</span>
+              <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">/ 5.0</span>
             </div>
 
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-gray-100 dark:border-white/5">
               {/* Mini vertical bars chart */}
-              <svg viewBox="0 0 32 16" className={`w-7 h-4 ${hasRatings ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-300 dark:text-gray-700'} fill-current shrink-0`}>
+              <svg viewBox="0 0 32 16" className={`w-6 sm:w-7 h-3.5 sm:h-4 ${hasRatings ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-300 dark:text-gray-700'} fill-current shrink-0`}>
                 <rect x="1" y="8" width="3" height="8" rx="1"/>
                 <rect x="7" y="4" width="3" height="12" rx="1"/>
                 <rect x="13" y="2" width="3" height="14" rx="1"/>
                 <rect x="19" y="6" width="3" height="10" rx="1"/>
                 <rect x="25" y="1" width="3" height="15" rx="1"/>
               </svg>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                {hasRatings ? `Based on ${totalRatingCount} verified rating${totalRatingCount === 1 ? '' : 's'}` : '0 ratings • Awaiting responses'}
+              <span className="text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                {hasRatings ? `${totalRatingCount} rating${totalRatingCount === 1 ? '' : 's'}` : 'Awaiting'}
               </span>
             </div>
           </div>
 
           {/* Card 3: Community NPS */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-center shrink-0">
-                <Award size={18} />
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-xl sm:rounded-3xl p-3 sm:p-5 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <div className="w-7 sm:w-9 h-7 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Award size={15} className="sm:w-[18px] sm:h-[18px]" />
               </div>
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">
                 Community NPS
               </span>
             </div>
 
-            <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1">
+            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
               {hasNps ? `${npsScore >= 0 ? '+' : ''}${npsScore}` : '--'}
             </div>
 
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-gray-100 dark:border-white/5">
               {/* Smooth wavy sparkline */}
-              <svg viewBox="0 0 48 16" className={`w-10 h-4 ${hasNps ? (npsScore >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400') : 'text-gray-300 dark:text-gray-700'} stroke-current fill-none stroke-2 shrink-0`}>
+              <svg viewBox="0 0 48 16" className={`w-8 sm:w-10 h-3.5 sm:h-4 ${hasNps ? (npsScore >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400') : 'text-gray-300 dark:text-gray-700'} stroke-current fill-none stroke-2 shrink-0`}>
                 <path d="M1 9 C 10 2, 18 14, 28 8 C 35 4, 40 7, 47 4" />
               </svg>
-              <span className={`text-[11px] font-bold truncate ${hasNps ? (npsScore >= 50 ? 'text-emerald-600 dark:text-emerald-400' : npsScore >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400') : 'text-gray-500 dark:text-gray-400'}`}>
+              <span className={`text-[9px] sm:text-[11px] font-bold truncate ${hasNps ? (npsScore >= 50 ? 'text-emerald-600 dark:text-emerald-400' : npsScore >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400') : 'text-gray-500 dark:text-gray-400'}`}>
                 {hasNps 
-                  ? (npsScore >= 50 ? 'High Promoter Loyalty (Score > +50)' : npsScore >= 0 ? 'Moderate NPS (Score ≥ 0)' : 'Needs Attention (Score < 0)')
-                  : '0 NPS scores • Awaiting ratings'}
+                  ? (npsScore >= 50 ? 'Promoter' : npsScore >= 0 ? 'Neutral' : 'Detractor')
+                  : 'Awaiting'}
               </span>
             </div>
           </div>
 
           {/* Card 4: Privacy Breakdown */}
-          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 dark:border-purple-500/30 flex items-center justify-center shrink-0">
-                <Lock size={18} />
+          <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-xl sm:rounded-3xl p-3 sm:p-5 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <div className="w-7 sm:w-9 h-7 sm:h-9 rounded-lg sm:rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 dark:border-purple-500/30 flex items-center justify-center shrink-0">
+                <Lock size={15} className="sm:w-[18px] sm:h-[18px]" />
               </div>
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Privacy Breakdown
+              <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">
+                Privacy
               </span>
             </div>
 
-            <div className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-1">
-              {anonymousCount} <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Anonymous</span>
+            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
+              {anonymousCount} <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">Anon</span>
             </div>
 
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-gray-100 dark:border-white/5">
               {/* Subtle pink wavy sparkline */}
-              <svg viewBox="0 0 48 16" className="w-10 h-4 text-purple-500 dark:text-purple-400 stroke-current fill-none stroke-2 shrink-0">
+              <svg viewBox="0 0 48 16" className="w-8 sm:w-10 h-3.5 sm:h-4 text-purple-500 dark:text-purple-400 stroke-current fill-none stroke-2 shrink-0">
                 <path d="M1 8 C 12 14, 22 2, 34 11 C 40 6, 44 9, 47 7" />
               </svg>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                {unitTaggedCount} tagged with specific units
+              <span className="text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                {unitTaggedCount} unit tagged
               </span>
             </div>
           </div>
@@ -572,7 +572,31 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
         {/* ── 4. Capsule Navigation Tabs & Create Action ──────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-[#070E1F] rounded-2xl border border-gray-200 dark:border-white/10 w-full sm:w-fit overflow-x-auto no-scrollbar scroll-smooth">
+          {/* Mobile Dropdown Menu for Survey Sections */}
+          <div className="sm:hidden w-full">
+            <label className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 block">
+              Survey Section
+            </label>
+            <div className="relative">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as any)}
+                aria-label="Select survey section"
+                className="w-full appearance-none bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl py-3 pl-4 pr-10 text-xs font-bold text-gray-900 dark:text-white shadow-xs focus:outline-none focus:ring-2 focus:ring-[#00D4B2]/40"
+              >
+                <option value="analytics">📊 Ratings & Analytics</option>
+                <option value="comments">💬 Resident Feedback ({responses.filter(r => Object.values(r.answers).some(v => typeof v === 'string')).length})</option>
+                <option value="ai_summary">🤖 Executive Synthesis</option>
+                <option value="questions">📋 Survey Blueprint ({selectedSurvey?.questions.length})</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-400">
+                <ChevronDown size={16} />
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Capsule Navigation Tabs */}
+          <div className="hidden sm:flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-[#070E1F] rounded-2xl border border-gray-200 dark:border-white/10 w-full sm:w-fit overflow-x-auto no-scrollbar scroll-smooth">
             <button
               type="button"
               onClick={() => setActiveTab('analytics')}
