@@ -2494,8 +2494,8 @@ export function useSmartLotStore() {
             voterName: b.voter_name,
             voterRole: b.voter_role || 'Committee Member',
             voterOffice: b.voter_office,
-            vote: b.vote as 'YES' | 'NO' | 'ABSTAIN',
-            votedAt: b.voted_at ? new Date(b.voted_at).toISOString().split('T')[0] : 'Today',
+            vote: (b.decision || b.vote) as 'YES' | 'NO' | 'ABSTAIN',
+            votedAt: (b.cast_at || b.voted_at) ? new Date(b.cast_at || b.voted_at).toISOString().split('T')[0] : 'Today',
             comment: b.comment
           }));
 
@@ -2516,11 +2516,11 @@ export function useSmartLotStore() {
           }));
 
           const motionAttachments = (attachmentsData || []).filter(a => a.motion_id === m.id).map(a => ({
-            name: a.name,
+            name: a.title || a.name || 'Attachment',
             url: a.url || '#',
             size: a.size || '1.0 MB',
             type: a.type || 'original',
-            uploadedAt: a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'Recently',
+            uploadedAt: (a.uploaded_at || a.created_at) ? new Date(a.uploaded_at || a.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'Recently',
             uploadedBy: a.uploaded_by || 'Strata Manager',
             note: a.note
           }));
@@ -2845,7 +2845,6 @@ export function useSmartLotStore() {
           email: activeUser.email,
           role: 'Strata Manager',
           unit_id: 'HQ / Management',
-          lot_number: 0,
           status: 'Active'
         }
       ]);
@@ -4161,6 +4160,18 @@ export function useSmartLotStore() {
         createdWorkOrderId: createdWoId
       };
     }));
+
+    // Sync ballot to Supabase motion_ballots
+    supabase.from('motion_ballots').upsert({
+      id: `${motionId}_${activePersona.name.toLowerCase().replace(/\s+/g, '_')}`,
+      motion_id: motionId,
+      voter_name: activePersona.name,
+      voter_role: activePersona.role,
+      decision: vote,
+      cast_at: new Date().toISOString()
+    }).then(({ error }) => {
+      if (error) console.warn('[SmartLot] castBallot sync note:', error.message);
+    });
 
     // Update linked request audit log & status if passed
     if (targetMotion?.caseId) {
