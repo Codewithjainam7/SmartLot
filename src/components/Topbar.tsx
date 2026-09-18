@@ -179,7 +179,7 @@ export function Topbar({
         <div className="text-right mr-3 hidden sm:block">
           <div className="text-sm font-semibold text-gray-900 dark:text-white">{activePersona.name}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[220px]">
-            {activePersona.name?.toLowerCase().includes('sarah') ? 'Strata Admin & Lot Owner' : activePersona.role} • {activePersona.context}
+            {activePersona.role} • {activePersona.context}
           </div>
         </div>
         <button 
@@ -210,19 +210,21 @@ export function Topbar({
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Logged In As</div>
               <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{activePersona.name}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{activePersona.email}</div>
-              {activePersona.name?.toLowerCase().includes('sarah') && (
-                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30">
-                    Strata Admin
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30">
+                  {activePersona.role}
+                </span>
+                {activePersona.context && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    {activePersona.context}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20">
-                    Lot Owner (Unit 1)
+                )}
+                {activePersona.memberships?.some(m => m.roles.includes('Committee Member')) && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                    Committee Member
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                    Committee Treasurer
-                  </span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <div className="pt-1.5 border-t border-gray-100 dark:border-gray-800">

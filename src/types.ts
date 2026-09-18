@@ -48,16 +48,16 @@ export const PERSONAS: Persona[] = [
     ] 
   },
 
-  // 3. Sarah Jones (Strata Admin / Lot Owner)
+  // 3. Sarah Jones (Lot Owner & Committee Treasurer)
   { 
     id: 'sarah_jones', 
-    role: 'Strata Admin', 
+    role: 'Lot Owner', 
     name: 'Sarah Jones', 
     context: 'Unit 1', 
     email: 'sarah.jones@duplex.com', 
     memberships: [
-      { schemeId: 'SP52042', roles: ['Strata Admin', 'Lot Owner', 'Committee Member'] },
-      { schemeId: 'SP101', roles: ['Strata Admin', 'Lot Owner', 'Committee Member'] }
+      { schemeId: 'SP52042', roles: ['Lot Owner', 'Committee Member'] },
+      { schemeId: 'SP101', roles: ['Lot Owner', 'Committee Member'] }
     ] 
   },
   

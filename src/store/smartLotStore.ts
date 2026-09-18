@@ -990,20 +990,20 @@ const INITIAL_MEMBERS: Member[] = [
     email: 'sarah.jones@duplex.com',
     phone: '0400 111 222',
     schemeId: 'SP101',
-    role: 'Strata Admin',
+    role: 'Lot Owner',
     unitId: 'Unit 1',
     lotNumber: 1,
     status: 'Active',
     joinedAt: '2024-03-15',
   },
-  // Sarah Jones is also Strata Admin & Lot Owner for Cavallo SP52042
+  // Sarah Jones is also Committee Member (Treasurer) & Lot Owner for Cavallo SP52042
   {
     id: 'MEM-CAV-SARAH',
     name: 'Sarah Jones',
     email: 'sarah.jones@duplex.com',
     phone: '0400 111 222',
     schemeId: 'SP52042',
-    role: 'Strata Admin',
+    role: 'Committee Member',
     unitId: 'Unit 1',
     lotNumber: 1,
     status: 'Active',

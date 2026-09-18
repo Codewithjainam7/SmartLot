@@ -151,9 +151,11 @@ export function ResidentRequestsView({
 }: ResidentRequestsViewProps) {
   const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
   const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
-  // Strata Manager & Admin authority: strictly excluded for pure tenants
-  const isStrataManager = (activePersonaRole.toLowerCase().includes('strata manager') || activePersonaRole.toLowerCase().includes('admin') || activePersonaName.toLowerCase().includes('sarah')) &&
-    !activePersonaRole.toLowerCase().includes('tenant');
+  // Strata Manager only: strictly excluded for tenant, lot owner, and committee member
+  const isStrataManager = (activePersonaRole.toLowerCase().includes('strata manager') || (activePersonaRole.toLowerCase().includes('manager') && !activePersonaRole.toLowerCase().includes('building'))) &&
+    !activePersonaRole.toLowerCase().includes('tenant') &&
+    !activePersonaRole.toLowerCase().includes('owner') &&
+    !activePersonaRole.toLowerCase().includes('committee');
 
   const pendingTriageRequests = requests.filter(r => r.status === 'pending_triage' || r.status === 'new');
 
