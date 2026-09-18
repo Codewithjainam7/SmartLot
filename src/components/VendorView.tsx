@@ -42,6 +42,7 @@ interface VendorViewProps {
   onVoteForQuote?: (requestId: string, quoteId: string) => void;
   onAwardQuote?: (requestId: string, quoteId: string, budgetCap?: number, pin?: string) => void;
   onAddVendor?: (payload: CreateVendorPayload) => void;
+  onDeleteVendor?: (vendorId: string) => void;
   onUpdateVendorInsurance?: (vendorId: string, status: 'Active' | 'Expired Ins.' | 'Pending Verification', expiryDate: string) => void;
   activePersonaName?: string;
   activePersonaRole?: string;
@@ -60,6 +61,7 @@ export function VendorView({
   onVoteForQuote,
   onAwardQuote,
   onAddVendor,
+  onDeleteVendor,
   onUpdateVendorInsurance,
   activePersonaName = 'Emma Wilson',
   activePersonaRole = 'Strata Manager',
@@ -80,6 +82,10 @@ export function VendorView({
   const [signOffModalWo, setSignOffModalWo] = useState<WorkOrder | null>(null);
   const [signOffNotes, setSignOffNotes] = useState('');
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
+  const [selectedVendorForDetails, setSelectedVendorForDetails] = useState<Vendor | null>(null);
+  const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
+  const [vendorOnboardingMode, setVendorOnboardingMode] = useState<'manual' | 'invite'>('manual');
+  const [inviteVendorSent, setInviteVendorSent] = useState(false);
   const [showCreateTenderModal, setShowCreateTenderModal] = useState(false);
   const [insuranceVerifyVendor, setInsuranceVerifyVendor] = useState<Vendor | null>(null);
   const [newInsuranceExpiry, setNewInsuranceExpiry] = useState('2027-12-31');
@@ -91,7 +97,14 @@ export function VendorView({
   const [newVendorLicense, setNewVendorLicense] = useState('');
   const [newVendorPhone, setNewVendorPhone] = useState('');
   const [newVendorEmail, setNewVendorEmail] = useState('');
+  const [newVendorWebsite, setNewVendorWebsite] = useState('');
+  const [newVendorExperience, setNewVendorExperience] = useState('5');
   const [newVendorExpiry, setNewVendorExpiry] = useState('2027-12-31');
+  const [newVendorInsuranceDocName, setNewVendorInsuranceDocName] = useState('');
+  
+  // Directory filter state
+  const [directoryCategoryFilter, setDirectoryCategoryFilter] = useState('All');
+  const [directoryInsuranceFilter, setDirectoryInsuranceFilter] = useState<'All' | 'Active' | 'Expired'>('All');
 
   // New Tender Form State
   const [tenderRequestId, setTenderRequestId] = useState<string>('');
@@ -130,15 +143,20 @@ export function VendorView({
     return true;
   });
 
-  // Filter vendors
+  // Filter vendors with Sort & Filter support
   const filteredVendors = vendors.filter(v => {
+    if (directoryCategoryFilter !== 'All' && v.category !== directoryCategoryFilter) return false;
+    if (directoryInsuranceFilter === 'Active' && v.insuranceStatus !== 'Active') return false;
+    if (directoryInsuranceFilter === 'Expired' && v.insuranceStatus === 'Active') return false;
+
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (
       v.name.toLowerCase().includes(q) ||
       v.category.toLowerCase().includes(q) ||
       v.abn.toLowerCase().includes(q) ||
-      v.licenseNo.toLowerCase().includes(q)
+      v.licenseNo.toLowerCase().includes(q) ||
+      (v.website && v.website.toLowerCase().includes(q))
     );
   });
 
@@ -162,7 +180,27 @@ export function VendorView({
 
   const handleCreateVendorSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newVendorName.trim() || !onAddVendor) return;
+    if (!newVendorName.trim()) return;
+
+    if (vendorOnboardingMode === 'invite') {
+      // Invite flow: send email invite with site details & registration link
+      setInviteVendorSent(true);
+      setTimeout(() => {
+        setInviteVendorSent(false);
+        setShowAddVendorModal(false);
+        setNewVendorName('');
+        setNewVendorAbn('');
+        setNewVendorLicense('');
+        setNewVendorPhone('');
+        setNewVendorEmail('');
+        setNewVendorWebsite('');
+        setNewVendorExperience('5');
+        setNewVendorInsuranceDocName('');
+      }, 1800);
+      return;
+    }
+
+    if (!onAddVendor) return;
 
     const isExpired = new Date(newVendorExpiry) < new Date();
     onAddVendor({
@@ -172,8 +210,11 @@ export function VendorView({
       licenseNo: newVendorLicense.trim() || 'LIC-NSW-99999',
       phone: newVendorPhone.trim() || '02 9000 1111',
       email: newVendorEmail.trim() || 'info@contractor.com.au',
+      website: newVendorWebsite.trim() || undefined,
+      yearsOfExperience: Number(newVendorExperience) || 5,
       insuranceStatus: isExpired ? 'Expired Ins.' : 'Active',
       insuranceExpiry: newVendorExpiry,
+      certificateOfCurrencyUrl: newVendorInsuranceDocName ? `https://storage.smartlot.internal/docs/${newVendorInsuranceDocName}` : undefined,
       rating: 5.0
     });
 
@@ -183,6 +224,9 @@ export function VendorView({
     setNewVendorLicense('');
     setNewVendorPhone('');
     setNewVendorEmail('');
+    setNewVendorWebsite('');
+    setNewVendorExperience('5');
+    setNewVendorInsuranceDocName('');
   };
 
   const handleCreateTenderSubmit = (e: React.FormEvent) => {
@@ -898,78 +942,143 @@ export function VendorView({
       {/* TAB 3: VERIFIED TRADES DIRECTORY */}
       {activeTab === 'directory' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white">
-              Accredited Building Contractors
-            </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                Accredited Building Contractors
+              </h3>
+              <p className="text-xs text-gray-500">
+                Manage accredited vendor network, view credentials, or onboard new trades
+              </p>
+            </div>
             {!isCommitteeMember && (
               <button
                 onClick={() => setShowAddVendorModal(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-[#0055FF] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                className="px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
               >
-                <Plus size={14} /> Add New Contractor
+                <Plus size={15} /> Add / Invite Contractor
               </button>
             )}
+          </div>
+
+          {/* Sort & Filter Bar */}
+          <div className="flex flex-wrap items-center gap-2 p-3 bg-white dark:bg-[#0d1117] rounded-xl border border-gray-200 dark:border-white/10 text-xs">
+            <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Filter Trade:</span>
+            {['All', 'Lift & Vertical Transport', 'Plumbing & Drainage', 'Electrical & Lighting', 'Fire & Safety Services'].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setDirectoryCategoryFilter(cat)}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  directoryCategoryFilter === cat
+                    ? 'bg-[#0055FF] text-white'
+                    : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+
+            <div className="h-4 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" />
+
+            <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Insurance:</span>
+            {(['All', 'Active', 'Expired'] as const).map(status => (
+              <button
+                key={status}
+                onClick={() => setDirectoryInsuranceFilter(status)}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  directoryInsuranceFilter === status
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {filteredVendors.map(v => (
               <div 
                 key={v.id} 
-                className="bg-white dark:bg-[#0d1117] rounded-2xl p-5 border border-gray-200 dark:border-white/10 shadow-xs space-y-4 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-[#0d1117] rounded-2xl p-5 border border-gray-200 dark:border-white/10 shadow-xs space-y-4 hover:shadow-md transition-shadow flex flex-col justify-between"
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-bold text-gray-900 dark:text-white text-sm">{v.name}</h4>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{v.category}</span>
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-bold text-gray-900 dark:text-white text-sm">{v.name}</h4>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{v.category}</span>
+                    </div>
+                    {v.insuranceStatus === 'Active' ? (
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
+                        <ShieldCheck size={12} /> Active Ins.
+                      </span>
+                    ) : !isCommitteeMember ? (
+                      <button
+                        onClick={() => {
+                          setInsuranceVerifyVendor(v);
+                          setNewInsuranceExpiry('2027-12-31');
+                        }}
+                        className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] hover:bg-red-200 text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 cursor-pointer"
+                        title="Click to update insurance"
+                      >
+                        <AlertTriangle size={12} /> Expired Ins. (Renew)
+                      </button>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
+                        <AlertTriangle size={12} /> Expired Ins.
+                      </span>
+                    )}
                   </div>
-                  {v.insuranceStatus === 'Active' ? (
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
-                      <ShieldCheck size={12} /> Active Ins.
-                    </span>
-                  ) : !isCommitteeMember ? (
-                    <button
-                      onClick={() => {
-                        setInsuranceVerifyVendor(v);
-                        setNewInsuranceExpiry('2027-12-31');
-                      }}
-                      className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] hover:bg-red-200 text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 cursor-pointer"
-                      title="Click to update insurance"
+
+                  <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1.5 pt-2 border-t border-gray-100 dark:border-white/5">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">ABN:</span>
+                      <span className="font-bold text-gray-800 dark:text-gray-200">{v.abn}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Trade License:</span>
+                      <span className="font-bold text-gray-800 dark:text-gray-200">{v.licenseNo}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Insurance Expiry:</span>
+                      <span className={v.insuranceStatus === 'Active' ? 'text-emerald-600 font-bold' : 'text-red-500 font-bold'}>
+                        {v.insuranceExpiry}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-gray-100 dark:border-white/5 space-y-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <a 
+                      href={`tel:${v.phone}`} 
+                      className="flex items-center gap-1 text-blue-600 dark:text-[#00D4B2] font-semibold hover:underline cursor-pointer"
                     >
-                      <AlertTriangle size={12} /> Expired Ins. (Renew)
-                    </button>
-                  ) : (
-                    <span className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
-                      <AlertTriangle size={12} /> Expired Ins.
-                    </span>
+                      <Phone size={12} /> {v.phone}
+                    </a>
+                    <span className="flex items-center gap-1 text-[#FFB020] font-bold"><Star size={12} fill="currentColor" /> {v.rating}</span>
+                  </div>
+
+                  {/* Strata Manager Action Buttons: View Details & Delete */}
+                  {!isCommitteeMember && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedVendorForDetails(v)}
+                        className="flex-1 py-1.5 px-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer text-center"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVendorToDelete(v)}
+                        className="py-1.5 px-2.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 text-xs font-bold transition-all cursor-pointer"
+                        title="Delete vendor"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   )}
-                </div>
-
-                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1.5 pt-2 border-t border-gray-100 dark:border-white/5">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">ABN:</span>
-                    <span className="font-bold text-gray-800 dark:text-gray-200">{v.abn}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Trade License:</span>
-                    <span className="font-bold text-gray-800 dark:text-gray-200">{v.licenseNo}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Insurance Expiry:</span>
-                    <span className={v.insuranceStatus === 'Active' ? 'text-emerald-600 font-bold' : 'text-red-500 font-bold'}>
-                      {v.insuranceExpiry}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-white/5">
-                  <a 
-                    href={`tel:${v.phone}`} 
-                    className="flex items-center gap-1.5 text-blue-600 dark:text-[#00D4B2] font-semibold hover:underline cursor-pointer min-h-[36px] py-1 px-2 rounded-lg bg-blue-50 dark:bg-[#00D4B2]/10 active:scale-95 transition-all"
-                  >
-                    <Phone size={12} /> {v.phone}
-                  </a>
-                  <span className="flex items-center gap-1 text-[#FFB020] font-bold"><Star size={12} fill="currentColor" /> {v.rating}</span>
                 </div>
               </div>
             ))}
@@ -1288,10 +1397,10 @@ export function VendorView({
         </div>
       )}
 
-      {/* MODAL 3: ADD CONTRACTOR TO DIRECTORY */}
+      {/* MODAL 3: VENDOR ONBOARDING (MANUAL OR INVITE LINK - STRATA MANAGER WORKFLOW) */}
       {showAddVendorModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200 font-sans">
+          <div className="w-full max-w-xl bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200 font-sans max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
@@ -1299,9 +1408,9 @@ export function VendorView({
                 </div>
                 <div>
                   <h3 className="font-sans text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-normal">
-                    Add Contractor & Insurance Check
+                    Vendor Onboarding
                   </h3>
-                  <span className="text-xs text-gray-500">Record ABN, trade license, and Certificate of Currency</span>
+                  <span className="text-xs text-gray-500">Strata Manager Accredited Trades Workflow</span>
                 </div>
               </div>
               <button 
@@ -1312,118 +1421,426 @@ export function VendorView({
               </button>
             </div>
 
-            <form onSubmit={handleCreateVendorSubmit} className="space-y-3.5 font-sans">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  Company / Trading Name <span className="text-red-500 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newVendorName}
-                  onChange={e => setNewVendorName(e.target.value)}
-                  placeholder="e.g. Kone Elevator Maintenance NSW"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF] focus:ring-1 focus:ring-[#0055FF]"
-                />
-              </div>
+            {/* Workflow Mode Tabs */}
+            <div className="grid grid-cols-2 p-1 bg-gray-100 dark:bg-white/5 rounded-xl text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setVendorOnboardingMode('manual')}
+                className={`py-2 rounded-lg transition-all cursor-pointer ${
+                  vendorOnboardingMode === 'manual'
+                    ? 'bg-white dark:bg-[#0055FF] text-gray-900 dark:text-white shadow-xs'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Onboard Vendor Manually
+              </button>
+              <button
+                type="button"
+                onClick={() => setVendorOnboardingMode('invite')}
+                className={`py-2 rounded-lg transition-all cursor-pointer ${
+                  vendorOnboardingMode === 'invite'
+                    ? 'bg-white dark:bg-[#0055FF] text-gray-900 dark:text-white shadow-xs'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Send Vendor Invite (Email)
+              </button>
+            </div>
 
-              <div>
-                <CustomSelect
-                  label="Trade Category *"
-                  options={categoryOptions}
-                  value={newVendorCategory}
-                  onChange={setNewVendorCategory}
-                />
-              </div>
+            {vendorOnboardingMode === 'invite' ? (
+              <form onSubmit={handleCreateVendorSubmit} className="space-y-4 font-sans">
+                <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30 rounded-xl text-xs text-blue-900 dark:text-blue-300 space-y-1">
+                  <span className="font-bold">Automated Vendor Invitation Workflow</span>
+                  <p className="text-[11px] text-blue-700 dark:text-blue-400">
+                    Sends an invitation email with site details and an encrypted registration link for the vendor to submit their company credentials and Certificate of Currency for review.
+                  </p>
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                    ABN <span className="text-red-500 font-bold">*</span>
+                    Company Name <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    value={newVendorAbn}
-                    onChange={e => setNewVendorAbn(e.target.value)}
-                    placeholder="51 824 931 002"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    value={newVendorName}
+                    onChange={e => setNewVendorName(e.target.value)}
+                    placeholder="e.g. Apex Electrical Solutions"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                    Trade License No. <span className="text-red-500 font-bold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newVendorLicense}
-                    onChange={e => setNewVendorLicense(e.target.value)}
-                    placeholder="LIC-NSW-39812A"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                    Phone <span className="text-red-500 font-bold">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={newVendorPhone}
-                    onChange={e => setNewVendorPhone(e.target.value)}
-                    placeholder="02 9844 2001"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                    Dispatch Email <span className="text-red-500 font-bold">*</span>
+                    Vendor Email Address <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
                     type="email"
                     required
                     value={newVendorEmail}
                     onChange={e => setNewVendorEmail(e.target.value)}
-                    placeholder="dispatch@trades.com.au"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    placeholder="vendor@company.com.au"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
                   />
                 </div>
-              </div>
 
+                <div>
+                  <CustomSelect
+                    label="Service Speciality *"
+                    options={categoryOptions}
+                    value={newVendorCategory}
+                    onChange={setNewVendorCategory}
+                  />
+                </div>
+
+                {inviteVendorSent ? (
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 size={16} /> Invitation sent with site details and onboarding link!
+                  </div>
+                ) : null}
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVendorModal(false)}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={inviteVendorSent}
+                    className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                  >
+                    <Mail size={15} /> Send Email Invite With Site Details
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleCreateVendorSubmit} className="space-y-3.5 font-sans">
+                {/* Manual Onboarding Form - Strict workflow fields */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    Company Name <span className="text-red-500 font-bold">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newVendorName}
+                    onChange={e => setNewVendorName(e.target.value)}
+                    placeholder="e.g. Kone Elevator Maintenance NSW"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Email Address <span className="text-red-500 font-bold">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={newVendorEmail}
+                      onChange={e => setNewVendorEmail(e.target.value)}
+                      placeholder="dispatch@trades.com.au"
+                      className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Company Website
+                    </label>
+                    <input
+                      type="text"
+                      value={newVendorWebsite}
+                      onChange={e => setNewVendorWebsite(e.target.value)}
+                      placeholder="https://company.com.au"
+                      className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Phone No <span className="text-red-500 font-bold">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={newVendorPhone}
+                      onChange={e => setNewVendorPhone(e.target.value)}
+                      placeholder="02 9844 2001"
+                      className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Years of Experience
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={newVendorExperience}
+                      onChange={e => setNewVendorExperience(e.target.value)}
+                      placeholder="e.g. 8"
+                      className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <CustomSelect
+                    label="Service Speciality *"
+                    options={categoryOptions}
+                    value={newVendorCategory}
+                    onChange={setNewVendorCategory}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Licence No <span className="text-red-500 font-bold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newVendorLicense}
+                      onChange={e => setNewVendorLicense(e.target.value)}
+                      placeholder="LIC-NSW-39812A"
+                      className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      ABN <span className="text-red-500 font-bold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newVendorAbn}
+                      onChange={e => setNewVendorAbn(e.target.value)}
+                      placeholder="51 824 931 002"
+                      className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                    />
+                  </div>
+                </div>
+
+                {/* Upload Insurance Docs / Certificate of Currency */}
+                <div className="p-3 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                      Upload Insurance Docs (Certificate of Currency) <span className="text-red-500 font-bold">*</span>
+                    </label>
+                    {newVendorInsuranceDocName && (
+                      <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                        <Check size={12} /> {newVendorInsuranceDocName}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-100 cursor-pointer flex items-center gap-1.5">
+                      <FileText size={13} />
+                      <span>{newVendorInsuranceDocName ? 'Change File' : 'Attach PDF / Doc'}</span>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.png,.jpg"
+                        className="hidden"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) {
+                            setNewVendorInsuranceDocName(e.target.files[0].name);
+                          }
+                        }}
+                      />
+                    </label>
+                    <span className="text-[11px] text-gray-400">Min $20M Public Liability required</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-500 mb-1">
+                      Policy Expiry Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={newVendorExpiry}
+                      onChange={e => setNewVendorExpiry(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white font-bold outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddVendorModal(false)}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                  >
+                    <CheckCircle2 size={16} /> Verify & Submit Application
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: VIEW VENDOR DETAILS (WORKFLOW: SELECT A VENDOR -> VIEW DETAILS) */}
+      {selectedVendorForDetails && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200 font-sans">
+            <div className="flex items-start justify-between border-b border-gray-100 dark:border-white/5 pb-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  Public Liability Insurance Expiry (Certificate of Currency) <span className="text-red-500 font-bold">*</span>
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={newVendorExpiry}
-                  onChange={e => setNewVendorExpiry(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white font-bold outline-none focus:border-[#0055FF]"
-                />
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {selectedVendorForDetails.name}
+                  </h3>
+                  {selectedVendorForDetails.insuranceStatus === 'Active' ? (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase flex items-center gap-1">
+                      <ShieldCheck size={11} /> Active
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold uppercase flex items-center gap-1">
+                      <AlertTriangle size={11} /> Expired
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-500">{selectedVendorForDetails.category}</span>
               </div>
+              <button 
+                onClick={() => setSelectedVendorForDetails(null)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
-                <button
-                  type="button"
-                  onClick={() => setShowAddVendorModal(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-                >
-                  <CheckCircle2 size={16} /> Register & Validate Trade
-                </button>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-1">
+                <span className="text-gray-400 text-[11px] font-semibold">Service Speciality</span>
+                <p className="font-bold text-gray-900 dark:text-white">{selectedVendorForDetails.category}</p>
               </div>
-            </form>
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-1">
+                <span className="text-gray-400 text-[11px] font-semibold">Licence Number</span>
+                <p className="font-bold text-gray-900 dark:text-white">{selectedVendorForDetails.licenseNo}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-1">
+                <span className="text-gray-400 text-[11px] font-semibold">Australian Business Number (ABN)</span>
+                <p className="font-bold text-gray-900 dark:text-white">{selectedVendorForDetails.abn}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-1">
+                <span className="text-gray-400 text-[11px] font-semibold">Years of Experience</span>
+                <p className="font-bold text-gray-900 dark:text-white">{selectedVendorForDetails.yearsOfExperience || '5+'} Years</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-1">
+                <span className="text-gray-400 text-[11px] font-semibold">Phone Number</span>
+                <p className="font-bold text-gray-900 dark:text-white">{selectedVendorForDetails.phone}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-1">
+                <span className="text-gray-400 text-[11px] font-semibold">Email Address</span>
+                <p className="font-bold text-gray-900 dark:text-white truncate">{selectedVendorForDetails.email}</p>
+              </div>
+            </div>
+
+            {selectedVendorForDetails.website && (
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-xs flex items-center justify-between">
+                <span className="text-gray-400 font-semibold">Company Website:</span>
+                <a 
+                  href={selectedVendorForDetails.website} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="text-blue-600 dark:text-[#00D4B2] font-bold hover:underline flex items-center gap-1"
+                >
+                  {selectedVendorForDetails.website} <ExternalLink size={12} />
+                </a>
+              </div>
+            )}
+
+            <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between font-bold text-emerald-900 dark:text-emerald-300">
+                <span className="flex items-center gap-1.5">
+                  <FileCheck2 size={15} /> Insurance Documentation
+                </span>
+                <span>Expiry: {selectedVendorForDetails.insuranceExpiry}</span>
+              </div>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                Verified Certificate of Currency on record for Australian strata compliance.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => {
+                  setVendorToDelete(selectedVendorForDetails);
+                  setSelectedVendorForDetails(null);
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
+              >
+                Delete Vendor
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedVendorForDetails(null)}
+                className="px-5 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: CONFIRM DELETE VENDOR (WORKFLOW: DELETE VENDOR -> CONFIRM DELETE) */}
+      {vendorToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200 font-sans">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/40 flex items-center justify-center shrink-0">
+                <AlertTriangle size={22} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  Confirm Delete Vendor
+                </h3>
+                <span className="text-xs text-gray-500">This action cannot be undone</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-300">
+              Are you sure you want to permanently remove <strong>{vendorToDelete.name}</strong> from the accredited vendor directory?
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setVendorToDelete(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteVendor && vendorToDelete) {
+                    onDeleteVendor(vendorToDelete.id);
+                  }
+                  setVendorToDelete(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              >
+                Confirm Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -307,6 +307,8 @@ export type Vendor = {
   insuranceExpiry: string;
   rating: number;
   certificateOfCurrencyUrl?: string;
+  website?: string;
+  yearsOfExperience?: number;
   verifiedAt?: string;
   verifiedBy?: string;
 };
@@ -3891,6 +3893,9 @@ export function useSmartLotStore() {
       insuranceStatus: payload.insuranceStatus,
       insuranceExpiry: payload.insuranceExpiry,
       rating: payload.rating || 5.0,
+      website: payload.website,
+      yearsOfExperience: payload.yearsOfExperience,
+      certificateOfCurrencyUrl: payload.certificateOfCurrencyUrl,
     };
     setVendors(prev => [newVendor, ...prev]);
   };

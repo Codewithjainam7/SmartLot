@@ -213,15 +213,17 @@ export function Sidebar({
                 badge={pendingTriageCount && pendingTriageCount > 0 && (activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Committee') || activePersonaRole?.includes('Admin')) ? String(pendingTriageCount) : undefined}
                 isCollapsed={isCollapsed && !isMobileOpen} 
               />
-              {/* Trades & Work Orders Engine */}
-              <NavItem 
-                icon={<Wrench size={18} />} 
-                label="Trades & Work Orders" 
-                active={activeView === 'vendors'} 
-                onClick={() => handleNavClick('vendors')}
-                badge={activeWorkOrdersCount && activeWorkOrdersCount > 0 ? String(activeWorkOrdersCount) : undefined}
-                isCollapsed={isCollapsed && !isMobileOpen} 
-              />
+              {/* Trades & Work Orders Engine: Only Strata Managers, Admins, and Committee Members */}
+              {(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Committee')) && (
+                <NavItem 
+                  icon={<Wrench size={18} />} 
+                  label={activePersonaRole?.includes('Committee') ? "Quotes & Trades" : "Trades & Work Orders"} 
+                  active={activeView === 'vendors'} 
+                  onClick={() => handleNavClick('vendors')}
+                  badge={activeWorkOrdersCount && activeWorkOrdersCount > 0 && !activePersonaRole?.includes('Committee') ? String(activeWorkOrdersCount) : undefined}
+                  isCollapsed={isCollapsed && !isMobileOpen} 
+                />
+              )}
               {/* Voting Hub for Community & Committee Motions */}
               <NavItem 
                 icon={<Vote size={18} />} 

@@ -971,25 +971,44 @@ export default function App() {
             />
           )}
 
-          {/* Trades & Work Orders Hub */}
+          {/* Trades & Work Orders Hub: Strictly Strata Managers, Admins, and Committee Members */}
           {store.activeView === 'vendors' && (
-            <VendorView 
-              vendors={store.vendors}
-              workOrders={store.workOrders}
-              requests={store.residentRequests}
-              onOpenGuestPortal={(woId) => setActiveGuestWorkOrderId(woId)}
-              onVerifyWorkOrder={store.verifyWorkOrder}
-              onSignOffWorkOrder={(woId, notes) => store.signOffWorkOrder(woId, notes, store.activePersona.name)}
-              onRequestQuotes={store.requestQuotesForRequest}
-              onVoteForQuote={(reqId, qteId) => store.voteForQuote(reqId, qteId, store.activePersona.name)}
-              onAwardQuote={(reqId, qteId, budgetCap, pin) => store.awardQuoteAndCreateWorkOrder(reqId, qteId, budgetCap, pin, store.activePersona.name)}
-              onAddVendor={store.addVendor}
-              onUpdateVendorInsurance={store.updateVendorInsurance}
-              activePersonaName={store.activePersona.name}
-              activePersonaRole={store.activePersona.role}
-              activeSchemeName={store.activeScheme.name}
-              activeSchemeId={store.activeScheme.id}
-            />
+            (store.activePersona.role?.includes('Manager') || store.activePersona.role?.includes('Admin') || store.activePersona.role?.includes('Committee')) ? (
+              <VendorView 
+                vendors={store.vendors}
+                workOrders={store.workOrders}
+                requests={store.residentRequests}
+                onOpenGuestPortal={(woId) => setActiveGuestWorkOrderId(woId)}
+                onVerifyWorkOrder={store.verifyWorkOrder}
+                onSignOffWorkOrder={(woId, notes) => store.signOffWorkOrder(woId, notes, store.activePersona.name)}
+                onRequestQuotes={store.requestQuotesForRequest}
+                onVoteForQuote={(reqId, qteId) => store.voteForQuote(reqId, qteId, store.activePersona.name)}
+                onAwardQuote={(reqId, qteId, budgetCap, pin) => store.awardQuoteAndCreateWorkOrder(reqId, qteId, budgetCap, pin, store.activePersona.name)}
+                onAddVendor={store.addVendor}
+                onDeleteVendor={store.deleteVendor}
+                onUpdateVendorInsurance={store.updateVendorInsurance}
+                activePersonaName={store.activePersona.name}
+                activePersonaRole={store.activePersona.role}
+                activeSchemeName={store.activeScheme.name}
+                activeSchemeId={store.activeScheme.id}
+              />
+            ) : (
+              <div className="p-8 text-center bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 max-w-lg mx-auto mt-12 space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                  <ShieldAlert size={24} />
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Restricted Access</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Trades & Work Orders are managed exclusively by the Strata Management Agency and Strata Committee.
+                </p>
+                <button
+                  onClick={() => store.setActiveView('requests')}
+                  className="px-4 py-2 rounded-xl bg-[#0055FF] text-white text-xs font-bold"
+                >
+                  Return to My Requests
+                </button>
+              </div>
+            )
           )}
               </motion.div>
             </AnimatePresence>
