@@ -64,6 +64,41 @@ export default function App() {
   const [invitedUnit, setInvitedUnit] = useState<string | null>(null);
   const [invitedLot, setInvitedLot] = useState<string | null>(null);
 
+  // Desktop sidebar collapse state persisted across reloads
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('smartlot_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('smartlot_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Keyboard shortcut (Ctrl+B or Cmd+B) to toggle sidebar collapse
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+          return;
+        }
+        e.preventDefault();
+        handleToggleSidebarCollapse();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     const parseUrl = () => {
       const hashStr = window.location.hash || '';
@@ -716,6 +751,13 @@ export default function App() {
           activeWorkOrdersCount={store.workOrders.filter(w => (!w.schemeId || w.schemeId === store.activeScheme.id) && w.status !== 'completed').length}
           activePersonaName={store.activePersona.name}
           activePersonaRole={store.activePersona.role}
+          activePersonaContext={store.activePersona.context}
+          activeSchemeName={store.activeScheme?.name}
+          activeSchemeId={store.activeScheme?.id}
+          theme={store.theme}
+          onToggleTheme={() => store.setTheme(store.theme === 'dark' ? 'light' : 'dark')}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={handleToggleSidebarCollapse}
           hasPermission={store.hasPermission}
           onLogout={handleLogout}
           isMobileOpen={isMobileNavOpen}
@@ -736,6 +778,8 @@ export default function App() {
             setActiveRoles={store.setActiveRoles}
             onLogout={handleLogout}
             onOpenMobileMenu={() => setIsMobileNavOpen(true)}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebarCollapse={handleToggleSidebarCollapse}
           />
         
         {/* Dynamic View Rendering */}

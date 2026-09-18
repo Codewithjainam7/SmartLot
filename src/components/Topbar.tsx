@@ -1,6 +1,6 @@
 // @smartlot/component
 import React, { useState, useRef, useEffect } from "react";
-import { Building2, ChevronDown, CheckCircle2, Plus, Menu } from "lucide-react";
+import { Building2, ChevronDown, CheckCircle2, Plus, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Persona, Scheme } from "../types";
 
 interface TopbarProps {
@@ -15,6 +15,8 @@ interface TopbarProps {
   setActiveRoles?: (roles: string[]) => void;
   onLogout?: () => void;
   onOpenMobileMenu?: () => void;
+  isSidebarCollapsed?: boolean;
+  onToggleSidebarCollapse?: () => void;
 }
 
 export function Topbar({ 
@@ -23,10 +25,12 @@ export function Topbar({
   setActiveScheme, 
   personas,
   activePersona, 
-  setActivePersona,
+  setActivePersona, 
   onAddSchemeClick,
   onLogout,
-  onOpenMobileMenu
+  onOpenMobileMenu,
+  isSidebarCollapsed,
+  onToggleSidebarCollapse
 }: TopbarProps) {
   const isResidentOrTenant = activePersona.role === 'Resident' || activePersona.role === 'Tenant' || activePersona.role === 'On-Site Resident';
   const canCreateSites = !isResidentOrTenant;
@@ -58,7 +62,7 @@ export function Topbar({
     <div className="smartlot-topbar h-16 md:h-20 bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between px-3 sm:px-6 md:px-8 sticky top-0 z-30 font-sans">
       
       {/* Scheme Switcher & Site Creation */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Mobile Hamburger Drawer Trigger */}
         <button
           type="button"
@@ -68,6 +72,19 @@ export function Topbar({
         >
           <Menu size={22} />
         </button>
+
+        {/* Desktop Sidebar Collapse Toggle Button */}
+        {onToggleSidebarCollapse && (
+          <button
+            type="button"
+            onClick={onToggleSidebarCollapse}
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+            className="hidden md:flex min-w-[40px] min-h-[40px] items-center justify-center p-2 rounded-xl text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0 active:scale-95 border border-gray-200/60 dark:border-white/5 shadow-2xs"
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+        )}
 
         {activeScheme && activeScheme.id !== 'NO_SCHEME' ? (
           <div className="relative" ref={schemeRef}>
