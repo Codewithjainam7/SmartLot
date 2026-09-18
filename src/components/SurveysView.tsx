@@ -315,37 +315,50 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
     <div className="flex-1 flex flex-col h-full bg-[#F4F6F9] dark:bg-[#050A15] text-gray-900 dark:text-gray-100 overflow-y-auto font-sans selection:bg-[#00D4B2] selection:text-black">
       <div className="max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-4 sm:space-y-5 flex-1">
         
-        {/* ── 1. Hero Card with Building Background Image ──────────────── */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 p-4 sm:px-7 sm:py-5 shadow-sm dark:shadow-2xl">
-          {/* Building Background Image (Right side, clear and sharp in both light and dark mode) */}
+        {/* ── 1. Hero Card with Building Background Image & Blue Gradient Theme ──────────────── */}
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-200/70 dark:border-blue-500/20 p-6 sm:px-10 sm:py-9 lg:py-11 min-h-[220px] sm:min-h-[260px] lg:min-h-[280px] flex flex-col justify-center shadow-sm dark:shadow-2xl bg-gradient-to-r from-[#DFEEFF] via-[#E8F3FF] to-[#D5E9FF] dark:bg-gradient-to-r dark:from-[#051024] dark:via-[#091D3A] dark:to-[#0D2A54]">
+          {/* Ambient gradient glow in both light and dark modes */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#1D63ED]/10 via-transparent to-sky-400/15 dark:from-[#0055FF]/20 dark:via-transparent dark:to-[#00D4B2]/15 pointer-events-none" />
+
+          {/* Light Mode Banner Image: /bg_img_profile.png */}
           <div 
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-1/2 bg-cover bg-right bg-no-repeat pointer-events-none opacity-40 sm:opacity-95 dark:opacity-40 sm:dark:opacity-65 transition-opacity duration-300"
+            className="dark:hidden absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-3/5 bg-cover bg-right bg-no-repeat pointer-events-none opacity-90 sm:opacity-95 transition-opacity duration-300"
             style={{ 
-              backgroundImage: "url('/bg_img_building.png')",
+              backgroundImage: "url('/bg_img_profile.png')",
               maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)",
               WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 40%)"
             }}
           />
-          {/* Text backing gradient to ensure high readability on the left */}
-          <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-2/3 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-[#070E1F] dark:via-[#070E1F]/95 dark:to-transparent pointer-events-none" />
+          {/* Dark Mode Banner Image: /bg_img_building.png */}
+          <div 
+            className="hidden dark:block absolute right-0 top-0 bottom-0 w-full sm:w-2/3 lg:w-3/5 bg-cover bg-right bg-no-repeat pointer-events-none opacity-60 sm:opacity-90 transition-opacity duration-300"
+            style={{ 
+              backgroundImage: "url('/bg_img_building.png')",
+              maskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 38%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 12%, black 38%)"
+            }}
+          />
+
+          {/* Smooth gradient mask overlay to guarantee text contrast on the left */}
+          <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-3/5 bg-gradient-to-r from-[#DFEEFF] via-[#E8F3FF]/95 to-transparent dark:from-[#051024] dark:via-[#051024]/95 dark:to-transparent pointer-events-none" />
 
           {/* Hero Content */}
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-            <div className="max-w-3xl space-y-1 sm:space-y-1.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/25 text-[10px] sm:text-[11px] font-black uppercase tracking-wider">
-                <Building2 size={12} className="text-[#00897B] dark:text-[#00D4B2]" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div className="max-w-3xl space-y-2 sm:space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1D63ED]/10 dark:bg-[#00D4B2]/15 text-[#1D63ED] dark:text-[#00D4B2] border border-[#1D63ED]/25 dark:border-[#00D4B2]/30 text-[11px] sm:text-xs font-black uppercase tracking-wider shadow-xs">
+                <Building2 size={13} className="text-[#1D63ED] dark:text-[#00D4B2]" />
                 {activeScheme.name.toUpperCase()} ({activeScheme.id})
               </span>
 
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-sans font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                Resident Feedback & <span className="text-[#00897B] dark:text-[#00D4B2]">Surveys</span>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-sans font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                Resident Feedback & <span className="text-[#1D63ED] dark:text-[#00D4B2]">Surveys</span>
               </h1>
 
-              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Listen. Improve.<span className="text-[#00897B] dark:text-[#00D4B2] ml-1">Build a Better Community.</span>
+              <p className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-100">
+                Listen. Improve.<span className="text-[#1D63ED] dark:text-[#00D4B2] ml-1">Build a Better Community.</span>
               </p>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xl font-medium leading-relaxed hidden xs:block">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 max-w-2xl font-medium leading-relaxed hidden xs:block">
                 Empower residents to rate building performance, share suggestions, and help shape a better living experience. Every response matters.
               </p>
             </div>

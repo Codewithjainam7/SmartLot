@@ -1,6 +1,6 @@
 // @smartlot/component
 import React, { useState, useRef, useEffect } from "react";
-import { Building2, ChevronDown, CheckCircle2, Plus, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Building2, ChevronDown, CheckCircle2, Plus, Menu } from "lucide-react";
 import { Persona, Scheme } from "../types";
 
 interface TopbarProps {
@@ -73,18 +73,6 @@ export function Topbar({
           <Menu size={22} />
         </button>
 
-        {/* Desktop Sidebar Collapse Toggle Button */}
-        {onToggleSidebarCollapse && (
-          <button
-            type="button"
-            onClick={onToggleSidebarCollapse}
-            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-            className="hidden md:flex min-w-[40px] min-h-[40px] items-center justify-center p-2 rounded-xl text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0 active:scale-95 border border-gray-200/60 dark:border-white/5 shadow-2xs"
-          >
-            {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          </button>
-        )}
 
         {activeScheme && activeScheme.id !== 'NO_SCHEME' ? (
           <div className="relative" ref={schemeRef}>

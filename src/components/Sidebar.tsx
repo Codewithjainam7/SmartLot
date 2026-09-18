@@ -1,5 +1,6 @@
 // @smartlot/component
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -354,21 +355,34 @@ function NavItem({
 }) {
   return (
     <div className="relative group">
-      <button
+      <motion.button
         type="button"
         onClick={onClick}
+        whileTap={{ scale: 0.98 }}
         aria-current={active ? 'page' : undefined}
         aria-label={label}
-        className={`relative w-full flex items-center min-h-[44px] ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-between px-3.5 py-2.5'} rounded-2xl transition-all duration-200 ease-out cursor-pointer active:scale-98 select-none ${
+        className={`relative w-full flex items-center min-h-[44px] ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-between px-3.5 py-2.5'} rounded-2xl transition-colors duration-200 cursor-pointer select-none ${
           active 
-            ? 'bg-gradient-to-r from-[#0055FF]/10 to-[#00D4B2]/10 dark:from-[#0055FF]/20 dark:to-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2] shadow-sm border border-[#0055FF]/20 dark:border-[#00D4B2]/30 font-bold' 
-            : 'bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-white/5'
+            ? 'text-[#0055FF] dark:text-[#00D4B2] font-bold' 
+            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-white/5'
         }`}
       >
-        <div className="flex items-center gap-3 min-w-0">
+        {/* Animated Active Pill Indicator gliding between nav items */}
+        {active && (
+          <motion.div
+            layoutId="sidebarActivePill"
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#0055FF]/10 to-[#00D4B2]/10 dark:from-[#0055FF]/20 dark:to-[#00D4B2]/15 border border-[#0055FF]/20 dark:border-[#00D4B2]/30 shadow-xs pointer-events-none"
+          />
+        )}
+
+        <div className="relative z-10 flex items-center gap-3 min-w-0">
           {/* Active Accent Bar on Left */}
           {active && !isCollapsed && (
-            <div className="w-1 h-5 rounded-full bg-gradient-to-b from-[#0055FF] to-[#00D4B2] -ml-1 shrink-0 animate-in fade-in duration-200" />
+            <motion.div 
+              layoutId="sidebarActiveBar"
+              className="w-1 h-5 rounded-full bg-gradient-to-b from-[#0055FF] to-[#00D4B2] -ml-1 shrink-0" 
+            />
           )}
 
           <div className={`shrink-0 transition-transform duration-200 ${active ? 'scale-105 text-[#0055FF] dark:text-[#00D4B2]' : 'group-hover:scale-110'}`}>
@@ -383,7 +397,7 @@ function NavItem({
         </div>
         
         {!isCollapsed && badge && (
-          <span className={`transition-all duration-200 ${
+          <span className={`relative z-10 transition-all duration-200 ${
             active 
               ? 'bg-[#0055FF] text-white dark:bg-[#00D4B2] dark:text-black font-extrabold shadow-sm' 
               : 'bg-[#FF4757] text-white font-bold'
@@ -393,9 +407,9 @@ function NavItem({
         )}
 
         {isCollapsed && badge && (
-          <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#FF4757] border-2 border-white dark:border-[#080b11]" />
+          <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#FF4757] border-2 border-white dark:border-[#080b11] z-10" />
         )}
-      </button>
+      </motion.button>
 
       {/* Floating Tooltip in Collapsed Desktop Mode */}
       {isCollapsed && (

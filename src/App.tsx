@@ -22,7 +22,8 @@ import { AdminView } from './components/AdminView';
 import { SuperAdminLoginView } from './components/SuperAdminLoginView';
 import { SettingsView } from './components/SettingsView';
 import { JoinSchemeView } from './components/JoinSchemeView';
-import { DashboardSkeleton } from './components/core/DashboardSkeleton';
+import { CoolLoadingScreen, GlobalBufferingBar } from './components/core/CoolLoadingScreen';
+import { AnimatePresence, motion } from 'motion/react';
 import { ResidentPortalView } from './components/ResidentPortalView';
 import { ManagerPerformanceView } from './components/ManagerPerformanceView';
 import { VotingHubView } from './components/VotingHubView';
@@ -782,14 +783,25 @@ export default function App() {
             onToggleSidebarCollapse={handleToggleSidebarCollapse}
           />
         
-        {/* Dynamic View Rendering */}
+        {/* Global Shimmering Top Laser Bar during background syncing/buffering */}
+        <GlobalBufferingBar active={store.isLoading && store.schemes.length > 0} />
+
+        {/* Dynamic View Rendering with Fluid Page Switching Transitions */}
         <div className="flex-1 overflow-hidden relative pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           
-          {/* Shimmer Skeleton during initial bootstrap only (prevents full unmount on background sync) */}
+          {/* Cool Branded Loading Screen during initial bootstrap or scheme sync */}
           {store.isLoading && store.schemes.length === 0 ? (
-            <DashboardSkeleton />
+            <CoolLoadingScreen />
           ) : (
-            <>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={store.activeView + '-' + store.activeScheme?.id + '-' + (store.activePersona?.role?.includes('Resident') ? 'res' : 'admin')}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.22, ease: [0.2, 0.9, 0.3, 1] }}
+                className="w-full h-full flex flex-col flex-1 overflow-hidden"
+              >
               {/* Dashboard View: Resident Portal for Residents/Tenants, Management Dashboard for Managers/Admins */}
               {store.activeView === 'dashboard' && (
                 (store.activePersona.role === 'Resident' || store.activePersona.role === 'Tenant' || store.activePersona.role === 'On-Site Resident') ? (
@@ -964,8 +976,8 @@ export default function App() {
               activeSchemeId={store.activeScheme.id}
             />
           )}
-          </>
-
+              </motion.div>
+            </AnimatePresence>
           )}
 
         </div>
