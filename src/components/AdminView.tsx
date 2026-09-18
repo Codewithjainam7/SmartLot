@@ -1,8 +1,9 @@
 // @smartlot/component
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { 
   ShieldAlert, Trash2, Home, Mail, Phone, ExternalLink, ArrowLeft, Shield, Lock, 
-  Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, X, 
+  Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, ChevronDown, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
   Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap,
   ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, SlidersHorizontal
@@ -109,6 +110,23 @@ export function AdminView({
   const [userColSearchName, setUserColSearchName] = useState('');
   const [userColFilterScheme, setUserColFilterScheme] = useState('ALL');
   const [userColFilterRole, setUserColFilterRole] = useState('ALL');
+  const [isUserRoleDropdownOpen, setIsUserRoleDropdownOpen] = useState(false);
+  const userRoleDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userRoleDropdownRef.current && !userRoleDropdownRef.current.contains(e.target as Node)) {
+        setIsUserRoleDropdownOpen(false);
+      }
+    };
+    if (isUserRoleDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserRoleDropdownOpen]);
+
   const [userColSearchUnit, setUserColSearchUnit] = useState('');
   const [userColSearchContact, setUserColSearchContact] = useState('');
   const [userColFilterStatus, setUserColFilterStatus] = useState('ALL');
@@ -231,6 +249,22 @@ export function AdminView({
     setUserSortDirection('asc');
   };
 
+  const userRoleFilterOptions = useMemo(() => [
+    { label: 'All Roles', value: 'ALL', count: members.length },
+    { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
+    { label: 'Committee Members', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
+    { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
+    { label: 'Residents', value: 'Resident', count: members.filter(m => m.role === 'Resident').length },
+    { label: 'Tenants', value: 'Tenant', count: members.filter(m => m.role === 'Tenant').length },
+  ], [members]);
+
+  const activeUserRoleOption = useMemo(() => {
+    if (userColFilterRole === 'Strata Manager' || userColFilterRole === 'Managers' || userColFilterRole === 'Building Manager') {
+      return userRoleFilterOptions.find(opt => opt.value === 'Strata Manager') || userRoleFilterOptions[0];
+    }
+    return userRoleFilterOptions.find(opt => opt.value === userColFilterRole) || userRoleFilterOptions[0];
+  }, [userColFilterRole, userRoleFilterOptions]);
+
   const handleUserSort = (field: 'name' | 'schemeId' | 'role' | 'unitId' | 'email' | 'status') => {
     if (userSortField === field) {
       if (userSortDirection === 'asc') {
@@ -282,7 +316,11 @@ export function AdminView({
 
         // Column 3: Role Filter
         if (userColFilterRole !== 'ALL') {
-          if (m.role !== userColFilterRole) return false;
+          if (userColFilterRole === 'Strata Manager' || userColFilterRole === 'Managers') {
+            if (m.role !== 'Strata Manager' && m.role !== 'Building Manager') return false;
+          } else if (m.role !== userColFilterRole) {
+            return false;
+          }
         }
 
         // Column 4: Unit Search
@@ -1368,46 +1406,99 @@ export function AdminView({
               </div>
             </div>
 
-            {/* Quick Role Filter Preset Pills */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/5">
-                {[
-                  { label: 'All Roles', value: 'ALL', count: members.length },
-                  { label: 'Managers', value: 'Strata Manager', count: members.filter(m => m.role === 'Strata Manager' || m.role === 'Building Manager').length },
-                  { label: 'Committee', value: 'Committee Member', count: members.filter(m => m.role === 'Committee Member').length },
-                  { label: 'Lot Owners', value: 'Lot Owner', count: members.filter(m => m.role === 'Lot Owner').length },
-                  { label: 'Residents & Tenants', value: 'Resident', count: members.filter(m => m.role === 'Resident' || m.role === 'Tenant').length },
-                ].map(tab => {
-                  const isActive = tab.value === 'Resident' 
-                    ? (userColFilterRole === 'Resident' || userColFilterRole === 'Tenant')
-                    : userColFilterRole === tab.value;
-                  return (
-                    <button
-                      key={tab.label}
-                      onClick={() => {
-                        if (tab.value === 'Resident') {
-                          setUserColFilterRole(userColFilterRole === 'Resident' ? 'Tenant' : (userColFilterRole === 'Tenant' ? 'ALL' : 'Resident'));
-                        } else {
-                          setUserColFilterRole(tab.value);
-                        }
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isActive
-                          ? 'bg-white dark:bg-[#1e2436] text-[#0055FF] dark:text-[#00D4B2] shadow-xs border border-gray-200/60 dark:border-white/10'
-                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
-                      }`}
+            {/* Quick Role Filter Dropdown Menu (SmartLot Design System) */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div ref={userRoleDropdownRef} className="relative z-30">
+                <button
+                  type="button"
+                  onClick={() => setIsUserRoleDropdownOpen(prev => !prev)}
+                  className="flex items-center justify-between gap-3 px-3.5 py-2 sm:py-2.5 rounded-2xl bg-white dark:bg-[#121622] hover:bg-gray-50/80 dark:hover:bg-[#161c2c] border border-gray-200/90 dark:border-white/10 shadow-sm transition-all text-left cursor-pointer group select-none min-w-[210px] sm:min-w-[240px] active:scale-[0.99]"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+                      <Filter size={14} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[9px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                        Filter by Role
+                      </div>
+                      <div className="text-xs sm:text-sm font-black text-gray-900 dark:text-white truncate">
+                        {activeUserRoleOption.label}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20">
+                      {activeUserRoleOption.count}
+                    </span>
+                    <div className={`w-7 h-7 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 dark:text-gray-400 transition-transform duration-200 group-hover:text-gray-900 dark:group-hover:text-white ${isUserRoleDropdownOpen ? 'rotate-180 text-[#0055FF] dark:text-[#00D4B2]' : ''}`}>
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
+                </button>
+
+                {/* Animated Floating Menu */}
+                <AnimatePresence>
+                  {isUserRoleDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute left-0 top-full mt-2 z-50 w-64 sm:w-72 rounded-2xl bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-2xl border border-gray-200 dark:border-white/15 shadow-2xl shadow-black/20 overflow-hidden divide-y divide-gray-100 dark:divide-white/5 max-h-[340px] overflow-y-auto"
                     >
-                      <span>{tab.label}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isActive 
-                          ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]' 
-                          : 'bg-gray-200/70 dark:bg-white/5 text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {tab.count}
-                      </span>
-                    </button>
-                  );
-                })}
+                      <div className="p-1.5 space-y-0.5">
+                        {userRoleFilterOptions.map(opt => {
+                          const isSelected = activeUserRoleOption.value === opt.value;
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                setUserColFilterRole(opt.value);
+                                setIsUserRoleDropdownOpen(false);
+                              }}
+                              className={`w-full px-3 py-2 rounded-xl flex items-center justify-between text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]'
+                                  : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04] text-gray-700 dark:text-gray-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                                  isSelected
+                                    ? 'bg-[#0055FF] text-white dark:bg-[#00D4B2] dark:text-[#0b1120]'
+                                    : 'bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-400'
+                                }`}>
+                                  <Shield size={12} />
+                                </div>
+                                <div className="text-xs font-bold truncate">
+                                  {opt.label}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
+                                  isSelected
+                                    ? 'bg-[#0055FF]/20 dark:bg-[#00D4B2]/20 text-[#0055FF] dark:text-[#00D4B2]'
+                                    : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400'
+                                }`}>
+                                  {opt.count}
+                                </span>
+                                {isSelected ? (
+                                  <Check size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                                ) : (
+                                  <div className="w-3.5" />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {activeUserFiltersCount > 0 && (
