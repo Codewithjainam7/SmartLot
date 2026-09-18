@@ -32,11 +32,13 @@ import {
   RotateCcw,
   Loader2,
   ListFilter,
-  Layers
+  Layers,
+  Search
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
 import { SurveyBuilderModal } from './SurveyBuilderModal';
+import { QuestionDetailModal } from './QuestionDetailModal';
 import { CustomSelect, SelectOption } from './core/CustomSelect';
 import QRCode from 'qrcode';
 
@@ -68,8 +70,14 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-  const [commentFilter, setCommentFilter] = useState<'all' | 'anonymous' | 'unit_tagged'>('all');
+  const [commentFilter, setCommentFilter] = useState<'all' | 'with_comments' | 'anonymous' | 'unit_tagged'>('all');
+  const [commentSearch, setCommentSearch] = useState('');
+  const [copiedCommentId, setCopiedCommentId] = useState<string | null>(null);
   const [ratingFilter, setRatingFilter] = useState<'all' | 'category'>('all');
+  const [selectedQuestionForDetail, setSelectedQuestionForDetail] = useState<{
+    question: SurveyQuestion;
+    index: number;
+  } | null>(null);
 
   // Permissions: Only Strata Managers, Strata Admins, and Committee Members can create, edit, or delete surveys
   const currentMembership = store.activePersona?.memberships?.find(m => m.schemeId === store.activeScheme?.id);
@@ -329,7 +337,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                 {activeScheme.name.toUpperCase()} ({activeScheme.id})
               </span>
 
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-sans font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                 Resident Feedback & <span className="text-[#00897B] dark:text-[#00D4B2]">Surveys</span>
               </h1>
 
@@ -533,7 +541,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </span>
             </div>
             
-            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
+            <div className="text-xl sm:text-3xl font-sans font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
               {responses.length} <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">/ {totalLots} Lots</span>
             </div>
 
@@ -562,7 +570,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </span>
             </div>
 
-            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1 flex items-center gap-1.5 sm:gap-2">
+            <div className="text-xl sm:text-3xl font-sans font-black text-gray-900 dark:text-white my-0.5 sm:my-1 flex items-center gap-1.5 sm:gap-2">
               <span>{hasRatings ? avgSatisfaction : '0.0'}</span>
               <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">/ 5.0</span>
             </div>
@@ -593,7 +601,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </span>
             </div>
 
-            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
+            <div className="text-xl sm:text-3xl font-sans font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
               {hasNps ? `${npsScore >= 0 ? '+' : ''}${npsScore}` : '--'}
             </div>
 
@@ -621,7 +629,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               </span>
             </div>
 
-            <div className="text-xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
+            <div className="text-xl sm:text-3xl font-sans font-black text-gray-900 dark:text-white my-0.5 sm:my-1">
               {anonymousCount} <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">Anon</span>
             </div>
 
@@ -744,10 +752,10 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               {/* Header with Filters */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
                 <div>
-                  <h3 className="text-base sm:text-lg font-heading font-black text-gray-900 dark:text-white">
+                  <h3 className="text-lg sm:text-xl font-sans font-black text-gray-900 dark:text-white tracking-tight">
                     Rating Breakdown by Question
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium">
                     Detailed view of resident responses across key categories
                   </p>
                 </div>
@@ -840,11 +848,13 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                     return (
                       <div 
                         key={q.id} 
-                        className="p-4 rounded-2xl bg-gray-50/80 dark:bg-[#060B18]/70 border border-gray-200/80 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/15 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs"
+                        onClick={() => setSelectedQuestionForDetail({ question: q, index: qIdx })}
+                        className="p-4 rounded-2xl bg-gray-50/80 dark:bg-[#060B18]/70 border border-gray-200/80 dark:border-white/5 hover:border-[#00897B]/40 dark:hover:border-[#00D4B2]/40 hover:bg-gray-100/80 dark:hover:bg-[#081226] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs cursor-pointer group select-none active:scale-[0.99]"
+                        title="Click to view full responses and distributions for this question"
                       >
                         {/* Left: Number + Category Badge + Question Text */}
                         <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-2xs group-hover:border-[#00897B]/30 dark:group-hover:border-[#00D4B2]/30">
                             {String(qIdx + 1).padStart(2, '0')}
                           </div>
 
@@ -864,7 +874,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-200 leading-snug font-sans">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-200 leading-snug font-sans group-hover:text-black dark:group-hover:text-white transition-colors">
                               {q.questionText}
                             </p>
 
@@ -902,7 +912,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                           </div>
                         </div>
 
-                        {/* Right: Score Pill + Count + Chevron */}
+                        {/* Right: Score Pill + Count + Explicit "View Responses" Action */}
                         <div className="flex items-center justify-between md:justify-end gap-3 shrink-0">
                           <div className="text-left md:text-right">
                             {isChoice ? (
@@ -922,7 +932,19 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                             </div>
                           </div>
 
-                          <ChevronRight size={16} className="text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white transition-colors cursor-pointer" />
+                          {/* Explicit accessible button for senior users */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedQuestionForDetail({ question: q, index: qIdx });
+                            }}
+                            className="h-9 px-3 rounded-xl bg-white dark:bg-white/10 hover:bg-[#00897B]/15 dark:hover:bg-[#00D4B2]/20 text-gray-800 dark:text-gray-200 hover:text-[#00897B] dark:hover:text-[#00D4B2] border border-gray-200 dark:border-white/10 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95 group-hover:border-[#00897B]/40 dark:group-hover:border-[#00D4B2]/40 shrink-0"
+                            title="Open full responses for this question"
+                          >
+                            <span>View Responses</span>
+                            <ChevronRight size={14} className="text-[#00897B] dark:text-[#00D4B2] group-hover:translate-x-0.5 transition-transform shrink-0" />
+                          </button>
                         </div>
                       </div>
                     );
@@ -936,7 +958,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               {/* Card A: Overall Sentiment with Donut Chart */}
               <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm dark:shadow-xs space-y-5">
                 <div>
-                  <h4 className="text-base font-heading font-black text-gray-900 dark:text-white">
+                  <h4 className="text-base sm:text-lg font-sans font-black text-gray-900 dark:text-white tracking-tight">
                     Overall Sentiment
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -974,7 +996,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
 
                     {/* Donut Center text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                      <span className="text-2xl sm:text-3xl font-heading font-black text-gray-900 dark:text-white leading-none">
+                      <span className="text-2xl sm:text-3xl font-sans font-black text-gray-900 dark:text-white leading-none">
                         {hasRatings ? avgSatisfaction : '--'}
                       </span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">
@@ -1138,7 +1160,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
               {/* Card B: Share Survey with More Residents */}
               <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm dark:shadow-xs space-y-4">
                 <div>
-                  <h4 className="text-sm sm:text-base font-heading font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <h4 className="text-sm sm:text-base font-sans font-black text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
                     <Share2 size={16} className="text-[#00897B] dark:text-[#00D4B2]" />
                     <span>Share Survey with More Residents</span>
                   </h4>
@@ -1191,145 +1213,410 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           </div>
         )}
 
-        {/* ── 6. TAB 2: Resident Feedback Comments ─────────────────────── */}
-        {activeTab === 'comments' && selectedSurvey && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl p-3 sm:p-4 shadow-sm dark:shadow-xs">
-              <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                Filter by Respondent:
-              </div>
+        {/* ── 6. TAB 2: Resident Feedback & Submissions (Accessible & Crystal Clear) ──── */}
+        {activeTab === 'comments' && selectedSurvey && (() => {
+          // Count metrics
+          const withCommentsCount = responses.filter(r => 
+            selectedSurvey.questions.some(q => 
+              (q.type === 'text_feedback' || (q.type as string) === 'text') && typeof r.answers[q.id] === 'string' && r.answers[q.id].trim().length > 0
+            )
+          ).length;
 
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setCommentFilter('all')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none active:scale-95 ${
-                    commentFilter === 'all'
-                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
-                      : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'
-                  }`}
-                >
-                  All ({responses.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCommentFilter('unit_tagged')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none active:scale-95 ${
-                    commentFilter === 'unit_tagged'
-                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
-                      : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'
-                  }`}
-                >
-                  Unit Identified ({responses.length - anonymousCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCommentFilter('anonymous')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 select-none active:scale-95 ${
-                    commentFilter === 'anonymous'
-                      ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
-                      : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'
-                  }`}
-                >
-                  🔒 Anonymous ({anonymousCount})
-                </button>
-              </div>
-            </div>
+          // Filter logic
+          const filteredSubmissions = responses.filter(r => {
+            // Filter mode
+            if (commentFilter === 'anonymous' && !r.isAnonymous) return false;
+            if (commentFilter === 'unit_tagged' && r.isAnonymous) return false;
+            if (commentFilter === 'with_comments') {
+              const hasText = selectedSurvey.questions.some(q => 
+                (q.type === 'text_feedback' || (q.type as string) === 'text') && typeof r.answers[q.id] === 'string' && r.answers[q.id].trim().length > 0
+              );
+              if (!hasText) return false;
+            }
 
-            {/* Comments Feed */}
-            {responses.length === 0 ? (
-              <div className="p-8 rounded-2xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 text-center shadow-xs">
-                <MessageSquare size={32} className="text-gray-400 dark:text-gray-500 mx-auto mb-3" />
-                <h4 className="font-heading font-black text-sm text-gray-900 dark:text-white mb-1">
-                  No Resident Feedback Submitted Yet
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                  Responses and open-ended feedback comments will appear here as soon as residents submit the questionnaire.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {responses
-                .filter(r => {
-                  if (commentFilter === 'anonymous') return r.isAnonymous;
-                  if (commentFilter === 'unit_tagged') return !r.isAnonymous;
-                  return true;
-                })
-                .map((r) => {
-                  const textAnswers = Object.entries(r.answers)
-                    .map(([qId, val]) => {
-                      const q = selectedSurvey.questions.find(item => item.id === qId);
-                      return { qText: q?.questionText || 'Feedback', val };
-                    })
-                    .filter(item => typeof item.val === 'string' && item.val.trim().length > 0);
+            // Search query
+            if (commentSearch.trim()) {
+              const query = commentSearch.toLowerCase();
+              const unitMatch = r.unitId?.toLowerCase().includes(query);
+              const nameMatch = r.respondentName?.toLowerCase().includes(query);
+              const answersMatch = Object.values(r.answers).some(val => 
+                String(val).toLowerCase().includes(query)
+              );
+              return unitMatch || nameMatch || answersMatch;
+            }
 
-                  return (
-                    <div 
-                      key={r.id}
-                      className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 shadow-sm dark:shadow-xs flex flex-col justify-between space-y-4"
+            return true;
+          });
+
+          return (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {/* Header & Filter Card */}
+              <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm dark:shadow-xs space-y-4 font-sans">
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-sans font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                      <MessageSquare size={20} className="text-[#00897B] dark:text-[#00D4B2]" />
+                      <span>Resident Submissions & Verbatim Feedback</span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mt-0.5">
+                      Clear question-by-question breakdown of resident suggestions, category ratings, and common asset votes.
+                    </p>
+                  </div>
+
+                  {/* Summary Metric Counters */}
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                    <span className="px-3 py-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 font-bold">
+                      {responses.length} Submissions
+                    </span>
+                    <span className="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 font-bold">
+                      {withCommentsCount} Written Suggestions
+                    </span>
+                  </div>
+                </div>
+
+                {/* Filter and Search Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Search */}
+                  <div className="relative flex-1 max-w-md">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search feedback comments, units, or keywords..."
+                      value={commentSearch}
+                      onChange={(e) => setCommentSearch(e.target.value)}
+                      className="w-full h-10 pl-9 pr-8 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-[#00897B] dark:focus:border-[#00D4B2]"
+                    />
+                    {commentSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setCommentSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white p-0.5"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filter Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCommentFilter('all')}
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                        commentFilter === 'all'
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/5'
+                      }`}
                     >
-                      <div>
-                        {/* Header Badge */}
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                            r.isAnonymous 
-                              ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20' 
-                              : 'bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20'
-                          }`}>
-                            {r.isAnonymous ? <Lock size={12} /> : <Building2 size={12} />}
-                            {r.isAnonymous ? 'Anonymous Resident' : (r.unitId || 'Unit Resident')}
-                          </span>
+                      All ({responses.length})
+                    </button>
 
-                          <span className="text-[11px] text-gray-400 dark:text-gray-500">
-                            {new Date(r.submittedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
-                          </span>
+                    <button
+                      type="button"
+                      onClick={() => setCommentFilter('with_comments')}
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                        commentFilter === 'with_comments'
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/5'
+                      }`}
+                    >
+                      💬 With Written Notes ({withCommentsCount})
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCommentFilter('unit_tagged')}
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                        commentFilter === 'unit_tagged'
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/5'
+                      }`}
+                    >
+                      Identified Units ({responses.length - anonymousCount})
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCommentFilter('anonymous')}
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                        commentFilter === 'anonymous'
+                          ? 'bg-[#00897B] text-white dark:bg-[#00D4B2] dark:text-[#050A15] shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/5'
+                      }`}
+                    >
+                      🔒 Anonymous ({anonymousCount})
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Submissions Feed */}
+              {filteredSubmissions.length === 0 ? (
+                <div className="p-8 sm:p-12 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 text-center shadow-xs space-y-3 font-sans">
+                  <MessageSquare size={36} className="text-gray-400 dark:text-gray-500 mx-auto opacity-70" />
+                  <h4 className="font-sans font-black text-base text-gray-900 dark:text-white">
+                    No Submissions Match This Filter
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                    Try adjusting your filter selection or clearing your search term to view other resident submissions.
+                  </p>
+                  {(commentFilter !== 'all' || commentSearch) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCommentFilter('all');
+                        setCommentSearch('');
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/10 text-xs font-bold text-gray-800 dark:text-white hover:bg-gray-200 cursor-pointer"
+                    >
+                      Reset All Filters
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+                  {filteredSubmissions.map((r) => {
+                    // 1. Written open-ended text questions
+                    const writtenFeedbacks = selectedSurvey.questions
+                      .filter(q => q.type === 'text_feedback' || (q.type as string) === 'text')
+                      .map(q => ({
+                        q,
+                        val: typeof r.answers[q.id] === 'string' && r.answers[q.id].trim() ? r.answers[q.id].trim() : null
+                      }))
+                      .filter(item => item.val !== null);
+
+                    // 2. Star rating questions
+                    const starRatingItems = selectedSurvey.questions
+                      .filter(q => q.type === 'star_rating')
+                      .map(q => ({
+                        q,
+                        val: typeof r.answers[q.id] === 'number' ? r.answers[q.id] : null
+                      }))
+                      .filter(item => item.val !== null);
+
+                    // 3. NPS questions
+                    const npsItems = selectedSurvey.questions
+                      .filter(q => q.type === 'nps_score')
+                      .map(q => ({
+                        q,
+                        val: typeof r.answers[q.id] === 'number' ? r.answers[q.id] : null
+                      }))
+                      .filter(item => item.val !== null);
+
+                    // 4. Choice questions (single and multi)
+                    const choiceItems = selectedSurvey.questions
+                      .filter(q => q.type === 'single_choice' || q.type === 'multi_choice')
+                      .map(q => ({
+                        q,
+                        val: r.answers[q.id] !== undefined && r.answers[q.id] !== null && r.answers[q.id] !== '' ? r.answers[q.id] : null
+                      }))
+                      .filter(item => item.val !== null);
+
+                    // Compute overall personal star average
+                    const residentAvgRating = starRatingItems.length > 0
+                      ? (starRatingItems.reduce((acc, curr) => acc + (curr.val || 0), 0) / starRatingItems.length).toFixed(1)
+                      : null;
+
+                    const formattedDate = new Date(r.submittedAt).toLocaleDateString('en-AU', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+
+                    return (
+                      <div 
+                        key={r.id}
+                        className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm dark:shadow-xs flex flex-col justify-between space-y-4 font-sans hover:border-gray-300 dark:hover:border-white/20 transition-all"
+                      >
+                        <div className="space-y-4">
+                          
+                          {/* Top Header: Identity Badge + Date + Average Score Pill */}
+                          <div className="flex items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5 flex-wrap">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                                r.isAnonymous 
+                                  ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20' 
+                                  : 'bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20'
+                              }`}>
+                                {r.isAnonymous ? <Lock size={13} /> : <Building2 size={13} />}
+                                <span>{r.isAnonymous ? 'Anonymous Resident' : (r.unitId || 'Unit Resident')}</span>
+                              </span>
+
+                              {r.respondentName && !r.isAnonymous && (
+                                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                                  {r.respondentName}
+                                </span>
+                              )}
+
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                                {r.isAnonymous ? 'Confidential Ballot' : 'Verified Lot'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {residentAvgRating && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-bold">
+                                  <Star size={12} className="fill-amber-400 text-amber-400" />
+                                  <span>★ {residentAvgRating} avg</span>
+                                </span>
+                              )}
+
+                              <span className="text-[11px] text-gray-400 dark:text-gray-500">
+                                {formattedDate}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Section 1: Written Comments & Open Suggestions (High Priority) */}
+                          <div className="space-y-2">
+                            {writtenFeedbacks.length > 0 ? (
+                              writtenFeedbacks.map((item, idx) => (
+                                <div 
+                                  key={idx} 
+                                  className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-[#1A180E] border border-amber-200/80 dark:border-amber-500/30 space-y-1.5"
+                                >
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                                    <MessageSquare size={13} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                                    <span>{item.q.questionText}</span>
+                                  </div>
+                                  <p className="text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-medium leading-relaxed italic pl-1">
+                                    "{item.val}"
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-200/60 dark:border-white/5 text-xs text-gray-500 dark:text-gray-400 italic">
+                                No written suggestion submitted with this entry.
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Section 2: Question Ratings & Scores (Crystal-Clear Labeled Cards) */}
+                          <div className="space-y-2 pt-1">
+                            <div className="text-[10px] font-black uppercase font-mono tracking-wider text-gray-400 dark:text-gray-500">
+                              SURVEY RATINGS & RESPONSES
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {/* Star Ratings */}
+                              {starRatingItems.map((item) => (
+                                <div 
+                                  key={item.q.id}
+                                  className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#050A15] border border-gray-200/70 dark:border-white/5 flex items-center justify-between gap-2"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-[10px] font-bold text-gray-400 uppercase truncate">
+                                      {item.q.category}
+                                    </div>
+                                    <div className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate" title={item.q.questionText}>
+                                      {item.q.questionText}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-1 text-xs font-bold text-amber-500 dark:text-amber-400 shrink-0 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                                    <Star size={12} className="fill-amber-400" />
+                                    <span>{item.val}.0</span>
+                                    <span className="text-[10px] text-gray-400">/5</span>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {/* NPS Ratings */}
+                              {npsItems.map((item) => (
+                                <div 
+                                  key={item.q.id}
+                                  className="p-2.5 rounded-xl bg-cyan-500/5 dark:bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between gap-2"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-[10px] font-bold text-cyan-700 dark:text-cyan-400 uppercase truncate">
+                                      Community Recommendation
+                                    </div>
+                                    <div className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate" title={item.q.questionText}>
+                                      {item.q.questionText}
+                                    </div>
+                                  </div>
+
+                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md shrink-0 ${
+                                    (item.val || 0) >= 9 
+                                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25'
+                                      : (item.val || 0) >= 7
+                                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25'
+                                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/25'
+                                  }`}>
+                                    {item.val} / 10 • {(item.val || 0) >= 9 ? 'Promoter' : (item.val || 0) >= 7 ? 'Passive' : 'Detractor'}
+                                  </span>
+                                </div>
+                              ))}
+
+                              {/* Multiple Choice Answers */}
+                              {choiceItems.map((item) => (
+                                <div 
+                                  key={item.q.id}
+                                  className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#050A15] border border-gray-200/70 dark:border-white/5 flex items-center justify-between gap-2"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-[10px] font-bold text-gray-400 uppercase truncate">
+                                      {item.q.category}
+                                    </div>
+                                    <div className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate" title={item.q.questionText}>
+                                      {item.q.questionText}
+                                    </div>
+                                  </div>
+
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-md bg-[#00D4B2]/15 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/25 shrink-0">
+                                    <Check size={11} className="stroke-[3]" />
+                                    <span>{Array.isArray(item.val) ? item.val.join(', ') : String(item.val)}</span>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
                         </div>
 
-                        {/* Resident Name if available */}
-                        {r.respondentName && (
-                          <div className="text-xs font-black text-gray-900 dark:text-white mb-2">
-                            {r.respondentName}
-                          </div>
-                        )}
+                        {/* Card Bottom: Copy Feedback Button & Submission ID */}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5 text-xs text-gray-500 dark:text-gray-400">
+                          <span className="font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                            ID: {r.id}
+                          </span>
 
-                        {/* Open Comment Text */}
-                        {textAnswers.length > 0 ? (
-                          <div className="space-y-2">
-                            {textAnswers.map((item, idx) => (
-                              <div key={idx} className="bg-gray-50 dark:bg-[#050A15] rounded-xl p-3 border border-gray-200/80 dark:border-white/5">
-                                <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">
-                                  {item.qText}
-                                </p>
-                                <p className="text-xs sm:text-sm text-gray-800 dark:text-gray-200 leading-relaxed italic">
-                                  "{item.val}"
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs text-gray-400 dark:text-gray-500 italic">No open-ended comments provided.</p>
-                        )}
-                      </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const notes = writtenFeedbacks.map(f => `${f.q.questionText}: "${f.val}"`).join('\n');
+                              const textToCopy = `Feedback from ${r.unitId || 'Anonymous'} (${formattedDate}):\n${notes || 'Rating only submission'}`;
+                              navigator.clipboard.writeText(textToCopy);
+                              setCopiedCommentId(r.id);
+                              setTimeout(() => setCopiedCommentId(null), 2000);
+                            }}
+                            className="h-8 px-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            title="Copy feedback notes for committee meetings"
+                          >
+                            {copiedCommentId === r.id ? (
+                              <>
+                                <Check size={12} className="text-emerald-500" />
+                                <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={12} />
+                                <span>Copy Feedback Note</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
 
-                      {/* Ratings Chips at Bottom */}
-                      <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-white/5 text-[11px] text-gray-500 dark:text-gray-400">
-                        {Object.entries(r.answers)
-                          .filter(([_, v]) => typeof v === 'number')
-                          .slice(0, 3)
-                          .map(([qId, v]) => (
-                            <span key={qId} className="flex items-center gap-1 font-bold">
-                              <Star size={11} className="text-amber-500 fill-amber-400" />
-                              <span className="text-gray-700 dark:text-gray-300">{v}</span>
-                            </span>
-                          ))}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                    );
+                  })}
+                </div>
+              )}
+
+            </div>
+          );
+        })()}
 
         {/* ── 7. TAB 3: Executive Synthesis ────────────────────────────── */}
         {activeTab === 'ai_summary' && selectedSurvey && (
@@ -1342,7 +1629,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                   <FileText size={15} />
                   <span>Executive Sentiment Digest</span>
                 </div>
-                <h3 className="text-base sm:text-lg font-heading font-black text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-sans font-black text-gray-900 dark:text-white tracking-tight">
                   AGM & Strata Committee Digest
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -1450,7 +1737,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
             ) : (
               <div className="p-8 rounded-2xl bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 text-center shadow-xs">
                 <FileText size={32} className="text-gray-400 dark:text-gray-500 mx-auto mb-3" />
-                <h4 className="font-heading font-black text-sm text-gray-900 dark:text-white mb-1">
+                <h4 className="font-sans font-black text-sm text-gray-900 dark:text-white mb-1">
                   No Executive Report Generated Yet
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
@@ -1475,7 +1762,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
           <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm dark:shadow-xs space-y-4 animate-in fade-in duration-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
               <div>
-                <h3 className="text-base font-heading font-black text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-sans font-black text-gray-900 dark:text-white tracking-tight">
                   Active Survey Questions ({selectedSurvey.questions.length})
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -1572,16 +1859,27 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
         }}
       />
 
+      {/* Question Detail Breakdown Deep-Dive Modal */}
+      <QuestionDetailModal
+        isOpen={selectedQuestionForDetail !== null}
+        onClose={() => setSelectedQuestionForDetail(null)}
+        question={selectedQuestionForDetail?.question || null}
+        questionIndex={selectedQuestionForDetail?.index || 0}
+        totalQuestions={selectedSurvey?.questions.length || 0}
+        responses={responses}
+        allQuestions={selectedSurvey?.questions || []}
+      />
+
       {/* Delete Confirmation Modal */}
       {surveyToDelete && (
         <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0d1117] border-t sm:border border-gray-200/80 dark:border-white/10 rounded-t-3xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-7">
+          <div className="bg-white dark:bg-[#0d1117] border-t sm:border border-gray-200/80 dark:border-white/10 rounded-t-3xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-7 font-sans">
             <div className="flex items-start gap-3.5 sm:gap-4 mb-4">
               <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-red-500/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center shrink-0">
                 <Trash2 size={22} className="sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-heading font-black text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-sans font-black text-gray-900 dark:text-white tracking-tight">
                   Delete Survey Form?
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium leading-relaxed">
