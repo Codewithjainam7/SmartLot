@@ -26,7 +26,8 @@ import {
   Camera,
   Download,
   HelpCircle,
-  FileDown
+  FileDown,
+  ChevronDown
 } from 'lucide-react';
 
 interface VendorViewProps {
@@ -90,6 +91,7 @@ export function VendorView({
   const [tenderScope, setTenderScope] = useState('');
   const [tenderBudget, setTenderBudget] = useState('3500');
   const [selectedVendorsForTender, setSelectedVendorsForTender] = useState<string[]>([]);
+  const [isVendorDropdownOpen, setIsVendorDropdownOpen] = useState(false);
   const [adHocVendorName, setAdHocVendorName] = useState('');
   const [adHocVendorEmail, setAdHocVendorEmail] = useState('');
   const [adHocVendorQuoteAmount, setAdHocVendorQuoteAmount] = useState('3100');
@@ -147,7 +149,7 @@ export function VendorView({
     .filter(r => !r.schemeId || r.schemeId === activeSchemeId)
     .map(r => ({
       value: r.id,
-      label: `${r.id} - ${r.title.slice(0, 45)}...`,
+      label: r.title,
       description: `Raised by ${r.requestorName} • ${r.priority} Priority`
     }));
 
@@ -252,7 +254,7 @@ export function VendorView({
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] text-[10px] sm:text-xs font-bold uppercase tracking-wider">
             <Wrench size={13} /> Trades & Work Orders Lifecycle
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+          <h1 className="font-sans text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             Trades & Work Orders
           </h1>
           <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 max-w-2xl">
@@ -635,7 +637,7 @@ export function VendorView({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
-                        {req.id} • {req.priority} Priority
+                        {req.priority} Priority
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0055FF] text-[10px] font-bold uppercase">
                         Quotes Received
@@ -885,22 +887,24 @@ export function VendorView({
       {/* MODAL 1: MANAGER SIGN-OFF & TICKET CLOSURE */}
       {signOffModalWo && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200 font-sans">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                  <CheckCircle2 size={20} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={22} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-gray-900 dark:text-white">Strata Manager Work Order Sign-Off</h3>
-                  <span className="text-xs text-gray-500">Work Order {signOffModalWo.id} • {signOffModalWo.caseId}</span>
+                  <h3 className="font-sans text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-normal">
+                    Strata Manager Work Order Sign-Off
+                  </h3>
+                  <span className="text-xs text-gray-500">Work Order {signOffModalWo.id}</span>
                 </div>
               </div>
               <button 
                 onClick={() => setSignOffModalWo(null)}
                 className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
@@ -973,14 +977,16 @@ export function VendorView({
       {/* MODAL 2: CREATE TENDER / REQUEST QUOTES MODAL */}
       {showCreateTenderModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200 font-sans">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-                  <Vote size={20} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                  <Vote size={22} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-gray-900 dark:text-white">Request Contractor Quotes (Tender)</h3>
+                  <h3 className="font-sans text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-normal">
+                    Request Contractor Quotes (Tender)
+                  </h3>
                   <span className="text-xs text-gray-500">Collect up to 3 quotes under Australian strata rules</span>
                 </div>
               </div>
@@ -988,15 +994,15 @@ export function VendorView({
                 onClick={() => setShowCreateTenderModal(false)}
                 className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateTenderSubmit} className="space-y-4">
+            <form onSubmit={handleCreateTenderSubmit} className="space-y-4 font-sans">
               {/* Linked Request Dropdown */}
               <div>
                 <CustomSelect
-                  label="Select Building Issue / Ticket"
+                  label="Select Building Issue / Ticket *"
                   options={requestOptions}
                   value={tenderRequestId}
                   onChange={val => {
@@ -1008,12 +1014,17 @@ export function VendorView({
                   }}
                   placeholder="Choose an open repair ticket..."
                 />
+                {!tenderRequestId && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 ml-1 font-medium">
+                    * Required: Please select an open issue to tender.
+                  </p>
+                )}
               </div>
 
               {/* Scope Brief */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Scope of Work Brief for Contractors
+                  Scope of Work Brief for Contractors <span className="text-red-500 font-bold">*</span>
                 </label>
                 <textarea
                   rows={2}
@@ -1021,63 +1032,133 @@ export function VendorView({
                   value={tenderScope}
                   onChange={e => setTenderScope(e.target.value)}
                   placeholder="e.g. Attend site to inspect hydraulic motor on Lift 1, diagnose error code E-41, and replace faulty power inverter unit."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF] focus:ring-1 focus:ring-[#0055FF]"
                 />
               </div>
 
               {/* Target Budget */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Estimated / Target Budget ($ ex GST)
+                  Estimated / Target Budget ($ ex GST) <span className="text-red-500 font-bold">*</span>
                 </label>
                 <input
                   type="number"
                   required
+                  min="1"
                   value={tenderBudget}
                   onChange={e => setTenderBudget(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF] focus:ring-1 focus:ring-[#0055FF]"
                 />
               </div>
 
-              {/* Choose Verified Directory Trades */}
-              <div>
+              {/* Choose Verified Directory Trades (Dropdown Multi-Select) */}
+              <div className="relative">
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Invite Verified Directory Trades (Select 1–3)
+                  Invite Verified Directory Trades (Select 1–3) <span className="text-red-500 font-bold">*</span>
                 </label>
-                <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                  {vendors.map(v => (
-                    <label 
-                      key={v.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="checkbox"
-                          checked={selectedVendorsForTender.includes(v.id)}
-                          onChange={e => {
-                            if (e.target.checked) {
-                              setSelectedVendorsForTender([...selectedVendorsForTender, v.id]);
-                            } else {
+                
+                <button
+                  type="button"
+                  onClick={() => setIsVendorDropdownOpen(!isVendorDropdownOpen)}
+                  className="w-full min-h-[42px] px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#161a26] hover:bg-white dark:hover:bg-[#1f2434] focus:outline-none focus:ring-2 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all flex items-center justify-between text-xs text-gray-900 dark:text-white cursor-pointer shadow-xs"
+                >
+                  <div className="flex flex-wrap items-center gap-1.5 flex-1 mr-2">
+                    {selectedVendorsForTender.length === 0 ? (
+                      <span className="text-gray-400 dark:text-gray-500 font-normal">
+                        Select accredited contractors to quote...
+                      </span>
+                    ) : (
+                      selectedVendorsForTender.map(id => {
+                        const v = vendors.find(item => item.id === id);
+                        if (!v) return null;
+                        return (
+                          <span 
+                            key={v.id} 
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] text-[11px] font-bold border border-[#0055FF]/20 dark:border-[#00D4B2]/20"
+                          >
+                            <span className="truncate max-w-[130px]">{v.name}</span>
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedVendorsForTender(selectedVendorsForTender.filter(item => item !== v.id));
+                              }}
+                              className="hover:text-red-500 cursor-pointer ml-0.5"
+                            >
+                              <X size={12} />
+                            </span>
+                          </span>
+                        );
+                      })
+                    )}
+                  </div>
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-gray-400 transition-transform duration-200 shrink-0 ${isVendorDropdownOpen ? 'rotate-180 text-gray-700 dark:text-white' : ''}`}
+                  />
+                </button>
+
+                {/* Dropdown Menu Panel */}
+                {isVendorDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white dark:bg-[#0d1117] rounded-2xl border border-gray-200 dark:border-white/10 shadow-xl p-2 max-h-56 overflow-y-auto space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-2 py-1 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-white/5 mb-1">
+                      <span>Accredited Directory Trades ({vendors.length})</span>
+                      <span className="text-[#0055FF] dark:text-[#00D4B2] font-semibold">{selectedVendorsForTender.length} selected</span>
+                    </div>
+
+                    {vendors.map(v => {
+                      const isSelected = selectedVendorsForTender.includes(v.id);
+                      return (
+                        <div
+                          key={v.id}
+                          onClick={() => {
+                            if (isSelected) {
                               setSelectedVendorsForTender(selectedVendorsForTender.filter(id => id !== v.id));
+                            } else {
+                              setSelectedVendorsForTender([...selectedVendorsForTender, v.id]);
                             }
                           }}
-                          className="rounded text-blue-600"
-                        />
-                        <span className="font-bold text-gray-900 dark:text-white">{v.name}</span>
-                        <span className="text-[10px] text-gray-400">({v.category})</span>
-                      </div>
-                      {v.insuranceStatus === 'Active' ? (
-                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                          <ShieldCheck size={11} /> Active Ins.
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-red-500 font-bold flex items-center gap-0.5">
-                          <AlertTriangle size={11} /> Expired Ins.
-                        </span>
-                      )}
-                    </label>
-                  ))}
-                </div>
+                          className={`flex items-center justify-between p-2.5 rounded-xl transition-colors cursor-pointer text-xs ${
+                            isSelected 
+                              ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40' 
+                              : 'hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
+                              isSelected 
+                                ? 'bg-[#0055FF] border-[#0055FF] text-white' 
+                                : 'border-gray-300 dark:border-white/20 bg-white dark:bg-transparent'
+                            }`}>
+                              {isSelected && <Check size={12} className="stroke-[3]" />}
+                            </div>
+                            <div className="truncate">
+                              <span className="font-bold text-gray-900 dark:text-white block truncate">{v.name}</span>
+                              <span className="text-[10px] text-gray-400 block">{v.category} • License {v.licenseNo}</span>
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 ml-2">
+                            {v.insuranceStatus === 'Active' ? (
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                                <ShieldCheck size={11} /> Active
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-red-500 font-bold flex items-center gap-0.5 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
+                                <AlertTriangle size={11} /> Expired
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {selectedVendorsForTender.length === 0 && !adHocVendorName.trim() && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 ml-1 font-medium">
+                    * Please select at least 1 contractor from dropdown (or invite an ad-hoc contractor below).
+                  </p>
+                )}
               </div>
 
               {/* Or Add Ad-Hoc Trade */}
@@ -1114,7 +1195,7 @@ export function VendorView({
                 </button>
                 <button
                   type="submit"
-                  disabled={!tenderRequestId}
+                  disabled={!tenderRequestId || (selectedVendorsForTender.length === 0 && !adHocVendorName.trim())}
                   className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                 >
                   <Vote size={15} /> Send Tender Brief & Collect Quotes
@@ -1128,14 +1209,16 @@ export function VendorView({
       {/* MODAL 3: ADD CONTRACTOR TO DIRECTORY */}
       {showAddVendorModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-lg bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 md:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200 font-sans">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                  <ShieldCheck size={20} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                  <ShieldCheck size={22} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-gray-900 dark:text-white">Add Contractor & Insurance Check</h3>
+                  <h3 className="font-sans text-lg md:text-xl font-bold text-gray-900 dark:text-white tracking-normal">
+                    Add Contractor & Insurance Check
+                  </h3>
                   <span className="text-xs text-gray-500">Record ABN, trade license, and Certificate of Currency</span>
                 </div>
               </div>
@@ -1143,26 +1226,28 @@ export function VendorView({
                 onClick={() => setShowAddVendorModal(false)}
                 className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateVendorSubmit} className="space-y-3.5">
+            <form onSubmit={handleCreateVendorSubmit} className="space-y-3.5 font-sans">
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Company / Trading Name</label>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                  Company / Trading Name <span className="text-red-500 font-bold">*</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={newVendorName}
                   onChange={e => setNewVendorName(e.target.value)}
                   placeholder="e.g. Kone Elevator Maintenance NSW"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-900 dark:text-white outline-none focus:border-[#0055FF] focus:ring-1 focus:ring-[#0055FF]"
                 />
               </div>
 
               <div>
                 <CustomSelect
-                  label="Trade Category"
+                  label="Trade Category *"
                   options={categoryOptions}
                   value={newVendorCategory}
                   onChange={setNewVendorCategory}
@@ -1171,60 +1256,72 @@ export function VendorView({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">ABN</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    ABN <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
                     type="text"
+                    required
                     value={newVendorAbn}
                     onChange={e => setNewVendorAbn(e.target.value)}
                     placeholder="51 824 931 002"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Trade License No.</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    Trade License No. <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
                     type="text"
+                    required
                     value={newVendorLicense}
                     onChange={e => setNewVendorLicense(e.target.value)}
                     placeholder="LIC-NSW-39812A"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    Phone <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
-                    type="text"
+                    type="tel"
+                    required
                     value={newVendorPhone}
                     onChange={e => setNewVendorPhone(e.target.value)}
                     placeholder="02 9844 2001"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Dispatch Email</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    Dispatch Email <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
                     type="email"
+                    required
                     value={newVendorEmail}
                     onChange={e => setNewVendorEmail(e.target.value)}
                     placeholder="dispatch@trades.com.au"
-                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white outline-none focus:border-[#0055FF]"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  Public Liability Insurance Expiry (Certificate of Currency)
+                  Public Liability Insurance Expiry (Certificate of Currency) <span className="text-red-500 font-bold">*</span>
                 </label>
                 <input
                   type="date"
                   required
                   value={newVendorExpiry}
                   onChange={e => setNewVendorExpiry(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white font-bold"
+                  className="w-full px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white font-bold outline-none focus:border-[#0055FF]"
                 />
               </div>
 
@@ -1252,14 +1349,16 @@ export function VendorView({
       {/* MODAL 4: VERIFY / RENEW INSURANCE CERTIFICATE */}
       {insuranceVerifyVendor && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200 font-sans">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-emerald-500" />
-                <h3 className="text-sm font-black text-gray-900 dark:text-white">Verify Certificate of Currency</h3>
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck size={22} className="text-emerald-500" />
+                <h3 className="font-sans text-base font-bold text-gray-900 dark:text-white tracking-normal">
+                  Verify Certificate of Currency
+                </h3>
               </div>
-              <button onClick={() => setInsuranceVerifyVendor(null)} className="text-gray-400 hover:text-white cursor-pointer">
-                <X size={16} />
+              <button onClick={() => setInsuranceVerifyVendor(null)} className="text-gray-400 hover:text-white cursor-pointer p-1">
+                <X size={18} />
               </button>
             </div>
 
