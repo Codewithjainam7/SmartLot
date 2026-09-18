@@ -34,7 +34,8 @@ import {
   Palette,
   Upload,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Infinity as InfinityIcon
 } from 'lucide-react';
 import { SurveyQuestion, SurveyCategory, SurveyQuestionType, Survey } from '../types';
 import { STRATA_SURVEY_TEMPLATES } from '../services/aiSurveyService';
@@ -126,6 +127,24 @@ export const normalizeDateInput = (val?: string | null): string => {
   if (val.includes('T')) return val.split('T')[0];
   if (val.includes(' ')) return val.split(' ')[0];
   return val;
+};
+
+export const formatDeadlineDate = (deadlineDateStr?: string | null): string => {
+  if (!deadlineDateStr) return '';
+  const clean = normalizeDateInput(deadlineDateStr);
+  const parts = clean.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts.map(Number);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  }
+  const d = new Date(deadlineDateStr);
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  return deadlineDateStr;
 };
 
 export const formatDeadlineSummary = (deadlineDateStr: string): string => {
@@ -724,34 +743,14 @@ export function SurveyBuilderFormContent({
                       alt="Form Header Banner Preview"
                       className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3.5 sm:p-4">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[#00D4B2] font-mono mb-0.5 block">
-                            BANNER PREVIEW • VISIBLE TO RESIDENTS
-                          </span>
-                          <h4 className="text-white font-extrabold text-xs sm:text-base truncate">
-                            {title || 'Survey Questionnaire Banner'}
-                          </h4>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0 bg-black/60 backdrop-blur-md rounded-xl p-1 border border-white/20">
-                          <button
-                            type="button"
-                            onClick={() => bannerFileInputRef.current?.click()}
-                            className="px-2 sm:px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                          >
-                            <Upload size={11} />
-                            <span>Upload</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setIsBannerPickerOpen(true)}
-                            className="px-2 sm:px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                          >
-                            <Palette size={11} />
-                            <span>Themes</span>
-                          </button>
-                        </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex flex-col justify-end p-3.5 sm:p-4">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#00D4B2] font-mono mb-0.5 block">
+                          BANNER PREVIEW • VISIBLE TO RESIDENTS
+                        </span>
+                        <h4 className="text-white font-extrabold text-xs sm:text-base truncate drop-shadow-xs">
+                          {title || 'Survey Questionnaire Banner'}
+                        </h4>
                       </div>
                     </div>
 
@@ -1097,12 +1096,22 @@ export function SurveyBuilderFormContent({
                     </div>
                   </div>
 
-                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border shrink-0 w-fit ${
+                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border shrink-0 w-fit inline-flex items-center gap-1.5 ${
                     deadline
                       ? 'bg-emerald-50 dark:bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border-emerald-200 dark:border-[#00D4B2]/30'
                       : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/5'
                   }`}>
-                    {deadline ? `📅 Closes: ${deadline}` : '♾️ Open Round (No Expiry)'}
+                    {deadline ? (
+                      <>
+                        <Calendar size={13} className="shrink-0 stroke-[2.2]" />
+                        <span>Closes: {formatDeadlineDate(deadline)}</span>
+                      </>
+                    ) : (
+                      <>
+                        <InfinityIcon size={13} className="shrink-0 stroke-[2.2]" />
+                        <span>Open Round (No Expiry)</span>
+                      </>
+                    )}
                   </span>
                 </div>
 
@@ -1470,6 +1479,16 @@ export function SurveyBuilderFormContent({
               );
             })}
 
+              {/* Add Question at End of Questions List */}
+              <button
+                type="button"
+                onClick={handleAddQuestion}
+                className="w-full py-3 sm:py-3.5 px-4 rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/15 hover:border-[#00897B] dark:hover:border-[#00D4B2] bg-gray-50/70 hover:bg-emerald-50/40 dark:bg-white/[0.02] dark:hover:bg-[#00D4B2]/10 text-gray-700 dark:text-gray-300 hover:text-[#00897B] dark:hover:text-[#00D4B2] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs active:scale-[0.99] select-none"
+              >
+                <Plus size={16} className="stroke-[2.5]" />
+                <span>Add Another Question</span>
+              </button>
+
               {/* Step 2 Inline Next Section Button (Mobile & Desktop) */}
               <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/80 dark:bg-white/[0.02] p-4 rounded-2xl">
                 <div>
@@ -1721,12 +1740,22 @@ export function SurveyBuilderFormContent({
                     <div>
                       <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <span>Survey Response Window</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${
                           deadline 
                             ? 'bg-emerald-50 dark:bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border-emerald-200 dark:border-[#00D4B2]/30'
                             : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10'
                         }`}>
-                          {deadline ? 'Auto-Locks on Expiry' : 'No Expiry'}
+                          {deadline ? (
+                            <>
+                              <Clock size={11} className="stroke-[2.2]" />
+                              <span>Auto-Locks on Expiry</span>
+                            </>
+                          ) : (
+                            <>
+                              <InfinityIcon size={11} className="stroke-[2.2]" />
+                              <span>No Expiry</span>
+                            </>
+                          )}
                         </span>
                       </h4>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
