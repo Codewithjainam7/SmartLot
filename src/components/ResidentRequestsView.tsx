@@ -691,6 +691,206 @@ export function ResidentRequestsView({
       setTimeout(() => setCopiedSummary(false), 2500);
     };
 
+    const requestDetailsCardNode = (
+      <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3.5 sm:space-y-4 text-xs">
+        {/* Header: Title + Monospace Reference Tag with Quick-Copy */}
+        <div className="flex items-center justify-between gap-2 pb-3 border-b border-gray-100 dark:border-white/5">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] flex items-center justify-center shrink-0">
+              <FileText size={14} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-black text-gray-900 dark:text-white leading-tight truncate">
+                Request Details
+              </h3>
+              <span className="text-[10px] text-gray-400 font-medium block">Metadata & Location</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCopyRef}
+            title="Copy Reference ID"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 text-[11px] font-mono font-bold transition-all cursor-pointer group shrink-0"
+          >
+            <span>{activeDetail.referenceId || activeDetail.id}</span>
+            {copiedRef ? (
+              <Check size={11} className="text-emerald-500 stroke-[2.5]" />
+            ) : (
+              <Copy size={11} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors" />
+            )}
+          </button>
+        </div>
+
+        {/* Sub-Card 1: Building & Property Location */}
+        <div className="bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 space-y-2.5">
+          <div className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+            <Building2 size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+            <span>Property & Location</span>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            {/* Building Name */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Building</span>
+              <span className="font-bold text-gray-900 dark:text-white text-right truncate">
+                {activeDetail.buildingName || activeSchemeName || 'Cavalier Apartments'}
+              </span>
+            </div>
+
+            {/* Unit / Lot */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Unit / Lot</span>
+              <span className="inline-flex items-center gap-1.5 font-bold text-gray-900 dark:text-white">
+                <Home size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                <span>{activeDetail.unit || 'Unit 12'}</span>
+              </span>
+            </div>
+
+            {/* Specific Location Area */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Area</span>
+              <span className="inline-flex items-center gap-1 font-semibold text-gray-700 dark:text-gray-300 text-right truncate">
+                <MapPin size={11} className="text-amber-500 shrink-0" />
+                <span>{activeDetail.location || 'Common Property'}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Sub-Card 2: Requester Profile & Contact Details */}
+        <div className="bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 space-y-3">
+          <div className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+            <User size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+            <span>Submitted By</span>
+          </div>
+
+          {/* Submitter Name & Role */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0055FF]/20 to-[#00D4B2]/20 border border-[#0055FF]/20 text-[#0055FF] dark:text-[#00D4B2] font-black text-xs flex items-center justify-center shrink-0">
+                {authorInitials}
+              </div>
+              <div className="min-w-0">
+                <div className="font-bold text-gray-900 dark:text-white truncate">
+                  {activeDetail.requestorName || 'Sarah Jones'}
+                </div>
+                <div className="text-[10px] text-gray-400 font-medium">
+                  {activeDetail.requestorRole || 'Lot Owner'}
+                </div>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+              Resident
+            </span>
+          </div>
+
+          {/* Contact Email & Phone */}
+          <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 shrink-0">
+                <Mail size={11} className="text-gray-400" />
+                <span>Email</span>
+              </span>
+              <a
+                href={`mailto:${requesterEmail}`}
+                className="text-gray-800 dark:text-gray-200 font-semibold hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors truncate max-w-[170px] sm:max-w-none"
+                title={requesterEmail}
+              >
+                {requesterEmail}
+              </a>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 shrink-0">
+                <Phone size={11} className="text-gray-400" />
+                <span>Phone</span>
+              </span>
+              <a
+                href={`tel:${requesterPhone}`}
+                className="text-gray-800 dark:text-gray-200 font-semibold hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+              >
+                {requesterPhone}
+              </a>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 shrink-0">
+                <Bell size={11} className="text-gray-400" />
+                <span>Preference</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 font-bold text-[10px]">
+                {activeDetail.contactPreference || 'Email'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Sub-Card 3: Ticket Timeline & SLA Target */}
+        <div className="bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 space-y-2.5">
+          <div className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+            <ShieldCheck size={12} className="text-emerald-500" />
+            <span>Timeline & Governance</span>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
+                <Calendar size={11} className="text-gray-400" />
+                <span>Submitted</span>
+              </span>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-right">
+                {activeDetail.createdAt || 'Recent'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
+                <Clock size={11} className="text-gray-400" />
+                <span>Statutory SLA</span>
+              </span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 text-right">
+                {activeDetail.priority === 'Emergency'
+                  ? '2-4h response'
+                  : activeDetail.priority === 'Urgent'
+                  ? 'Within 24h'
+                  : '48-72h (s 106)'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
+                <Layers size={11} className="text-gray-400" />
+                <span>Category</span>
+              </span>
+              <span className="font-semibold text-gray-800 dark:text-gray-200 text-right truncate">
+                {streamInfo.label}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Copy Full Ticket Summary Button */}
+        <button
+          type="button"
+          onClick={handleCopyFullSummary}
+          className="w-full py-2.5 px-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 border border-gray-200 dark:border-white/10 cursor-pointer shadow-2xs"
+        >
+          {copiedSummary ? (
+            <>
+              <Check size={13} className="text-emerald-500 stroke-[2.5]" />
+              <span className="text-emerald-600 dark:text-emerald-400">Copied to Clipboard!</span>
+            </>
+          ) : (
+            <>
+              <Copy size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
+              <span>Copy Full Ticket Summary</span>
+            </>
+          )}
+        </button>
+      </div>
+    );
+
     return (
       <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] font-sans animate-in fade-in duration-150">
         
@@ -756,32 +956,32 @@ export function ResidentRequestsView({
               </div>
 
               {/* 3-Column Attributes Strip */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-white/5 text-xs">
-                <div className="flex items-center gap-2.5">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-4 border-t border-gray-100 dark:border-white/5 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
                   <Wrench size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
-                  <div>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Type</span>
-                    <span className="font-bold text-gray-800 dark:text-gray-200 capitalize">
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block truncate">Type</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 capitalize truncate block text-[11px] sm:text-xs">
                       {activeDetail.requestType.replace(/_/g, ' ')}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 min-w-0">
                   <MapPin size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
-                  <div>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Location</span>
-                    <span className="font-bold text-gray-800 dark:text-gray-200 truncate">
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block truncate">Location</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 truncate block text-[11px] sm:text-xs">
                       {activeDetail.location || activeDetail.unit || 'Common area'}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 min-w-0">
                   <Bell size={16} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
-                  <div>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block">Priority</span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block truncate">Priority</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-block truncate">
                       {activeDetail.priority || 'Normal'}
                     </span>
                   </div>
@@ -791,7 +991,7 @@ export function ResidentRequestsView({
 
             {/* Triage Assessment Banner (for Strata Manager only) */}
             {isStrataManager && (activeDetail.status === 'pending_triage' || activeDetail.status === 'new') && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 space-y-3 shadow-sm">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                     <Zap size={15} className="fill-current" />
@@ -826,7 +1026,7 @@ export function ResidentRequestsView({
             )}
 
             {/* Description Card */}
-            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 shadow-sm space-y-3">
               <div className="flex items-center gap-2 text-sm font-black text-gray-900 dark:text-white">
                 <FileText size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
                 <span>Description</span>
@@ -834,6 +1034,11 @@ export function ResidentRequestsView({
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-normal whitespace-pre-wrap">
                 {activeDetail.description || 'No detailed description provided.'}
               </p>
+            </div>
+
+            {/* Request Details Card on Mobile: Appears immediately after Description */}
+            <div className="block lg:hidden">
+              {requestDetailsCardNode}
             </div>
 
             {/* Attachments Card */}
@@ -1225,205 +1430,9 @@ export function ResidentRequestsView({
               </div>
             )}
 
-            {/* Request details Card */}
-            <div className="bg-white dark:bg-[#0d1117] border border-gray-200/80 dark:border-white/5 rounded-3xl p-6 shadow-sm space-y-4 text-xs">
-              
-              {/* Header: Title + Monospace Reference Tag with Quick-Copy */}
-              <div className="flex items-center justify-between gap-2 pb-3 border-b border-gray-100 dark:border-white/5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-xl bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] flex items-center justify-center shrink-0">
-                    <FileText size={14} />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white leading-tight truncate">
-                      Request Details
-                    </h3>
-                    <span className="text-[10px] text-gray-400 font-medium block">Metadata & Location</span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleCopyRef}
-                  title="Copy Reference ID"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/10 text-[11px] font-mono font-bold transition-all cursor-pointer group shrink-0"
-                >
-                  <span>{activeDetail.referenceId || activeDetail.id}</span>
-                  {copiedRef ? (
-                    <Check size={11} className="text-emerald-500 stroke-[2.5]" />
-                  ) : (
-                    <Copy size={11} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors" />
-                  )}
-                </button>
-              </div>
-
-              {/* Sub-Card 1: Building & Property Location */}
-              <div className="bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 space-y-2.5">
-                <div className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-                  <Building2 size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                  <span>Property & Location</span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  {/* Building Name */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Building</span>
-                    <span className="font-bold text-gray-900 dark:text-white text-right truncate">
-                      {activeDetail.buildingName || activeSchemeName || 'Cavalier Apartments'}
-                    </span>
-                  </div>
-
-                  {/* Unit / Lot */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Unit / Lot</span>
-                    <span className="inline-flex items-center gap-1.5 font-bold text-gray-900 dark:text-white">
-                      <Home size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                      <span>{activeDetail.unit || 'Unit 12'}</span>
-                    </span>
-                  </div>
-
-                  {/* Specific Location Area */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Area</span>
-                    <span className="inline-flex items-center gap-1 font-semibold text-gray-700 dark:text-gray-300 text-right truncate">
-                      <MapPin size={11} className="text-amber-500 shrink-0" />
-                      <span>{activeDetail.location || 'Common Property'}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sub-Card 2: Requester Profile & Contact Details */}
-              <div className="bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 space-y-3">
-                <div className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-                  <User size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                  <span>Submitted By</span>
-                </div>
-
-                {/* Submitter Name & Role */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0055FF]/20 to-[#00D4B2]/20 border border-[#0055FF]/20 text-[#0055FF] dark:text-[#00D4B2] font-black text-xs flex items-center justify-center shrink-0">
-                      {authorInitials}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-gray-900 dark:text-white truncate">
-                        {activeDetail.requestorName || 'Sarah Jones'}
-                      </div>
-                      <div className="text-[10px] text-gray-400 font-medium">
-                        {activeDetail.requestorRole || 'Lot Owner'}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
-                    Resident
-                  </span>
-                </div>
-
-                {/* Contact Email & Phone */}
-                <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 shrink-0">
-                      <Mail size={11} className="text-gray-400" />
-                      <span>Email</span>
-                    </span>
-                    <a
-                      href={`mailto:${requesterEmail}`}
-                      className="text-gray-800 dark:text-gray-200 font-semibold hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors truncate max-w-[170px]"
-                      title={requesterEmail}
-                    >
-                      {requesterEmail}
-                    </a>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 shrink-0">
-                      <Phone size={11} className="text-gray-400" />
-                      <span>Phone</span>
-                    </span>
-                    <a
-                      href={`tel:${requesterPhone}`}
-                      className="text-gray-800 dark:text-gray-200 font-semibold hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
-                    >
-                      {requesterPhone}
-                    </a>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 shrink-0">
-                      <Bell size={11} className="text-gray-400" />
-                      <span>Preference</span>
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/10 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 font-bold text-[10px]">
-                      {activeDetail.contactPreference || 'Email'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sub-Card 3: Ticket Timeline & SLA Target */}
-              <div className="bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl p-3.5 space-y-2.5">
-                <div className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-                  <ShieldCheck size={12} className="text-emerald-500" />
-                  <span>Timeline & Governance</span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
-                      <Calendar size={11} className="text-gray-400" />
-                      <span>Submitted</span>
-                    </span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-right">
-                      {activeDetail.createdAt || 'Recent'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
-                      <Clock size={11} className="text-gray-400" />
-                      <span>Statutory SLA</span>
-                    </span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-right">
-                      {activeDetail.priority === 'Emergency'
-                        ? '2-4h response'
-                        : activeDetail.priority === 'Urgent'
-                        ? 'Within 24h'
-                        : '48-72h (s 106)'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
-                      <Layers size={11} className="text-gray-400" />
-                      <span>Category</span>
-                    </span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-right truncate">
-                      {streamInfo.label}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Copy Full Ticket Summary Button */}
-              <button
-                type="button"
-                onClick={handleCopyFullSummary}
-                className="w-full py-2.5 px-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 border border-gray-200 dark:border-white/10 cursor-pointer shadow-2xs"
-              >
-                {copiedSummary ? (
-                  <>
-                    <Check size={13} className="text-emerald-500 stroke-[2.5]" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Copied to Clipboard!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    <span>Copy Full Ticket Summary</span>
-                  </>
-                )}
-              </button>
-
+            {/* Request details Card on Desktop */}
+            <div className="hidden lg:block">
+              {requestDetailsCardNode}
             </div>
 
           </div>
