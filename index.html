@@ -31,6 +31,16 @@
           e.preventDefault();
         }
       });
+      // Automatically unregister rogue PWA Service Workers from other localhost projects (e.g. Grandmaster Chess)
+      if ('serviceWorker' in navigator && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var reg of registrations) {
+            reg.unregister().then(function(success) {
+              if (success) console.log('[SmartLot] Successfully unregistered conflicting localhost Service Worker:', reg.scope);
+            });
+          }
+        });
+      }
     </script>
     <!-- SmartLot Head --></head>
   <body>
