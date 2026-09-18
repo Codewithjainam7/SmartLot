@@ -215,12 +215,17 @@ export default function App() {
   const userSchemes = React.useMemo(() => {
     const userMemberRows = store.members.filter(m => m.email?.toLowerCase() === store.activePersona.email?.toLowerCase());
     const userSchemeIds = new Set(userMemberRows.map(m => m.schemeId));
+    if (store.activePersona?.memberships) {
+      store.activePersona.memberships.forEach((mb: any) => {
+        if (mb.schemeId) userSchemeIds.add(mb.schemeId);
+      });
+    }
     return (isWebAdmin || inspectingSession)
       ? (inspectingSession ? [inspectingSession.scheme, ...store.schemes.filter(s => s.id !== inspectingSession.scheme.id)] : store.schemes)
       : (userSchemeIds.size > 0 
           ? store.schemes.filter(s => userSchemeIds.has(s.id))
           : (store.activeScheme && store.activeScheme.id !== 'NO_SCHEME' ? [store.activeScheme] : store.schemes.filter(s => s.id === 'SP101')));
-  }, [store.members, store.activePersona.email, isWebAdmin, inspectingSession, store.schemes, store.activeScheme]);
+  }, [store.members, store.activePersona.email, store.activePersona.memberships, isWebAdmin, inspectingSession, store.schemes, store.activeScheme]);
 
   // Ensure activeScheme is strictly one of the user's valid schemes
   useEffect(() => {

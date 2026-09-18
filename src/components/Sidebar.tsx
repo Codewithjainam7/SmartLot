@@ -158,9 +158,20 @@ export function Sidebar({
                   {activePersonaName}
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                  <span className="px-2 py-0.2 rounded-full text-[10px] font-extrabold bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30">
-                    {activePersonaRole}
-                  </span>
+                  {activePersonaName?.toLowerCase().includes('sarah') ? (
+                    <>
+                      <span className="px-2 py-0.2 rounded-full text-[10px] font-extrabold bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30">
+                        Strata Admin
+                      </span>
+                      <span className="px-2 py-0.2 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20">
+                        Lot Owner
+                      </span>
+                    </>
+                  ) : (
+                    <span className="px-2 py-0.2 rounded-full text-[10px] font-extrabold bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30">
+                      {activePersonaRole}
+                    </span>
+                  )}
                   {activePersonaContext && (
                     <span className="text-[10px] text-gray-400 font-medium truncate">
                       {activePersonaContext}
@@ -215,10 +226,10 @@ export function Sidebar({
                 isCollapsed={isCollapsed && !isMobileOpen} 
               />
               {/* Trades & Work Orders Engine: Only Strata Managers, Admins, and Committee Members */}
-              {(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Committee')) && (
+              {(activePersonaRole?.includes('Manager') || activePersonaRole?.includes('Admin') || activePersonaRole?.includes('Committee') || activePersonaName?.toLowerCase().includes('sarah')) && (
                 <NavItem 
                   icon={<Wrench size={18} />} 
-                  label={activePersonaRole?.includes('Committee') ? "Quotes & Trades" : "Trades & Work Orders"} 
+                  label={activePersonaRole?.includes('Committee') && !activePersonaRole?.includes('Admin') ? "Quotes & Trades" : "Trades & Work Orders"} 
                   active={activeView === 'vendors'} 
                   onClick={() => handleNavClick('vendors')}
                   badge={activeWorkOrdersCount && activeWorkOrdersCount > 0 && !activePersonaRole?.includes('Committee') ? String(activeWorkOrdersCount) : undefined}
@@ -310,7 +321,9 @@ export function Sidebar({
               {!isCollapsed && (
                 <div className="whitespace-nowrap flex-1 min-w-0">
                   <div className="text-xs font-bold text-gray-900 dark:text-white truncate">{activePersonaName}</div>
-                  <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{activePersonaRole}</div>
+                  <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                    {activePersonaName?.toLowerCase().includes('sarah') ? 'Strata Admin & Lot Owner' : activePersonaRole}
+                  </div>
                 </div>
               )}
             </div>

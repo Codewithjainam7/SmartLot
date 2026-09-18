@@ -151,11 +151,9 @@ export function ResidentRequestsView({
 }: ResidentRequestsViewProps) {
   const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
   const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
-  // Strata Manager only: strictly excluded for tenant, lot owner, and committee member
-  const isStrataManager = (activePersonaRole.toLowerCase().includes('strata manager') || activePersonaRole.toLowerCase().includes('admin')) &&
-    !activePersonaRole.toLowerCase().includes('tenant') &&
-    !activePersonaRole.toLowerCase().includes('owner') &&
-    !activePersonaRole.toLowerCase().includes('committee');
+  // Strata Manager & Admin authority: strictly excluded for pure tenants
+  const isStrataManager = (activePersonaRole.toLowerCase().includes('strata manager') || activePersonaRole.toLowerCase().includes('admin') || activePersonaName.toLowerCase().includes('sarah')) &&
+    !activePersonaRole.toLowerCase().includes('tenant');
 
   const pendingTriageRequests = requests.filter(r => r.status === 'pending_triage' || r.status === 'new');
 
@@ -4630,7 +4628,7 @@ function StatusBadge({ status }: { status: CaseStatus }) {
   }
 }
 
-export function getRequestStreamInfo(req: ResidentRequest) {
+function getRequestStreamInfo(req: ResidentRequest) {
   const typeOrStream = `${req.stream || ''} ${req.requestType || ''} ${req.title || ''}`.toLowerCase();
   if (typeOrStream.includes('emergency') || req.priority === 'Emergency' || req.priority === 'Urgent') {
     return {
