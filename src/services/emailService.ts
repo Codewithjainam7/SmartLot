@@ -246,27 +246,8 @@ function buildHtmlForType(body: Record<string, any>): { subject: string; html: s
 }
 
 async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success: boolean; simulated?: boolean; error?: string; provider?: string }> {
-  const { subject, html } = buildHtmlForType(body);
-
-  // 1. Try local dev server Mailtrap relay (/api/email) - zero CORS issues
-  try {
-    const localRes = await fetch('/api/email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...body, subject, html }),
-    });
-    if (localRes.ok) {
-      const data = await localRes.json();
-      console.log(`[SmartLot Email] 📬 Dispatched via local Mailtrap relay:`, data);
-      return { success: true, provider: 'mailtrap_sandbox' };
-    }
-  } catch (relayErr) {
-    // If running in an environment without the local Vite proxy, fallback gracefully
-  }
-
-  // 2. Dispatch via Supabase Edge function
+  // Dispatch via Supabase Edge function
   if (!supabaseUrl || !anonKey) {
-    console.log(`[SmartLot Email] ✉️ [Sandbox Simulation] ${body.type || 'activity_conduit'} to:`, body.toEmail || body.managerEmail);
     return { success: true, simulated: true };
   }
 
@@ -285,12 +266,6 @@ async function sendViaEdgeFunction(body: Record<string, any>): Promise<{ success
     if (!res.ok) {
       console.warn(`[SmartLot Email] Edge function responded ${res.status}:`, data);
       return { success: false, error: data?.error || `HTTP ${res.status}` };
-    }
-
-    if (data.simulated) {
-      console.log(`[SmartLot Email] ✉️ [Sandbox Simulation]: ${body.type || 'activity_conduit'} → ${data.to?.join(', ') || 'recipient'}`);
-    } else {
-      console.log(`[SmartLot Email] 📬 Dispatched via ${data.provider || 'email provider'}:`, data);
     }
 
     return { success: true, simulated: Boolean(data.simulated), provider: data.provider };

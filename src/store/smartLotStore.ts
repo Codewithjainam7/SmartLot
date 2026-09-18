@@ -2029,21 +2029,30 @@ export const getDefaultPermissionsForRole = (role: string): { label: string; act
 
 // usePersistedState REMOVED - all state now comes from Supabase, not localStorage.
 
+function getSecureCrypto(): Crypto {
+  if (typeof window !== 'undefined' && window.crypto) return window.crypto;
+  if (typeof globalThis !== 'undefined' && globalThis.crypto) return globalThis.crypto;
+  return crypto;
+}
+
 function generateSecurePin(min = 1000, max = 9999): string {
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
-    const arr = new Uint32Array(1);
-    window.crypto.getRandomValues(arr);
-    const range = max - min + 1;
-    return (min + (arr[0] % range)).toString();
-  }
-  return Math.floor(min + Math.random() * (max - min + 1)).toString();
+  const c = getSecureCrypto();
+  const arr = new Uint32Array(1);
+  c.getRandomValues(arr);
+  const range = max - min + 1;
+  return (min + (arr[0] % range)).toString();
 }
 
 function generateSecureToken(prefix = 'INV'): string {
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
-    return `${prefix}-${window.crypto.randomUUID().replace(/-/g, '').substring(0, 10).toUpperCase()}`;
-  }
-  return `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+  const c = getSecureCrypto();
+  const uuid = c.randomUUID().replace(/-/g, '').substring(0, 12).toUpperCase();
+  return `${prefix}-${uuid}`;
+}
+
+function generateSecureId(prefix = 'WO'): string {
+  const c = getSecureCrypto();
+  const uuid = c.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
+  return `${prefix}-${uuid}`;
 }
 // This wrapper keeps the same API signature so we don't have to refactor every call site,
 // but it no longer reads/writes localStorage at all.
@@ -3400,9 +3409,7 @@ export function useSmartLotStore() {
       managerEmail,
       attachmentUrls,
     })
-      .then(res => {
-        console.log(`[SmartLot] ✅ Conduit email dispatched for #${slRef}:`, res);
-      })
+      .then(() => {})
       .catch(err => {
         // Never block the user flow — email failure is non-fatal
         console.warn('[SmartLot] Conduit email network error:', err?.message ?? err);
@@ -4124,7 +4131,7 @@ export function useSmartLotStore() {
         newStatus = 'passed';
         closedTime = `Today at ${nowStr}`;
         if (!createdWoId && m.quotes && m.quotes.length > 0) {
-          createdWoId = `WO-${Date.now()}`;
+          createdWoId = generateSecureId('WO');
           const recQuote = m.quotes.find(q => q.recommended) || m.quotes[0];
           const newWo: WorkOrder = {
             id: createdWoId,
@@ -4135,7 +4142,7 @@ export function useSmartLotStore() {
             scopeOfWork: m.summary,
             budgetCap: recQuote?.amount || 2500,
             siteAccessPin: generateSecurePin(1000, 9999),
-            guestMagicToken: `tok_${(m.schemeId || activeScheme.id).toLowerCase()}_${Date.now()}`,
+            guestMagicToken: generateSecureToken(`tok_${(m.schemeId || activeScheme.id).toLowerCase()}`),
             status: 'issued',
           };
           setWorkOrders(wos => [newWo, ...wos]);
@@ -4418,7 +4425,7 @@ export function useSmartLotStore() {
     let createdWoId: string | undefined;
 
     if (outcome === 'passed' && targetMotion) {
-      createdWoId = `WO-${Date.now()}`;
+      createdWoId = generateSecureId('WO');
       const recQuote = targetMotion.quotes.find(q => q.recommended) || targetMotion.quotes[0];
       const newWo: WorkOrder = {
         id: createdWoId,
@@ -4429,7 +4436,7 @@ export function useSmartLotStore() {
         scopeOfWork: targetMotion.summary,
         budgetCap: recQuote?.amount || 2500,
         siteAccessPin: generateSecurePin(1000, 9999),
-        guestMagicToken: `tok_${(targetMotion.schemeId || activeScheme.id).toLowerCase()}_${Date.now()}`,
+        guestMagicToken: generateSecureToken(`tok_${(targetMotion.schemeId || activeScheme.id).toLowerCase()}`),
         status: 'issued',
       };
       setWorkOrders(prev => [newWo, ...prev]);
@@ -4529,10 +4536,10 @@ export function useSmartLotStore() {
 
   const createWorkOrder = (payload: CreateWorkOrderPayload) => {
     const randomPin = generateSecurePin(1000, 9999);
-    const token = `tok_${payload.schemeId.toLowerCase()}_${Date.now()}`;
+    const token = generateSecureToken(`tok_${payload.schemeId.toLowerCase()}`);
     const newWo: WorkOrder = {
       ...payload,
-      id: `WO-${Date.now()}`,
+      id: generateSecureId('WO'),
       siteAccessPin: randomPin,
       guestMagicToken: token,
       status: 'issued',
@@ -4648,8 +4655,8 @@ export function useSmartLotStore() {
     if (!targetQuote) return null;
 
     const randomPin = customPin || generateSecurePin(1000, 9999);
-    const token = `tok_${targetReq.schemeId.toLowerCase()}_wo_${Date.now()}`;
-    const newWoId = `WO-${Date.now().toString().slice(-5)}`;
+    const token = generateSecureToken(`tok_${targetReq.schemeId.toLowerCase()}_wo`);
+    const newWoId = generateSecureId('WO');
 
     const newWo: WorkOrder = {
       id: newWoId,

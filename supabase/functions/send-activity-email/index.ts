@@ -598,7 +598,6 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      console.log(`[send-activity-email] 📬 Dispatched via Mailtrap to ${to.join(", ")}`);
       return new Response(
         JSON.stringify({ success: true, provider: "mailtrap", messageIds: mtData?.message_ids ?? [mtData?.id] }),
         { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
@@ -647,7 +646,6 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      console.log(`[send-activity-email] ✅ Dispatched via Resend to ${to.join(", ")}`);
       return new Response(
         JSON.stringify({ success: true, provider: "resend", resendId: resendData?.id }),
         { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
@@ -661,8 +659,7 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // 3. Fallback: Clean simulation mode (logs payload without erroring)
-  console.log(`[send-activity-email] ✉️ [Sandbox Simulation] ${emailType} email dispatched to: ${to.join(", ")} | Subject: ${subject}`);
+  // 3. Fallback: Clean simulation mode
   return new Response(
     JSON.stringify({
       success: true,
