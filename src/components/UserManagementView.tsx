@@ -34,7 +34,13 @@ import {
   ArrowDown,
   ArrowUpDown,
   Filter,
-  Building2
+  Building2,
+  LayoutGrid,
+  List,
+  Copy,
+  SlidersHorizontal,
+  Eye,
+  ChevronRight
 } from 'lucide-react';
 
 interface UserManagementViewProps {
@@ -93,6 +99,8 @@ export function UserManagementView({
 
   const [activeTab, setActiveTab] = useState<'roster' | 'permissions'>('roster');
   const [permTab, setPermTab] = useState<'default' | 'individual'>('default');
+  const [permViewMode, setPermViewMode] = useState<'focused' | 'matrix'>('focused');
+  const [focusedRole, setFocusedRole] = useState<string>('Committee Member');
 
   // Column-Specific Search & Filter States (Enterprise AG-Grid style matching Global Platform Directory)
   const [colSearchName, setColSearchName] = useState('');
@@ -489,39 +497,70 @@ export function UserManagementView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-[#121316] rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm space-y-6"
+            className="bg-white dark:bg-[#121316] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 lg:p-8 border border-gray-100 dark:border-gray-800 shadow-sm space-y-5 sm:space-y-6"
           >
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 border-b border-gray-100 dark:border-white/5 pb-4">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Scheme Role Permission Matrix</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Configure access controls for Strata Plan {activeSchemeId}. Checked = permitted. Locked = fixed by system.</p>
+              <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                Scheme Role Permission Matrix
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Configure access controls for Strata Plan {activeSchemeId}. Checked = permitted. Locked = fixed by system.
+              </p>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               {/* Permission Mode Tabs */}
               <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
                 <button 
+                  type="button"
                   onClick={() => setPermTab('default')}
-                  className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${permTab === 'default' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${permTab === 'default' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                 >
                   Default Permissions
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setPermTab('individual')}
-                  className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${permTab === 'individual' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${permTab === 'individual' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-gray-900 dark:text-white border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                 >
                   Individual Overrides
                 </button>
               </div>
 
-              <span className="text-[10px] font-black bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20 px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0">
+              {permTab === 'default' && (
+                <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
+                  <button 
+                    type="button"
+                    onClick={() => setPermViewMode('focused')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${permViewMode === 'focused' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-[#0055FF] dark:text-[#00D4B2] border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                    title="Mobile-optimized single role cards"
+                  >
+                    <SlidersHorizontal size={13} />
+                    <span className="hidden sm:inline">Role View</span>
+                    <span className="sm:hidden">Role</span>
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setPermViewMode('matrix')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${permViewMode === 'matrix' ? 'bg-white dark:bg-[#1a1d27] shadow-sm text-[#0055FF] dark:text-[#00D4B2] border border-gray-200 dark:border-white/10' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                    title="Full 8-role grid comparison"
+                  >
+                    <List size={13} />
+                    <span className="hidden sm:inline">Grid Matrix</span>
+                    <span className="sm:hidden">Grid</span>
+                  </button>
+                </div>
+              )}
+
+              <span className="text-[10px] font-black bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20 px-2.5 py-1 rounded-full uppercase tracking-widest shrink-0">
                 Module 1 Scope
               </span>
             </div>
           </div>
           
           {permTab === 'default' ? (
-            <div className="overflow-x-auto rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+            <div>
               {(() => {
                 const ROLES_ORDER = ['Strata Manager', 'Strata Admin', 'Building Manager', 'Committee Member', 'Lot Owner', 'Resident', 'Tenant', 'Service Provider'];
                 const CATEGORY_MAP = [
@@ -551,61 +590,212 @@ export function UserManagementView({
                   return m;
                 })();
 
-                return (
-                  <table className="w-full text-left border-collapse text-sm min-w-max">
-                    <thead>
-                      <tr className="bg-gray-50/80 dark:bg-[#1a1d27]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
-                        <th className="p-5 font-black text-[11px] uppercase tracking-widest text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-[#1a1d27] z-20 w-72 border-r border-gray-200 dark:border-white/5">Feature / Role Access</th>
-                        {ROLES_ORDER.map(role => (
-                          <th key={role} className="p-5 font-bold text-gray-900 dark:text-white text-center min-w-[140px] whitespace-nowrap">
-                            {role}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {CATEGORY_MAP.map(cat => (
-                        <React.Fragment key={cat.name}>
-                          <tr className="bg-gray-50 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
-                            <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-5 font-black text-gray-800 dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-gray-100 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
-                              {cat.name}
-                            </td>
-                          </tr>
-                          {cat.perms.map(permName => (
-                            <tr key={permName} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
-                              <td className="p-3.5 px-5 text-gray-700 dark:text-gray-300 text-xs font-semibold sticky left-0 bg-white dark:bg-[#0d1117] group-hover:bg-gray-50 dark:group-hover:bg-[#141820] z-10 border-r border-gray-100 dark:border-white/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_10px_-2px_rgba(0,0,0,0.2)] transition-colors">
-                                {permName}
-                              </td>
-                              {ROLES_ORDER.map(role => {
-                                const rolePerms = activePerms[role] || [];
-                                const permObj = rolePerms.find(p => p.label === permName);
-                                if (!permObj) return <td key={role} className="p-3.5 text-center text-gray-300 dark:text-gray-600 border-r border-gray-50 dark:border-white/[0.02] last:border-0">-</td>;
-                                return (
-                                  <td key={role} className="p-3.5 text-center border-r border-gray-50 dark:border-white/[0.02] last:border-0">
-                                    <div className="flex justify-center">
-                                      {permObj.locked ? (
-                                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md">Locked</span>
-                                      ) : (
+                // Check if mobile / focused role view is selected
+                if (permViewMode === 'focused') {
+                  const currentRolePerms = activePerms[focusedRole] || [];
+                  const activeCount = currentRolePerms.filter(p => p.active).length;
+
+                  return (
+                    <div className="space-y-4 sm:space-y-6">
+                      {/* Horizontal Role Selector Pills */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-gray-500 dark:text-gray-400 px-1">
+                          <span>Select Role to Configure:</span>
+                          <span className="text-[11px] font-mono text-[#0055FF] dark:text-[#00D4B2]">
+                            {activeCount} of {currentRolePerms.length} Enabled
+                          </span>
+                        </div>
+                        
+                        <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 p-1.5 bg-gray-100/80 dark:bg-[#151a28] rounded-2xl border border-gray-200/80 dark:border-white/5">
+                          {ROLES_ORDER.map(role => {
+                            const rPerms = activePerms[role] || [];
+                            const rActive = rPerms.filter(p => p.active).length;
+                            const isSelected = focusedRole === role;
+                            return (
+                              <button
+                                key={role}
+                                type="button"
+                                onClick={() => setFocusedRole(role)}
+                                className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none active:scale-95 min-h-[38px] ${
+                                  isSelected
+                                    ? 'bg-gradient-to-r from-[#0055FF] to-[#00D4B2] text-white shadow-md shadow-blue-500/20'
+                                    : 'bg-white dark:bg-[#1a1f2e] text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200/60 dark:border-white/10'
+                                }`}
+                              >
+                                <span>{role}</span>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                                  isSelected ? 'bg-white/25 text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'
+                                }`}>
+                                  {rActive}/{rPerms.length}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Role Scope Info Banner */}
+                      <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 flex items-center justify-between flex-wrap gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-xl bg-[#0055FF]/15 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0">
+                            <Shield size={14} />
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              Permissions for <span className="text-[#0055FF] dark:text-[#00D4B2] underline underline-offset-2">{focusedRole}</span>
+                            </span>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                              Changes apply to all members with the role of {focusedRole} in Strata Plan {activeSchemeId}.
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setPermViewMode('matrix')}
+                          className="text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Compare in Full Matrix</span>
+                          <ChevronRight size={12} />
+                        </button>
+                      </div>
+
+                      {/* Categorized Permissions Cards */}
+                      <div className="space-y-4">
+                        {CATEGORY_MAP.map(cat => {
+                          const catPerms = currentRolePerms.filter(p => cat.perms.includes(p.label));
+                          if (catPerms.length === 0) return null;
+                          const activeInCat = catPerms.filter(p => p.active).length;
+
+                          return (
+                            <div 
+                              key={cat.name} 
+                              className="rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#0d1117] p-3.5 sm:p-5 shadow-sm space-y-3"
+                            >
+                              <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-white/5">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 rounded-full bg-[#0055FF] dark:bg-[#00D4B2]" />
+                                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
+                                    {cat.name}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400">
+                                  {activeInCat} / {catPerms.length} Active
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                                {catPerms.map(permObj => (
+                                  <div
+                                    key={permObj.label}
+                                    onClick={() => {
+                                      if (!permObj.locked) onTogglePermission(focusedRole, permObj.label);
+                                    }}
+                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all select-none ${
+                                      permObj.locked
+                                        ? 'bg-gray-50/60 dark:bg-white/[0.02] border-gray-200/40 dark:border-white/5 cursor-not-allowed opacity-75'
+                                        : 'bg-gray-50/40 dark:bg-[#141824] hover:bg-gray-100/70 dark:hover:bg-[#1c2233] border-gray-200/60 dark:border-white/10 cursor-pointer active:scale-[0.99]'
+                                    }`}
+                                  >
+                                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 pr-2">
+                                      {permObj.label}
+                                    </span>
+                                    {permObj.locked ? (
+                                      <span className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 bg-gray-200/60 dark:bg-white/5 px-2 py-1 rounded-md shrink-0">
+                                        <Lock size={10} /> Locked
+                                      </span>
+                                    ) : (
+                                      <div onClick={e => e.stopPropagation()}>
                                         <CustomCheckbox
                                           checked={permObj.active}
-                                          onChange={() => onTogglePermission(role, permName)}
+                                          onChange={() => onTogglePermission(focusedRole, permObj.label)}
                                         />
-                                      )}
-                                    </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Grid Matrix View (Scrollable enterprise table with responsive sticky column)
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-3 py-2 bg-blue-50/80 dark:bg-[#00D4B2]/10 rounded-xl border border-blue-200/60 dark:border-white/10 text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold md:hidden">
+                      <span>← Swipe horizontally to see all 8 role columns →</span>
+                      <button
+                        type="button"
+                        onClick={() => setPermViewMode('focused')}
+                        className="underline text-[11px] cursor-pointer"
+                      >
+                        Switch to Role View
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+                      <table className="w-full text-left border-collapse text-sm min-w-max">
+                        <thead>
+                          <tr className="bg-gray-50/80 dark:bg-[#1a1d27]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
+                            <th className="p-3.5 sm:p-5 font-black text-[10px] sm:text-[11px] uppercase tracking-widest text-gray-900 dark:text-white sticky left-0 bg-gray-100 dark:bg-[#1a1d27] z-20 w-48 sm:w-64 border-r border-gray-200 dark:border-white/5">
+                              Feature / Role Access
+                            </th>
+                            {ROLES_ORDER.map(role => (
+                              <th key={role} className="p-3.5 sm:p-5 font-bold text-gray-900 dark:text-white text-center min-w-[130px] sm:min-w-[140px] whitespace-nowrap text-xs">
+                                {role}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {CATEGORY_MAP.map(cat => (
+                            <React.Fragment key={cat.name}>
+                              <tr className="bg-gray-50 dark:bg-[#00D4B2]/5 border-b border-gray-200 dark:border-white/5">
+                                <td colSpan={ROLES_ORDER.length + 1} className="p-3 px-4 sm:px-5 font-black text-gray-800 dark:text-[#00D4B2] text-[10px] uppercase tracking-widest sticky left-0 z-10 bg-gray-100 dark:bg-[#0B1121] border-r border-gray-200 dark:border-white/5">
+                                  {cat.name}
+                                </td>
+                              </tr>
+                              {cat.perms.map(permName => (
+                                <tr key={permName} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
+                                  <td className="p-3 sm:p-3.5 px-4 sm:px-5 text-gray-700 dark:text-gray-300 text-xs font-semibold sticky left-0 bg-white dark:bg-[#0d1117] group-hover:bg-gray-50 dark:group-hover:bg-[#141820] z-10 border-r border-gray-100 dark:border-white/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_10px_-2px_rgba(0,0,0,0.2)] transition-colors">
+                                    {permName}
                                   </td>
-                                );
-                              })}
-                            </tr>
+                                  {ROLES_ORDER.map(role => {
+                                    const rolePerms = activePerms[role] || [];
+                                    const permObj = rolePerms.find(p => p.label === permName);
+                                    if (!permObj) return <td key={role} className="p-3 sm:p-3.5 text-center text-gray-300 dark:text-gray-600 border-r border-gray-50 dark:border-white/[0.02] last:border-0">-</td>;
+                                    return (
+                                      <td key={role} className="p-3 sm:p-3.5 text-center border-r border-gray-50 dark:border-white/[0.02] last:border-0">
+                                        <div className="flex justify-center">
+                                          {permObj.locked ? (
+                                            <span className="text-[9px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md">Locked</span>
+                                          ) : (
+                                            <CustomCheckbox
+                                              checked={permObj.active}
+                                              onChange={() => onTogglePermission(role, permName)}
+                                            />
+                                          )}
+                                        </div>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ))}
+                            </React.Fragment>
                           ))}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 );
               })()}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {filteredMembers.map(member => {
                 const perms = (rolePermissions && rolePermissions[member.role] && rolePermissions[member.role].length > 0)
                   ? rolePermissions[member.role]
@@ -614,7 +804,7 @@ export function UserManagementView({
                     : getDefaultPermissionsForRole(member.role);
                 
                 return (
-                  <div key={member.id} className="bg-white dark:bg-[#0d1117] rounded-3xl p-7 border border-[#00D4B2]/20 dark:border-[#00D4B2]/15 shadow-xl dark:shadow-[0_8px_30px_rgba(0,212,178,0.06)] space-y-5 transition-all hover:shadow-[0_12px_40px_rgba(0,212,178,0.12)] hover:-translate-y-1">
+                  <div key={member.id} className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-[#00D4B2]/20 dark:border-[#00D4B2]/15 shadow-xl dark:shadow-[0_8px_30px_rgba(0,212,178,0.06)] space-y-4 sm:space-y-5 transition-all hover:shadow-[0_12px_40px_rgba(0,212,178,0.12)]">
                     <div className="flex flex-col border-b border-gray-100 dark:border-white/5 pb-4 gap-2">
                       <div className="flex items-center justify-between">
                         <span className="font-extrabold text-gray-900 dark:text-white text-base">{member.name}</span>
@@ -1092,387 +1282,644 @@ function MemberRosterGrid({
     'Strata Admin':     'bg-white/10 text-gray-300 border-gray-600',
   };
 
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyId = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   return (
     <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-hidden w-full">
-      <div className="overflow-x-auto w-full min-h-[440px]">
-        <table className="w-full min-w-[720px] text-left text-xs border-collapse font-sans table-auto">
-          <thead>
-            {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
-            <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
-              {/* Col 0: Index */}
-              <th className="py-3.5 px-2.5 w-10 text-center border-r border-gray-200 dark:border-white/10 text-gray-400">
-                #
-              </th>
+      {/* View Switcher and Summary Bar */}
+      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50/80 dark:bg-[#121622] border-b border-gray-200 dark:border-white/10 flex-wrap gap-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+            Showing <span className="text-[#0055FF] dark:text-[#00D4B2] font-mono">{members.length}</span> of {allMembersCount} Members
+          </span>
+          {activeFiltersCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] text-[10px] font-bold">
+              {activeFiltersCount} Filter{activeFiltersCount > 1 ? 's' : ''} Active
+            </span>
+          )}
+        </div>
 
-              {/* Col 1: Member Name & ID */}
-              <th className="py-3.5 px-3.5 w-[22%] border-r border-gray-200 dark:border-white/10">
-                <div 
-                  onClick={() => onSort('name')}
-                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
-                  title="Click to sort by Name"
+        <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setViewMode('cards')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              viewMode === 'cards'
+                ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+            title="Mobile card layout"
+          >
+            <LayoutGrid size={13} />
+            <span>Cards</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              viewMode === 'table'
+                ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+            title="Enterprise table grid"
+          >
+            <List size={13} />
+            <span>Table</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Cards View (Mobile-Optimized) */}
+      {viewMode === 'cards' ? (
+        <div className="p-3.5 sm:p-5">
+          {members.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4 border border-gray-100 mx-auto">
+                <Users size={22} className="text-gray-400 dark:text-gray-500" />
+              </div>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">No members match your criteria</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">Try clearing one of your column filters.</p>
+              {activeFiltersCount > 0 && (
+                <button
+                  type="button"
+                  onClick={onResetFilters}
+                  className="px-4 py-2 rounded-xl bg-[#0055FF] text-white text-xs font-bold shadow-md hover:bg-blue-600 cursor-pointer transition-all"
                 >
-                  <span className="flex items-center gap-1.5">
-                    <Users size={13} className="text-gray-400" /> Member Details
-                  </span>
-                  <span className="text-gray-400">
-                    {sortField === 'name' ? (
-                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    ) : (
-                      <ArrowUpDown size={11} className="opacity-30" />
-                    )}
-                  </span>
-                </div>
-              </th>
+                  Reset All Filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+              {members.map(m => {
+                const initials = (m.name || 'Member')
+                  .split(' ')
+                  .map(n => n[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase();
 
-              {/* Col 2: Role */}
-              <th className="py-3.5 px-3.5 w-[14%] border-r border-gray-200 dark:border-white/10">
-                <div 
-                  onClick={() => onSort('role')}
-                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
-                  title="Click to sort by Role"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Shield size={13} className="text-gray-400" /> Role
-                  </span>
-                  <span className="text-gray-400">
-                    {sortField === 'role' ? (
-                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    ) : (
-                      <ArrowUpDown size={11} className="opacity-30" />
-                    )}
-                  </span>
-                </div>
-              </th>
+                let avatarGradient = 'from-sky-500 to-blue-600';
+                if (m.role === 'Strata Manager' || m.role === 'Building Manager') {
+                  avatarGradient = 'from-blue-600 to-[#00D4B2]';
+                } else if (m.role === 'Committee Member') {
+                  avatarGradient = 'from-purple-500 to-indigo-600';
+                } else if (m.role === 'Lot Owner') {
+                  avatarGradient = 'from-amber-500 to-orange-600';
+                }
 
-              {/* Col 3: Unit / Lot */}
-              <th className="py-3.5 px-3 w-[12%] border-r border-gray-200 dark:border-white/10">
-                <div 
-                  onClick={() => onSort('unitId')}
-                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
-                  title="Click to sort by Unit"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Home size={13} className="text-gray-400" /> Unit / Lot
-                  </span>
-                  <span className="text-gray-400">
-                    {sortField === 'unitId' ? (
-                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    ) : (
-                      <ArrowUpDown size={11} className="opacity-30" />
-                    )}
-                  </span>
-                </div>
-              </th>
+                const isCurrentActive = m.name === activePersonaName;
 
-              {/* Col 4: Contact Details (Email + Phone) */}
-              <th className="py-3.5 px-3.5 w-[20%] border-r border-gray-200 dark:border-white/10">
-                <div className="flex items-center gap-1.5">
-                  <Mail size={13} className="text-gray-400" /> Contact Details
-                </div>
-              </th>
-
-              {/* Col 5: Occupants */}
-              <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
-                <div className="flex items-center gap-1.5">
-                  <Users size={13} className="text-gray-400" /> Occupants
-                </div>
-              </th>
-
-              {/* Col 6: Status */}
-              <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
-                <div 
-                  onClick={() => onSort('status')}
-                  className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
-                  title="Click to sort by Status"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Activity size={13} className="text-gray-400" /> Status
-                  </span>
-                  <span className="text-gray-400">
-                    {sortField === 'status' ? (
-                      sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
-                    ) : (
-                      <ArrowUpDown size={11} className="opacity-30" />
-                    )}
-                  </span>
-                </div>
-              </th>
-
-              {/* Col 7: Actions */}
-              <th className="py-3.5 px-3 text-right w-[12%]">
-                <span>Actions</span>
-              </th>
-            </tr>
-
-            {/* AG-GRID INLINE FILTER ROW */}
-            <tr className="bg-gray-50/95 dark:bg-[#181d2c] border-b border-gray-200 dark:border-white/10">
-              {/* Col 0: Index Filter Space */}
-              <th className="py-2 px-2 text-center border-r border-gray-200 dark:border-white/10">
-                <Filter size={11} className="mx-auto text-gray-400" />
-              </th>
-
-              {/* Col 1: Name / ID Search Input */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    placeholder="Filter name/ID..."
-                    value={colSearchName}
-                    onChange={e => setColSearchName(e.target.value)}
-                    className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
-                  />
-                  {colSearchName ? (
-                    <button
-                      type="button"
-                      onClick={() => setColSearchName('')}
-                      className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
-                    >
-                      <X size={11} />
-                    </button>
-                  ) : (
-                    <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                  )}
-                </div>
-              </th>
-
-              {/* Col 2: Role Dropdown Filter (NO Resident!) */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
-                <CustomSelect
-                  size="sm"
-                  options={ROLE_FILTER_OPTIONS}
-                  value={colFilterRole}
-                  onChange={setColFilterRole}
-                  placeholder="All Roles"
-                />
-              </th>
-
-              {/* Col 3: Unit / Lot Filter */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    placeholder="Filter unit..."
-                    value={colSearchUnit}
-                    onChange={e => setColSearchUnit(e.target.value)}
-                    className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
-                  />
-                  {colSearchUnit ? (
-                    <button
-                      type="button"
-                      onClick={() => setColSearchUnit('')}
-                      className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
-                    >
-                      <X size={10} />
-                    </button>
-                  ) : (
-                    <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                  )}
-                </div>
-              </th>
-
-              {/* Col 4: Contact Details Filter */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    placeholder="Filter email/phone..."
-                    value={colSearchContact}
-                    onChange={e => setColSearchContact(e.target.value)}
-                    className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
-                  />
-                  {colSearchContact ? (
-                    <button
-                      type="button"
-                      onClick={() => setColSearchContact('')}
-                      className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
-                    >
-                      <X size={10} />
-                    </button>
-                  ) : (
-                    <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
-                  )}
-                </div>
-              </th>
-
-              {/* Col 5: Occupants Filter Space */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 text-center text-gray-400 text-[10px]">
-                -
-              </th>
-
-              {/* Col 6: Status Dropdown Filter */}
-              <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible">
-                <CustomSelect
-                  size="sm"
-                  menuAlign="right"
-                  options={STATUS_FILTER_OPTIONS}
-                  value={colFilterStatus}
-                  onChange={setColFilterStatus}
-                  placeholder="All Status"
-                />
-              </th>
-
-              {/* Col 7: Reset Filter Button */}
-              <th className="py-2 px-2 text-right">
-                {activeFiltersCount > 0 ? (
-                  <button
-                    type="button"
-                    onClick={onResetFilters}
-                    className="w-full h-8 px-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-red-500/20 shadow-2xs"
-                    title="Reset all filters"
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => onViewDetails(m)}
+                    className="bg-gray-50/50 dark:bg-[#121622] rounded-2xl border border-gray-200/80 dark:border-white/10 p-4 hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 transition-all hover:shadow-md cursor-pointer flex flex-col justify-between space-y-3 group"
                   >
-                    <RotateCcw size={10} />
-                    <span>Reset</span>
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-gray-400 pr-2">Filter</span>
-                )}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {members.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-16 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4 border border-gray-100 mx-auto">
-                    <Users size={22} className="text-gray-400 dark:text-gray-500" />
-                  </div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">No members match your criteria</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">Try clearing one of your column filters.</p>
-                  {activeFiltersCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={onResetFilters}
-                      className="px-4 py-2 rounded-xl bg-[#0055FF] text-white text-xs font-bold shadow-md hover:bg-blue-600 cursor-pointer transition-all"
-                    >
-                      Reset All Filters
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              members.map((m, index) => (
-                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors group">
-                  {/* Col 0: Row index */}
-                  <td className="py-4 px-2.5 text-center border-r border-gray-100 dark:border-white/5 font-mono text-[11px] text-gray-400">
-                    {index + 1}
-                  </td>
+                    {/* Header: Avatar, Name, ID, Role & Status */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white text-xs font-black shrink-0 shadow-xs`}>
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors">
+                              {m.name}
+                            </h4>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-1.5 py-0.5 rounded">
+                                #{m.id.slice(0, 8)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleCopyId(m.id, e)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                                title="Copy ID"
+                              >
+                                {copiedId === m.id ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
 
-                  {/* Col 1: Member Name & ID */}
-                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</span>
-                      <span className="text-[10px] font-mono text-gray-400">{m.id}</span>
-                    </div>
-                  </td>
-
-                  {/* Col 2: Role */}
-                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
-                      {m.role}
-                    </span>
-                  </td>
-
-                  {/* Col 3: Unit / Lot */}
-                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
-                    <div className="leading-tight">
-                      <div className="font-semibold text-gray-900 dark:text-white text-xs">
-                        {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
-                          ? (m.unitId && !m.unitId.startsWith('Unit 1') ? m.unitId : 'HQ / Management')
-                          : m.unitId}
+                        <MemberStatusBadge status={m.status} />
                       </div>
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                        {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
-                          ? 'Staff / Admin'
-                          : (m.lotNumber ? `Lot ${m.lotNumber}` : 'No Lot Assigned')}
+
+                      {/* Badges: Role + Unit / Lot */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
+                          {m.role}
+                        </span>
+
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-[10px] font-bold text-gray-700 dark:text-gray-300">
+                          <Home size={10} className="opacity-60" />
+                          {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                            ? (m.unitId && !m.unitId.startsWith('Unit 1') ? m.unitId : 'HQ / Management')
+                            : (m.lotNumber ? `${m.unitId || 'Unit'} (Lot ${m.lotNumber})` : m.unitId || 'HQ')}
+                        </span>
+
+                        {m.additionalOccupants && m.additionalOccupants.length > 0 && (
+                          <span className="text-[9px] font-bold text-[#0055FF] dark:text-[#00D4B2] bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 px-1.5 py-0.5 rounded-full border border-[#0055FF]/20 dark:border-[#00D4B2]/20">
+                            +{m.additionalOccupants.length} Occupant{m.additionalOccupants.length > 1 ? 's' : ''}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  </td>
 
-                  {/* Col 4: Contact Details */}
-                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
-                    <div className="leading-tight">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
-                        <Mail size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                        <span className="truncate max-w-[160px]">{m.email}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                        <Phone size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                        {m.phone}
-                      </div>
+                    {/* Contact info */}
+                    <div className="pt-2 border-t border-gray-200/60 dark:border-white/5 space-y-1.5 text-xs">
+                      {m.email && (
+                        <a
+                          href={`mailto:${m.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors truncate"
+                        >
+                          <Mail size={12} className="text-gray-400 shrink-0" />
+                          <span className="truncate text-[11px]">{m.email}</span>
+                        </a>
+                      )}
+                      {m.phone && (
+                        <a
+                          href={`tel:${m.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                        >
+                          <Phone size={12} className="text-gray-400 shrink-0" />
+                          <span className="text-[11px] font-mono">{m.phone}</span>
+                        </a>
+                      )}
                     </div>
-                  </td>
 
-                  {/* Col 5: Occupants */}
-                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
-                    {m.role && (m.role.includes('Manager') || m.role.includes('Admin')) ? (
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500">-</span>
-                    ) : m.additionalOccupants && m.additionalOccupants.length > 0 ? (
-                      <span className="text-[10px] font-bold text-[#0055FF] bg-[#0055FF]/10 px-2 py-0.5 rounded-full border border-[#0055FF]/20">
-                        {m.additionalOccupants.length + 1} Occupants
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400">1 Occupant</span>
-                    )}
-                  </td>
-
-                  {/* Col 6: Status */}
-                  <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
-                    <MemberStatusBadge status={m.status} />
-                  </td>
-
-                  {/* Col 7: Actions */}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2 justify-end">
+                    {/* Actions footer */}
+                    <div className="pt-2 border-t border-gray-200/60 dark:border-white/5 flex items-center justify-between gap-1.5" onClick={e => e.stopPropagation()}>
                       <button
                         type="button"
-                        onClick={() => onEditMember(m)}
-                        className="px-3 py-1.5 rounded-xl border border-[#0055FF]/30 dark:border-[#00D4B2]/30 bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF] hover:text-white dark:hover:bg-[#00D4B2] dark:hover:text-[#0B1121] cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105"
-                        title="Edit Member (Email, Phone, Role, Unit)"
+                        onClick={() => onViewDetails(m)}
+                        className="px-2.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                       >
-                        <Edit3 size={12} />
-                        <span>Edit</span>
+                        <Eye size={11} /> Details
                       </button>
-                      {m.name !== activePersonaName && (
-                        m.status === 'Active' ? (
-                          <button
-                            type="button"
-                            onClick={() => onUpdateStatus(m.id, 'Restricted')}
-                            className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-all"
-                          >
-                            Restrict
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => onUpdateStatus(m.id, 'Active')}
-                            className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00D4B2] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
-                          >
-                            Activate
-                          </button>
-                        )
-                      )}
-                      {m.name !== activePersonaName && (
+
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => {
-                            if (window.confirm(`Are you sure you want to remove ${m.name} (${m.email}) from scheme ${activeSchemeId}?`)) {
-                              onDeleteMember(m.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 border border-transparent hover:border-[#FF4757]/20 transition-all cursor-pointer hover:scale-105"
-                          title={`Delete Member ${m.name}`}
+                          onClick={() => onEditMember(m)}
+                          className="px-2.5 py-1.5 rounded-xl border border-[#0055FF]/30 dark:border-[#00D4B2]/30 bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF] hover:text-white dark:hover:bg-[#00D4B2] dark:hover:text-[#0B1121] cursor-pointer transition-all flex items-center gap-1"
                         >
-                          <Trash2 size={13} />
+                          <Edit3 size={11} /> Edit
                         </button>
+
+                        {!isCurrentActive && (
+                          m.status === 'Active' ? (
+                            <button
+                              type="button"
+                              onClick={() => onUpdateStatus(m.id, 'Restricted')}
+                              className="px-2.5 py-1.5 rounded-xl border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-all"
+                            >
+                              Restrict
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onUpdateStatus(m.id, 'Active')}
+                              className="px-2.5 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00D4B2] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
+                            >
+                              Activate
+                            </button>
+                          )
+                        )}
+
+                        {!isCurrentActive && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to remove ${m.name} (${m.email}) from scheme ${activeSchemeId}?`)) {
+                                onDeleteMember(m.id);
+                              }
+                            }}
+                            className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-all cursor-pointer"
+                            title={`Delete Member ${m.name}`}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Table View */
+        <div>
+          <div className="flex items-center justify-between px-4 py-2 bg-blue-50/70 dark:bg-[#00D4B2]/10 border-b border-gray-200 dark:border-white/10 text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold md:hidden">
+            <span>← Swipe horizontally to view all table columns →</span>
+          </div>
+
+          <div className="overflow-x-auto w-full min-h-[440px]">
+            <table className="w-full min-w-[720px] text-left text-xs border-collapse font-sans table-auto">
+              <thead>
+                {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
+                <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                  {/* Col 0: Index */}
+                  <th className="py-3.5 px-2.5 w-10 text-center border-r border-gray-200 dark:border-white/10 text-gray-400">
+                    #
+                  </th>
+
+                  {/* Col 1: Member Name & ID */}
+                  <th className="py-3.5 px-3.5 w-[22%] border-r border-gray-200 dark:border-white/10">
+                    <div 
+                      onClick={() => onSort('name')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Click to sort by Name"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Users size={13} className="text-gray-400" /> Member Details
+                      </span>
+                      <span className="text-gray-400">
+                        {sortField === 'name' ? (
+                          sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 2: Role */}
+                  <th className="py-3.5 px-3.5 w-[14%] border-r border-gray-200 dark:border-white/10">
+                    <div 
+                      onClick={() => onSort('role')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Click to sort by Role"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Shield size={13} className="text-gray-400" /> Role
+                      </span>
+                      <span className="text-gray-400">
+                        {sortField === 'role' ? (
+                          sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 3: Unit / Lot */}
+                  <th className="py-3.5 px-3 w-[12%] border-r border-gray-200 dark:border-white/10">
+                    <div 
+                      onClick={() => onSort('unitId')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Click to sort by Unit"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Home size={13} className="text-gray-400" /> Unit / Lot
+                      </span>
+                      <span className="text-gray-400">
+                        {sortField === 'unitId' ? (
+                          sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 4: Contact Details (Email + Phone) */}
+                  <th className="py-3.5 px-3.5 w-[20%] border-r border-gray-200 dark:border-white/10">
+                    <div className="flex items-center gap-1.5">
+                      <Mail size={13} className="text-gray-400" /> Contact Details
+                    </div>
+                  </th>
+
+                  {/* Col 5: Occupants */}
+                  <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                    <div className="flex items-center gap-1.5">
+                      <Users size={13} className="text-gray-400" /> Occupants
+                    </div>
+                  </th>
+
+                  {/* Col 6: Status */}
+                  <th className="py-3.5 px-3 w-[10%] border-r border-gray-200 dark:border-white/10">
+                    <div 
+                      onClick={() => onSort('status')}
+                      className="flex items-center justify-between gap-1 cursor-pointer hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors"
+                      title="Click to sort by Status"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Activity size={13} className="text-gray-400" /> Status
+                      </span>
+                      <span className="text-gray-400">
+                        {sortField === 'status' ? (
+                          sortDirection === 'asc' ? <ArrowUp size={12} className="text-[#0055FF] dark:text-[#00D4B2]" /> : <ArrowDown size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                        ) : (
+                          <ArrowUpDown size={11} className="opacity-30" />
+                        )}
+                      </span>
+                    </div>
+                  </th>
+
+                  {/* Col 7: Actions */}
+                  <th className="py-3.5 px-3 text-right w-[12%]">
+                    <span>Actions</span>
+                  </th>
+                </tr>
+
+                {/* AG-GRID INLINE FILTER ROW */}
+                <tr className="bg-gray-50/95 dark:bg-[#181d2c] border-b border-gray-200 dark:border-white/10">
+                  {/* Col 0: Index Filter Space */}
+                  <th className="py-2 px-2 text-center border-r border-gray-200 dark:border-white/10">
+                    <Filter size={11} className="mx-auto text-gray-400" />
+                  </th>
+
+                  {/* Col 1: Name / ID Search Input */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10">
+                    <div className="relative flex items-center min-w-[110px]">
+                      <input
+                        type="text"
+                        placeholder="Filter name/ID..."
+                        value={colSearchName}
+                        onChange={e => setColSearchName(e.target.value)}
+                        className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {colSearchName ? (
+                        <button
+                          type="button"
+                          onClick={() => setColSearchName('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                        >
+                          <X size={11} />
+                        </button>
+                      ) : (
+                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
                       )}
                     </div>
-                  </td>
+                  </th>
+
+                  {/* Col 2: Role Dropdown Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible min-w-[110px]">
+                    <CustomSelect
+                      size="sm"
+                      options={ROLE_FILTER_OPTIONS}
+                      value={colFilterRole}
+                      onChange={setColFilterRole}
+                      placeholder="All Roles"
+                    />
+                  </th>
+
+                  {/* Col 3: Unit / Lot Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 min-w-[90px]">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Filter unit..."
+                        value={colSearchUnit}
+                        onChange={e => setColSearchUnit(e.target.value)}
+                        className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {colSearchUnit ? (
+                        <button
+                          type="button"
+                          onClick={() => setColSearchUnit('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                        >
+                          <X size={10} />
+                        </button>
+                      ) : (
+                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Col 4: Contact Details Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 min-w-[110px]">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        placeholder="Filter email/phone..."
+                        value={colSearchContact}
+                        onChange={e => setColSearchContact(e.target.value)}
+                        className="w-full h-8 pl-2.5 pr-5 rounded-lg bg-white dark:bg-[#0e121d] border border-gray-200 dark:border-white/15 text-[11px] text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2] transition-all font-normal shadow-2xs"
+                      />
+                      {colSearchContact ? (
+                        <button
+                          type="button"
+                          onClick={() => setColSearchContact('')}
+                          className="absolute right-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                        >
+                          <X size={10} />
+                        </button>
+                      ) : (
+                        <span className="absolute right-2 text-gray-400 text-[10px] pointer-events-none">▼</span>
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Col 5: Occupants Filter Space */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 text-center text-gray-400 text-[10px]">
+                    -
+                  </th>
+
+                  {/* Col 6: Status Dropdown Filter */}
+                  <th className="py-2 px-2 border-r border-gray-200 dark:border-white/10 overflow-visible min-w-[100px]">
+                    <CustomSelect
+                      size="sm"
+                      menuAlign="right"
+                      options={STATUS_FILTER_OPTIONS}
+                      value={colFilterStatus}
+                      onChange={setColFilterStatus}
+                      placeholder="All Status"
+                    />
+                  </th>
+
+                  {/* Col 7: Reset Filter Button */}
+                  <th className="py-2 px-2 text-right">
+                    {activeFiltersCount > 0 ? (
+                      <button
+                        type="button"
+                        onClick={onResetFilters}
+                        className="w-full h-8 px-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-red-500/20 shadow-2xs"
+                        title="Reset all filters"
+                      >
+                        <RotateCcw size={10} />
+                        <span>Reset</span>
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 pr-2">Filter</span>
+                    )}
+                  </th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {members.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-16 text-center">
+                      <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4 border border-gray-100 mx-auto">
+                        <Users size={22} className="text-gray-400 dark:text-gray-500" />
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">No members match your criteria</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">Try clearing one of your column filters.</p>
+                      {activeFiltersCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={onResetFilters}
+                          className="px-4 py-2 rounded-xl bg-[#0055FF] text-white text-xs font-bold shadow-md hover:bg-blue-600 cursor-pointer transition-all"
+                        >
+                          Reset All Filters
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  members.map((m, index) => (
+                    <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors group">
+                      {/* Col 0: Row index */}
+                      <td className="py-4 px-2.5 text-center border-r border-gray-100 dark:border-white/5 font-mono text-[11px] text-gray-400">
+                        {index + 1}
+                      </td>
+
+                      {/* Col 1: Member Name & ID */}
+                      <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900 dark:text-white text-sm">{m.name}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-1.5 py-0.5 rounded truncate max-w-[120px]">
+                              #{m.id.slice(0, 8)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => handleCopyId(m.id, e)}
+                              className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                              title="Copy full Member ID"
+                            >
+                              {copiedId === m.id ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Col 2: Role */}
+                      <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase tracking-wide ${roleColors[m.role] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
+                          {m.role}
+                        </span>
+                      </td>
+
+                      {/* Col 3: Unit / Lot */}
+                      <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                        <div className="leading-tight">
+                          <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                            {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                              ? (m.unitId && !m.unitId.startsWith('Unit 1') ? m.unitId : 'HQ / Management')
+                              : m.unitId}
+                          </div>
+                          <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                            {m.role && (m.role.includes('Manager') || m.role.includes('Admin'))
+                              ? 'Staff / Admin'
+                              : (m.lotNumber ? `Lot ${m.lotNumber}` : 'No Lot Assigned')}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Col 4: Contact Details */}
+                      <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                        <div className="leading-tight">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
+                            <Mail size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                            <span className="truncate max-w-[160px]">{m.email}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            <Phone size={11} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                            {m.phone}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Col 5: Occupants */}
+                      <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                        {m.role && (m.role.includes('Manager') || m.role.includes('Admin')) ? (
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">-</span>
+                        ) : m.additionalOccupants && m.additionalOccupants.length > 0 ? (
+                          <span className="text-[10px] font-bold text-[#0055FF] bg-[#0055FF]/10 px-2 py-0.5 rounded-full border border-[#0055FF]/20">
+                            {m.additionalOccupants.length + 1} Occupants
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">1 Occupant</span>
+                        )}
+                      </td>
+
+                      {/* Col 6: Status */}
+                      <td className="px-4 py-4 border-r border-gray-100 dark:border-white/5">
+                        <MemberStatusBadge status={m.status} />
+                      </td>
+
+                      {/* Col 7: Actions */}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2 justify-end">
+                          <button
+                            type="button"
+                            onClick={() => onEditMember(m)}
+                            className="px-3 py-1.5 rounded-xl border border-[#0055FF]/30 dark:border-[#00D4B2]/30 bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[11px] font-bold text-[#0055FF] dark:text-[#00D4B2] hover:bg-[#0055FF] hover:text-white dark:hover:bg-[#00D4B2] dark:hover:text-[#0B1121] cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs hover:scale-105"
+                            title="Edit Member (Email, Phone, Role, Unit)"
+                          >
+                            <Edit3 size={12} />
+                            <span>Edit</span>
+                          </button>
+                          {m.name !== activePersonaName && (
+                            m.status === 'Active' ? (
+                              <button
+                                type="button"
+                                onClick={() => onUpdateStatus(m.id, 'Restricted')}
+                                className="px-3 py-1.5 rounded-xl border border-[#FF4757]/30 text-[11px] font-bold text-[#FF4757] hover:bg-[#FF4757]/10 cursor-pointer transition-all"
+                              >
+                                Restrict
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => onUpdateStatus(m.id, 'Active')}
+                                className="px-3 py-1.5 rounded-xl border border-[#00D4B2]/30 text-[11px] font-bold text-[#00D4B2] hover:bg-[#00D4B2]/10 cursor-pointer transition-all"
+                              >
+                                Activate
+                              </button>
+                            )
+                          )}
+                          {m.name !== activePersonaName && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to remove ${m.name} (${m.email}) from scheme ${activeSchemeId}?`)) {
+                                  onDeleteMember(m.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 border border-transparent hover:border-[#FF4757]/20 transition-all cursor-pointer hover:scale-105"
+                              title={`Delete Member ${m.name}`}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

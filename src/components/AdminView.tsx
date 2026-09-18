@@ -1007,8 +1007,11 @@ export function AdminView({
               </div>
             ) : (
               <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2 bg-blue-50/70 dark:bg-[#00D4B2]/10 border-b border-gray-200 dark:border-white/10 text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold md:hidden">
+                  <span>← Swipe horizontally to view all ticket columns →</span>
+                </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
+                  <table className="w-full min-w-[720px] text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-gray-50/80 dark:bg-[#151926] text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
                         <th className="py-3.5 px-5">Ticket Info</th>
@@ -1419,7 +1422,7 @@ export function AdminView({
 
             {/* Main Enterprise Data Table */}
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
-              <table className="w-full text-left text-xs border-collapse font-sans table-auto">
+              <table className="w-full min-w-[760px] text-left text-xs border-collapse font-sans table-auto">
                 <thead>
                   {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
                   <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
@@ -1909,7 +1912,7 @@ export function AdminView({
             </div>
             
             <div className="rounded-3xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#0d1117] shadow-xl overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full min-w-[800px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-[#1a1d27] border-b border-gray-200 dark:border-white/5">
                     <th className="p-4 px-5 font-black uppercase tracking-wider text-gray-900 dark:text-white w-64">
