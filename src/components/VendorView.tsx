@@ -947,12 +947,21 @@ export function VendorView({
               </p>
             </div>
             {!isCommitteeMember && (
-              <button
-                onClick={() => setShowAddVendorModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
-              >
-                <Plus size={15} /> Add / Invite Contractor
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href="#trade-portal"
+                  className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-800 dark:text-gray-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all border border-gray-200/80 dark:border-white/10"
+                  title="Open live Contractor Self-Registration Portal"
+                >
+                  <ExternalLink size={14} className="text-[#0055FF] dark:text-[#00D4B2]" /> Open Trade Portal
+                </a>
+                <button
+                  onClick={() => setShowAddVendorModal(true)}
+                  className="px-3.5 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                >
+                  <Plus size={15} /> Add / Invite Contractor
+                </button>
+              </div>
             )}
           </div>
 

@@ -105,6 +105,14 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
             {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} />}
           </button>
 
+          <a 
+            href="#trade-portal"
+            aria-label="Trade Contractor Onboarding Portal"
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            Trade Portal
+          </a>
+
           <button 
             onClick={() => window.location.hash = '#/admin'}
             aria-label="Open System Console"
@@ -290,6 +298,7 @@ export function LandingPageView({ onSelectPersona, theme, setTheme }: LandingPag
               <li><a href="#features" className="hover:text-white transition-colors">Governance Ballots</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Access Directories</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Compliance Auditing</a></li>
+              <li><a href="#trade-portal" className="text-emerald-400 hover:underline transition-colors flex items-center gap-1">Contractor Portal</a></li>
             </ul>
           </div>
 

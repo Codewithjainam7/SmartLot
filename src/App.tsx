@@ -40,12 +40,69 @@ export default function App() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [surveyToken, setSurveyToken] = useState<string | null>(null);
   const [activeGuestWorkOrderId, setActiveGuestWorkOrderId] = useState<string | null>(null);
+  // Helper to safely decode Base64 strings even if URL padding '=' was trimmed
+  const safeBase64Decode = (str: string): string => {
+    try {
+      const sanitized = str.replace(/-/g, '+').replace(/_/g, '/');
+      const padLen = (4 - (sanitized.length % 4)) % 4;
+      const padded = sanitized + '='.repeat(padLen);
+      return atob(padded);
+    } catch {
+      return '';
+    }
+  };
+
   const [activeVendorInviteToken, setActiveVendorInviteToken] = useState<{
     companyName?: string;
     email?: string;
     category?: string;
     schemeId?: string;
-  } | null>(null);
+  } | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const hashStr = window.location.hash || '';
+    const searchParams = new URLSearchParams(window.location.search ? window.location.search.replace(/^\?/, '') : '');
+    const hashParams = new URLSearchParams(hashStr.includes('?') ? hashStr.split('?')[1] : '');
+    const getParam = (key: string) => searchParams.get(key) || hashParams.get(key);
+
+    const vendorTokenParam = getParam('vendor_token') || getParam('vendor_invite');
+    const isDirectPortalRoute = 
+      hashStr.startsWith('#/trade-portal') || 
+      hashStr.startsWith('#trade-portal') || 
+      hashStr.startsWith('#/vendor-portal') || 
+      hashStr.startsWith('#vendor-portal') ||
+      getParam('portal') === 'trade' ||
+      getParam('portal') === 'vendor';
+
+    if (vendorTokenParam) {
+      const decoded = safeBase64Decode(vendorTokenParam);
+      if (decoded && decoded.includes(':')) {
+        const parts = decoded.split(':');
+        return {
+          companyName: decodeURIComponent(parts[0] || ''),
+          email: decodeURIComponent(parts[1] || ''),
+          category: decodeURIComponent(parts[2] || 'General Building Maintenance'),
+          schemeId: parts[3] || 'SP103'
+        };
+      }
+      return {
+        companyName: getParam('company') || 'Invited Contractor',
+        email: getParam('email') || '',
+        category: getParam('category') || 'General Building Maintenance',
+        schemeId: getParam('scheme') || 'SP103'
+      };
+    }
+
+    if (isDirectPortalRoute) {
+      return {
+        companyName: getParam('company') || 'Contractor Registration',
+        email: getParam('email') || '',
+        category: getParam('category') || 'General Building Maintenance',
+        schemeId: getParam('scheme') || 'SP103'
+      };
+    }
+
+    return null;
+  });
 
   // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
   const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_login' | 'admin_console' | 'dashboard'>(
@@ -145,9 +202,17 @@ export default function App() {
         }
       }
 
+      const isDirectPortalRoute = 
+        hashStr.startsWith('#/trade-portal') || 
+        hashStr.startsWith('#trade-portal') || 
+        hashStr.startsWith('#/vendor-portal') || 
+        hashStr.startsWith('#vendor-portal') ||
+        getParam('portal') === 'trade' ||
+        getParam('portal') === 'vendor';
+
       if (vendorTokenParam) {
-        try {
-          const decoded = atob(vendorTokenParam);
+        const decoded = safeBase64Decode(vendorTokenParam);
+        if (decoded && decoded.includes(':')) {
           const parts = decoded.split(':');
           setActiveVendorInviteToken({
             companyName: decodeURIComponent(parts[0] || ''),
@@ -155,7 +220,7 @@ export default function App() {
             category: decodeURIComponent(parts[2] || 'General Building Maintenance'),
             schemeId: parts[3] || 'SP103'
           });
-        } catch {
+        } else {
           setActiveVendorInviteToken({
             companyName: getParam('company') || 'Invited Contractor',
             email: getParam('email') || '',
@@ -163,6 +228,13 @@ export default function App() {
             schemeId: schemeFromParam || 'SP103'
           });
         }
+      } else if (isDirectPortalRoute) {
+        setActiveVendorInviteToken({
+          companyName: getParam('company') || 'Contractor Registration',
+          email: getParam('email') || '',
+          category: getParam('category') || 'General Building Maintenance',
+          schemeId: schemeFromParam || 'SP103'
+        });
       }
 
       // Match path or hash like #/join/SP101 or #/join?scheme=SP101 or /lander?scheme=SP101
