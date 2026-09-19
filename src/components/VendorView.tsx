@@ -28,7 +28,9 @@ import {
   Download,
   HelpCircle,
   FileDown,
-  ChevronDown
+  ChevronDown,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 
 interface VendorViewProps {
@@ -44,6 +46,7 @@ interface VendorViewProps {
   onAddVendor?: (payload: CreateVendorPayload) => void;
   onDeleteVendor?: (vendorId: string) => void;
   onUpdateVendorInsurance?: (vendorId: string, status: 'Active' | 'Expired Ins.' | 'Pending Verification', expiryDate: string) => void;
+  onAddComment?: (requestId: string, text: string) => void;
   activePersonaName?: string;
   activePersonaRole?: string;
   activeSchemeName?: string;
@@ -63,6 +66,7 @@ export function VendorView({
   onAddVendor,
   onDeleteVendor,
   onUpdateVendorInsurance,
+  onAddComment,
   activePersonaName = 'Emma Wilson',
   activePersonaRole = 'Strata Manager',
   activeSchemeName = 'Cavalier Grand Residences',
@@ -117,6 +121,10 @@ export function VendorView({
   const [adHocVendorName, setAdHocVendorName] = useState('');
   const [adHocVendorEmail, setAdHocVendorEmail] = useState('');
   const [adHocVendorQuoteAmount, setAdHocVendorQuoteAmount] = useState('3100');
+
+  // Poll comment state — keyed by requestId
+  const [tenderCommentInputs, setTenderCommentInputs] = useState<Record<string, string>>({});
+  const [tenderPollComments, setTenderPollComments] = useState<Record<string, { authorName: string; authorRole: string; text: string; postedAt: string }[]>>({});
 
   // Filter requests that are in quoting state or have quotes
   const allTenderRequests = requests.filter(r => 
@@ -943,6 +951,96 @@ export function VendorView({
                       );
                     })}
                   </div>
+                </div>
+
+                {/* Poll Remarks — Committee can post, everyone can read */}
+                <div className="border-t border-gray-100 dark:border-white/5 pt-5 space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <MessageSquare size={13} />
+                    <span>Remarks</span>
+                    {(tenderPollComments[req.id]?.length || 0) > 0 && (
+                      <span className="ml-auto text-[11px] font-bold text-gray-400 normal-case tracking-normal">
+                        {tenderPollComments[req.id].length} {tenderPollComments[req.id].length === 1 ? 'remark' : 'remarks'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Posted remarks */}
+                  {(tenderPollComments[req.id]?.length || 0) > 0 && (
+                    <div className="space-y-2">
+                      {tenderPollComments[req.id].map((c, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2.5"
+                        >
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white text-[10px] font-black shrink-0 mt-0.5">
+                            {c.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-2 flex-wrap">
+                              <span className="text-[11px] font-bold text-gray-900 dark:text-white">{c.authorName}</span>
+                              <span className="text-[10px] text-gray-400">{c.postedAt}</span>
+                            </div>
+                            <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 leading-relaxed">{c.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Input — strictly committee members only per workflow */}
+                  {isCommitteeMember && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white text-[10px] font-black shrink-0">
+                        {(activePersonaName || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      </div>
+                      <div className="flex-1 flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-1.5">
+                        <input
+                          type="text"
+                          value={tenderCommentInputs[req.id] || ''}
+                          onChange={e => setTenderCommentInputs(prev => ({ ...prev, [req.id]: e.target.value }))}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && (tenderCommentInputs[req.id] || '').trim()) {
+                              const text = (tenderCommentInputs[req.id] || '').trim();
+                              const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                              setTenderPollComments(prev => ({
+                                ...prev,
+                                [req.id]: [
+                                  ...(prev[req.id] || []),
+                                  { authorName: activePersonaName || 'Committee Member', authorRole: activePersonaRole || 'Committee Member', text, postedAt: `Today at ${now}` }
+                                ]
+                              }));
+                              if (onAddComment) onAddComment(req.id, text);
+                              setTenderCommentInputs(prev => ({ ...prev, [req.id]: '' }));
+                            }
+                          }}
+                          placeholder="Add a remark on this poll…"
+                          className="flex-1 bg-transparent text-xs text-gray-800 dark:text-gray-200 placeholder-gray-400 outline-none"
+                        />
+                        <button
+                          type="button"
+                          disabled={!(tenderCommentInputs[req.id] || '').trim()}
+                          onClick={() => {
+                            const text = (tenderCommentInputs[req.id] || '').trim();
+                            if (!text) return;
+                            const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                            setTenderPollComments(prev => ({
+                              ...prev,
+                              [req.id]: [
+                                ...(prev[req.id] || []),
+                                { authorName: activePersonaName || 'Committee Member', authorRole: activePersonaRole || 'Committee Member', text, postedAt: `Today at ${now}` }
+                              ]
+                            }));
+                            if (onAddComment) onAddComment(req.id, text);
+                            setTenderCommentInputs(prev => ({ ...prev, [req.id]: '' }));
+                          }}
+                          className="text-[#0055FF] dark:text-[#00D4B2] hover:opacity-70 transition-opacity disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                        >
+                          <Send size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
               </div>

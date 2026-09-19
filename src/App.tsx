@@ -1172,6 +1172,7 @@ export default function App() {
                 onAddVendor={store.addVendor}
                 onDeleteVendor={store.deleteVendor}
                 onUpdateVendorInsurance={store.updateVendorInsurance}
+                onAddComment={store.addCommentToRequest}
                 activePersonaName={store.activePersona.name}
                 activePersonaRole={store.activePersona.role}
                 activeSchemeName={store.activeScheme.name}
