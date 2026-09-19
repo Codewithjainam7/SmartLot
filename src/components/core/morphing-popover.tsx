@@ -97,7 +97,7 @@ export function MorphingPopoverContent({
           {/* Fluid Container Transform Card */}
           <motion.div
             layoutId={`morphing-popover-container-${uniqueId}`}
-            className={`relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 overflow-hidden flex flex-col min-h-0 ${className}`}
+            className={`relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-4 sm:p-6 md:p-7 shadow-2xl z-10 overflow-hidden flex flex-col min-h-0 ${className}`}
             transition={{ 
               type: 'spring', 
               stiffness: 320, 
@@ -111,7 +111,7 @@ export function MorphingPopoverContent({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2, delay: 0.05 }}
-              className="flex-1 flex flex-col min-h-0 h-full w-full overflow-hidden"
+              className="flex-1 flex flex-col min-h-0 w-full overflow-hidden"
             >
               {children}
             </motion.div>

@@ -64,7 +64,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
             </div>
           </MorphingPopoverTrigger>
 
-          <MorphingPopoverContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <MorphingPopoverContent className="w-full max-w-2xl lg:max-w-3xl max-h-[92vh] sm:max-h-[88vh]">
             <CreateRequestFormContent 
               onSubmit={onSubmitCase as any}
               requestorName="System Admin"
