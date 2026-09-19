@@ -31,6 +31,7 @@ import { SurveysView } from './components/SurveysView';
 import { GuestSurveyView } from './components/GuestSurveyView';
 import { VendorView } from './components/VendorView';
 import { GuestPortalView } from './components/GuestPortalView';
+import { VendorOnboardingPortalView } from './components/VendorOnboardingPortalView';
 
 export default function App() {
   const store = useSmartLotStore();
@@ -39,6 +40,12 @@ export default function App() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [surveyToken, setSurveyToken] = useState<string | null>(null);
   const [activeGuestWorkOrderId, setActiveGuestWorkOrderId] = useState<string | null>(null);
+  const [activeVendorInviteToken, setActiveVendorInviteToken] = useState<{
+    companyName?: string;
+    email?: string;
+    category?: string;
+    schemeId?: string;
+  } | null>(null);
 
   // Restore session from persisted store.isLoggedIn so reloads keep the user logged in
   const [sessionState, setSessionState] = useState<'landing' | 'login' | 'admin_login' | 'admin_console' | 'dashboard'>(
@@ -119,6 +126,7 @@ export default function App() {
       const schemeFromParam = getParam('scheme');
       const surveyParam = getParam('survey_token') || getParam('survey');
       const woTokenParam = getParam('wo_token') || getParam('token_wo');
+      const vendorTokenParam = getParam('vendor_token') || getParam('vendor_invite');
 
       if (surveyParam) {
         setSurveyToken(surveyParam);
@@ -134,6 +142,26 @@ export default function App() {
         } catch {
           // If already plain ID
           setActiveGuestWorkOrderId(woTokenParam);
+        }
+      }
+
+      if (vendorTokenParam) {
+        try {
+          const decoded = atob(vendorTokenParam);
+          const parts = decoded.split(':');
+          setActiveVendorInviteToken({
+            companyName: decodeURIComponent(parts[0] || ''),
+            email: decodeURIComponent(parts[1] || ''),
+            category: decodeURIComponent(parts[2] || 'General Building Maintenance'),
+            schemeId: parts[3] || 'SP103'
+          });
+        } catch {
+          setActiveVendorInviteToken({
+            companyName: getParam('company') || 'Invited Contractor',
+            email: getParam('email') || '',
+            category: getParam('category') || 'General Building Maintenance',
+            schemeId: schemeFromParam || 'SP103'
+          });
         }
       }
 
@@ -535,6 +563,42 @@ export default function App() {
         />
       );
     }
+  }
+
+  // External Vendor Onboarding Portal Mode (Invited Contractor Self-Registration)
+  if (activeVendorInviteToken) {
+    const targetScheme = store.schemes.find(s => s.id === activeVendorInviteToken.schemeId) || store.activeScheme;
+    return (
+      <VendorOnboardingPortalView
+        initialCompanyName={activeVendorInviteToken.companyName}
+        initialEmail={activeVendorInviteToken.email}
+        initialCategory={activeVendorInviteToken.category}
+        schemeId={activeVendorInviteToken.schemeId || store.activeScheme.id}
+        schemeName={targetScheme?.name || 'Cavalier Grand Residences'}
+        onSubmitRegistration={(vendorData) => {
+          store.addVendor({
+            name: vendorData.name,
+            category: vendorData.category,
+            email: vendorData.email,
+            phone: vendorData.phone,
+            abn: vendorData.abn,
+            licenseNo: vendorData.licenseNo,
+            website: vendorData.website,
+            yearsOfExperience: vendorData.yearsOfExperience,
+            insuranceStatus: 'Active',
+            insuranceExpiry: vendorData.insuranceExpiry,
+            certificateOfCurrencyUrl: `https://storage.smartlot.internal/docs/${vendorData.docName}`,
+            rating: 5.0
+          });
+        }}
+        onBack={() => {
+          if (window.history.pushState) {
+            window.history.pushState('', '', window.location.pathname);
+          }
+          setActiveVendorInviteToken(null);
+        }}
+      />
+    );
   }
 
   if (sessionState === 'landing') {

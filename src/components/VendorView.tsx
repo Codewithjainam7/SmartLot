@@ -86,6 +86,8 @@ export function VendorView({
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
   const [vendorOnboardingMode, setVendorOnboardingMode] = useState<'manual' | 'invite'>('manual');
   const [inviteVendorSent, setInviteVendorSent] = useState(false);
+  const [generatedInviteUrl, setGeneratedInviteUrl] = useState<string | null>(null);
+  const [isCopiedInvite, setIsCopiedInvite] = useState(false);
   const [showCreateTenderModal, setShowCreateTenderModal] = useState(false);
   const [insuranceVerifyVendor, setInsuranceVerifyVendor] = useState<Vendor | null>(null);
   const [newInsuranceExpiry, setNewInsuranceExpiry] = useState('2027-12-31');
@@ -183,20 +185,12 @@ export function VendorView({
     if (!newVendorName.trim()) return;
 
     if (vendorOnboardingMode === 'invite') {
-      // Invite flow: send email invite with site details & registration link
+      // Invite flow: generate encrypted registration link with site details
+      const rawToken = `${encodeURIComponent(newVendorName.trim())}:${encodeURIComponent(newVendorEmail.trim())}:${encodeURIComponent(newVendorCategory)}:${activeSchemeId}`;
+      const token = btoa(rawToken).replace(/=+$/, '');
+      const inviteUrl = `${window.location.origin}/?vendor_token=${token}`;
+      setGeneratedInviteUrl(inviteUrl);
       setInviteVendorSent(true);
-      setTimeout(() => {
-        setInviteVendorSent(false);
-        setShowAddVendorModal(false);
-        setNewVendorName('');
-        setNewVendorAbn('');
-        setNewVendorLicense('');
-        setNewVendorPhone('');
-        setNewVendorEmail('');
-        setNewVendorWebsite('');
-        setNewVendorExperience('5');
-        setNewVendorInsuranceDocName('');
-      }, 1800);
       return;
     }
 
@@ -1490,27 +1484,72 @@ export function VendorView({
                   />
                 </div>
 
-                {inviteVendorSent ? (
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold flex items-center gap-2">
-                    <CheckCircle2 size={16} /> Invitation sent with site details and onboarding link!
+                {inviteVendorSent && generatedInviteUrl ? (
+                  <div className="p-4 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/50 rounded-2xl space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
+                      <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>Invitation generated and email dispatched to {newVendorEmail}!</span>
+                    </div>
+
+                    <p className="text-[11px] text-gray-600 dark:text-gray-300">
+                      The contractor has been sent an email containing their secure registration link. You can also copy the link or test the live portal directly below:
+                    </p>
+
+                    <div className="p-2 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl text-[10px] font-mono text-gray-700 dark:text-gray-300 truncate select-all">
+                      {generatedInviteUrl}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedInviteUrl);
+                          setIsCopiedInvite(true);
+                          setTimeout(() => setIsCopiedInvite(false), 2500);
+                        }}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          isCopiedInvite 
+                            ? 'bg-emerald-600 text-white' 
+                            : 'bg-white dark:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 hover:bg-gray-100'
+                        }`}
+                      >
+                        {isCopiedInvite ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{isCopiedInvite ? 'Copied to Clipboard!' : 'Copy Portal Link'}</span>
+                      </button>
+
+                      <a
+                        href={generatedInviteUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="py-2 px-3 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                      >
+                        <ExternalLink size={13} />
+                        <span>Open Trade Portal</span>
+                      </a>
+                    </div>
                   </div>
                 ) : null}
 
                 <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
                   <button
                     type="button"
-                    onClick={() => setShowAddVendorModal(false)}
+                    onClick={() => {
+                      setShowAddVendorModal(false);
+                      setInviteVendorSent(false);
+                      setGeneratedInviteUrl(null);
+                    }}
                     className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
                   >
-                    Cancel
+                    {inviteVendorSent ? 'Done' : 'Cancel'}
                   </button>
-                  <button
-                    type="submit"
-                    disabled={inviteVendorSent}
-                    className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-                  >
-                    <Mail size={15} /> Send Email Invite With Site Details
-                  </button>
+                  {!inviteVendorSent && (
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    >
+                      <Mail size={15} /> Send Email Invite With Site Details
+                    </button>
+                  )}
                 </div>
               </form>
             ) : (
