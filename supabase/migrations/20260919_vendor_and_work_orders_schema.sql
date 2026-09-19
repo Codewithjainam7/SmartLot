@@ -238,13 +238,11 @@ DROP POLICY IF EXISTS "Quote votes authenticated full access" ON public.quote_po
 DROP POLICY IF EXISTS "Authenticated full control on quote votes" ON public.quote_poll_votes;
 
 -- VENDORS POLICIES:
--- Authenticated users (Strata Managers, Committee, Admins) have full control
 CREATE POLICY "Vendors authenticated full access" ON public.vendors
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING ((SELECT auth.uid()) IS NOT NULL)
+    WITH CHECK ((SELECT auth.uid()) IS NOT NULL);
 
--- Anonymous trade self-registration (via portal invite): ONLY pending verification
 CREATE POLICY "Vendors anon onboarding insert" ON public.vendors
     FOR INSERT TO anon
     WITH CHECK (
@@ -252,7 +250,6 @@ CREATE POLICY "Vendors anon onboarding insert" ON public.vendors
         AND onboarding_method = 'invite_portal'
     );
 
--- Anonymous users can only read active approved vendors (preventing scrapers from seeing unverified applications)
 CREATE POLICY "Vendors anon active read" ON public.vendors
     FOR SELECT TO anon
     USING (insurance_status = 'Active');
@@ -260,20 +257,67 @@ CREATE POLICY "Vendors anon active read" ON public.vendors
 -- SCHEME VENDORS POLICIES:
 CREATE POLICY "Scheme vendors authenticated full access" ON public.scheme_vendors
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = scheme_vendors.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = scheme_vendors.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Scheme vendors anon read" ON public.scheme_vendors
     FOR SELECT TO anon
-    USING (TRUE);
+    USING (is_preferred = TRUE);
 
 -- VENDOR INVITATIONS POLICIES:
 CREATE POLICY "Invitations authenticated full access" ON public.vendor_invitations
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_invitations.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_invitations.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
--- Anonymous contractors can only verify invitation if pending and not expired
 CREATE POLICY "Invitations anon token read" ON public.vendor_invitations
     FOR SELECT TO anon
     USING (
@@ -282,14 +326,35 @@ CREATE POLICY "Invitations anon token read" ON public.vendor_invitations
     );
 
 -- WORK ORDERS POLICIES:
--- Authenticated full management
 CREATE POLICY "Work orders authenticated full access" ON public.work_orders
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = work_orders.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = work_orders.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
--- Anonymous Tradies can ONLY read if providing the exact guest_magic_token via header:
--- (Prevents sequential scanning or reading all building PINs!)
 CREATE POLICY "Work orders tradie guest token access" ON public.work_orders
     FOR SELECT TO anon
     USING (
@@ -303,13 +368,63 @@ CREATE POLICY "Work orders tradie guest token access" ON public.work_orders
 -- VENDOR QUOTES & QUOTE VOTES POLICIES:
 CREATE POLICY "Vendor quotes authenticated full access" ON public.vendor_quotes
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_quotes.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_quotes.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Quote votes authenticated full access" ON public.quote_poll_votes
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.vendor_quotes vq
+                JOIN public.scheme_members sm ON sm.scheme_id::TEXT = vq.scheme_id
+                WHERE vq.id = quote_poll_votes.quote_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.vendor_quotes vq
+                JOIN public.scheme_members sm ON sm.scheme_id::TEXT = vq.scheme_id
+                WHERE vq.id = quote_poll_votes.quote_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 -- PostgREST API Grants
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendors TO authenticated, service_role;

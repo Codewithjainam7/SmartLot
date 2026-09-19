@@ -174,11 +174,63 @@ CREATE INDEX IF NOT EXISTS idx_request_comments_request_id ON request_comments(r
 ALTER TABLE resident_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE request_comments ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow authenticated full on resident_requests" 
-    ON resident_requests FOR ALL TO authenticated USING (TRUE) WITH CHECK (TRUE);
+CREATE POLICY "Resident requests authenticated access" 
+    ON resident_requests FOR ALL TO authenticated
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            requestor_id = (SELECT auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = resident_requests.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            requestor_id = (SELECT auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = resident_requests.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
-CREATE POLICY "Allow authenticated full on request_comments" 
-    ON request_comments FOR ALL TO authenticated USING (TRUE) WITH CHECK (TRUE);
+CREATE POLICY "Request comments authenticated access" 
+    ON request_comments FOR ALL TO authenticated
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            author_id = (SELECT auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.resident_requests rr
+                JOIN public.scheme_members sm ON sm.scheme_id::TEXT = rr.scheme_id
+                WHERE rr.id = request_comments.request_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            author_id = (SELECT auth.uid()) OR
+            EXISTS (
+                SELECT 1 FROM public.resident_requests rr
+                WHERE rr.id = request_comments.request_id
+            )
+        )
+    );
 
 -- Base Mock Requests for Australian Strata Buildings
 INSERT INTO resident_requests (
@@ -668,18 +720,54 @@ CREATE POLICY "Allow select active surveys" ON surveys
     FOR SELECT TO anon, authenticated
     USING (status IN ('Active', 'active', 'Closed', 'closed'));
 
-CREATE POLICY "Allow authenticated full surveys" ON surveys
+CREATE POLICY "Surveys authenticated management" ON surveys
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = surveys.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = surveys.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Allow insert survey_responses" ON survey_responses
     FOR INSERT TO anon, authenticated
     WITH CHECK (survey_id IS NOT NULL);
 
-CREATE POLICY "Allow authenticated read survey_responses" ON survey_responses
+CREATE POLICY "Survey responses authenticated read" ON survey_responses
     FOR SELECT TO authenticated
-    USING (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = survey_responses.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 GRANT SELECT ON TABLE surveys TO anon;
 GRANT ALL ON TABLE surveys TO authenticated;
@@ -891,8 +979,8 @@ DROP POLICY IF EXISTS "Quote votes authenticated full access" ON quote_poll_vote
 -- VENDORS POLICIES:
 CREATE POLICY "Vendors authenticated full access" ON vendors
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING ((SELECT auth.uid()) IS NOT NULL)
+    WITH CHECK ((SELECT auth.uid()) IS NOT NULL);
 
 CREATE POLICY "Vendors anon onboarding insert" ON vendors
     FOR INSERT TO anon
@@ -908,18 +996,66 @@ CREATE POLICY "Vendors anon active read" ON vendors
 -- SCHEME VENDORS POLICIES:
 CREATE POLICY "Scheme vendors authenticated full access" ON scheme_vendors
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = scheme_vendors.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = scheme_vendors.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Scheme vendors anon read" ON scheme_vendors
     FOR SELECT TO anon
-    USING (TRUE);
+    USING (is_preferred = TRUE);
 
 -- VENDOR INVITATIONS POLICIES:
 CREATE POLICY "Invitations authenticated full access" ON vendor_invitations
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_invitations.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_invitations.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Invitations anon token read" ON vendor_invitations
     FOR SELECT TO anon
@@ -931,8 +1067,32 @@ CREATE POLICY "Invitations anon token read" ON vendor_invitations
 -- WORK ORDERS POLICIES:
 CREATE POLICY "Work orders authenticated full access" ON work_orders
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = work_orders.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = work_orders.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Work orders tradie guest token access" ON work_orders
     FOR SELECT TO anon
@@ -947,13 +1107,63 @@ CREATE POLICY "Work orders tradie guest token access" ON work_orders
 -- VENDOR QUOTES & QUOTE VOTES POLICIES:
 CREATE POLICY "Vendor quotes authenticated full access" ON vendor_quotes
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_quotes.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.scheme_members sm
+                WHERE sm.scheme_id::TEXT = vendor_quotes.scheme_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 CREATE POLICY "Quote votes authenticated full access" ON quote_poll_votes
     FOR ALL TO authenticated
-    USING (TRUE)
-    WITH CHECK (TRUE);
+    USING (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.vendor_quotes vq
+                JOIN public.scheme_members sm ON sm.scheme_id::TEXT = vq.scheme_id
+                WHERE vq.id = quote_poll_votes.quote_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    )
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL AND (
+            EXISTS (
+                SELECT 1 FROM public.vendor_quotes vq
+                JOIN public.scheme_members sm ON sm.scheme_id::TEXT = vq.scheme_id
+                WHERE vq.id = quote_poll_votes.quote_id
+                AND sm.profile_id = (SELECT auth.uid())
+            ) OR
+            EXISTS (
+                SELECT 1 FROM public.profiles p
+                WHERE p.id = (SELECT auth.uid())
+            )
+        )
+    );
 
 -- PostgREST API Grants
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendors TO authenticated, service_role;
