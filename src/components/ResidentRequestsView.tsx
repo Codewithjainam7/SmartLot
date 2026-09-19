@@ -1707,7 +1707,7 @@ export function ResidentRequestsView({
               </div>
             </MorphingPopoverTrigger>
 
-            <MorphingPopoverContent className="w-full max-w-2xl lg:max-w-3xl max-h-[92vh] sm:max-h-[88vh]">
+            <MorphingPopoverContent className="w-full max-w-xl max-h-[92vh] sm:max-h-[88vh]">
               <CreateRequestFormContent 
                 onSubmit={onSubmitRequest}
                 requestorName={activePersonaName}

@@ -36,22 +36,15 @@ export function MorphingPopoverTrigger({
   className?: string;
   asChild?: boolean;
 }) {
-  const { isOpen, setIsOpen, uniqueId } = useMorphingPopover();
+  const { isOpen, setIsOpen } = useMorphingPopover();
 
   return (
-    <motion.div
-      layoutId={`morphing-popover-container-${uniqueId}`}
+    <div
       onClick={() => setIsOpen(!isOpen)}
       className={`cursor-pointer inline-block ${className}`}
-      transition={{ 
-        type: 'spring', 
-        stiffness: 320, 
-        damping: 28, 
-        mass: 0.8 
-      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -62,7 +55,7 @@ export function MorphingPopoverContent({
   children: React.ReactNode; 
   className?: string;
 }) {
-  const { isOpen, setIsOpen, uniqueId } = useMorphingPopover();
+  const { isOpen, setIsOpen } = useMorphingPopover();
 
   useEffect(() => {
     if (isOpen) {
@@ -83,38 +76,27 @@ export function MorphingPopoverContent({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5">
           {/* Subtle Backdrop Blur & Fade covering full viewport */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.2 }}
             className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Fluid Container Transform Card */}
+          {/* Centered Modal Container */}
           <motion.div
-            layoutId={`morphing-popover-container-${uniqueId}`}
-            className={`relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-4 sm:p-6 md:p-7 shadow-2xl z-10 overflow-hidden flex flex-col min-h-0 ${className}`}
-            transition={{ 
-              type: 'spring', 
-              stiffness: 320, 
-              damping: 28, 
-              mass: 0.8 
-            }}
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+            className={`relative bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-2xl z-10 flex flex-col min-h-0 overflow-hidden ${className}`}
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Inner Content Smooth Fade */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2, delay: 0.05 }}
-              className="flex-1 flex flex-col min-h-0 w-full overflow-hidden"
-            >
-              {children}
-            </motion.div>
+            {children}
           </motion.div>
         </div>
       )}

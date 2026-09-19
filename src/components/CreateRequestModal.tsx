@@ -400,76 +400,65 @@ export function CreateRequestFormContent({
 
   // ── Form ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 flex flex-col min-h-0 h-full w-full text-left relative">
-      {/* Decorative Glow */}
-      <div className="absolute top-0 right-0 w-72 h-36 bg-gradient-to-bl from-[#0055FF]/10 via-[#00D4B2]/10 to-transparent rounded-tr-3xl blur-2xl pointer-events-none" />
-
+    <div className="flex-1 flex flex-col min-h-0 h-full w-full text-left">
       {/* 1. Modal Header (Pinned / Sticky) */}
-      <div className="shrink-0 flex items-start justify-between pb-3 sm:pb-4 border-b border-gray-100 dark:border-white/10 relative z-10">
+      <div className="shrink-0 flex items-start justify-between pb-3.5 sm:pb-4 border-b border-gray-100 dark:border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-2xl bg-gradient-to-br from-[#0055FF]/15 to-[#00D4B2]/20 border border-[#0055FF]/20 dark:border-[#00D4B2]/30 flex items-center justify-center text-[#0055FF] dark:text-[#00D4B2] shrink-0 shadow-xs">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200/80 dark:border-blue-500/20 flex items-center justify-center text-[#0055FF] dark:text-[#00D4B2] shrink-0 shadow-2xs">
             <Wrench size={20} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                Report a Building Issue
-              </h2>
-              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#0055FF]/10 text-[#0055FF] dark:bg-[#00D4B2]/15 dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/30">
-                Direct Dispatch
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
-              Tell us what's happening and we'll route it to your strata manager.
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
+              Report a Building Issue
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Tell us what's happening and we'll help get it sorted.
             </p>
           </div>
         </div>
         <button 
           type="button"
           onClick={handleDismiss} 
-          className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-400 hover:text-gray-700 dark:hover:text-white border border-gray-200/60 dark:border-white/5 flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0"
+          className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer transition-colors"
           title="Close"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
       </div>
 
       {/* 2. Scrollable Form Body */}
-      <form id="create-request-form" onSubmit={handleFinalSubmit} className="flex-1 overflow-y-auto min-h-0 py-3.5 sm:py-4 pr-1 sm:pr-2 space-y-4 sm:space-y-4.5 custom-scrollbar">
-        {/* ROW 1: 2-Column Grid on sm+ for Issue Type and Location */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-          {/* FIELD 1: What type of issue? */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
-              <span>What type of issue? <span className="text-red-500">*</span></span>
-            </label>
-            <CustomSelect
-              options={ACTIVITY_TYPES.map(t => ({
-                value: t.value,
-                label: t.label,
-                description: t.desc,
-                icon: t.icon,
-              }))}
-              value={activityType}
-              onChange={val => setActivityType(val as ActivityType)}
-            />
-          </div>
+      <form id="create-request-form" onSubmit={handleFinalSubmit} className="flex-1 overflow-y-auto min-h-0 py-3.5 sm:py-4 pr-1 sm:pr-1.5 space-y-3.5 sm:space-y-4 custom-scrollbar">
+        {/* FIELD 1: What type of issue? */}
+        <div>
+          <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+            What type of issue? <span className="text-red-500">*</span>
+          </label>
+          <CustomSelect
+            options={ACTIVITY_TYPES.map(t => ({
+              value: t.value,
+              label: t.label,
+              description: t.desc,
+              icon: t.icon,
+            }))}
+            value={activityType}
+            onChange={val => setActivityType(val as ActivityType)}
+          />
+        </div>
 
-          {/* FIELD 2: Where is it? */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
-              <span>Where is it? <span className="text-red-500">*</span></span>
-            </label>
-            <CustomSelect
-              options={LOCATIONS.map(loc => ({
-                value: loc,
-                label: loc,
-                icon: <MapPin size={15} className="text-[#0055FF] dark:text-[#00D4B2]" />
-              }))}
-              value={location}
-              onChange={val => setLocation(val as ActivityLocation)}
-            />
-          </div>
+        {/* FIELD 2: Where is it? */}
+        <div>
+          <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+            Where is it? <span className="text-red-500">*</span>
+          </label>
+          <CustomSelect
+            options={LOCATIONS.map(loc => ({
+              value: loc,
+              label: loc,
+              icon: <MapPin size={15} className="text-[#0055FF] dark:text-[#00D4B2]" />
+            }))}
+            value={location}
+            onChange={val => setLocation(val as ActivityLocation)}
+          />
         </div>
 
         {/* FIELD 3: What's the problem? */}
@@ -483,7 +472,7 @@ export function CreateRequestFormContent({
           <div className="relative">
             <textarea
               required
-              rows={3}
+              rows={4}
               maxLength={500}
               placeholder="e.g. Front security gate isn't closing properly, motor making grinding sound..."
               value={problem}
@@ -501,10 +490,10 @@ export function CreateRequestFormContent({
               <span>Priority level <span className="text-red-500">*</span></span>
             </span>
             <span className="text-[10px] font-normal text-gray-400">
-              {priority === 'Medium' ? 'Standard target review' : priority === 'High' ? 'Urgent attention within 24h' : priority === 'Urgent' ? 'Immediate hazard / emergency' : 'Standard non-urgent'}
+              {priority === 'Medium' ? 'Standard target review' : priority === 'High' ? 'Urgent attention within 24h' : priority === 'Urgent' ? 'Immediate hazard' : 'Standard non-urgent'}
             </span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {PRIORITIES.map(p => {
               const isSelected = priority === p.value;
               return (
@@ -512,7 +501,7 @@ export function CreateRequestFormContent({
                   key={p.value}
                   type="button"
                   onClick={() => setPriority(p.value)}
-                  className={`h-9.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 ${
+                  className={`h-9 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-2xs active:scale-95 ${
                     isSelected
                       ? p.value === 'Urgent'
                         ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20'
@@ -524,11 +513,6 @@ export function CreateRequestFormContent({
                       : 'bg-gray-50 dark:bg-[#141824] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    isSelected 
-                      ? 'bg-white' 
-                      : p.value === 'Urgent' ? 'bg-red-500' : p.value === 'High' ? 'bg-amber-500' : p.value === 'Medium' ? 'bg-blue-500' : 'bg-gray-400'
-                  }`} />
                   <span>{p.label}</span>
                 </button>
               );
@@ -552,16 +536,15 @@ export function CreateRequestFormContent({
               onClick={() => fileInputRef.current?.click()}
               className="w-full p-3.5 rounded-2xl border border-dashed border-gray-300 dark:border-white/15 bg-gray-50/60 dark:bg-[#141824]/60 hover:bg-gray-100/80 dark:hover:bg-[#141824] hover:border-[#0055FF] dark:hover:border-[#00D4B2] transition-all cursor-pointer flex items-center gap-3.5 group shadow-2xs"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0055FF]/10 to-[#00D4B2]/15 border border-[#0055FF]/20 dark:border-[#00D4B2]/30 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                 <Camera size={19} />
               </div>
               <div className="text-left">
-                <div className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <span>Add photos or documents (optional)</span>
-                  <span className="text-[10px] text-gray-400 font-normal">PNG, JPG, PDF up to 10MB</span>
+                <div className="text-xs font-bold text-gray-900 dark:text-white">
+                  Add a photo (optional)
                 </div>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                  Helps our tradespeople and committee diagnose and quote accurately.
+                  Helps us understand the issue better.
                 </p>
               </div>
             </div>
@@ -618,11 +601,10 @@ export function CreateRequestFormContent({
           <button
             type="button"
             onClick={() => setShowMoreOptions(prev => !prev)}
-            className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer py-1"
+            className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-[#0055FF] dark:hover:text-[#00D4B2] transition-colors cursor-pointer py-1"
           >
             <ChevronDown size={14} className={`transition-transform duration-200 ${showMoreOptions ? 'rotate-180' : ''}`} />
-            <span>Additional Contact & Property Details</span>
-            <span className="text-[10px] text-gray-400 font-normal">({showMoreOptions ? 'Click to hide' : 'Optional'})</span>
+            <span>More options</span>
           </button>
 
           <AnimatePresence>
@@ -674,7 +656,7 @@ export function CreateRequestFormContent({
                     <input
                       type="text"
                       maxLength={200}
-                      placeholder="e.g. Gate code, intercom #, entry time preference..."
+                      placeholder="e.g. Gate code, entry time, etc."
                       value={accessInstructions}
                       onChange={e => setAccessInstructions(e.target.value)}
                       className="w-full h-9 px-3 rounded-xl bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-white/10 text-xs font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
@@ -708,31 +690,23 @@ export function CreateRequestFormContent({
       </form>
 
       {/* 3. Bottom Actions Bar (Pinned / Always Visible) */}
-      <div className="shrink-0 pt-3 sm:pt-4 border-t border-gray-100 dark:border-white/10 flex items-center justify-between gap-2 sm:gap-3 bg-white dark:bg-[#0d1117] z-10">
-        <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
-          <ShieldCheck size={14} className="text-[#00D4B2]" />
-          <span>Direct strata log</span>
-        </div>
-
-        <div className="flex items-center justify-end gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={handleDismiss}
-            disabled={isSubmitting}
-            className="flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-all min-h-[44px] active:scale-95 flex items-center justify-center"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            form="create-request-form"
-            disabled={isSubmitting || !problem.trim()}
-            className="flex-1 sm:flex-initial px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#0055FF] to-[#0040CC] hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-blue-500/25 cursor-pointer transition-all active:scale-95 min-h-[44px] flex items-center justify-center gap-2"
-          >
-            <Send size={14} />
-            <span>Submit Request</span>
-          </button>
-        </div>
+      <div className="shrink-0 pt-3 sm:pt-4 border-t border-gray-100 dark:border-white/10 flex items-center justify-end gap-2 sm:gap-2.5 bg-white dark:bg-[#0d1117] z-10">
+        <button
+          type="button"
+          onClick={handleDismiss}
+          disabled={isSubmitting}
+          className="flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-xs cursor-pointer transition-colors min-h-[44px] active:scale-95 flex items-center justify-center"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form="create-request-form"
+          disabled={isSubmitting || !problem.trim()}
+          className="flex-1 sm:flex-initial px-5 sm:px-6 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-blue-500/20 cursor-pointer transition-all active:scale-95 min-h-[44px] flex items-center justify-center gap-2"
+        >
+          <span>Submit Request</span>
+        </button>
       </div>
     </div>
   );
@@ -786,7 +760,7 @@ export function CreateRequestModal({
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-[#0B1121]/70 backdrop-blur-md" onClick={onClose} />
-      <div className="relative bg-white dark:bg-[#0d1117] w-full sm:max-w-2xl lg:max-w-3xl max-h-[92vh] sm:max-h-[88vh] flex flex-col rounded-t-3xl sm:rounded-[32px] border border-gray-200 dark:border-white/10 p-4 sm:p-6 md:p-7 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-7 shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div className="relative bg-white dark:bg-[#0d1117] w-full sm:max-w-xl max-h-[92vh] sm:max-h-[88vh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-gray-200 dark:border-white/10 p-5 sm:p-7 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-7 shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden">
         <CreateRequestFormContent
           onSubmit={onSubmit}
           requestorName={requestorName}
