@@ -189,10 +189,10 @@ export function VendorView({
       // Invite flow: generate encrypted registration link with site details
       const rawToken = `${encodeURIComponent(newVendorName.trim())}:${encodeURIComponent(newVendorEmail.trim())}:${encodeURIComponent(newVendorCategory)}:${activeSchemeId}`;
       const token = btoa(rawToken).replace(/=+$/, '');
-      const baseUrl = typeof window !== 'undefined' && window.location.origin.includes('localhost')
+      const baseUrl = typeof window !== 'undefined' && window.location.origin
         ? window.location.origin
         : 'https://smartlot-five.vercel.app';
-      const inviteUrl = `${baseUrl}/?vendor_token=${token}`;
+      const inviteUrl = `${baseUrl}/#trade-portal?vendor_token=${encodeURIComponent(token)}`;
       setGeneratedInviteUrl(inviteUrl);
       setInviteVendorSent(true);
       return;
