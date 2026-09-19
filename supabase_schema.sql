@@ -83,7 +83,118 @@ ON CONFLICT DO NOTHING;
 
 
 -- ============================================================================
--- 3. Motions & Strata Governance Schema (NSW SSMA 2015 Compliant)
+-- 2. Role & Individual Permissions Matrix
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS role_permissions (
+    scheme_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    permission_label TEXT NOT NULL,
+    active BOOLEAN DEFAULT FALSE NOT NULL,
+    locked BOOLEAN DEFAULT FALSE NOT NULL,
+    PRIMARY KEY (scheme_id, role, permission_label)
+);
+
+CREATE TABLE IF NOT EXISTS individual_permissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    member_id UUID REFERENCES scheme_members(id) ON DELETE CASCADE,
+    permission_label TEXT NOT NULL,
+    active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE (member_id, permission_label)
+);
+
+ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE individual_permissions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated read role_permissions" 
+    ON role_permissions FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Allow authenticated read individual_permissions" 
+    ON individual_permissions FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
+
+-- ============================================================================
+-- 3. Resident Requests, Triage & Activity Management (Story 1 & Core Service Hub)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS resident_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reference_id TEXT NOT NULL UNIQUE,
+    scheme_id TEXT NOT NULL,
+    unit_id TEXT,
+    building_name TEXT,
+    location TEXT,
+    contact_preference TEXT DEFAULT 'Email',
+    strata_manager_email TEXT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    request_type TEXT NOT NULL,
+    priority TEXT NOT NULL DEFAULT 'Medium' CHECK (priority IN ('Low', 'Normal', 'Medium', 'High', 'Urgent', 'Emergency')),
+    due_date DATE,
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'acknowledged', 'in_progress', 'waiting', 'pending_triage', 'approved', 'rejected', 'resolved', 'closed')),
+    requestor_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    requestor_name TEXT,
+    requestor_email TEXT,
+    requestor_phone TEXT,
+    requestor_role TEXT,
+    assigned_to_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    assigned_to_name TEXT,
+    assigned_to_email TEXT,
+    assigned_to_role TEXT,
+    rejection_reason TEXT,
+    close_reason TEXT,
+    closed_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    closed_at TIMESTAMPTZ,
+    attachment_url TEXT,
+    attachment_urls TEXT[] DEFAULT '{}',
+    linked_motion_id TEXT,
+    linked_work_order_id TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE IF NOT EXISTS request_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id UUID NOT NULL REFERENCES resident_requests(id) ON DELETE CASCADE,
+    author_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    author_name TEXT,
+    author_role TEXT,
+    text TEXT NOT NULL,
+    reply_to_id UUID REFERENCES request_comments(id) ON DELETE SET NULL,
+    reply_to_name TEXT,
+    reply_to_text TEXT,
+    is_email_reply BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_resident_requests_scheme_id ON resident_requests(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_resident_requests_reference_id ON resident_requests(reference_id);
+CREATE INDEX IF NOT EXISTS idx_resident_requests_status ON resident_requests(status);
+CREATE INDEX IF NOT EXISTS idx_resident_requests_requestor_id ON resident_requests(requestor_id);
+CREATE INDEX IF NOT EXISTS idx_request_comments_request_id ON request_comments(request_id);
+
+ALTER TABLE resident_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE request_comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated full on resident_requests" 
+    ON resident_requests FOR ALL TO authenticated USING (TRUE) WITH CHECK (TRUE);
+
+CREATE POLICY "Allow authenticated full on request_comments" 
+    ON request_comments FOR ALL TO authenticated USING (TRUE) WITH CHECK (TRUE);
+
+-- Base Mock Requests for Australian Strata Buildings
+INSERT INTO resident_requests (
+    id, reference_id, scheme_id, unit_id, building_name, location, title, description,
+    request_type, priority, status, requestor_name, requestor_email, requestor_phone, requestor_role
+) VALUES
+('b1111111-1111-1111-1111-111111111111', 'REQ-CAV-301', 'SP103', 'Unit 301', 'Highland Towers', 'Lift #2', 'Passenger Lift #2 Hydraulic Motor Noise', 'Hydraulic motor grinding during ascent. Requires certified elevator technician.', 'Common Property Repair', 'Urgent', 'in_progress', 'Sarah Jones', 'sarah.j@example.com', '0411 222 333', 'Lot Owner'),
+('b2222222-2222-2222-2222-222222222222', 'REQ-CAV-302', 'SP103', 'Basement', 'Highland Towers', 'Basement B2', 'Basement B2 Main Sewer Blockage', 'Sewer overflow risk in underground parking bay 14.', 'Common Property Repair', 'Urgent', 'new', 'Michael Chen', 'michael.c@example.com', '0412 345 678', 'Resident'),
+('b3333333-3333-3333-3333-333333333333', 'REQ-CAV-101', 'SP52042', 'Foyer', 'Cavalier Grand Residences', 'Lobby Entry', 'Replace Lobby Directory Signage', 'Directory board scratched and illegible.', 'General Request', 'Medium', 'approved', 'Cameron', 'cameron@smartlot.io', '0400 333 444', 'Committee Member'),
+('b4444444-4444-4444-4444-444444444444', 'REQ-CAV-104', 'SP52042', 'Roof', 'Cavalier Grand Residences', 'Rooftop', 'Rooftop AC Noise Barriers', 'Acoustic vibration disturbing top floor residents.', 'Common Property Repair', 'High', 'pending_triage', 'Sarah Jones', 'sarah.j@example.com', '0411 222 333', 'Lot Owner')
+ON CONFLICT (reference_id) DO UPDATE SET 
+    status = EXCLUDED.status,
+    title = EXCLUDED.title;
+
+-- ============================================================================
+-- 4. Motions & Strata Governance Schema (NSW SSMA 2015 Compliant)
 -- ============================================================================
 
 -- Drop legacy table if previously created
@@ -512,7 +623,71 @@ ON CONFLICT (id) DO NOTHING;
 
 
 -- ============================================================================
--- 5. Vendor Management, Work Orders & Trades Compliance Schema
+-- 5. Community Feedback Hub (Surveys & Resident Responses)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS surveys (
+    id TEXT PRIMARY KEY,
+    scheme_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    category TEXT DEFAULT 'General Satisfaction',
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed', 'Active', 'Closed')),
+    target_audience TEXT DEFAULT 'All Residents',
+    recipient_emails TEXT[] DEFAULT '{}'::TEXT[],
+    cc_emails TEXT[] DEFAULT '{}'::TEXT[],
+    bcc_emails TEXT[] DEFAULT '{}'::TEXT[],
+    questions JSONB NOT NULL DEFAULT '[]'::JSONB,
+    deadline TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    created_by JSONB DEFAULT '{"name":"System Admin","role":"Strata Manager"}'::JSONB,
+    closed_at TIMESTAMPTZ,
+    ai_executive_summary JSONB,
+    banner_image TEXT
+);
+
+CREATE TABLE IF NOT EXISTS survey_responses (
+    id TEXT PRIMARY KEY,
+    survey_id TEXT NOT NULL REFERENCES surveys(id) ON DELETE CASCADE,
+    scheme_id TEXT NOT NULL,
+    unit_id TEXT,
+    respondent_name TEXT,
+    is_anonymous BOOLEAN DEFAULT FALSE,
+    submitted_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    answers JSONB NOT NULL DEFAULT '{}'::JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_surveys_scheme_id ON surveys(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_surveys_status ON surveys(status);
+CREATE INDEX IF NOT EXISTS idx_survey_responses_survey_id ON survey_responses(survey_id);
+CREATE INDEX IF NOT EXISTS idx_survey_responses_scheme_id ON survey_responses(scheme_id);
+
+ALTER TABLE surveys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE survey_responses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow select active surveys" ON surveys
+    FOR SELECT TO anon, authenticated
+    USING (status IN ('Active', 'active', 'Closed', 'closed'));
+
+CREATE POLICY "Allow authenticated full surveys" ON surveys
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Allow insert survey_responses" ON survey_responses
+    FOR INSERT TO anon, authenticated
+    WITH CHECK (survey_id IS NOT NULL);
+
+CREATE POLICY "Allow authenticated read survey_responses" ON survey_responses
+    FOR SELECT TO authenticated
+    USING (TRUE);
+
+GRANT SELECT ON TABLE surveys TO anon;
+GRANT ALL ON TABLE surveys TO authenticated;
+GRANT INSERT ON TABLE survey_responses TO anon;
+GRANT ALL ON TABLE survey_responses TO authenticated;
+
+-- ============================================================================
+-- 6. Vendor Management, Work Orders & Trades Compliance Schema
 -- Production Hardened: Secure RLS, Sequence Identifiers, Foreign Key Indexing,
 -- Automatic Timestamps, and Zero-Login Tradie RPC Methods
 -- ============================================================================
