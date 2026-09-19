@@ -585,7 +585,7 @@ export default function App() {
             licenseNo: vendorData.licenseNo,
             website: vendorData.website,
             yearsOfExperience: vendorData.yearsOfExperience,
-            insuranceStatus: 'Active',
+            insuranceStatus: 'Pending Verification',
             insuranceExpiry: vendorData.insuranceExpiry,
             certificateOfCurrencyUrl: `https://storage.smartlot.internal/docs/${vendorData.docName}`,
             rating: 5.0

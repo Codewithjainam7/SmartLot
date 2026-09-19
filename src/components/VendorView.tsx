@@ -106,7 +106,7 @@ export function VendorView({
   
   // Directory filter state
   const [directoryCategoryFilter, setDirectoryCategoryFilter] = useState('All');
-  const [directoryInsuranceFilter, setDirectoryInsuranceFilter] = useState<'All' | 'Active' | 'Expired'>('All');
+  const [directoryInsuranceFilter, setDirectoryInsuranceFilter] = useState<'All' | 'Active' | 'Pending Review' | 'Expired'>('All');
 
   // New Tender Form State
   const [tenderRequestId, setTenderRequestId] = useState<string>('');
@@ -149,7 +149,8 @@ export function VendorView({
   const filteredVendors = vendors.filter(v => {
     if (directoryCategoryFilter !== 'All' && v.category !== directoryCategoryFilter) return false;
     if (directoryInsuranceFilter === 'Active' && v.insuranceStatus !== 'Active') return false;
-    if (directoryInsuranceFilter === 'Expired' && v.insuranceStatus === 'Active') return false;
+    if (directoryInsuranceFilter === 'Pending Review' && v.insuranceStatus !== 'Pending Verification') return false;
+    if (directoryInsuranceFilter === 'Expired' && (v.insuranceStatus === 'Active' || v.insuranceStatus === 'Pending Verification')) return false;
 
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -955,6 +956,34 @@ export function VendorView({
             )}
           </div>
 
+          {/* Pending Applications Alert Banner for Strata Manager */}
+          {!isCommitteeMember && vendors.some(v => v.insuranceStatus === 'Pending Verification') && (
+            <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                  <Clock size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <span>Trade Portal Applications Awaiting Approval</span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-black">
+                      {vendors.filter(v => v.insuranceStatus === 'Pending Verification').length} Pending
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Contractors registered via the external onboarding portal have uploaded their Certificate of Currency for verification.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDirectoryInsuranceFilter('Pending Review')}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black shrink-0 transition-all cursor-pointer shadow-sm"
+              >
+                Review Applications
+              </button>
+            </div>
+          )}
+
           {/* Sort & Filter Bar */}
           <div className="flex flex-wrap items-center gap-2 p-3 bg-white dark:bg-[#0d1117] rounded-xl border border-gray-200 dark:border-white/10 text-xs">
             <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Filter Trade:</span>
@@ -975,17 +1004,22 @@ export function VendorView({
             <div className="h-4 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" />
 
             <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Insurance:</span>
-            {(['All', 'Active', 'Expired'] as const).map(status => (
+            {(['All', 'Active', 'Pending Review', 'Expired'] as const).map(status => (
               <button
                 key={status}
                 onClick={() => setDirectoryInsuranceFilter(status)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                   directoryInsuranceFilter === status
-                    ? 'bg-emerald-600 text-white'
+                    ? status === 'Pending Review' 
+                      ? 'bg-amber-500 text-black font-black' 
+                      : 'bg-emerald-600 text-white'
                     : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                 }`}
               >
-                {status}
+                <span>{status}</span>
+                {status === 'Pending Review' && vendors.some(v => v.insuranceStatus === 'Pending Verification') && (
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                )}
               </button>
             ))}
           </div>
@@ -994,7 +1028,11 @@ export function VendorView({
             {filteredVendors.map(v => (
               <div 
                 key={v.id} 
-                className="bg-white dark:bg-[#0d1117] rounded-2xl p-5 border border-gray-200 dark:border-white/10 shadow-xs space-y-4 hover:shadow-md transition-shadow flex flex-col justify-between"
+                className={`bg-white dark:bg-[#0d1117] rounded-2xl p-5 border shadow-xs space-y-4 hover:shadow-md transition-shadow flex flex-col justify-between ${
+                  v.insuranceStatus === 'Pending Verification'
+                    ? 'border-amber-500/50 dark:border-amber-500/40 ring-1 ring-amber-500/20'
+                    : 'border-gray-200 dark:border-white/10'
+                }`}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
@@ -1006,6 +1044,14 @@ export function VendorView({
                       <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
                         <ShieldCheck size={12} /> Active Ins.
                       </span>
+                    ) : v.insuranceStatus === 'Pending Verification' ? (
+                      <button
+                        onClick={() => setSelectedVendorForDetails(v)}
+                        className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 text-[10px] font-black uppercase flex items-center gap-1 shrink-0 cursor-pointer border border-amber-500/30 animate-pulse"
+                        title="Click to review contractor submission"
+                      >
+                        <Clock size={12} /> Pending Review
+                      </button>
                     ) : !isCommitteeMember ? (
                       <button
                         onClick={() => {
@@ -1035,7 +1081,13 @@ export function VendorView({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Insurance Expiry:</span>
-                      <span className={v.insuranceStatus === 'Active' ? 'text-emerald-600 font-bold' : 'text-red-500 font-bold'}>
+                      <span className={
+                        v.insuranceStatus === 'Active' 
+                          ? 'text-emerald-600 font-bold' 
+                          : v.insuranceStatus === 'Pending Verification'
+                          ? 'text-amber-500 font-bold'
+                          : 'text-red-500 font-bold'
+                      }>
                         {v.insuranceExpiry}
                       </span>
                     </div>
@@ -1744,11 +1796,15 @@ export function VendorView({
                     {selectedVendorForDetails.name}
                   </h3>
                   {selectedVendorForDetails.insuranceStatus === 'Active' ? (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase flex items-center gap-1">
                       <ShieldCheck size={11} /> Active
                     </span>
+                  ) : selectedVendorForDetails.insuranceStatus === 'Pending Verification' ? (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase flex items-center gap-1 border border-amber-500/30">
+                      <Clock size={11} /> Awaiting Approval
+                    </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold uppercase flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase flex items-center gap-1">
                       <AlertTriangle size={11} /> Expired
                     </span>
                   )}
@@ -1804,6 +1860,23 @@ export function VendorView({
               </div>
             )}
 
+            {selectedVendorForDetails.certificateOfCurrencyUrl && (
+              <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-xs flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-300 font-semibold flex items-center gap-1.5">
+                  <FileText size={14} className="text-blue-500" />
+                  Submitted Certificate of Currency:
+                </span>
+                <a 
+                  href={selectedVendorForDetails.certificateOfCurrencyUrl} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="text-blue-600 dark:text-[#00D4B2] font-bold hover:underline flex items-center gap-1"
+                >
+                  View / Download Doc <Download size={12} />
+                </a>
+              </div>
+            )}
+
             <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 space-y-1.5 text-xs">
               <div className="flex items-center justify-between font-bold text-emerald-900 dark:text-emerald-300">
                 <span className="flex items-center gap-1.5">
@@ -1812,28 +1885,65 @@ export function VendorView({
                 <span>Expiry: {selectedVendorForDetails.insuranceExpiry}</span>
               </div>
               <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                Verified Certificate of Currency on record for Australian strata compliance.
+                {selectedVendorForDetails.insuranceStatus === 'Pending Verification' 
+                  ? 'Application received via Trade Portal. Review submitted insurance policy before approving vendor into building network.'
+                  : 'Verified Certificate of Currency on record for Australian strata compliance.'}
               </p>
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5">
-              <button
-                type="button"
-                onClick={() => {
-                  setVendorToDelete(selectedVendorForDetails);
-                  setSelectedVendorForDetails(null);
-                }}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
-              >
-                Delete Vendor
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedVendorForDetails(null)}
-                className="px-5 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold cursor-pointer"
-              >
-                Close
-              </button>
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5 gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVendorToDelete(selectedVendorForDetails);
+                    setSelectedVendorForDetails(null);
+                  }}
+                  className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
+                >
+                  Delete Vendor
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Workflow diagram action: Strata Manager Approval vs Rejected */}
+                {selectedVendorForDetails.insuranceStatus === 'Pending Verification' && !isCommitteeMember ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onDeleteVendor) {
+                          onDeleteVendor(selectedVendorForDetails.id);
+                        }
+                        setSelectedVendorForDetails(null);
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Reject Application
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onUpdateVendorInsurance) {
+                          onUpdateVendorInsurance(selectedVendorForDetails.id, 'Active', selectedVendorForDetails.insuranceExpiry);
+                        }
+                        setSelectedVendorForDetails(null);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 size={14} /> Approve & Save Vendor
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVendorForDetails(null)}
+                    className="px-5 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold cursor-pointer"
+                  >
+                    Close
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

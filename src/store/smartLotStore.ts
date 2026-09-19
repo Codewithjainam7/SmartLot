@@ -2859,8 +2859,24 @@ export function useSmartLotStore() {
     }
   }, [surveyResponses]);
 
-  // Sync surveys across browser tabs in real time
+  // Sync surveys & submitted vendors across browser tabs in real time
   useEffect(() => {
+    // Load any pending vendors submitted in other tabs or previous guest sessions
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const rawPending = window.localStorage.getItem('smartlot_global_pending_vendors_v1');
+        if (rawPending) {
+          const parsed: Vendor[] = JSON.parse(rawPending);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setVendors(prev => {
+              const missing = parsed.filter(pv => !prev.some(v => v.id === pv.id || (v.email && v.email.toLowerCase() === pv.email.toLowerCase())));
+              return missing.length > 0 ? [...missing, ...prev] : prev;
+            });
+          }
+        }
+      }
+    } catch {}
+
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'smartlot_global_surveys_v2' && e.newValue) {
         try {
@@ -2871,6 +2887,16 @@ export function useSmartLotStore() {
         try {
           const updated = JSON.parse(e.newValue);
           if (Array.isArray(updated)) setSurveyResponses(updated);
+        } catch {}
+      } else if (e.key === 'smartlot_global_pending_vendors_v1' && e.newValue) {
+        try {
+          const updatedVendors: Vendor[] = JSON.parse(e.newValue);
+          if (Array.isArray(updatedVendors)) {
+            setVendors(prev => {
+              const missing = updatedVendors.filter(uv => !prev.some(v => v.id === uv.id || (v.email && v.email.toLowerCase() === uv.email.toLowerCase())));
+              return missing.length > 0 ? [...missing, ...prev] : prev;
+            });
+          }
         } catch {}
       }
     };
@@ -4115,11 +4141,27 @@ export function useSmartLotStore() {
       yearsOfExperience: payload.yearsOfExperience,
       certificateOfCurrencyUrl: payload.certificateOfCurrencyUrl,
     };
-    setVendors(prev => [newVendor, ...prev]);
+    setVendors(prev => {
+      const updated = [newVendor, ...prev.filter(v => v.id !== newVendor.id)];
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('smartlot_global_pending_vendors_v1', JSON.stringify(updated));
+        }
+      } catch {}
+      return updated;
+    });
   };
 
   const deleteVendor = (vendorId: string) => {
-    setVendors(prev => prev.filter(v => v.id !== vendorId));
+    setVendors(prev => {
+      const updated = prev.filter(v => v.id !== vendorId);
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('smartlot_global_pending_vendors_v1', JSON.stringify(updated));
+        }
+      } catch {}
+      return updated;
+    });
   };
 
 
@@ -4851,16 +4893,24 @@ export function useSmartLotStore() {
   };
 
   const updateVendorInsurance = (vendorId: string, status: 'Active' | 'Expired Ins.' | 'Pending Verification', expiryDate: string) => {
-    setVendors(prev => prev.map(v => {
-      if (v.id !== vendorId) return v;
-      return {
-        ...v,
-        insuranceStatus: status,
-        insuranceExpiry: expiryDate,
-        verifiedAt: new Date().toISOString(),
-        verifiedBy: activePersona.name || 'Strata Manager'
-      };
-    }));
+    setVendors(prev => {
+      const updated = prev.map(v => {
+        if (v.id !== vendorId) return v;
+        return {
+          ...v,
+          insuranceStatus: status,
+          insuranceExpiry: expiryDate,
+          verifiedAt: new Date().toISOString(),
+          verifiedBy: activePersona.name || 'Strata Manager'
+        };
+      });
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('smartlot_global_pending_vendors_v1', JSON.stringify(updated));
+        }
+      } catch {}
+      return updated;
+    });
   };
 
   const deleteWorkOrder = (workOrderId: string) => {
