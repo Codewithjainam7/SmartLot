@@ -547,16 +547,6 @@ export function VendorView({
                         <ExternalLink size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
                         <span>View Contractor Portal</span>
                       </button>
-
-                      {wo.status === 'completion_submitted' && !isCommitteeMember && (
-                        <button
-                          onClick={() => setSignOffModalWo(wo)}
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer animate-pulse"
-                        >
-                          <CheckCircle2 size={14} />
-                          <span>Review & Sign Off</span>
-                        </button>
-                      )}
                     </div>
                   </div>
 
