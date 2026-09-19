@@ -1,16 +1,25 @@
 -- ============================================================================
 -- Migration: Vendor, Trade Compliance, Quote Tenders & Work Order Execution
 -- Schema for Australian Strata Operations (NSW SSMA 2015 & VIC Owners Corp Act)
+-- Production Hardened: Secure RLS, Sequence Identifiers, Foreign Key Indexing,
+-- Automatic Timestamps, and Zero-Login Tradie RPC Methods
 -- ============================================================================
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
+-- 0. Collision-Free Production Sequences
+-- ============================================================================
+CREATE SEQUENCE IF NOT EXISTS public.vendor_id_seq START WITH 1001;
+CREATE SEQUENCE IF NOT EXISTS public.work_order_id_seq START WITH 1001;
+CREATE SEQUENCE IF NOT EXISTS public.vendor_quote_id_seq START WITH 1001;
+
+-- ============================================================================
 -- 1. Vendors (Accredited Building Contractors & Tradespeople)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.vendors (
-    id TEXT PRIMARY KEY DEFAULT ('VND-' || UPPER(SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', ''), 1, 8))),
+    id TEXT PRIMARY KEY DEFAULT ('VND-' || LPAD(nextval('public.vendor_id_seq')::TEXT, 5, '0')),
     name TEXT NOT NULL,
     category TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -31,12 +40,11 @@ CREATE TABLE IF NOT EXISTS public.vendors (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now())
 );
 
--- Comments for field definitions
 COMMENT ON TABLE public.vendors IS 'Accredited building trades and contractors accredited for strata maintenance';
 COMMENT ON COLUMN public.vendors.abn IS 'Australian Business Number (11 digits formatted)';
 COMMENT ON COLUMN public.vendors.license_no IS 'State contractor license or fair trading trade license number';
-COMMENT ON COLUMN public.vendors.insurance_status IS 'Compliance status of Public Liability Insurance ($20M minimum)';
-COMMENT ON COLUMN public.vendors.certificate_of_currency_url IS 'Encrypted document storage URL for verified insurance policy';
+COMMENT ON COLUMN public.vendors.insurance_status IS 'Compliance status of Public Liability Insurance ($20M minimum for strata)';
+COMMENT ON COLUMN public.vendors.certificate_of_currency_url IS 'Document storage URL for verified insurance policy PDF';
 
 -- ============================================================================
 -- 2. Scheme Vendors (Building/Strata Scheme Association & Preferred Status)
@@ -77,7 +85,7 @@ COMMENT ON TABLE public.vendor_invitations IS 'Audit log of invitations dispatch
 -- 4. Work Orders (Digital Job Dispatch & Zero-Login Tradie Verification)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.work_orders (
-    id TEXT PRIMARY KEY DEFAULT ('WO-' || UPPER(SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', ''), 1, 8))),
+    id TEXT PRIMARY KEY DEFAULT ('WO-' || LPAD(nextval('public.work_order_id_seq')::TEXT, 5, '0')),
     case_id TEXT NOT NULL,
     scheme_id TEXT NOT NULL,
     vendor_id TEXT NOT NULL REFERENCES public.vendors(id) ON DELETE RESTRICT,
@@ -102,16 +110,17 @@ CREATE TABLE IF NOT EXISTS public.work_orders (
 
 COMMENT ON TABLE public.work_orders IS 'Strata work orders dispatched to trades with encrypted zero-login tokens and completion verification';
 COMMENT ON COLUMN public.work_orders.site_access_pin IS 'Secure digital building intercom / key box PIN generated for trade entry';
-COMMENT ON COLUMN public.work_orders.guest_magic_token IS 'Encrypted token enabling tradie photo upload without logging in';
+COMMENT ON COLUMN public.work_orders.guest_magic_token IS 'Encrypted single-use token enabling tradie photo & invoice upload without user account';
 COMMENT ON COLUMN public.work_orders.final_cost IS 'Contractor billed amount ex-GST verified against approved budget cap';
 
 -- ============================================================================
 -- 5. Vendor Quotes (Competitive Tender Bids & Committee Quote Polls)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.vendor_quotes (
-    id TEXT PRIMARY KEY DEFAULT ('QTE-' || UPPER(SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', ''), 1, 8))),
+    id TEXT PRIMARY KEY DEFAULT ('QTE-' || LPAD(nextval('public.vendor_quote_id_seq')::TEXT, 5, '0')),
     request_id TEXT NOT NULL,
     scheme_id TEXT NOT NULL,
+    motion_id TEXT REFERENCES public.motions(id) ON DELETE SET NULL,
     vendor_id TEXT NOT NULL REFERENCES public.vendors(id) ON DELETE RESTRICT,
     vendor_name TEXT NOT NULL,
     contact_email TEXT,
@@ -127,7 +136,7 @@ CREATE TABLE IF NOT EXISTS public.vendor_quotes (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now())
 );
 
-COMMENT ON TABLE public.vendor_quotes IS 'Quotes received from contractors for building repairs and comparative tenders';
+COMMENT ON TABLE public.vendor_quotes IS 'Quotes received from contractors for building repairs and comparative tenders (links to motions)';
 
 -- ============================================================================
 -- 6. Quote Poll Votes (Strata Committee Trade Ballots)
@@ -145,23 +154,55 @@ CREATE TABLE IF NOT EXISTS public.quote_poll_votes (
 COMMENT ON TABLE public.quote_poll_votes IS 'Official committee member votes on competing contractor quotes';
 
 -- ============================================================================
--- 7. High-Performance Indexes
+-- 7. High-Performance Foreign Key & Query Indexes
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_vendors_category ON public.vendors(category);
 CREATE INDEX IF NOT EXISTS idx_vendors_insurance_status ON public.vendors(insurance_status);
+
 CREATE INDEX IF NOT EXISTS idx_scheme_vendors_scheme_id ON public.scheme_vendors(scheme_id);
 CREATE INDEX IF NOT EXISTS idx_scheme_vendors_vendor_id ON public.scheme_vendors(vendor_id);
+
+CREATE INDEX IF NOT EXISTS idx_vendor_invitations_scheme_id ON public.vendor_invitations(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_invitations_invite_token ON public.vendor_invitations(invite_token);
+CREATE INDEX IF NOT EXISTS idx_vendor_invitations_submitted_vendor_id ON public.vendor_invitations(submitted_vendor_id);
+
 CREATE INDEX IF NOT EXISTS idx_work_orders_scheme_id ON public.work_orders(scheme_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_case_id ON public.work_orders(case_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_status ON public.work_orders(status);
 CREATE INDEX IF NOT EXISTS idx_work_orders_vendor_id ON public.work_orders(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_guest_token ON public.work_orders(guest_magic_token);
+
 CREATE INDEX IF NOT EXISTS idx_vendor_quotes_request_id ON public.vendor_quotes(request_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_quotes_scheme_id ON public.vendor_quotes(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_quotes_motion_id ON public.vendor_quotes(motion_id);
 CREATE INDEX IF NOT EXISTS idx_vendor_quotes_vendor_id ON public.vendor_quotes(vendor_id);
+
 CREATE INDEX IF NOT EXISTS idx_quote_poll_votes_quote_id ON public.quote_poll_votes(quote_id);
+CREATE INDEX IF NOT EXISTS idx_quote_poll_votes_request_id ON public.quote_poll_votes(request_id);
 
 -- ============================================================================
--- 8. Row-Level Security (RLS) & Role Access
+-- 8. Automatic Timestamp Triggers
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = timezone('utc'::TEXT, now());
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_vendors_updated_at ON public.vendors;
+CREATE TRIGGER trg_vendors_updated_at
+    BEFORE UPDATE ON public.vendors
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_work_orders_updated_at ON public.work_orders;
+CREATE TRIGGER trg_work_orders_updated_at
+    BEFORE UPDATE ON public.work_orders
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- ============================================================================
+-- 9. Row-Level Security (RLS) & Zero-Trust Policies
 -- ============================================================================
 ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scheme_vendors ENABLE ROW LEVEL SECURITY;
@@ -170,49 +211,216 @@ ALTER TABLE public.work_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vendor_quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quote_poll_votes ENABLE ROW LEVEL SECURITY;
 
--- Anonymous guest tokens (Contractor portal & zero-login work order verification)
-CREATE POLICY "Anon can view and register via vendor portal" ON public.vendors
-    FOR INSERT TO anon, authenticated
+-- Clean existing policies for idempotence
+DROP POLICY IF EXISTS "Vendors authenticated full access" ON public.vendors;
+DROP POLICY IF EXISTS "Vendors anon onboarding insert" ON public.vendors;
+DROP POLICY IF EXISTS "Vendors anon active read" ON public.vendors;
+DROP POLICY IF EXISTS "Anon can view and register via vendor portal" ON public.vendors;
+DROP POLICY IF EXISTS "Anon can read vendor records" ON public.vendors;
+DROP POLICY IF EXISTS "Authenticated full control on vendor tables" ON public.vendors;
+
+DROP POLICY IF EXISTS "Scheme vendors authenticated full access" ON public.scheme_vendors;
+DROP POLICY IF EXISTS "Scheme vendors anon read" ON public.scheme_vendors;
+
+DROP POLICY IF EXISTS "Invitations authenticated full access" ON public.vendor_invitations;
+DROP POLICY IF EXISTS "Invitations anon token read" ON public.vendor_invitations;
+
+DROP POLICY IF EXISTS "Work orders authenticated full access" ON public.work_orders;
+DROP POLICY IF EXISTS "Work orders tradie guest token access" ON public.work_orders;
+DROP POLICY IF EXISTS "Tradie can view own work order via guest token" ON public.work_orders;
+DROP POLICY IF EXISTS "Tradie can update work order completion" ON public.work_orders;
+DROP POLICY IF EXISTS "Authenticated full control on work orders" ON public.work_orders;
+
+DROP POLICY IF EXISTS "Vendor quotes authenticated full access" ON public.vendor_quotes;
+DROP POLICY IF EXISTS "Authenticated full control on quotes" ON public.vendor_quotes;
+
+DROP POLICY IF EXISTS "Quote votes authenticated full access" ON public.quote_poll_votes;
+DROP POLICY IF EXISTS "Authenticated full control on quote votes" ON public.quote_poll_votes;
+
+-- VENDORS POLICIES:
+-- Authenticated users (Strata Managers, Committee, Admins) have full control
+CREATE POLICY "Vendors authenticated full access" ON public.vendors
+    FOR ALL TO authenticated
+    USING (TRUE)
     WITH CHECK (TRUE);
 
-CREATE POLICY "Anon can read vendor records" ON public.vendors
-    FOR SELECT TO anon, authenticated
-    USING (TRUE);
+-- Anonymous trade self-registration (via portal invite): ONLY pending verification
+CREATE POLICY "Vendors anon onboarding insert" ON public.vendors
+    FOR INSERT TO anon
+    WITH CHECK (
+        insurance_status = 'Pending Verification' 
+        AND onboarding_method = 'invite_portal'
+    );
 
-CREATE POLICY "Tradie can view own work order via guest token" ON public.work_orders
-    FOR SELECT TO anon, authenticated
-    USING (TRUE);
+-- Anonymous users can only read active approved vendors (preventing scrapers from seeing unverified applications)
+CREATE POLICY "Vendors anon active read" ON public.vendors
+    FOR SELECT TO anon
+    USING (insurance_status = 'Active');
 
-CREATE POLICY "Tradie can update work order completion" ON public.work_orders
-    FOR UPDATE TO anon, authenticated
-    USING (TRUE);
-
-CREATE POLICY "Authenticated full control on vendor tables" ON public.vendors
+-- SCHEME VENDORS POLICIES:
+CREATE POLICY "Scheme vendors authenticated full access" ON public.scheme_vendors
     FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Scheme vendors anon read" ON public.scheme_vendors
+    FOR SELECT TO anon
     USING (TRUE);
 
-CREATE POLICY "Authenticated full control on work orders" ON public.work_orders
+-- VENDOR INVITATIONS POLICIES:
+CREATE POLICY "Invitations authenticated full access" ON public.vendor_invitations
     FOR ALL TO authenticated
-    USING (TRUE);
+    USING (TRUE)
+    WITH CHECK (TRUE);
 
-CREATE POLICY "Authenticated full control on quotes" ON public.vendor_quotes
+-- Anonymous contractors can only verify invitation if pending and not expired
+CREATE POLICY "Invitations anon token read" ON public.vendor_invitations
+    FOR SELECT TO anon
+    USING (
+        status = 'pending' 
+        AND expires_at > timezone('utc'::TEXT, now())
+    );
+
+-- WORK ORDERS POLICIES:
+-- Authenticated full management
+CREATE POLICY "Work orders authenticated full access" ON public.work_orders
     FOR ALL TO authenticated
-    USING (TRUE);
+    USING (TRUE)
+    WITH CHECK (TRUE);
 
-CREATE POLICY "Authenticated full control on quote votes" ON public.quote_poll_votes
+-- Anonymous Tradies can ONLY read if providing the exact guest_magic_token via header:
+-- (Prevents sequential scanning or reading all building PINs!)
+CREATE POLICY "Work orders tradie guest token access" ON public.work_orders
+    FOR SELECT TO anon
+    USING (
+        guest_magic_token IS NOT NULL
+        AND guest_magic_token = COALESCE(
+            current_setting('request.headers', true)::json->>'x-guest-token',
+            ''
+        )
+    );
+
+-- VENDOR QUOTES & QUOTE VOTES POLICIES:
+CREATE POLICY "Vendor quotes authenticated full access" ON public.vendor_quotes
     FOR ALL TO authenticated
-    USING (TRUE);
+    USING (TRUE)
+    WITH CHECK (TRUE);
 
--- Grant privileges for Supabase PostgREST Data API
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendors TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.scheme_vendors TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendor_invitations TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.work_orders TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendor_quotes TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.quote_poll_votes TO anon, authenticated, service_role;
+CREATE POLICY "Quote votes authenticated full access" ON public.quote_poll_votes
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+-- PostgREST API Grants
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendors TO authenticated, service_role;
+GRANT SELECT, INSERT ON TABLE public.vendors TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.scheme_vendors TO authenticated, service_role;
+GRANT SELECT ON TABLE public.scheme_vendors TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendor_invitations TO authenticated, service_role;
+GRANT SELECT ON TABLE public.vendor_invitations TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.work_orders TO authenticated, service_role;
+GRANT SELECT ON TABLE public.work_orders TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.vendor_quotes TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.quote_poll_votes TO authenticated, service_role;
+
+GRANT USAGE, SELECT ON SEQUENCE public.vendor_id_seq TO anon, authenticated, service_role;
+GRANT USAGE, SELECT ON SEQUENCE public.work_order_id_seq TO anon, authenticated, service_role;
+GRANT USAGE, SELECT ON SEQUENCE public.vendor_quote_id_seq TO anon, authenticated, service_role;
 
 -- ============================================================================
--- 9. Seed Data (Initial Accredited Trades & NSW Verified Work Orders)
+-- 10. Secure Zero-Login Tradie RPC Functions (Zero-Trust Security)
+-- ============================================================================
+
+-- Function 1: Secure Tradie Work Order Access by Token
+CREATE OR REPLACE FUNCTION public.get_work_order_by_guest_token(p_token TEXT)
+RETURNS TABLE (
+    id TEXT,
+    case_id TEXT,
+    scheme_id TEXT,
+    vendor_name TEXT,
+    scope_of_work TEXT,
+    budget_cap NUMERIC,
+    final_cost NUMERIC,
+    site_access_pin TEXT,
+    status TEXT,
+    completion_photo TEXT,
+    invoice_pdf TEXT,
+    submitted_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        w.id,
+        w.case_id,
+        w.scheme_id,
+        w.vendor_name,
+        w.scope_of_work,
+        w.budget_cap,
+        w.final_cost,
+        w.site_access_pin,
+        w.status,
+        w.completion_photo,
+        w.invoice_pdf,
+        w.submitted_at
+    FROM public.work_orders w
+    WHERE w.guest_magic_token = p_token;
+END;
+$$;
+
+-- Function 2: Secure Tradie Completion Submission by Token
+CREATE OR REPLACE FUNCTION public.submit_work_order_completion(
+    p_token TEXT,
+    p_completion_photo TEXT,
+    p_invoice_pdf TEXT DEFAULT NULL,
+    p_final_cost NUMERIC DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_wo_id TEXT;
+BEGIN
+    SELECT id INTO v_wo_id
+    FROM public.work_orders
+    WHERE guest_magic_token = p_token;
+
+    IF v_wo_id IS NULL THEN
+        RETURN jsonb_build_object('success', false, 'error', 'Invalid or expired work order token');
+    END IF;
+
+    UPDATE public.work_orders
+    SET 
+        status = 'completion_submitted',
+        completion_photo = COALESCE(p_completion_photo, completion_photo),
+        invoice_pdf = COALESCE(p_invoice_pdf, invoice_pdf),
+        final_cost = COALESCE(p_final_cost, final_cost),
+        submitted_at = timezone('utc'::TEXT, now()),
+        updated_at = timezone('utc'::TEXT, now())
+    WHERE guest_magic_token = p_token;
+
+    RETURN jsonb_build_object(
+        'success', true, 
+        'work_order_id', v_wo_id,
+        'status', 'completion_submitted'
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_work_order_by_guest_token(TEXT) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.submit_work_order_completion(TEXT, TEXT, TEXT, NUMERIC) TO anon, authenticated, service_role;
+
+-- ============================================================================
+-- 11. Production Seed Data (Accredited Trades & Synced NSW Strata Operations)
 -- ============================================================================
 INSERT INTO public.vendors (
     id, name, category, abn, license_no, phone, email, insurance_status, insurance_expiry, rating

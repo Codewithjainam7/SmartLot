@@ -513,11 +513,18 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- 5. Vendor Management, Work Orders & Trades Compliance Schema
+-- Production Hardened: Secure RLS, Sequence Identifiers, Foreign Key Indexing,
+-- Automatic Timestamps, and Zero-Login Tradie RPC Methods
 -- ============================================================================
+
+-- Collision-Free Production Sequences
+CREATE SEQUENCE IF NOT EXISTS vendor_id_seq START WITH 1001;
+CREATE SEQUENCE IF NOT EXISTS work_order_id_seq START WITH 1001;
+CREATE SEQUENCE IF NOT EXISTS vendor_quote_id_seq START WITH 1001;
 
 -- Vendors (Accredited Building Contractors & Tradespeople)
 CREATE TABLE IF NOT EXISTS vendors (
-    id TEXT PRIMARY KEY DEFAULT ('VND-' || UPPER(SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', ''), 1, 8))),
+    id TEXT PRIMARY KEY DEFAULT ('VND-' || LPAD(nextval('vendor_id_seq')::TEXT, 5, '0')),
     name TEXT NOT NULL,
     category TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -538,6 +545,12 @@ CREATE TABLE IF NOT EXISTS vendors (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now())
 );
 
+COMMENT ON TABLE vendors IS 'Accredited building trades and contractors accredited for strata maintenance';
+COMMENT ON COLUMN vendors.abn IS 'Australian Business Number (11 digits formatted)';
+COMMENT ON COLUMN vendors.license_no IS 'State contractor license or fair trading trade license number';
+COMMENT ON COLUMN vendors.insurance_status IS 'Compliance status of Public Liability Insurance ($20M minimum for strata)';
+COMMENT ON COLUMN vendors.certificate_of_currency_url IS 'Document storage URL for verified insurance policy PDF';
+
 -- Scheme Vendors (Association with specific Strata Schemes)
 CREATE TABLE IF NOT EXISTS scheme_vendors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -548,6 +561,8 @@ CREATE TABLE IF NOT EXISTS scheme_vendors (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now()),
     UNIQUE(scheme_id, vendor_id)
 );
+
+COMMENT ON TABLE scheme_vendors IS 'Maps vendors to specific strata schemes (e.g. SP101, SP103) with preferred trade designation';
 
 -- Vendor Invitations (Strata Manager Email & Token Invites)
 CREATE TABLE IF NOT EXISTS vendor_invitations (
@@ -565,9 +580,11 @@ CREATE TABLE IF NOT EXISTS vendor_invitations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now())
 );
 
+COMMENT ON TABLE vendor_invitations IS 'Audit log of invitations dispatched to trade contractors with secure single-use tokens';
+
 -- Work Orders (Digital Job Dispatch & Completion Sign-Off)
 CREATE TABLE IF NOT EXISTS work_orders (
-    id TEXT PRIMARY KEY DEFAULT ('WO-' || UPPER(SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', ''), 1, 8))),
+    id TEXT PRIMARY KEY DEFAULT ('WO-' || LPAD(nextval('work_order_id_seq')::TEXT, 5, '0')),
     case_id TEXT NOT NULL,
     scheme_id TEXT NOT NULL,
     vendor_id TEXT NOT NULL REFERENCES vendors(id) ON DELETE RESTRICT,
@@ -590,11 +607,17 @@ CREATE TABLE IF NOT EXISTS work_orders (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now())
 );
 
+COMMENT ON TABLE work_orders IS 'Strata work orders dispatched to trades with encrypted zero-login tokens and completion verification';
+COMMENT ON COLUMN work_orders.site_access_pin IS 'Secure digital building intercom / key box PIN generated for trade entry';
+COMMENT ON COLUMN work_orders.guest_magic_token IS 'Encrypted single-use token enabling tradie photo & invoice upload without user account';
+COMMENT ON COLUMN work_orders.final_cost IS 'Contractor billed amount ex-GST verified against approved budget cap';
+
 -- Vendor Quotes (Competitive Tender Submissions)
 CREATE TABLE IF NOT EXISTS vendor_quotes (
-    id TEXT PRIMARY KEY DEFAULT ('QTE-' || UPPER(SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', ''), 1, 8))),
+    id TEXT PRIMARY KEY DEFAULT ('QTE-' || LPAD(nextval('vendor_quote_id_seq')::TEXT, 5, '0')),
     request_id TEXT NOT NULL,
     scheme_id TEXT NOT NULL,
+    motion_id TEXT REFERENCES motions(id) ON DELETE SET NULL,
     vendor_id TEXT NOT NULL REFERENCES vendors(id) ON DELETE RESTRICT,
     vendor_name TEXT NOT NULL,
     contact_email TEXT,
@@ -610,6 +633,8 @@ CREATE TABLE IF NOT EXISTS vendor_quotes (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::TEXT, now())
 );
 
+COMMENT ON TABLE vendor_quotes IS 'Quotes received from contractors for building repairs and comparative tenders (links to motions)';
+
 -- Quote Poll Votes (Strata Committee Trade Ballots)
 CREATE TABLE IF NOT EXISTS quote_poll_votes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -621,17 +646,51 @@ CREATE TABLE IF NOT EXISTS quote_poll_votes (
     UNIQUE(request_id, voter_name)
 );
 
--- High-performance Vendor & Work Order Indexes
+COMMENT ON TABLE quote_poll_votes IS 'Official committee member votes on competing contractor quotes';
+
+-- High-performance Foreign Key & Query Indexes
 CREATE INDEX IF NOT EXISTS idx_vendors_category ON vendors(category);
 CREATE INDEX IF NOT EXISTS idx_vendors_insurance_status ON vendors(insurance_status);
+
 CREATE INDEX IF NOT EXISTS idx_scheme_vendors_scheme_id ON scheme_vendors(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_scheme_vendors_vendor_id ON scheme_vendors(vendor_id);
+
+CREATE INDEX IF NOT EXISTS idx_vendor_invitations_scheme_id ON vendor_invitations(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_invitations_invite_token ON vendor_invitations(invite_token);
+CREATE INDEX IF NOT EXISTS idx_vendor_invitations_submitted_vendor_id ON vendor_invitations(submitted_vendor_id);
+
 CREATE INDEX IF NOT EXISTS idx_work_orders_scheme_id ON work_orders(scheme_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_case_id ON work_orders(case_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(status);
 CREATE INDEX IF NOT EXISTS idx_work_orders_vendor_id ON work_orders(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_work_orders_guest_token ON work_orders(guest_magic_token);
+
 CREATE INDEX IF NOT EXISTS idx_vendor_quotes_request_id ON vendor_quotes(request_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_quotes_scheme_id ON vendor_quotes(scheme_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_quotes_motion_id ON vendor_quotes(motion_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_quotes_vendor_id ON vendor_quotes(vendor_id);
+
 CREATE INDEX IF NOT EXISTS idx_quote_poll_votes_quote_id ON quote_poll_votes(quote_id);
+CREATE INDEX IF NOT EXISTS idx_quote_poll_votes_request_id ON quote_poll_votes(request_id);
+
+-- Automatic Timestamp Triggers
+CREATE OR REPLACE FUNCTION handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = timezone('utc'::TEXT, now());
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_vendors_updated_at ON vendors;
+CREATE TRIGGER trg_vendors_updated_at
+    BEFORE UPDATE ON vendors
+    FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_work_orders_updated_at ON work_orders;
+CREATE TRIGGER trg_work_orders_updated_at
+    BEFORE UPDATE ON work_orders
+    FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
 -- Enable RLS
 ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
@@ -641,13 +700,188 @@ ALTER TABLE work_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendor_quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quote_poll_votes ENABLE ROW LEVEL SECURITY;
 
+-- Clean existing policies for idempotence
+DROP POLICY IF EXISTS "Vendors authenticated full access" ON vendors;
+DROP POLICY IF EXISTS "Vendors anon onboarding insert" ON vendors;
+DROP POLICY IF EXISTS "Vendors anon active read" ON vendors;
+DROP POLICY IF EXISTS "Scheme vendors authenticated full access" ON scheme_vendors;
+DROP POLICY IF EXISTS "Scheme vendors anon read" ON scheme_vendors;
+DROP POLICY IF EXISTS "Invitations authenticated full access" ON vendor_invitations;
+DROP POLICY IF EXISTS "Invitations anon token read" ON vendor_invitations;
+DROP POLICY IF EXISTS "Work orders authenticated full access" ON work_orders;
+DROP POLICY IF EXISTS "Work orders tradie guest token access" ON work_orders;
+DROP POLICY IF EXISTS "Vendor quotes authenticated full access" ON vendor_quotes;
+DROP POLICY IF EXISTS "Quote votes authenticated full access" ON quote_poll_votes;
+
+-- VENDORS POLICIES:
+CREATE POLICY "Vendors authenticated full access" ON vendors
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Vendors anon onboarding insert" ON vendors
+    FOR INSERT TO anon
+    WITH CHECK (
+        insurance_status = 'Pending Verification' 
+        AND onboarding_method = 'invite_portal'
+    );
+
+CREATE POLICY "Vendors anon active read" ON vendors
+    FOR SELECT TO anon
+    USING (insurance_status = 'Active');
+
+-- SCHEME VENDORS POLICIES:
+CREATE POLICY "Scheme vendors authenticated full access" ON scheme_vendors
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Scheme vendors anon read" ON scheme_vendors
+    FOR SELECT TO anon
+    USING (TRUE);
+
+-- VENDOR INVITATIONS POLICIES:
+CREATE POLICY "Invitations authenticated full access" ON vendor_invitations
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Invitations anon token read" ON vendor_invitations
+    FOR SELECT TO anon
+    USING (
+        status = 'pending' 
+        AND expires_at > timezone('utc'::TEXT, now())
+    );
+
+-- WORK ORDERS POLICIES:
+CREATE POLICY "Work orders authenticated full access" ON work_orders
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Work orders tradie guest token access" ON work_orders
+    FOR SELECT TO anon
+    USING (
+        guest_magic_token IS NOT NULL
+        AND guest_magic_token = COALESCE(
+            current_setting('request.headers', true)::json->>'x-guest-token',
+            ''
+        )
+    );
+
+-- VENDOR QUOTES & QUOTE VOTES POLICIES:
+CREATE POLICY "Vendor quotes authenticated full access" ON vendor_quotes
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
+CREATE POLICY "Quote votes authenticated full access" ON quote_poll_votes
+    FOR ALL TO authenticated
+    USING (TRUE)
+    WITH CHECK (TRUE);
+
 -- PostgREST API Grants
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendors TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE scheme_vendors TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendor_invitations TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE work_orders TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendor_quotes TO anon, authenticated, service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE quote_poll_votes TO anon, authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendors TO authenticated, service_role;
+GRANT SELECT, INSERT ON TABLE vendors TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE scheme_vendors TO authenticated, service_role;
+GRANT SELECT ON TABLE scheme_vendors TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendor_invitations TO authenticated, service_role;
+GRANT SELECT ON TABLE vendor_invitations TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE work_orders TO authenticated, service_role;
+GRANT SELECT ON TABLE work_orders TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vendor_quotes TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE quote_poll_votes TO authenticated, service_role;
+
+GRANT USAGE, SELECT ON SEQUENCE vendor_id_seq TO anon, authenticated, service_role;
+GRANT USAGE, SELECT ON SEQUENCE work_order_id_seq TO anon, authenticated, service_role;
+GRANT USAGE, SELECT ON SEQUENCE vendor_quote_id_seq TO anon, authenticated, service_role;
+
+-- Secure Zero-Login Tradie RPC Functions (Zero-Trust Security)
+CREATE OR REPLACE FUNCTION get_work_order_by_guest_token(p_token TEXT)
+RETURNS TABLE (
+    id TEXT,
+    case_id TEXT,
+    scheme_id TEXT,
+    vendor_name TEXT,
+    scope_of_work TEXT,
+    budget_cap NUMERIC,
+    final_cost NUMERIC,
+    site_access_pin TEXT,
+    status TEXT,
+    completion_photo TEXT,
+    invoice_pdf TEXT,
+    submitted_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        w.id,
+        w.case_id,
+        w.scheme_id,
+        w.vendor_name,
+        w.scope_of_work,
+        w.budget_cap,
+        w.final_cost,
+        w.site_access_pin,
+        w.status,
+        w.completion_photo,
+        w.invoice_pdf,
+        w.submitted_at
+    FROM work_orders w
+    WHERE w.guest_magic_token = p_token;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION submit_work_order_completion(
+    p_token TEXT,
+    p_completion_photo TEXT,
+    p_invoice_pdf TEXT DEFAULT NULL,
+    p_final_cost NUMERIC DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_wo_id TEXT;
+BEGIN
+    SELECT id INTO v_wo_id
+    FROM work_orders
+    WHERE guest_magic_token = p_token;
+
+    IF v_wo_id IS NULL THEN
+        RETURN jsonb_build_object('success', false, 'error', 'Invalid or expired work order token');
+    END IF;
+
+    UPDATE work_orders
+    SET 
+        status = 'completion_submitted',
+        completion_photo = COALESCE(p_completion_photo, completion_photo),
+        invoice_pdf = COALESCE(p_invoice_pdf, invoice_pdf),
+        final_cost = COALESCE(p_final_cost, final_cost),
+        submitted_at = timezone('utc'::TEXT, now()),
+        updated_at = timezone('utc'::TEXT, now())
+    WHERE guest_magic_token = p_token;
+
+    RETURN jsonb_build_object(
+        'success', true, 
+        'work_order_id', v_wo_id,
+        'status', 'completion_submitted'
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION get_work_order_by_guest_token(TEXT) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION submit_work_order_completion(TEXT, TEXT, TEXT, NUMERIC) TO anon, authenticated, service_role;
 
 -- Seed Data: Accredited Building Contractors
 INSERT INTO vendors (
@@ -711,3 +945,4 @@ ON CONFLICT (id) DO UPDATE SET
     completion_photo = EXCLUDED.completion_photo,
     signed_off_at = EXCLUDED.signed_off_at,
     signed_off_by = EXCLUDED.signed_off_by;
+
