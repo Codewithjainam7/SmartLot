@@ -704,6 +704,7 @@ export const INITIAL_WORK_ORDERS: WorkOrder[] = [
     guestMagicToken: 'tok_sp101_wo10482_live',
     status: 'issued',
   },
+  // 1. Needs Sign-Off
   {
     id: 'WO-10483',
     caseId: 'REQ-CAV-301',
@@ -721,6 +722,41 @@ export const INITIAL_WORK_ORDERS: WorkOrder[] = [
     invoicePdf: 'Tax_Invoice_INV-84920_KONE.pdf',
     finalCost: 3400,
     submittedAt: 'Today, 2:30 PM',
+  },
+  // 2. In Progress
+  {
+    id: 'WO-10484',
+    caseId: 'REQ-CAV-302',
+    schemeId: 'SP103',
+    vendorId: 'VND-001',
+    vendorName: 'Sydney Apex Plumbing & Gas',
+    vendorEmail: 'dispatch@apexplumbing.com.au',
+    vendorPhone: '02 9844 2001',
+    scopeOfWork: 'Urgent hydro-jetting and main sewer line inspection in Basement B2.',
+    budgetCap: 1850,
+    siteAccessPin: '5821',
+    guestMagicToken: 'tok_sp103_wo10484_live',
+    status: 'issued',
+  },
+  // 3. Completed
+  {
+    id: 'WO-10485',
+    caseId: 'REQ-CAV-303',
+    schemeId: 'SP103',
+    vendorId: 'VND-008',
+    vendorName: 'Apex Lift & Escalator Services',
+    vendorEmail: 'repairs@apexlifts.com.au',
+    vendorPhone: '02 9155 3300',
+    scopeOfWork: 'Replacement of roller guides and landing door interlock contacts on Lift #1.',
+    budgetCap: 2200,
+    siteAccessPin: '9144',
+    guestMagicToken: 'tok_sp103_wo10485_live',
+    status: 'completed',
+    completionPhoto: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop',
+    finalCost: 2150,
+    submittedAt: 'Yesterday, 4:15 PM',
+    signedOffBy: 'Emma Wilson (Strata Manager)',
+    signedOffAt: '2026-09-18T16:45:00.000Z'
   }
 ];
 
@@ -1626,45 +1662,125 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     id: 'REQ-CAV-302',
     schemeId: 'SP103',
     unit: 'Unit 204',
-    title: 'Basement Level B2 Sump Pump Sensor Alert',
-    description: 'Telemetry monitoring system flagged high water table in lower drainage pit.',
+    title: 'Basement Level B2 Sewer Line Hydro-Jetting & Pit Clean',
+    description: 'Telemetry monitoring system flagged high water table and blockage in lower drainage pit.',
     requestType: 'emergency',
     stream: 'emergency_repair',
     priority: 'Emergency',
-    status: 'pending_triage',
+    status: 'approved',
     createdAt: '2 hours ago',
     requestorName: 'Sophia Zhang',
     reportedBy: 'Sophia Zhang (Lot Owner)',
     requestorEmail: 'sophia.z@cavalier.com',
     requestorPhone: '0488 222 888',
     requestorRole: 'Lot Owner',
+    linkedWorkOrderId: 'WO-10484',
+    tenderStatus: 'quoting',
+    tenderScope: 'Attend basement B2, hydro-jet main sewer line, clear debris from sump pit, and CCTV inspect pipe run.',
+    tenderQuotes: [
+      {
+        id: 'QTE-302-1',
+        vendorId: 'VND-001',
+        vendorName: 'Sydney Apex Plumbing & Gas',
+        contactEmail: 'dispatch@apexplumbing.com.au',
+        contactPhone: '02 9844 2001',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-11-15',
+        amount: 1850,
+        scopeNotes: 'High-pressure water jetting, vacuum clear pit, CCTV camera footage USB provided.',
+        warranty: '6 Months Flow Guarantee',
+        estimatedDays: 1,
+        submittedAt: 'Today, 11:30 AM',
+        recommended: true,
+        committeeVotes: ['Arthur Pendelton']
+      },
+      {
+        id: 'QTE-302-2',
+        vendorId: 'VND-004',
+        vendorName: 'Citywide Commercial Hydraulics',
+        contactEmail: 'service@citywidehydraulics.com.au',
+        contactPhone: '02 9610 8822',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2026-10-31',
+        amount: 2100,
+        scopeNotes: 'Standard rooter machine clear, flush sump pump, replacement pit seal.',
+        warranty: '3 Months Guarantee',
+        estimatedDays: 1,
+        submittedAt: 'Today, 12:15 PM',
+        recommended: false,
+        committeeVotes: []
+      }
+    ],
     comments: [],
     auditLog: [
       { id: 'AUD-V302-1', type: 'created', actor: 'Sophia Zhang', actorRole: 'Lot Owner', timestamp: '2 hours ago', note: 'Activity submitted from telemetry alert.' },
       { id: 'AUD-V302-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '2 hours ago', note: 'Urgent email dispatched to strata manager.' },
+      { id: 'AUD-V302-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '1 hour ago', fromStatus: 'pending_triage', toStatus: 'approved', note: 'Tender issued to Apex Plumbing.' },
     ],
   },
   {
     id: 'REQ-CAV-303',
     schemeId: 'SP103',
     unit: 'Unit 305',
-    title: 'Rooftop Solar Array Inverter 3 Communication Dropout',
-    description: 'Smart meter portal is unable to read telemetry data from the commercial inverter bank.',
+    title: 'Lift #1 Roller Guides & Landing Interlock Maintenance',
+    description: 'Lift 1 shuddering when leveling at Level 3 and door interlock switch sticking.',
     requestType: 'maintenance_upgrade',
     stream: 'common_area_repair',
     priority: 'Medium',
-    status: 'approved',
+    status: 'resolved',
     createdAt: '1 day ago',
     requestorName: 'Oliver Vance',
     reportedBy: 'Oliver Vance (Resident)',
     requestorEmail: 'oliver.v@cavalier.com',
     requestorPhone: '0499 333 777',
     requestorRole: 'Resident',
+    linkedWorkOrderId: 'WO-10485',
+    tenderStatus: 'quoting',
+    tenderScope: 'Supply and replace worn roller guide assemblies and clean/re-align landing door interlocks.',
+    tenderQuotes: [
+      {
+        id: 'QTE-303-1',
+        vendorId: 'VND-008',
+        vendorName: 'Apex Lift & Escalator Services',
+        contactEmail: 'repairs@apexlifts.com.au',
+        contactPhone: '02 9155 3300',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-05-12',
+        amount: 2150,
+        scopeNotes: 'Install heavy-duty neoprene roller guides, lubricate rails, safety check door interlock contacts.',
+        warranty: '12 Months Parts & Labor',
+        estimatedDays: 1,
+        submittedAt: 'Yesterday, 10:00 AM',
+        recommended: true,
+        committeeVotes: ['Arthur Pendelton', 'Marcus Sterling', 'Sophia Zhang']
+      },
+      {
+        id: 'QTE-303-2',
+        vendorId: 'VND-003',
+        vendorName: 'Kone Elevator Maintenance NSW',
+        contactEmail: 'maintenance.sydney@kone.com',
+        contactPhone: '1300 362 473',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2028-01-01',
+        amount: 2450,
+        scopeNotes: 'OEM roller guide assembly kit and service test.',
+        warranty: '12 Months Parts',
+        estimatedDays: 2,
+        submittedAt: 'Yesterday, 11:30 AM',
+        recommended: false,
+        committeeVotes: []
+      }
+    ],
     comments: [],
     auditLog: [
       { id: 'AUD-V303-1', type: 'created', actor: 'Oliver Vance', actorRole: 'Resident', timestamp: '1 day ago', note: 'Activity submitted by resident.' },
       { id: 'AUD-V303-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '1 day ago', note: 'Email dispatched to strata manager.' },
       { id: 'AUD-V303-3', type: 'triage_approved', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '20 hours ago', fromStatus: 'pending_triage', toStatus: 'approved' },
+      { id: 'AUD-V303-4', type: 'status_change', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: 'Yesterday', fromStatus: 'approved', toStatus: 'resolved', note: 'Completed under WO-10485.' },
     ],
   },
   {
@@ -2462,6 +2578,7 @@ export function useSmartLotStore() {
 
           const reqName = r.requestor_name || 'Resident';
           const reqRole = (r.requestor_role || 'Lot Owner') as any;
+          const existingReq = INITIAL_RESIDENT_REQUESTS.find(init => init.id === r.id || init.title?.toLowerCase() === r.title?.toLowerCase());
 
           return {
             id: r.id,
@@ -2493,6 +2610,10 @@ export function useSmartLotStore() {
             comments,
             internalNotes,
             auditLog: initialAuditLog,
+            linkedWorkOrderId: existingReq?.linkedWorkOrderId,
+            tenderStatus: existingReq?.tenderStatus,
+            tenderScope: existingReq?.tenderScope,
+            tenderQuotes: existingReq?.tenderQuotes || [],
           };
         });
 
@@ -2678,11 +2799,11 @@ export function useSmartLotStore() {
     });
   };
   const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v8`, INITIAL_MEMBERS);
-  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v8`, INITIAL_RESIDENT_REQUESTS);
+  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v9`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
   const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v13`, INITIAL_MOTIONS);
-  const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v8`, INITIAL_WORK_ORDERS);
+  const [workOrders, setWorkOrders] = usePersistedState<WorkOrder[]>(`smartlot_${pId}_workOrders_v9`, INITIAL_WORK_ORDERS);
   // Persistent surveys storage across all tabs & guest links
   const [surveys, setSurveys] = useState<Survey[]>(() => {
     try {

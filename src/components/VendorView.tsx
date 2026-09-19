@@ -400,7 +400,7 @@ export function VendorView({
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              Work Orders ({workOrders.length})
+              Work Orders ({workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId).length})
             </button>
             <button
               onClick={() => setActiveTab('tenders')}
@@ -458,46 +458,53 @@ export function VendorView({
           {/* Sub-filter chips */}
           <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2 pb-1">
             <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mr-1 shrink-0">Filter:</span>
-            <button
-              onClick={() => setWorkOrderFilter('all')}
-              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
-                workOrderFilter === 'all'
-                  ? 'bg-[#0055FF] text-white'
-                  : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-              }`}
-            >
-              All ({workOrders.length})
-            </button>
-            <button
-              onClick={() => setWorkOrderFilter('needs_signoff')}
-              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1 select-none active:scale-95 min-h-[34px] ${
-                workOrderFilter === 'needs_signoff'
-                  ? 'bg-amber-500 text-white'
-                  : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-              }`}
-            >
-              <Clock size={12} /> Needs Sign-Off ({workOrders.filter(w => w.status === 'completion_submitted').length})
-            </button>
-            <button
-              onClick={() => setWorkOrderFilter('in_progress')}
-              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
-                workOrderFilter === 'in_progress'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-              }`}
-            >
-              In Progress ({workOrders.filter(w => w.status === 'issued' || w.status === 'in_progress').length})
-            </button>
-            <button
-              onClick={() => setWorkOrderFilter('completed')}
-              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
-                workOrderFilter === 'completed'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-              }`}
-            >
-              Completed ({workOrders.filter(w => w.status === 'completed').length})
-            </button>
+            {(() => {
+              const schemeOrders = workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId);
+              return (
+                <>
+                  <button
+                    onClick={() => setWorkOrderFilter('all')}
+                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                      workOrderFilter === 'all'
+                        ? 'bg-[#0055FF] text-white'
+                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    All ({schemeOrders.length})
+                  </button>
+                  <button
+                    onClick={() => setWorkOrderFilter('needs_signoff')}
+                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1 select-none active:scale-95 min-h-[34px] ${
+                      workOrderFilter === 'needs_signoff'
+                        ? 'bg-amber-500 text-white'
+                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    <Clock size={12} /> Needs Sign-Off ({schemeOrders.filter(w => w.status === 'completion_submitted').length})
+                  </button>
+                  <button
+                    onClick={() => setWorkOrderFilter('in_progress')}
+                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                      workOrderFilter === 'in_progress'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    In Progress ({schemeOrders.filter(w => w.status === 'issued' || w.status === 'in_progress').length})
+                  </button>
+                  <button
+                    onClick={() => setWorkOrderFilter('completed')}
+                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                      workOrderFilter === 'completed'
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    Completed ({schemeOrders.filter(w => w.status === 'completed').length})
+                  </button>
+                </>
+              );
+            })()}
           </div>
 
           {filteredWorkOrders.length === 0 ? (
