@@ -2199,6 +2199,38 @@ export const getDefaultPermissionsForRole = (role: string): { label: string; act
   ];
 };
 
+// Persistent storage for custom tenders & committee votes across tabs, personas and syncs
+const CUSTOM_TENDERS_STORAGE_KEY = 'smartlot_custom_tenders_v1';
+
+function getCustomTendersFromStorage(): Record<string, { tenderStatus?: string; tenderScope?: string; tenderQuotes?: RequestQuote[]; linkedWorkOrderId?: string }> {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(CUSTOM_TENDERS_STORAGE_KEY);
+      if (raw) {
+        return JSON.parse(raw);
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load custom tenders from storage:', e);
+  }
+  return {};
+}
+
+function saveCustomTenderToStorage(requestId: string, update: { tenderStatus?: string; tenderScope?: string; tenderQuotes?: RequestQuote[]; linkedWorkOrderId?: string }) {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const existing = getCustomTendersFromStorage();
+      existing[requestId] = {
+        ...(existing[requestId] || {}),
+        ...update
+      };
+      window.localStorage.setItem(CUSTOM_TENDERS_STORAGE_KEY, JSON.stringify(existing));
+    }
+  } catch (e) {
+    console.warn('Failed to save custom tender to storage:', e);
+  }
+}
+
 // usePersistedState REMOVED - all state now comes from Supabase, not localStorage.
 
 function getSecureCrypto(): Crypto {
@@ -2620,6 +2652,8 @@ export function useSmartLotStore() {
 
           const reqName = r.requestor_name || 'Resident';
           const reqRole = (r.requestor_role || 'Lot Owner') as any;
+          const customTenders = getCustomTendersFromStorage();
+          const customTender = customTenders[r.id] || customTenders[r.reference_id];
           const existingReq = INITIAL_RESIDENT_REQUESTS.find(init => init.id === r.id || init.title?.toLowerCase() === r.title?.toLowerCase());
 
           return {
@@ -2652,10 +2686,12 @@ export function useSmartLotStore() {
             comments,
             internalNotes,
             auditLog: initialAuditLog,
-            linkedWorkOrderId: existingReq?.linkedWorkOrderId,
-            tenderStatus: existingReq?.tenderStatus,
-            tenderScope: existingReq?.tenderScope,
-            tenderQuotes: existingReq?.tenderQuotes || [],
+            linkedWorkOrderId: customTender?.linkedWorkOrderId || existingReq?.linkedWorkOrderId,
+            tenderStatus: customTender?.tenderStatus || existingReq?.tenderStatus,
+            tenderScope: customTender?.tenderScope || existingReq?.tenderScope,
+            tenderQuotes: (customTender?.tenderQuotes && customTender.tenderQuotes.length > 0)
+              ? customTender.tenderQuotes 
+              : (existingReq?.tenderQuotes || []),
           };
         });
 
@@ -4842,6 +4878,11 @@ export function useSmartLotStore() {
   };
 
   const requestQuotesForRequest = (requestId: string, scope: string, quotes: RequestQuote[]) => {
+    saveCustomTenderToStorage(requestId, {
+      tenderStatus: 'quoting',
+      tenderScope: scope,
+      tenderQuotes: quotes
+    });
     setResidentRequests(prev => prev.map(req => {
       if (req.id !== requestId) return req;
       return {
@@ -4873,6 +4914,12 @@ export function useSmartLotStore() {
         const hasVoted = currentVotes.includes(voterName);
         const newVotes = hasVoted ? currentVotes.filter(v => v !== voterName) : [...currentVotes, voterName];
         return { ...q, committeeVotes: newVotes };
+      });
+      saveCustomTenderToStorage(requestId, {
+        tenderStatus: req.tenderStatus,
+        tenderScope: req.tenderScope,
+        tenderQuotes: updatedQuotes,
+        linkedWorkOrderId: req.linkedWorkOrderId
       });
       return { ...req, tenderQuotes: updatedQuotes };
     }));
@@ -4911,6 +4958,12 @@ export function useSmartLotStore() {
         ...q,
         isSelected: q.id === quoteId
       }));
+      saveCustomTenderToStorage(requestId, {
+        tenderStatus: 'work_order_dispatched',
+        tenderScope: req.tenderScope,
+        tenderQuotes: updatedQuotes,
+        linkedWorkOrderId: newWo.id
+      });
       return {
         ...req,
         status: 'approved',

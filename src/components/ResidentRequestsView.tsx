@@ -151,6 +151,7 @@ export function ResidentRequestsView({
 }: ResidentRequestsViewProps) {
   const isManagerOrAdmin = activePersonaRole.toLowerCase().includes('manager') || activePersonaRole.toLowerCase().includes('admin');
   const isManagerOrCommittee = isManagerOrAdmin || activePersonaRole.toLowerCase().includes('committee');
+  const isCommitteeMember = activePersonaRole.toLowerCase().includes('committee') || Boolean(activePersonaContext?.toLowerCase().includes('committee'));
   // Strata Manager only: strictly excluded for tenant, lot owner, and committee member
   const isStrataManager = (activePersonaRole.toLowerCase().includes('strata manager') || (activePersonaRole.toLowerCase().includes('manager') && !activePersonaRole.toLowerCase().includes('building'))) &&
     !activePersonaRole.toLowerCase().includes('tenant') &&
@@ -2954,20 +2955,28 @@ export function ResidentRequestsView({
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => onVoteForQuote && onVoteForQuote(activeDetail.id, quote.id)}
-                                className={`w-full py-1.5 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
-                                  hasVoted
-                                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                                    : 'bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-500/30'
-                                }`}
-                              >
-                                <ThumbsUp size={12} className={hasVoted ? 'fill-white' : ''} />
-                                <span>{hasVoted ? 'You Supported This' : 'Vote for Quote'}</span>
-                              </button>
+                              {/* Vote in Quote Poll: Strictly Strata Committee Member (SCM) per Permission Matrix */}
+                              {isCommitteeMember ? (
+                                <button
+                                  type="button"
+                                  onClick={() => onVoteForQuote && onVoteForQuote(activeDetail.id, quote.id)}
+                                  className={`w-full py-1.5 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                                    hasVoted
+                                      ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                      : 'bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-500/30'
+                                  }`}
+                                >
+                                  <ThumbsUp size={12} className={hasVoted ? 'fill-white' : ''} />
+                                  <span>{hasVoted ? 'You Supported This' : 'Vote for Quote'}</span>
+                                </button>
+                              ) : (
+                                <div className="py-1 px-2 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200/60 dark:border-white/5 text-[11px] text-gray-500 text-center font-medium">
+                                  <span>Committee Ballot ({quote.committeeVotes.length} vote{quote.committeeVotes.length === 1 ? '' : 's'})</span>
+                                </div>
+                              )}
 
-                              {isManagerOrCommittee && (
+                              {/* Assign Selected Vendor: Strictly Strata Manager / Admin per Permission Matrix */}
+                              {isStrataManager && (
                                 <button
                                   type="button"
                                   disabled={isExpired}

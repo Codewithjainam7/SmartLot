@@ -119,10 +119,16 @@ export function VendorView({
   const [adHocVendorQuoteAmount, setAdHocVendorQuoteAmount] = useState('3100');
 
   // Filter requests that are in quoting state or have quotes
-  const tenderRequests = requests.filter(r => 
-    (!r.schemeId || r.schemeId === activeSchemeId) && 
-    (r.tenderStatus === 'quoting' || (r.tenderQuotes && r.tenderQuotes.length > 0))
+  const allTenderRequests = requests.filter(r => 
+    r.tenderStatus === 'quoting' || (r.tenderQuotes && r.tenderQuotes.length > 0)
   );
+
+  const tenderRequests = allTenderRequests.filter(r => 
+    !r.schemeId || r.schemeId === activeSchemeId
+  );
+
+  // If activeScheme has no tenders but other schemes have active quote tenders, offer quick switch or fallback
+  const displayTenderRequests = tenderRequests.length > 0 ? tenderRequests : allTenderRequests;
 
   // Filter work orders
   const filteredWorkOrders = workOrders.filter(wo => {
@@ -732,7 +738,7 @@ export function VendorView({
             )}
           </div>
 
-          {tenderRequests.length === 0 ? (
+          {displayTenderRequests.length === 0 ? (
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-dashed border-gray-200 dark:border-white/10 text-center space-y-3">
               <Vote size={36} className="mx-auto text-gray-400 opacity-60" />
               <h3 className="text-base font-bold text-gray-900 dark:text-white">No Active Quote Tenders</h3>
@@ -741,7 +747,7 @@ export function VendorView({
               </p>
             </div>
           ) : (
-            tenderRequests.map(req => (
+            displayTenderRequests.map(req => (
               <div 
                 key={req.id}
                 className="bg-white dark:bg-[#0d1117] rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-white/10 shadow-xs space-y-6"
@@ -749,13 +755,18 @@ export function VendorView({
                 {/* Tender Header */}
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-gray-100 dark:border-white/5 pb-5">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
                         {req.priority} Priority
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0055FF] text-[10px] font-bold uppercase">
                         Quotes Received
                       </span>
+                      {req.schemeId && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 text-[10px] font-bold uppercase">
+                          Scheme: {req.schemeId}
+                        </span>
+                      )}
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                       {req.title}
@@ -868,30 +879,36 @@ export function VendorView({
                               </div>
                             )}
 
-                            {/* Committee Voting Chips */}
+                            {/* Committee Voting Chips - Strictly Committee Members according to Permission Matrix */}
                             <div className="pt-2 border-t border-gray-200/60 dark:border-white/5 space-y-1.5">
                               <div className="flex items-center justify-between text-[11px]">
                                 <span className="font-bold text-gray-600 dark:text-gray-400 flex items-center gap-1">
                                   <Vote size={12} /> Committee Votes ({votesCount})
                                 </span>
                                 {votesCount > 0 && (
-                                  <span className="text-[10px] text-gray-500 truncate max-w-[120px]">
+                                  <span className="text-[10px] text-gray-500 truncate max-w-[120px]" title={quote.committeeVotes?.join(', ')}>
                                     {quote.committeeVotes?.join(', ')}
                                   </span>
                                 )}
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => onVoteForQuote && onVoteForQuote(req.id, quote.id)}
-                                className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-98 ${
-                                  hasMyVote
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10'
-                                }`}
-                              >
-                                {hasMyVote ? <Check size={14} /> : <Vote size={14} />}
-                                <span>{hasMyVote ? 'I Voted for This Quote' : 'Vote for This Quote'}</span>
-                              </button>
+                              {isCommitteeMember ? (
+                                <button
+                                  type="button"
+                                  onClick={() => onVoteForQuote && onVoteForQuote(req.id, quote.id)}
+                                  className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-98 ${
+                                    hasMyVote
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10'
+                                  }`}
+                                >
+                                  {hasMyVote ? <Check size={14} /> : <Vote size={14} />}
+                                  <span>{hasMyVote ? 'I Voted for This Quote' : 'Vote for This Quote'}</span>
+                                </button>
+                              ) : (
+                                <div className="py-1.5 px-2 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200/60 dark:border-white/5 text-[11px] text-gray-500 text-center font-medium">
+                                  <span>Committee Ballot ({votesCount} vote{votesCount === 1 ? '' : 's'})</span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
