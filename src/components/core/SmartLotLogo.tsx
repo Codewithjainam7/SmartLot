@@ -5,16 +5,19 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
   iconOnly?: boolean;
   textColor?: string;
+  size?: number | string;
+  style?: React.CSSProperties;
 }
 
-export function SmartLotLogo({ className = "h-10", iconOnly = false, textColor = "text-gray-900 dark:text-white", ...props }: LogoProps) {
+export function SmartLotLogo({ className = "h-10", iconOnly = false, textColor = "text-gray-900 dark:text-white", size, style, ...props }: LogoProps) {
+  const combinedStyle = size ? { width: size, height: size, ...style } : style;
   if (iconOnly) {
-    return <SmartLotLogoIcon className={className} {...props} />;
+    return <SmartLotLogoIcon className={className} style={combinedStyle} {...props} />;
   }
 
   return (
     <div className="flex items-center gap-3" role="img" aria-label="SmartLot">
-      <SmartLotLogoIcon className={className} aria-hidden="true" {...props} />
+      <SmartLotLogoIcon className={className} style={combinedStyle} aria-hidden="true" {...props} />
       <div className="flex flex-col justify-center select-none">
         <div className="flex items-baseline font-sans leading-none tracking-tight">
           <span className={`text-xl font-bold ${textColor}`}>Smart</span>

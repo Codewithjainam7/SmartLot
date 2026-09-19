@@ -98,7 +98,7 @@ export function VendorOnboardingPortalView({
       {/* Top Navigation Bar */}
       <header className="border-b border-white/10 bg-black/60 backdrop-blur-xl px-4 sm:px-8 py-3.5 sticky top-0 z-40 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <SmartLotLogo size={28} />
+          <SmartLotLogo iconOnly size={28} />
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-sm tracking-tight text-white">
