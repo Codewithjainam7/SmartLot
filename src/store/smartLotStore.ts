@@ -1540,10 +1540,52 @@ const INITIAL_RESIDENT_REQUESTS: ResidentRequest[] = [
     requestorEmail: 'elena.r@coronation.com',
     requestorPhone: '0422 100 200',
     requestorRole: 'Lot Owner',
-    comments: [],
+    linkedMotionId: 'MOT-COR-201',
+    tenderStatus: 'quoting',
+    tenderScope: 'Excavate and replace burst 40mm courtyard garden irrigation supply pipe and repair displaced sandstone pavers.',
+    tenderQuotes: [
+      {
+        id: 'QTE-COR-202-1',
+        vendorId: 'VND-001',
+        vendorName: 'Sydney Apex Plumbing & Gas',
+        contactEmail: 'dispatch@apexplumbing.com.au',
+        contactPhone: '02 9844 2001',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-04-30',
+        amount: 3450,
+        scopeNotes: 'Supply & install 40mm pressure pipe, replace manifold isolation valve, re-level and bed garden pavers. 12-month defect warranty.',
+        warranty: '12 Months Comprehensive',
+        estimatedDays: 1,
+        submittedAt: 'Yesterday, 3:00 PM',
+        recommended: true,
+        committeeVotes: ['Marcus Sterling']
+      },
+      {
+        id: 'QTE-COR-202-2',
+        vendorId: 'VND-004',
+        vendorName: 'Citywide Commercial Hydraulics',
+        contactEmail: 'estimating@citywidehydraulics.com.au',
+        contactPhone: '02 9200 1188',
+        isAccredited: true,
+        insuranceStatus: 'Active',
+        insuranceExpiry: '2027-08-31',
+        amount: 4100,
+        scopeNotes: 'Full hydraulic line replacement including trenching, hydrostatic pressure test, and paving restoration.',
+        warranty: '6 Months Labor',
+        estimatedDays: 2,
+        submittedAt: 'Today, 8:45 AM',
+        recommended: false,
+        committeeVotes: []
+      }
+    ],
+    comments: [
+      { id: 'C-COR-202-1', authorName: 'Marcus Sterling', authorRole: 'Treasurer', text: 'Apex quote is within our maintenance allowance. Voted YES.', createdAt: '1 hour ago' }
+    ],
     auditLog: [
       { id: 'AUD-C202-1', type: 'created', actor: 'Elena Rostov', actorRole: 'Lot Owner', timestamp: '2 hours ago', note: 'Activity submitted by resident.' },
       { id: 'AUD-C202-2', type: 'email_sent', actor: 'SmartLot', actorRole: 'System', timestamp: '2 hours ago', note: 'Email dispatched to strata manager.' },
+      { id: 'AUD-C202-3', type: 'status_change', actor: 'Emma Wilson', actorRole: 'Strata Manager', timestamp: '1 hour ago', note: 'Quote tender raised for committee vote.' },
     ],
   },
   {
@@ -2799,7 +2841,7 @@ export function useSmartLotStore() {
     });
   };
   const [members, setMembers] = usePersistedState<Member[]>(`smartlot_${pId}_members_v8`, INITIAL_MEMBERS);
-  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v9`, INITIAL_RESIDENT_REQUESTS);
+  const [residentRequests, setResidentRequests] = usePersistedState<ResidentRequest[]>(`smartlot_${pId}_residentRequests_v10`, INITIAL_RESIDENT_REQUESTS);
   const [units, setUnits] = usePersistedState<UnitData[]>(`smartlot_${pId}_units_v8`, INITIAL_UNITS);
   const [vendors, setVendors] = usePersistedState<Vendor[]>(`smartlot_${pId}_vendors_v8`, INITIAL_VENDORS);
   const [motions, setMotions] = usePersistedState<Motion[]>(`smartlot_${pId}_motions_v13`, INITIAL_MOTIONS);
