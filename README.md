@@ -39,7 +39,7 @@ npx tsc --noEmit
 
 ## 🔐 Supabase Configuration
 
-Configure your environment variables in `.env.local`:
+Configure your environment variables in `.env`:
 
 ```env
 VITE_SUPABASE_URL=https://pieplmpkognbdktezteb.supabase.co
@@ -47,15 +47,21 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
 
-## 🧪 Testing Personas
+## 🧪 Testing Personas & Logins
 
 Login to the platform using any of the pre-configured test personas:
 
-| Persona | Role | Scheme | Email | Password |
+| Persona | Role | Scheme | Email / Identifier | Password |
 | :--- | :--- | :--- | :--- | :--- |
+| **Super Admin** | System Admin | Global (`#/admin`) | `admin` | `admin123` |
+| **Emma Wilson** | Strata Manager | Cavalier (`SP103`) & Coronation (`SP102`) | `emma.wilson@agency.com` | `SmartLot2026!` |
 | **Sarah Jones** | Owner / Resident | Duplex (`SP101`) | `sarah.jones@duplex.com` | `SmartLot2026!` |
 | **Michael Chen** | Committee Member | Coronation (`SP102`) | `michael.chen@coronation.com` | `SmartLot2026!` |
-| **Emma Wilson** | Strata Manager | Cavaller (`SP103`) & Coronation (`SP102`) | `emma.wilson@agency.com` | `SmartLot2026!` |
+| **David Miller** | Tenant | Duplex (`SP101`) | `david.m@duplex.com` | `SmartLot2026!` |
+| **Liam Hemsworth** | Resident | Coronation (`SP102`) | `liam.h@coronation.com` | `SmartLot2026!` |
+| **Chloe Bennett** | Tenant | Coronation (`SP102`) | `chloe.b@coronation.com` | `SmartLot2026!` |
+| **Oliver Vance** | Resident | Cavalier (`SP103`) | `oliver.v@cavalier.com` | `SmartLot2026!` |
+| **Jessica Taylor** | Tenant | Cavalier (`SP103`) | `jessica.t@cavalier.com` | `SmartLot2026!` |
 | **Roman Joe** | Strata Manager | Spear Empire (`SP823`) | `romanjoe@gmail.com` | `SmartLot2026!` |
 
 
@@ -63,17 +69,9 @@ Login to the platform using any of the pre-configured test personas:
 
 Copyright © 2026 SmartLot Strata Management. Built with Google Antigravity. Author: Jainam Jain <jainjainam412@gmail.com>.
 
-### Latest Updates (v1.2.0)
+### Latest Updates (v1.2.1)
 - Strict scheme privacy: Users only see schemes they belong to.
 - Interactive Topbar: Dropdown with "+ Add New Strata Site" quick action.
 - Clean member rosters: Management staff properly segregated from unit occupants.
-
-<!-- SmartLot 2026 Production Ready -->
-
-<!-- Sprint 1.2: Activity Management verified & deployed -->
-
-
-### 🚀 Jira-Style In-Page Request Review
-- Replaced modal and drawer popups with a focused, in-page 2-column ticket review layout matching standard Jira service management patterns.
-
-- Included top back navigation (`← Back to Requests`), 3-column attribute bar, statutory triage banner, timeline event track, and quick action controls.
+- Super Admin Control Hub: Direct access to root console with auto-fill credentials.
+- Contractor & Tender Engine: End-to-end quote solicitation and work order dispatching.

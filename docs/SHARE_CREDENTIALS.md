@@ -71,6 +71,22 @@ Here is the live platform link and the complete set of test credentials for each
   Password: SmartLot2026!
   Experience: Dedicated Strata Management Console
 
+
+5️⃣ Super Admin / Root System Console (Master Platform Control)
+--------------------------------------------------------------------------------
+• Super Admin
+  Access Link: [INSERT_YOUR_LIVE_URL_HERE]/#/admin (or click "System Console" in header)
+  Admin Identifier: admin
+  Security Passkey: admin123
+  Experience: Root Strata Governance, Scheme Portfolios, Global Role Permissions, Direct Ticket Triage, Cross-Building User Directory
+
+
+6️⃣ Trade Contractor & Vendor Portal
+--------------------------------------------------------------------------------
+• Trade Contractor Onboarding
+  Access Link: [INSERT_YOUR_LIVE_URL_HERE]/#trade-portal (or click "Trade Portal" in header)
+  Experience: Contractor accreditation, insurance compliance upload, quote submission & work order dispatch
+
 ================================================================================
 
 Looking forward to connecting tomorrow at 5:00 PM!
