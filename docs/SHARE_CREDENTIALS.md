@@ -1,13 +1,11 @@
-# SmartLot — Shareable Message & Test Credentials
+# SmartLot — Credentials for Ash
 
 ```text
 Hi Ash,
 
-No worries at all! Yes, 5:00 PM tomorrow works great for me.
+Here is the live SmartLot platform link and the complete set of credentials to test each portal experience:
 
-Here is the live platform link and the complete set of test credentials for each portal experience:
-
-🔗 App Link: [INSERT_YOUR_LIVE_URL_HERE]
+🔗 Live App: https://smart-lot-five.vercel.app
 📁 GitHub Repository: https://github.com/Codewithjainam7/SmartLot
 🔑 Standard Password for all accounts: SmartLot2026!
 
@@ -75,19 +73,17 @@ Here is the live platform link and the complete set of test credentials for each
 5️⃣ Super Admin / Root System Console (Master Platform Control)
 --------------------------------------------------------------------------------
 • Super Admin
-  Access Link: [INSERT_YOUR_LIVE_URL_HERE]/#/admin (or click "System Console" in header)
+  Access Link: https://smart-lot-five.vercel.app/#/admin (or click "System Console" in header)
   Admin Identifier: admin
-  Security Passkey: admin123
+  Security Passkey: admin123  (or click the 1-click Auto-fill pill)
   Experience: Root Strata Governance, Scheme Portfolios, Global Role Permissions, Direct Ticket Triage, Cross-Building User Directory
 
 
 6️⃣ Trade Contractor & Vendor Portal
 --------------------------------------------------------------------------------
 • Trade Contractor Onboarding
-  Access Link: [INSERT_YOUR_LIVE_URL_HERE]/#trade-portal (or click "Trade Portal" in header)
+  Access Link: https://smart-lot-five.vercel.app/#trade-portal (or click "Trade Portal" in header)
   Experience: Contractor accreditation, insurance compliance upload, quote submission & work order dispatch
 
 ================================================================================
-
-Looking forward to connecting tomorrow at 5:00 PM!
 ```
