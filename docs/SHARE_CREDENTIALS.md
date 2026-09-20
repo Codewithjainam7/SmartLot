@@ -1,16 +1,16 @@
-# SmartLot — Credentials for Ash
+# SmartLot — Platform Access & Test Credentials
 
 ```text
-Hi Ash,
+================================================================================
+🏢 SMARTLOT — PLATFORM ACCESS & TEST CREDENTIALS
+================================================================================
 
-Here is the live SmartLot platform link and the complete set of credentials to test each portal experience:
-
-🔗 Live App: https://smart-lot-five.vercel.app
+🔗 Live Platform URL: https://smart-lot-five.vercel.app
 📁 GitHub Repository: https://github.com/Codewithjainam7/SmartLot
-🔑 Standard Password for all accounts: SmartLot2026!
+🔑 Standard Password for all persona accounts: SmartLot2026!
 
 ================================================================================
-📋 TEST PERSONAS & LOGIN CREDENTIALS
+📋 TEST PERSONAS & PORTAL EXPERIENCES
 ================================================================================
 
 1️⃣ Self-Managed Duplex (SP101 — Sunset Duplex)
