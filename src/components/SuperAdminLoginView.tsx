@@ -1,6 +1,6 @@
 // @smartlot/component
 import React, { useState } from 'react';
-import { ShieldAlert, ArrowLeft, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, KeyRound, Server, Zap, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight, KeyRound, Server, Zap, CheckCircle2, Sparkles } from 'lucide-react';
 import { SmartLotLogo } from './core/SmartLotLogo';
 import { supabase } from '../lib/supabase';
 
@@ -20,6 +20,21 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    const cleanId = adminId.trim().toLowerCase();
+    const cleanPw = password.trim();
+
+    // Fast-path for root Super Admin credentials
+    if (
+      (cleanId === 'admin' || cleanId === 'superadmin' || cleanId === 'admin@smartlot.com' || cleanId === 'admin@smartlot.internal') &&
+      (cleanPw === 'admin123' || cleanPw === 'smartlot2026!' || cleanPw === 'SmartLot2026!')
+    ) {
+      setTimeout(() => {
+        setIsLoading(false);
+        onLoginSuccess();
+      }, 200);
+      return;
+    }
 
     try {
       const email = adminId.includes('@') ? adminId.trim() : `${adminId.trim()}@smartlot.internal`;
@@ -224,6 +239,22 @@ export function SuperAdminLoginView({ onLoginSuccess, onBack }: SuperAdminLoginV
                 )}
               </button>
             </form>
+
+            {/* Quick-Fill Helper Pill */}
+            <div className="pt-2 flex flex-col items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setAdminId('admin');
+                  setPassword('admin123');
+                  setError('');
+                }}
+                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2]/10 hover:border-[#00D4B2]/30 border border-gray-200 dark:border-white/10 text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-[#00A38C] transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Sparkles size={13} className="text-[#00D4B2]" />
+                <span>Auto-fill Master Credentials (<code>admin / admin123</code>)</span>
+              </button>
+            </div>
 
           </div>
         </div>
