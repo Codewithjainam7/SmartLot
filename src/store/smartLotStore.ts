@@ -2202,7 +2202,7 @@ export const getDefaultPermissionsForRole = (role: string): { label: string; act
 // Persistent storage for custom tenders & committee votes across tabs, personas and syncs
 const CUSTOM_TENDERS_STORAGE_KEY = 'smartlot_custom_tenders_v1';
 
-function getCustomTendersFromStorage(): Record<string, { tenderStatus?: string; tenderScope?: string; tenderQuotes?: RequestQuote[]; linkedWorkOrderId?: string }> {
+function getCustomTendersFromStorage(): Record<string, { tenderStatus?: 'none' | 'quoting' | 'quote_selected' | 'work_order_dispatched'; tenderScope?: string; tenderQuotes?: RequestQuote[]; linkedWorkOrderId?: string }> {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const raw = window.localStorage.getItem(CUSTOM_TENDERS_STORAGE_KEY);
@@ -2216,7 +2216,7 @@ function getCustomTendersFromStorage(): Record<string, { tenderStatus?: string; 
   return {};
 }
 
-function saveCustomTenderToStorage(requestId: string, update: { tenderStatus?: string; tenderScope?: string; tenderQuotes?: RequestQuote[]; linkedWorkOrderId?: string }) {
+function saveCustomTenderToStorage(requestId: string, update: { tenderStatus?: 'none' | 'quoting' | 'quote_selected' | 'work_order_dispatched'; tenderScope?: string; tenderQuotes?: RequestQuote[]; linkedWorkOrderId?: string }) {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const existing = getCustomTendersFromStorage();
