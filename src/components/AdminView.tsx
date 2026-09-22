@@ -6,7 +6,8 @@ import {
   Search, Filter, Plus, CheckCircle2, Clock, AlertTriangle, ChevronRight, ChevronDown, X, 
   Building2, Users, FileText, Check, AlertCircle, RefreshCw, Send, Eye,
   Layers, Activity, Sun, Moon, ArrowUpRight, BarChart3, Edit3, Save, UserCheck, Key, UserPlus, Zap,
-  ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, SlidersHorizontal
+  ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, SlidersHorizontal,
+  LayoutGrid, List
 } from 'lucide-react';
 import { Member, ResidentRequest, UnitData, getDefaultPermissionsForRole, CaseStatus, MemberRole, RequestStream } from '../store/smartLotStore';
 import { Scheme } from '../types';
@@ -98,6 +99,9 @@ export function AdminView({
   onInspectScheme
 }: AdminViewProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'schemes' | 'users' | 'permissions'>('overview');
+  const [requestsViewMode, setRequestsViewMode] = useState<'table' | 'cards'>('table');
+  const [schemesViewMode, setSchemesViewMode] = useState<'table' | 'cards'>('table');
+  const [usersViewMode, setUsersViewMode] = useState<'table' | 'cards'>('table');
   const [isSyncing, setIsSyncing] = useState(false);
   
   // Search & Filters
@@ -1026,15 +1030,47 @@ export function AdminView({
                   Global operational oversight. Master Admins can create, review, edit fields, triage, approve, reject, or assign tickets across all schemes.
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  setNewReqSchemeId(schemes[0]?.id || '');
-                  setIsCreateRequestOpen(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus size={16} /> Create Master Request
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Table vs Card View Toggle (Table First) */}
+                <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setRequestsViewMode('table')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      requestsViewMode === 'table'
+                        ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    title="Enterprise table view"
+                  >
+                    <List size={13} />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRequestsViewMode('cards')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      requestsViewMode === 'cards'
+                        ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    title="Card grid layout"
+                  >
+                    <LayoutGrid size={13} />
+                    <span>Cards</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setNewReqSchemeId(schemes[0]?.id || '');
+                    setIsCreateRequestOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus size={16} /> Create Master Request
+                </button>
+              </div>
             </div>
 
             {filteredRequests.length === 0 ? (
@@ -1043,7 +1079,7 @@ export function AdminView({
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">No requests match your current filters</h3>
                 <p className="text-xs text-gray-500 max-w-sm mx-auto">Try clearing search keywords or changing the scheme filter.</p>
               </div>
-            ) : (
+            ) : requestsViewMode === 'table' ? (
               <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2 bg-blue-50/70 dark:bg-[#00D4B2]/10 border-b border-gray-200 dark:border-white/10 text-xs text-[#0055FF] dark:text-[#00D4B2] font-bold md:hidden">
                   <span>← Swipe horizontally to view all ticket columns →</span>
@@ -1223,6 +1259,100 @@ export function AdminView({
                   </table>
                 </div>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredRequests.map(req => (
+                  <div
+                    key={req.id}
+                    className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 border border-gray-200 dark:border-white/5 shadow-sm hover:border-[#00D4B2]/40 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-[10px] font-black text-gray-800 dark:text-gray-200">
+                            {req.schemeId}
+                          </span>
+                          <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                            {req.unit}
+                          </span>
+                        </div>
+
+                        <div>
+                          {req.priority === 'Emergency' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                              <span>Emergency</span>
+                            </span>
+                          )}
+                          {req.priority === 'High' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                              <Zap size={10} />
+                              <span>High</span>
+                            </span>
+                          )}
+                          {req.priority === 'Medium' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-500/10 text-[#0055FF] dark:text-blue-400 border border-blue-500/20">
+                              <span>Medium</span>
+                            </span>
+                          )}
+                          {req.priority === 'Low' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20">
+                              <span>Low</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">
+                          {req.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+                          {req.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>By {req.requestorName}</span>
+                        <span className="font-mono text-[10px] text-gray-400">{req.createdAt}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedRequest(req);
+                          setIsEditingRequest(false);
+                        }}
+                        className="flex-1 py-1.5 px-3 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                      >
+                        <Eye size={13} />
+                        <span>Inspect</span>
+                      </button>
+
+                      {onTriageRequest && req.status !== 'resolved' && (
+                        <button
+                          onClick={() => onTriageRequest(req.id, { status: 'resolved' })}
+                          className="p-1.5 rounded-xl bg-[#00D4B2]/10 hover:bg-[#00D4B2] text-[#00A38C] hover:text-[#0B1121] text-xs font-bold transition-all cursor-pointer border border-[#00D4B2]/20"
+                          title="Mark Resolved"
+                        >
+                          <Check size={14} />
+                        </button>
+                      )}
+
+                      {onCloseRequest && req.status !== 'closed' && (
+                        <button
+                          onClick={() => onCloseRequest(req.id, 'Super Admin closed request.')}
+                          className="p-1.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer"
+                          title="Close Request"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -1240,6 +1370,36 @@ export function AdminView({
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {/* Table vs Card View Toggle (Table First) */}
+                <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSchemesViewMode('table')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      schemesViewMode === 'table'
+                        ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    title="Enterprise table view"
+                  >
+                    <List size={13} />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSchemesViewMode('cards')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      schemesViewMode === 'cards'
+                        ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    title="Card grid layout"
+                  >
+                    <LayoutGrid size={13} />
+                    <span>Cards</span>
+                  </button>
+                </div>
+
                 <button
                   onClick={() => {
                     setNewMemberSchemeId(schemes[0]?.id || '');
@@ -1258,7 +1418,124 @@ export function AdminView({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {schemesViewMode === 'table' ? (
+              <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50/80 dark:bg-[#151926] text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
+                        <th className="py-3.5 px-5">Scheme & ID</th>
+                        <th className="py-3.5 px-5">Lots</th>
+                        <th className="py-3.5 px-5">Registered Users</th>
+                        <th className="py-3.5 px-5">Open Tickets</th>
+                        <th className="py-3.5 px-5 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                      {filteredSchemes.map(s => {
+                        const schemeMembers = members.filter(m => m.schemeId === s.id);
+                        const schemeRequests = requests.filter(r => r.schemeId === s.id && r.status !== 'resolved');
+
+                        return (
+                          <tr key={s.id} className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors group">
+                            <td className="py-4 px-5 align-middle">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-[#0055FF]/10 text-[#0055FF] shrink-0">
+                                  <Building2 size={18} />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-gray-900 dark:text-white text-xs group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors">
+                                    {s.name}
+                                  </div>
+                                  <div className="text-[10px] font-mono text-gray-400">
+                                    ID: {s.id}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-4 px-5 align-middle">
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-[#00D4B2]/10 text-[#00A38C] dark:text-[#00D4B2] border border-[#00D4B2]/20">
+                                {s.lots} Lots
+                              </span>
+                            </td>
+
+                            <td className="py-4 px-5 align-middle">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                <Users size={14} className="text-gray-400" />
+                                <span>{schemeMembers.length} Accounts</span>
+                              </div>
+                            </td>
+
+                            <td className="py-4 px-5 align-middle">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                schemeRequests.length > 0
+                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              }`}>
+                                {schemeRequests.length} Active
+                              </span>
+                            </td>
+
+                            <td className="py-4 px-5 text-right align-middle">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => {
+                                    if (onInspectScheme) {
+                                      onInspectScheme(s);
+                                    } else {
+                                      setSelectedSchemeForAudit(s);
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-[#0B1121] dark:bg-white text-[#00D4B2] dark:text-[#0B1121] text-xs font-bold hover:scale-[1.02] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                  title="Remote Login & Inspect Scheme"
+                                >
+                                  <Eye size={13} />
+                                  <span>Inspect</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setSelectedSchemeForAudit(s)}
+                                  className="p-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-all cursor-pointer"
+                                  title="Audit Scheme Details & Members"
+                                >
+                                  <Building2 size={14} />
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setEditingScheme(s);
+                                    setEditSchemeName(s.name);
+                                    setEditSchemeLots(s.lots);
+                                  }}
+                                  className="p-1.5 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+                                  title="Edit Scheme Details"
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to de-register and delete ${s.name} (${s.id})? This action cannot be undone.`)) {
+                                      onDeleteScheme(s.id);
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
+                                  title="Delete Scheme"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredSchemes.map(s => {
                 const schemeMembers = members.filter(m => m.schemeId === s.id);
                 const schemeRequests = requests.filter(r => r.schemeId === s.id && r.status !== 'resolved');
@@ -1358,8 +1635,9 @@ export function AdminView({
                 );
               })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
         {/* TAB 4: GLOBAL USERS & PERMISSIONS */}
         {activeTab === 'users' && (
@@ -1388,6 +1666,36 @@ export function AdminView({
               </div>
 
               <div className="flex items-center gap-2">
+                {/* Table vs Card View Toggle (Table First) */}
+                <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setUsersViewMode('table')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      usersViewMode === 'table'
+                        ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    title="Enterprise table view"
+                  >
+                    <List size={13} />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUsersViewMode('cards')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      usersViewMode === 'cards'
+                        ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                    title="Card grid layout"
+                  >
+                    <LayoutGrid size={13} />
+                    <span>Cards</span>
+                  </button>
+                </div>
+
                 <button
                   onClick={() => setIsAddSchemeOpen(true)}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#00D4B2] hover:bg-[#00bda0] text-[#0B1121] font-bold text-xs shadow-md shadow-[#00D4B2]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
@@ -1512,7 +1820,8 @@ export function AdminView({
             </div>
 
             {/* Main Enterprise Data Table */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
+            {usersViewMode === 'table' ? (
+              <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30 overflow-x-auto min-h-[440px] w-full">
               <table className="w-full min-w-[760px] text-left text-xs border-collapse font-sans table-auto">
                 <thead>
                   {/* AG-GRID PRIMARY COLUMN HEADER ROW */}
@@ -1978,8 +2287,134 @@ export function AdminView({
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredMembers.length === 0 ? (
+                <div className="col-span-full bg-white dark:bg-[#0d1117] rounded-3xl p-12 text-center border border-gray-200 dark:border-white/5 space-y-3">
+                  <Users size={36} className="mx-auto text-gray-400" />
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">No users match your filters</h3>
+                  <p className="text-xs text-gray-500 max-w-sm mx-auto">Try resetting your filters or clearing search terms.</p>
+                </div>
+              ) : (
+                filteredMembers.map(m => {
+                  const roleBadgeStyles: Record<string, string> = {
+                    'Strata Manager': 'bg-blue-500/10 text-[#0055FF] dark:text-blue-400 border-blue-500/20',
+                    'Strata Admin': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+                    'Building Manager': 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+                    'Committee Member': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+                    'Lot Owner': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                    'Resident': 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+                    'Tenant': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                    'Service Provider': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+                  };
+                  const badgeClass = roleBadgeStyles[m.role] || 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+
+                  return (
+                    <div 
+                      key={m.id}
+                      className="bg-white dark:bg-[#0d1117] rounded-3xl p-5 border border-gray-200 dark:border-white/5 shadow-sm hover:border-[#00D4B2]/40 transition-all flex flex-col justify-between space-y-4"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white font-black text-sm shrink-0 shadow-sm">
+                              {m.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-gray-900 dark:text-white text-sm truncate">
+                                {m.name}
+                              </h4>
+                              <span className="font-mono text-[10px] text-gray-400 truncate block">
+                                ID: {m.id.length > 12 ? `${m.id.slice(0, 10)}...` : m.id}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${
+                            m.status === 'Active'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              : m.status === 'Invited'
+                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                          }`}>
+                            {m.status}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold border ${badgeClass}`}>
+                            <Shield size={12} />
+                            <span>{m.role}</span>
+                          </span>
+
+                          <span className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                            {m.schemeId}
+                          </span>
+
+                          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                            {m.unitId} {m.lotNumber ? `(Lot ${m.lotNumber})` : ''}
+                          </span>
+                        </div>
+
+                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-2 truncate">
+                            <Mail size={12} className="text-gray-400 shrink-0" />
+                            <span className="truncate">{m.email}</span>
+                          </div>
+                          {m.phone && (
+                            <div className="flex items-center gap-2 truncate">
+                              <Phone size={12} className="text-gray-400 shrink-0" />
+                              <span className="truncate">{m.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            setEditingMember(m);
+                            setEditMemberName(m.name);
+                            setEditMemberEmail(m.email);
+                            setEditMemberPhone(m.phone || '');
+                            setEditMemberRole(m.role);
+                            setEditMemberUnit(m.unitId);
+                            setEditMemberStatus(m.status);
+                          }}
+                          className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer"
+                          title="Edit User Profile"
+                        >
+                          <Edit3 size={13} />
+                        </button>
+
+                        <button
+                          onClick={() => setMemberPermissionsAudit(m)}
+                          className="p-2 rounded-xl bg-[#0055FF]/10 hover:bg-[#0055FF] text-[#0055FF] hover:text-white text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                          title="View & Edit Individual Overrides"
+                        >
+                          <Key size={13} />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (confirm(`Remove user ${m.name} from scheme ${m.schemeId}?`)) {
+                              onDeleteMember(m.id);
+                            }
+                          }}
+                          className="p-2 rounded-xl text-[#FF4757] hover:bg-[#FF4757]/10 transition-colors cursor-pointer"
+                          title="Delete User"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
         {/* TAB 5: GLOBAL DEFAULT PERMISSIONS MATRIX */}
         {activeTab === 'permissions' && (

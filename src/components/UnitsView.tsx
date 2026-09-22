@@ -11,7 +11,9 @@ import {
   UserX, 
   CheckCircle2, 
   Key, 
-  X
+  X,
+  List,
+  LayoutGrid
 } from 'lucide-react';
 
 interface UnitsViewProps {
@@ -21,6 +23,7 @@ interface UnitsViewProps {
 }
 
 export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewProps) {
+  const [unitsViewMode, setUnitsViewMode] = useState<'table' | 'cards'>('table');
   const [selectedUnit, setSelectedUnit] = useState<UnitData>(units[0] || null);
   const [isAddResidentOpen, setIsAddResidentOpen] = useState(false);
   const [newResidentName, setNewResidentName] = useState('');
@@ -61,124 +64,264 @@ export function UnitsView({ units, onAddResident, onOffboardActor }: UnitsViewPr
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Each physical lot supports 3 distinct mapped actors with independent login credentials.</p>
         </div>
 
-        <button
-          onClick={() => setIsAddResidentOpen(true)}
-          className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-6 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer w-full sm:w-auto min-h-[44px]"
-        >
-          <Plus size={18} className="text-[#00D4B2]" /> Add Resident Login
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          {/* Table vs Card View Toggle (Table First) */}
+          <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0">
+            <button
+              type="button"
+              onClick={() => setUnitsViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                unitsViewMode === 'table'
+                  ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              title="Enterprise table view"
+            >
+              <List size={13} />
+              <span>Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUnitsViewMode('cards')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                unitsViewMode === 'cards'
+                  ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              title="Card grid layout"
+            >
+              <LayoutGrid size={13} />
+              <span>Cards</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setIsAddResidentOpen(true)}
+            className="bg-[#0B1121] dark:bg-[#00D4B2]/10 dark:border dark:border-[#00D4B2]/20 hover:bg-black dark:hover:bg-[#00D4B2]/20 text-white dark:text-[#00D4B2] px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer w-full sm:w-auto min-h-[44px]"
+          >
+            <Plus size={18} className="text-[#00D4B2]" /> Add Resident Login
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
-        
-        {/* Left Column: Unit Selection Grid / Mobile Horizontal Swipe Strip */}
-        <div className="lg:col-span-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">All Physical Lots</h3>
-            <span className="text-[11px] text-gray-400 lg:hidden">Swipe to switch lot</span>
-          </div>
-          
-          <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible no-scrollbar touch-pan-x gap-2 lg:gap-0 lg:space-y-2 pb-1 lg:pb-0">
-            {units.map(u => (
-              <button
-                key={u.unitId}
-                data-id={`unit-${u.unitId}`}
-                aria-label={`Select unit ${u.unitId} (Lot ${u.lotNumber})`}
-                onClick={() => setSelectedUnit(u)}
-                className={`flex-shrink-0 lg:w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all cursor-pointer select-none active:scale-95 min-w-[200px] lg:min-w-0 ${
-                  currentUnit.unitId === u.unitId ? 'bg-[#0B1121] dark:bg-white/10 text-white dark:text-[#00D4B2] border-black dark:border-[#00D4B2]/30 shadow-md font-bold' : 'bg-gray-50 dark:bg-[#1a1d27]/40 text-gray-900 dark:text-white font-semibold hover:text-black dark:hover:text-[#00D4B2]'
-                }`}
-              >
-                <div className="text-left">
-                  <div className="text-sm sm:text-base font-bold">{u.unitId} (Lot {u.lotNumber})</div>
-                  <div className={`text-[11px] sm:text-xs mt-0.5 ${currentUnit.unitId === u.unitId ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>
-                    Entitlement: {u.entitlement} • {u.actors.length} Actors
-                  </div>
-                </div>
-                <span className={`text-[9px] sm:text-[10px] font-bold uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ml-2 ${
-                  currentUnit.unitId === u.unitId ? 'bg-[#00D4B2] text-[#0B1121]' : 'bg-emerald-100 dark:bg-emerald-950/20 text-[#10B981]'
-                }`}>
-                  {u.status}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Column: Detailed Actor Cards for Selected Unit */}
-        <div className="lg:col-span-8 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-4 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3 sm:pb-4 gap-2 sm:gap-0">
-            <div>
-              <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Active Unit Profile</span>
-              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{currentUnit.unitId} • Lot {currentUnit.lotNumber}</h2>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsAddResidentOpen(true)}
-                className="bg-[#00D4B2]/10 hover:bg-emerald-100 text-[#10B981] border border-[#00D4B2]/30 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer min-h-[40px] active:scale-95"
-              >
-                <Plus size={14} /> Add Occupant
-              </button>
-            </div>
-          </div>
-
-          {/* Mapped Actors List */}
-          <div className="space-y-3 sm:space-y-4">
-            {currentUnit.actors.map(actor => (
-              <div key={actor.id} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27]/50 space-y-3 sm:space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className={`w-10 sm:w-12 h-10 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-sm shrink-0 ${
-                      actor.role === 'Lot Owner' ? 'bg-[#0055FF]/10 text-[#0033CC] border-blue-200' :
-                      actor.role === 'On-Site Resident' ? 'bg-[#00D4B2]/10 text-[#10B981] border-[#00D4B2]/30' :
-                      'bg-purple-50 text-purple-600 border-purple-200'
-                    }`}>
-                      {actor.role === 'Lot Owner' && <User size={20} />}
-                      {actor.role === 'On-Site Resident' && <Users size={20} />}
-                      {actor.role === 'Property Agent' && <Building2 size={20} />}
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <span className="text-[10px] sm:text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{actor.role}</span>
-                        {actor.verified && <CheckCircle2 size={13} className="text-[#10B981]" />}
+      {unitsViewMode === 'table' ? (
+        <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-gray-50/80 dark:bg-[#151926] text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
+                  <th className="py-3.5 px-5">Unit & Lot</th>
+                  <th className="py-3.5 px-5">Entitlement</th>
+                  <th className="py-3.5 px-5">Status</th>
+                  <th className="py-3.5 px-5 min-w-[320px]">Registered Actors & Occupants</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                {units.map(u => (
+                  <tr key={u.unitId} className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors group">
+                    <td className="py-4 px-5 align-middle">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-[#0055FF]/10 text-[#0055FF] font-bold text-xs">
+                          <Building2 size={16} />
+                        </div>
+                        <div>
+                          <div className="font-bold text-gray-900 dark:text-white text-xs">
+                            {u.unitId}
+                          </div>
+                          <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                            Lot {u.lotNumber}
+                          </div>
+                        </div>
                       </div>
-                      <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{actor.name}</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{actor.email} {actor.agency && `• ${actor.agency}`}</p>
-                    </div>
-                  </div>
+                    </td>
 
-                  {actor.role === 'On-Site Resident' && (
-                    <button
-                      onClick={() => onOffboardActor(currentUnit.unitId, actor.id)}
-                      className="bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF6B6B] border border-[#FF4757]/30 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer min-h-[38px] active:scale-95 w-full sm:w-auto"
-                      title="Revoke active JWT tokens & offboard tenant while preserving historical logs"
-                    >
-                      <UserX size={14} /> Offboard Tenant
-                    </button>
-                  )}
-                </div>
+                    <td className="py-4 px-5 align-middle">
+                      <span className="font-mono text-xs font-bold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
+                        {u.entitlement} UOE
+                      </span>
+                    </td>
 
-                {/* Permissions matrix */}
-                <div className="pt-2.5 sm:pt-3 border-t border-gray-200 dark:border-white/8 flex flex-wrap gap-1.5 sm:gap-2">
-                  {actor.permissions.map((perm, idx) => (
-                    <span 
-                      key={idx}
-                      className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 ${
-                        perm.active ? 'bg-white dark:bg-[#121316] border border-gray-200 dark:border-white/8 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-gray-100 dark:bg-[#1a1d27] text-gray-400 dark:text-gray-500'
-                      }`}
-                    >
-                      <Key size={11} className={perm.active ? 'text-[#0055FF]' : 'text-gray-400 dark:text-gray-500'} />
-                      {perm.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+                    <td className="py-4 px-5 align-middle">
+                      <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/20 text-[#10B981] border border-emerald-500/20">
+                        {u.status}
+                      </span>
+                    </td>
+
+                    <td className="py-4 px-5 align-middle">
+                      <div className="flex flex-wrap gap-2">
+                        {u.actors.map(actor => (
+                          <div 
+                            key={actor.id} 
+                            className="p-2 rounded-xl bg-gray-50 dark:bg-[#1a1d27]/60 border border-gray-200/70 dark:border-white/5 flex items-center gap-2"
+                          >
+                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                              actor.role === 'Lot Owner' ? 'bg-[#0055FF]/10 text-[#0033CC]' :
+                              actor.role === 'On-Site Resident' ? 'bg-[#00D4B2]/10 text-[#10B981]' :
+                              'bg-purple-50 text-purple-600'
+                            }`}>
+                              {actor.role === 'Lot Owner' && <User size={12} />}
+                              {actor.role === 'On-Site Resident' && <Users size={12} />}
+                              {actor.role === 'Property Agent' && <Building2 size={12} />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-xs font-bold text-gray-900 dark:text-white truncate flex items-center gap-1">
+                                <span>{actor.name}</span>
+                                {actor.verified && <CheckCircle2 size={11} className="text-[#10B981] shrink-0" />}
+                              </div>
+                              <div className="text-[10px] text-gray-400 truncate">
+                                {actor.role} • {actor.email}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-5 text-right align-middle whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUnit(u);
+                            setUnitsViewMode('cards');
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-[#00D4B2] hover:text-[#0B1121] text-gray-700 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                          title="View Lot Profile & Manage Actors"
+                        >
+                          Inspect Lot
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUnit(u);
+                            setIsAddResidentOpen(true);
+                          }}
+                          className="p-1.5 rounded-xl bg-[#00D4B2]/10 hover:bg-[#00D4B2] text-[#00A38C] hover:text-[#0B1121] text-xs font-bold transition-all cursor-pointer border border-[#00D4B2]/20"
+                          title="Add Resident to this Lot"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+          
+          {/* Left Column: Unit Selection Grid / Mobile Horizontal Swipe Strip */}
+          <div className="lg:col-span-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-100 dark:border-white/5 shadow-sm space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">All Physical Lots</h3>
+              <span className="text-[11px] text-gray-400 lg:hidden">Swipe to switch lot</span>
+            </div>
+            
+            <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible no-scrollbar touch-pan-x gap-2 lg:gap-0 lg:space-y-2 pb-1 lg:pb-0">
+              {units.map(u => (
+                <button
+                  key={u.unitId}
+                  data-id={`unit-${u.unitId}`}
+                  aria-label={`Select unit ${u.unitId} (Lot ${u.lotNumber})`}
+                  onClick={() => setSelectedUnit(u)}
+                  className={`flex-shrink-0 lg:w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all cursor-pointer select-none active:scale-95 min-w-[200px] lg:min-w-0 ${
+                    currentUnit.unitId === u.unitId ? 'bg-[#0B1121] dark:bg-white/10 text-white dark:text-[#00D4B2] border-black dark:border-[#00D4B2]/30 shadow-md font-bold' : 'bg-gray-50 dark:bg-[#1a1d27]/40 text-gray-900 dark:text-white font-semibold hover:text-black dark:hover:text-[#00D4B2]'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="text-sm sm:text-base font-bold">{u.unitId} (Lot {u.lotNumber})</div>
+                    <div className={`text-[11px] sm:text-xs mt-0.5 ${currentUnit.unitId === u.unitId ? 'text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>
+                      Entitlement: {u.entitlement} • {u.actors.length} Actors
+                    </div>
+                  </div>
+                  <span className={`text-[9px] sm:text-[10px] font-bold uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ml-2 ${
+                    currentUnit.unitId === u.unitId ? 'bg-[#00D4B2] text-[#0B1121]' : 'bg-emerald-100 dark:bg-emerald-950/20 text-[#10B981]'
+                  }`}>
+                    {u.status}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-      </div>
+          {/* Right Column: Detailed Actor Cards for Selected Unit */}
+          <div className="lg:col-span-8 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3 sm:pb-4 gap-2 sm:gap-0">
+              <div>
+                <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Active Unit Profile</span>
+                <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{currentUnit.unitId} • Lot {currentUnit.lotNumber}</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsAddResidentOpen(true)}
+                  className="bg-[#00D4B2]/10 hover:bg-emerald-100 text-[#10B981] border border-[#00D4B2]/30 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer min-h-[40px] active:scale-95"
+                >
+                  <Plus size={14} /> Add Occupant
+                </button>
+              </div>
+            </div>
+
+            {/* Mapped Actors List */}
+            <div className="space-y-3 sm:space-y-4">
+              {currentUnit.actors.map(actor => (
+                <div key={actor.id} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1d27]/50 space-y-3 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className={`w-10 sm:w-12 h-10 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-sm shrink-0 ${
+                        actor.role === 'Lot Owner' ? 'bg-[#0055FF]/10 text-[#0033CC] border-blue-200' :
+                        actor.role === 'On-Site Resident' ? 'bg-[#00D4B2]/10 text-[#10B981] border-[#00D4B2]/30' :
+                        'bg-purple-50 text-purple-600 border-purple-200'
+                      }`}>
+                        {actor.role === 'Lot Owner' && <User size={20} />}
+                        {actor.role === 'On-Site Resident' && <Users size={20} />}
+                        {actor.role === 'Property Agent' && <Building2 size={20} />}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="text-[10px] sm:text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{actor.role}</span>
+                          {actor.verified && <CheckCircle2 size={13} className="text-[#10B981]" />}
+                        </div>
+                        <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{actor.name}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{actor.email} {actor.agency && `• ${actor.agency}`}</p>
+                      </div>
+                    </div>
+
+                    {actor.role === 'On-Site Resident' && (
+                      <button
+                        onClick={() => onOffboardActor(currentUnit.unitId, actor.id)}
+                        className="bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF6B6B] border border-[#FF4757]/30 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer min-h-[38px] active:scale-95 w-full sm:w-auto"
+                        title="Revoke active JWT tokens & offboard tenant while preserving historical logs"
+                      >
+                        <UserX size={14} /> Offboard Tenant
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Permissions matrix */}
+                  <div className="pt-2.5 sm:pt-3 border-t border-gray-200 dark:border-white/8 flex flex-wrap gap-1.5 sm:gap-2">
+                    {actor.permissions.map((perm, idx) => (
+                      <span 
+                        key={idx}
+                        className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 ${
+                          perm.active ? 'bg-white dark:bg-[#121316] border border-gray-200 dark:border-white/8 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-gray-100 dark:bg-[#1a1d27] text-gray-400 dark:text-gray-500'
+                        }`}
+                      >
+                        <Key size={11} className={perm.active ? 'text-[#0055FF]' : 'text-gray-400 dark:text-gray-500'} />
+                        {perm.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
 
       {/* Add Resident Modal (Bottom Sheet on Mobile) */}
       {isAddResidentOpen && (

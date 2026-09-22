@@ -33,7 +33,9 @@ import {
   Loader2,
   ListFilter,
   Layers,
-  Search
+  Search,
+  List,
+  LayoutGrid
 } from 'lucide-react';
 import { Survey, SurveyResponse, SurveyQuestion } from '../types';
 import { SmartLotStore } from '../store/smartLotStore';
@@ -70,6 +72,7 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [feedbackViewMode, setFeedbackViewMode] = useState<'table' | 'cards'>('table');
   const [commentFilter, setCommentFilter] = useState<'all' | 'with_comments' | 'anonymous' | 'unit_tagged'>('all');
   const [commentSearch, setCommentSearch] = useState('');
   const [copiedCommentId, setCopiedCommentId] = useState<string | null>(null);
@@ -1361,6 +1364,36 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       🔒 Anonymous ({anonymousCount})
                     </button>
                   </div>
+
+                  {/* Table vs Card View Toggle (Table First) */}
+                  <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0 self-start sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => setFeedbackViewMode('table')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        feedbackViewMode === 'table'
+                          ? 'bg-white dark:bg-[#0d1117] text-[#00897B] dark:text-[#00D4B2] shadow-xs'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                      title="Enterprise table view"
+                    >
+                      <List size={13} />
+                      <span>Table</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFeedbackViewMode('cards')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        feedbackViewMode === 'cards'
+                          ? 'bg-white dark:bg-[#0d1117] text-[#00897B] dark:text-[#00D4B2] shadow-xs'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                      title="Card grid layout"
+                    >
+                      <LayoutGrid size={13} />
+                      <span>Cards</span>
+                    </button>
+                  </div>
                 </div>
 
               </div>
@@ -1387,6 +1420,175 @@ export function SurveysView({ store, onOpenGuestView }: SurveysViewProps) {
                       Reset All Filters
                     </button>
                   )}
+                </div>
+              ) : feedbackViewMode === 'table' ? (
+                <div className="bg-white dark:bg-[#070E1F] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xs overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-gray-600 dark:text-gray-300">
+                      <thead className="bg-gray-50/80 dark:bg-[#050A15] text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200/80 dark:border-white/10">
+                        <tr>
+                          <th className="py-3.5 px-4">Resident / Unit</th>
+                          <th className="py-3.5 px-4">Submitted</th>
+                          <th className="py-3.5 px-4 min-w-[280px]">Feedback / Notes</th>
+                          <th className="py-3.5 px-4">Ratings & Scores</th>
+                          <th className="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-sans">
+                        {filteredSubmissions.map((r) => {
+                          const writtenFeedbacks = selectedSurvey.questions
+                            .filter(q => q.type === 'text_feedback' || (q.type as string) === 'text')
+                            .map(q => ({
+                              q,
+                              val: typeof r.answers[q.id] === 'string' && r.answers[q.id].trim() ? r.answers[q.id].trim() : null
+                            }))
+                            .filter(item => item.val !== null);
+
+                          const starRatingItems = selectedSurvey.questions
+                            .filter(q => q.type === 'star_rating')
+                            .map(q => ({
+                              q,
+                              val: typeof r.answers[q.id] === 'number' ? r.answers[q.id] : null
+                            }))
+                            .filter(item => item.val !== null);
+
+                          const npsItems = selectedSurvey.questions
+                            .filter(q => q.type === 'nps_score')
+                            .map(q => ({
+                              q,
+                              val: typeof r.answers[q.id] === 'number' ? r.answers[q.id] : null
+                            }))
+                            .filter(item => item.val !== null);
+
+                          const choiceItems = selectedSurvey.questions
+                            .filter(q => q.type === 'single_choice' || q.type === 'multi_choice')
+                            .map(q => ({
+                              q,
+                              val: r.answers[q.id] !== undefined && r.answers[q.id] !== null && r.answers[q.id] !== '' ? r.answers[q.id] : null
+                            }))
+                            .filter(item => item.val !== null);
+
+                          const residentAvgRating = starRatingItems.length > 0
+                            ? (starRatingItems.reduce((acc, curr) => acc + (curr.val || 0), 0) / starRatingItems.length).toFixed(1)
+                            : null;
+
+                          const formattedDate = new Date(r.submittedAt).toLocaleDateString('en-AU', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          });
+
+                          return (
+                            <tr key={r.id} className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3.5 px-4 align-top">
+                                <div className="flex flex-col gap-1">
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold w-fit ${
+                                    r.isAnonymous 
+                                      ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20' 
+                                      : 'bg-[#00D4B2]/10 text-[#00897B] dark:text-[#00D4B2] border border-[#00D4B2]/20'
+                                  }`}>
+                                    {r.isAnonymous ? <Lock size={12} /> : <Building2 size={12} />}
+                                    <span>{r.isAnonymous ? 'Anonymous' : (r.unitId || 'Unit Resident')}</span>
+                                  </span>
+                                  {r.respondentName && !r.isAnonymous && (
+                                    <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                                      {r.respondentName}
+                                    </span>
+                                  )}
+                                  <span className="text-[10px] font-mono text-gray-400">
+                                    ID: {r.id.slice(0, 10)}
+                                  </span>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4 align-top whitespace-nowrap">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                                  <Clock size={12} className="text-gray-400" />
+                                  <span>{formattedDate}</span>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4 align-top">
+                                {writtenFeedbacks.length > 0 ? (
+                                  <div className="space-y-1.5 max-w-lg">
+                                    {writtenFeedbacks.map((item, idx) => (
+                                      <div key={idx} className="bg-gray-50 dark:bg-white/[0.03] p-2 rounded-lg border border-gray-200/50 dark:border-white/5">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">
+                                          {item.q.questionText}
+                                        </span>
+                                        <span className="text-xs text-gray-800 dark:text-gray-200 font-medium italic">
+                                          "{item.val}"
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-gray-400 italic">Rating only (no written note)</span>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-4 align-top">
+                                <div className="flex flex-wrap gap-1.5 max-w-xs">
+                                  {residentAvgRating && (
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-500 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                                      <Star size={11} className="fill-amber-400" />
+                                      <span>{residentAvgRating}/5</span>
+                                    </span>
+                                  )}
+                                  {npsItems.map(item => (
+                                    <span 
+                                      key={item.q.id}
+                                      className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                                        (item.val || 0) >= 9 
+                                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25'
+                                          : (item.val || 0) >= 7
+                                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25'
+                                            : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/25'
+                                      }`}
+                                    >
+                                      NPS: {item.val}/10
+                                    </span>
+                                  ))}
+                                  {choiceItems.map(item => (
+                                    <span key={item.q.id} className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300">
+                                      {Array.isArray(item.val) ? item.val.join(', ') : String(item.val)}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4 align-top text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const notes = writtenFeedbacks.map(f => `${f.q.questionText}: "${f.val}"`).join('\n');
+                                    const textToCopy = `Feedback from ${r.unitId || 'Anonymous'} (${formattedDate}):\n${notes || 'Rating only submission'}`;
+                                    navigator.clipboard.writeText(textToCopy);
+                                    setCopiedCommentId(r.id);
+                                    setTimeout(() => setCopiedCommentId(null), 2000);
+                                  }}
+                                  className="h-7 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-[11px] font-bold inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                  title="Copy feedback notes"
+                                >
+                                  {copiedCommentId === r.id ? (
+                                    <>
+                                      <Check size={11} className="text-emerald-500" />
+                                      <span className="text-emerald-600 dark:text-emerald-400">Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={11} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">

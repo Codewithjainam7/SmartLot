@@ -52,7 +52,9 @@ import {
   CheckCircle,
   ArrowLeft,
   Scale,
-  Plus
+  Plus,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 interface VotingHubViewProps {
@@ -108,6 +110,7 @@ export function VotingHubView({
 
   // View state: 'list' (Executive Motions Hub) or 'detail' (Full-Page Motion Governance Workspace)
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [motionDisplayMode, setMotionDisplayMode] = useState<'table' | 'cards'>('table');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'passed' | 'unresolved'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isMotionFilterDropdownOpen, setIsMotionFilterDropdownOpen] = useState(false);
@@ -705,9 +708,39 @@ export function VotingHubView({
                 )}
               </AnimatePresence>
             </div>
+
+            {/* View Mode Switcher: Table first, Cards second */}
+            <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0">
+              <button
+                type="button"
+                onClick={() => setMotionDisplayMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  motionDisplayMode === 'table'
+                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Enterprise table view"
+              >
+                <List size={13} />
+                <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMotionDisplayMode('cards')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  motionDisplayMode === 'cards'
+                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Card grid layout"
+              >
+                <LayoutGrid size={13} />
+                <span>Cards</span>
+              </button>
+            </div>
           </div>
 
-          {/* ── Responsive Full-Width Motions Grid ── */}
+          {/* ── Responsive Motions Table or Cards Grid ── */}
           {filteredMotions.length === 0 ? (
             <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-16 text-center space-y-4">
               <Vote size={48} className="mx-auto text-gray-300 dark:text-gray-600" />
@@ -722,6 +755,134 @@ export function VotingHubView({
               >
                 Reset Filters
               </button>
+            </div>
+          ) : motionDisplayMode === 'table' ? (
+            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl shadow-xs overflow-hidden">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[850px] text-left text-xs border-collapse font-sans table-auto">
+                  <thead>
+                    <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                      <th className="py-3.5 px-4 w-[16%]">Motion ID & Category</th>
+                      <th className="py-3.5 px-4 w-[28%]">Title & Purpose</th>
+                      <th className="py-3.5 px-4 w-[14%]">Status</th>
+                      <th className="py-3.5 px-4 w-[18%]">Quorum & Ballots</th>
+                      <th className="py-3.5 px-4 w-[12%]">Deadline</th>
+                      <th className="py-3.5 px-4 w-[12%] text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                    {filteredMotions.map(motion => {
+                      const mYes = motion.ballots?.filter(b => b.vote === 'YES').length || 0;
+                      const mNo = motion.ballots?.filter(b => b.vote === 'NO').length || 0;
+                      const mTarget = motion.quorumTarget || 4;
+                      const mPassed = motion.status === 'passed' || mYes >= mTarget;
+                      const mUserVoted = motion.ballots?.some(b => b.voterName.toLowerCase() === activePersonaName.toLowerCase());
+                      const isActionRequired = canCastVote && !mUserVoted && (motion.status === 'active' || !motion.status);
+
+                      return (
+                        <tr 
+                          key={motion.id}
+                          onClick={() => openMotionDetail(motion.id)}
+                          className={`hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors cursor-pointer group ${
+                            isActionRequired ? 'bg-amber-500/5 dark:bg-amber-500/5' : ''
+                          }`}
+                        >
+                          <td className="py-4 px-4 align-top">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-mono font-black text-xs text-[#0055FF] dark:text-[#00D4B2]">
+                                {motion.id}
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                {motion.heading?.split(':')[0] || 'Lot Request'}
+                              </span>
+                            </div>
+                            {motion.schemeId && (
+                              <div className="text-[10px] font-mono text-gray-400 mt-1">
+                                Scheme: {motion.schemeId}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            <div className="font-bold text-gray-900 dark:text-white text-xs group-hover:text-[#0055FF] dark:group-hover:text-[#00D4B2] transition-colors">
+                              {motion.title || motion.heading}
+                            </div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                              {motion.summary}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            {mPassed ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase">
+                                <CheckCircle2 size={10} /> Passed & Locked
+                              </span>
+                            ) : motion.status === 'rejected' || motion.status === 'unresolved' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-[10px] font-black uppercase">
+                                <XCircle size={10} /> {motion.status === 'rejected' ? 'Rejected' : 'Unresolved'}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase">
+                                <Clock size={10} /> In Voting
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="font-bold text-gray-700 dark:text-gray-300">
+                                {mYes} YES • {mNo} NO
+                              </span>
+                              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400">
+                                Target: {mTarget}
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all ${
+                                  mPassed ? 'bg-emerald-500' : 'bg-blue-600 dark:bg-[#00D4B2]'
+                                }`} 
+                                style={{ width: `${Math.min(100, Math.round((mYes / mTarget) * 100))}%` }} 
+                              />
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            <div className="text-xs text-gray-800 dark:text-gray-200 font-semibold">
+                              {motion.deadline}
+                            </div>
+                            <div className="text-[10px] text-gray-400 mt-0.5">
+                              {motion.voterGroup === 'committee_only' ? 'Committee Only' : 'All Owners'}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 align-top text-right">
+                            {isActionRequired ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openMotionDetail(motion.id);
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs inline-flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+                              >
+                                <Vote size={12} />
+                                <span>Cast Vote</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openMotionDetail(motion.id);
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-800 dark:text-gray-200 font-bold text-xs inline-flex items-center gap-1 transition-all cursor-pointer"
+                              >
+                                <span>{mUserVoted ? 'Voted • Details' : 'Details →'}</span>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

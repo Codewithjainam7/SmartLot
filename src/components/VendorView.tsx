@@ -30,7 +30,11 @@ import {
   FileDown,
   ChevronDown,
   MessageSquare,
-  Send
+  Send,
+  LayoutGrid,
+  List,
+  Trash2,
+  Eye
 } from 'lucide-react';
 
 interface VendorViewProps {
@@ -79,6 +83,9 @@ export function VendorView({
     isCommitteeMember ? 'tenders' : 'work_orders'
   );
   const [workOrderFilter, setWorkOrderFilter] = useState<'all' | 'needs_signoff' | 'in_progress' | 'completed'>('all');
+  const [workOrderViewMode, setWorkOrderViewMode] = useState<'table' | 'cards'>('table');
+  const [directoryViewMode, setDirectoryViewMode] = useState<'table' | 'cards'>('table');
+  const [tendersViewMode, setTendersViewMode] = useState<'table' | 'cards'>('table');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedWoId, setCopiedWoId] = useState<string | null>(null);
 
@@ -467,56 +474,88 @@ export function VendorView({
       {/* TAB 1: ACTIVE WORK ORDERS */}
       {activeTab === 'work_orders' && (
         <div className="space-y-4">
-          {/* Sub-filter chips */}
-          <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2 pb-1">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mr-1 shrink-0">Filter:</span>
-            {(() => {
-              const schemeOrders = workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId);
-              return (
-                <>
-                  <button
-                    onClick={() => setWorkOrderFilter('all')}
-                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
-                      workOrderFilter === 'all'
-                        ? 'bg-[#0055FF] text-white'
-                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    All ({schemeOrders.length})
-                  </button>
-                  <button
-                    onClick={() => setWorkOrderFilter('needs_signoff')}
-                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1 select-none active:scale-95 min-h-[34px] ${
-                      workOrderFilter === 'needs_signoff'
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    <Clock size={12} /> Needs Sign-Off ({schemeOrders.filter(w => w.status === 'completion_submitted').length})
-                  </button>
-                  <button
-                    onClick={() => setWorkOrderFilter('in_progress')}
-                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
-                      workOrderFilter === 'in_progress'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    In Progress ({schemeOrders.filter(w => w.status === 'issued' || w.status === 'in_progress').length})
-                  </button>
-                  <button
-                    onClick={() => setWorkOrderFilter('completed')}
-                    className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
-                      workOrderFilter === 'completed'
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    Completed ({schemeOrders.filter(w => w.status === 'completed').length})
-                  </button>
-                </>
-              );
-            })()}
+          {/* Sub-filter chips and View Switcher */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
+            <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2">
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mr-1 shrink-0">Filter:</span>
+              {(() => {
+                const schemeOrders = workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId);
+                return (
+                  <>
+                    <button
+                      onClick={() => setWorkOrderFilter('all')}
+                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                        workOrderFilter === 'all'
+                          ? 'bg-[#0055FF] text-white'
+                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      All ({schemeOrders.length})
+                    </button>
+                    <button
+                      onClick={() => setWorkOrderFilter('needs_signoff')}
+                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1 select-none active:scale-95 min-h-[34px] ${
+                        workOrderFilter === 'needs_signoff'
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      <Clock size={12} /> Needs Sign-Off ({schemeOrders.filter(w => w.status === 'completion_submitted').length})
+                    </button>
+                    <button
+                      onClick={() => setWorkOrderFilter('in_progress')}
+                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                        workOrderFilter === 'in_progress'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      In Progress ({schemeOrders.filter(w => w.status === 'issued' || w.status === 'in_progress').length})
+                    </button>
+                    <button
+                      onClick={() => setWorkOrderFilter('completed')}
+                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                        workOrderFilter === 'completed'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      Completed ({schemeOrders.filter(w => w.status === 'completed').length})
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* View Mode Toggle: Table first, Cards second */}
+            <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setWorkOrderViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  workOrderViewMode === 'table'
+                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Enterprise table view"
+              >
+                <List size={13} />
+                <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWorkOrderViewMode('cards')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  workOrderViewMode === 'cards'
+                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Card layout"
+              >
+                <LayoutGrid size={13} />
+                <span>Cards</span>
+              </button>
+            </div>
           </div>
 
           {filteredWorkOrders.length === 0 ? (
@@ -526,6 +565,130 @@ export function VendorView({
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                 No work orders match the selected filter. You can select an approved quote in the Tenders tab to issue a new work order.
               </p>
+            </div>
+          ) : workOrderViewMode === 'table' ? (
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[780px] text-left text-xs border-collapse font-sans table-auto">
+                  <thead>
+                    <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                      <th className="py-3.5 px-4 w-[16%]">WO ID & Ticket</th>
+                      <th className="py-3.5 px-4 w-[20%]">Contractor / Trade</th>
+                      <th className="py-3.5 px-4 w-[28%]">Scope of Work</th>
+                      <th className="py-3.5 px-4 w-[14%]">Agreed Budget</th>
+                      <th className="py-3.5 px-4 w-[12%]">Status</th>
+                      <th className="py-3.5 px-4 w-[10%] text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                    {filteredWorkOrders.map(wo => {
+                      const isNeedsSignoff = wo.status === 'completion_submitted';
+                      return (
+                        <tr 
+                          key={wo.id}
+                          className={`hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors ${
+                            isNeedsSignoff ? 'bg-amber-500/5 dark:bg-amber-500/5' : ''
+                          }`}
+                        >
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono font-black text-xs text-[#0055FF] dark:text-[#00D4B2]">
+                                {wo.id}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(wo.id);
+                                  setCopiedWoId(wo.id);
+                                  setTimeout(() => setCopiedWoId(null), 2000);
+                                }}
+                                className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                                title="Copy Work Order ID"
+                              >
+                                {copiedWoId === wo.id ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                              </button>
+                            </div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                              Case: {wo.caseId}
+                            </div>
+                            <div className="text-[10px] text-gray-400 mt-0.5">
+                              {wo.submittedAt ? `Submitted: ${wo.submittedAt}` : 'Dispatched Work Order'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="font-bold text-gray-900 dark:text-white text-xs">
+                              {wo.vendorName}
+                            </div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                              {vendors.find(v => v.id === wo.vendorId)?.category || 'Contractor'}
+                            </div>
+                            {wo.vendorPhone && (
+                              <div className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                <Phone size={10} /> {wo.vendorPhone}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2">
+                              {wo.scopeOfWork}
+                            </div>
+                            {wo.signOffNotes && (
+                              <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 line-clamp-1 italic">
+                                Note: {wo.signOffNotes}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="font-mono font-bold text-gray-900 dark:text-white text-xs">
+                              ${wo.budgetCap?.toLocaleString()} <span className="text-[10px] text-gray-400 font-sans font-normal">ex GST</span>
+                            </div>
+                            {wo.status === 'completed' && wo.finalCost && (
+                              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
+                                Paid: ${wo.finalCost.toLocaleString()}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 align-top">
+                            {wo.status === 'completion_submitted' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                                <Clock size={10} /> Needs Sign-Off
+                              </span>
+                            ) : wo.status === 'completed' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <CheckCircle2 size={10} /> Completed
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                                <Wrench size={10} /> In Progress
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 align-top text-right space-y-1">
+                            {isNeedsSignoff ? (
+                              <button
+                                onClick={() => {
+                                  setSignOffModalWo(wo);
+                                  setSignOffNotes('');
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 shadow-xs cursor-pointer active:scale-95"
+                              >
+                                <CheckCircle2 size={12} /> Sign Off
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => onOpenGuestPortal(wo.id)}
+                                className="px-2.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                title="Open contractor dispatch portal"
+                              >
+                                <ExternalLink size={12} /> Portal
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -746,6 +909,43 @@ export function VendorView({
             )}
           </div>
 
+          {/* View Mode Toggle: Table first, Cards second */}
+          {displayTenderRequests.length > 0 && (
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                Showing <span className="text-[#0055FF] dark:text-[#00D4B2] font-mono">{displayTenderRequests.length}</span> Active Quote Tenders
+              </span>
+              <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setTendersViewMode('table')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    tendersViewMode === 'table'
+                      ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  title="Enterprise comparative table"
+                >
+                  <List size={13} />
+                  <span>Table</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTendersViewMode('cards')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    tendersViewMode === 'cards'
+                      ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  title="Side-by-side card poll"
+                >
+                  <LayoutGrid size={13} />
+                  <span>Cards</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {displayTenderRequests.length === 0 ? (
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-dashed border-gray-200 dark:border-white/10 text-center space-y-3">
               <Vote size={36} className="mx-auto text-gray-400 opacity-60" />
@@ -753,6 +953,137 @@ export function VendorView({
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                 No tickets currently have active quotes. Click "Get Quotes (Tender Job)" to invite trades for a building repair.
               </p>
+            </div>
+          ) : tendersViewMode === 'table' ? (
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[850px] text-left text-xs border-collapse font-sans table-auto">
+                  <thead>
+                    <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                      <th className="py-3.5 px-4 w-[20%]">Issue & Scheme</th>
+                      <th className="py-3.5 px-4 w-[24%]">Scope Brief</th>
+                      <th className="py-3.5 px-4 w-[28%]">Contractor Quotes Comparison</th>
+                      <th className="py-3.5 px-4 w-[16%]">Leading Trade</th>
+                      <th className="py-3.5 px-4 w-[12%] text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                    {displayTenderRequests.map(req => {
+                      const quotes = req.tenderQuotes || [];
+                      const recommendedQuote = quotes.find(q => q.recommended) || quotes[0];
+                      const totalVotes = quotes.reduce((sum, q) => sum + (q.committeeVotes?.length || 0), 0);
+                      const mostVotedQuote = [...quotes].sort((a, b) => (b.committeeVotes?.length || 0) - (a.committeeVotes?.length || 0))[0];
+
+                      return (
+                        <tr key={req.id} className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors">
+                          <td className="py-4 px-4 align-top">
+                            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                              <span className="font-mono font-black text-[10px] px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                {req.priority}
+                              </span>
+                              {req.schemeId && (
+                                <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                  {req.schemeId}
+                                </span>
+                              )}
+                            </div>
+                            <div className="font-bold text-gray-900 dark:text-white text-xs">
+                              {req.title}
+                            </div>
+                            <div className="text-[10px] text-gray-400 mt-0.5">
+                              Reported by {req.requestorName} • {req.createdAt}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            <div className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2">
+                              {req.tenderScope || req.description}
+                            </div>
+                            {quotes.length > 0 && (
+                              <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-1">
+                                Quotes: <span className="font-mono">{quotes.length} received</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            <div className="space-y-1.5">
+                              {quotes.map(q => {
+                                const userVoted = q.committeeVotes?.includes(activePersonaName);
+                                return (
+                                  <div 
+                                    key={q.id}
+                                    className={`flex items-center justify-between gap-2 p-1.5 rounded-lg border text-xs ${
+                                      userVoted
+                                        ? 'bg-blue-50/80 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                                        : 'bg-gray-50/60 dark:bg-white/5 border-gray-100 dark:border-white/5'
+                                    }`}
+                                  >
+                                    <div className="min-w-0 flex items-center gap-1.5 truncate">
+                                      <span className="font-bold text-gray-900 dark:text-white truncate text-[11px]">
+                                        {q.vendorName}
+                                      </span>
+                                      {q.recommended && (
+                                        <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[9px]">
+                                          Rec
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span className="font-mono font-bold text-gray-900 dark:text-white text-[11px]">
+                                        ${q.amount?.toLocaleString()}
+                                      </span>
+                                      {onVoteForQuote && isCommitteeMember && (
+                                        <button
+                                          onClick={() => onVoteForQuote(req.id, q.id)}
+                                          className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                                            userVoted
+                                              ? 'bg-[#0055FF] text-white'
+                                              : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-blue-100'
+                                          }`}
+                                        >
+                                          {userVoted ? 'Voted' : 'Vote'}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 align-top">
+                            {mostVotedQuote ? (
+                              <div className="space-y-1">
+                                <div className="font-bold text-gray-900 dark:text-white text-xs">
+                                  {mostVotedQuote.vendorName}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+                                  <Vote size={12} className="text-blue-500" />
+                                  <span>{mostVotedQuote.committeeVotes?.length || 0} of {totalVotes} votes</span>
+                                </div>
+                                {recommendedQuote && recommendedQuote.id === mostVotedQuote.id && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                    <CheckCircle2 size={10} /> Recommended
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-xs">No votes cast yet</span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 align-top text-right space-y-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setTendersViewMode('cards')}
+                              className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-800 dark:text-gray-200 font-bold text-[11px] cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            >
+                              <span>View Poll</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             displayTenderRequests.map(req => (
@@ -1108,48 +1439,191 @@ export function VendorView({
             </div>
           )}
 
-          {/* Sort & Filter Bar */}
-          <div className="flex flex-wrap items-center gap-2 p-3 bg-white dark:bg-[#0d1117] rounded-xl border border-gray-200 dark:border-white/10 text-xs">
-            <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Filter Trade:</span>
-            {['All', 'Lift & Vertical Transport', 'Plumbing & Drainage', 'Electrical & Lighting', 'Fire & Safety Services'].map(cat => (
-              <button
-                key={cat}
-                onClick={() => setDirectoryCategoryFilter(cat)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                  directoryCategoryFilter === cat
-                    ? 'bg-[#0055FF] text-white'
-                    : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Sort & Filter Bar with View Switcher */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white dark:bg-[#0d1117] rounded-xl border border-gray-200 dark:border-white/10 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Filter Trade:</span>
+              {['All', 'Lift & Vertical Transport', 'Plumbing & Drainage', 'Electrical & Lighting', 'Fire & Safety Services'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setDirectoryCategoryFilter(cat)}
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                    directoryCategoryFilter === cat
+                      ? 'bg-[#0055FF] text-white'
+                      : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
 
-            <div className="h-4 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" />
+              <div className="h-4 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" />
 
-            <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Insurance:</span>
-            {(['All', 'Active', 'Pending Review', 'Expired'] as const).map(status => (
+              <span className="font-bold text-gray-500 text-[11px] uppercase tracking-wider mr-1">Insurance:</span>
+              {(['All', 'Active', 'Pending Review', 'Expired'] as const).map(status => (
+                <button
+                  key={status}
+                  onClick={() => setDirectoryInsuranceFilter(status)}
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    directoryInsuranceFilter === status
+                      ? status === 'Pending Review' 
+                        ? 'bg-amber-500 text-black font-black' 
+                        : 'bg-emerald-600 text-white'
+                      : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+                  }`}
+                >
+                  <span>{status}</span>
+                  {status === 'Pending Review' && vendors.some(v => v.insuranceStatus === 'Pending Verification') && (
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* View Mode Switcher: Table first, Cards second */}
+            <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0 ml-auto">
               <button
-                key={status}
-                onClick={() => setDirectoryInsuranceFilter(status)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  directoryInsuranceFilter === status
-                    ? status === 'Pending Review' 
-                      ? 'bg-amber-500 text-black font-black' 
-                      : 'bg-emerald-600 text-white'
-                    : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+                type="button"
+                onClick={() => setDirectoryViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  directoryViewMode === 'table'
+                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
+                title="Enterprise table view"
               >
-                <span>{status}</span>
-                {status === 'Pending Review' && vendors.some(v => v.insuranceStatus === 'Pending Verification') && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                )}
+                <List size={13} />
+                <span>Table</span>
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setDirectoryViewMode('cards')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  directoryViewMode === 'cards'
+                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Card grid layout"
+              >
+                <LayoutGrid size={13} />
+                <span>Cards</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {filteredVendors.map(v => (
+          {directoryViewMode === 'table' ? (
+            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[800px] text-left text-xs border-collapse font-sans table-auto">
+                  <thead>
+                    <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                      <th className="py-3.5 px-4 w-[22%]">Contractor Name & ABN</th>
+                      <th className="py-3.5 px-4 w-[18%]">Category & License</th>
+                      <th className="py-3.5 px-4 w-[18%]">Insurance Status</th>
+                      <th className="py-3.5 px-4 w-[22%]">Contact Info</th>
+                      <th className="py-3.5 px-4 w-[10%]">Rating</th>
+                      <th className="py-3.5 px-4 w-[10%] text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                    {filteredVendors.map(v => (
+                      <tr key={v.id} className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors">
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="font-bold text-gray-900 dark:text-white text-xs">
+                            {v.name}
+                          </div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
+                            ABN: {v.abn}
+                          </div>
+                          <div className="text-[10px] text-gray-400 mt-0.5">
+                            {v.yearsOfExperience || 5} Years Exp.
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+                            {v.category}
+                          </div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
+                            Lic: {v.licenseNo}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 align-top">
+                          {v.insuranceStatus === 'Active' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-[#10B981] dark:bg-emerald-950/30 text-[10px] font-bold uppercase">
+                              <ShieldCheck size={11} /> Active
+                            </span>
+                          ) : v.insuranceStatus === 'Pending Verification' ? (
+                            <button
+                              onClick={() => setSelectedVendorForDetails(v)}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-black uppercase border border-amber-500/30 cursor-pointer animate-pulse"
+                              title="Click to review contractor submission"
+                            >
+                              <Clock size={11} /> Pending Review
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setInsuranceVerifyVendor(v);
+                                setNewInsuranceExpiry('2027-12-31');
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 text-[#FF6B6B] dark:bg-red-950/30 text-[10px] font-bold uppercase cursor-pointer"
+                              title="Click to update insurance"
+                            >
+                              <AlertTriangle size={11} /> Expired Ins.
+                            </button>
+                          )}
+                          <div className="text-[10px] text-gray-400 mt-1">
+                            Exp: {v.insuranceExpiry}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                            <Phone size={11} className="text-gray-400" /> {v.phone}
+                          </div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5 truncate">
+                            <Mail size={11} className="text-gray-400" /> {v.email}
+                          </div>
+                          {v.website && (
+                            <div className="text-[10px] text-blue-500 flex items-center gap-1 mt-0.5">
+                              <ExternalLink size={10} /> {v.website.replace('https://', '')}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 align-top">
+                          <span className="inline-flex items-center gap-1 text-[#FFB020] font-bold text-xs">
+                            <Star size={12} fill="currentColor" /> {v.rating}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 align-top text-right space-y-1">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedVendorForDetails(v)}
+                              className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer"
+                            >
+                              Details
+                            </button>
+                            {!isCommitteeMember && (
+                              <button
+                                type="button"
+                                onClick={() => setVendorToDelete(v)}
+                                className="p-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
+                                title="Delete vendor"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {filteredVendors.map(v => (
               <div 
                 key={v.id} 
                 className={`bg-white dark:bg-[#0d1117] rounded-2xl p-5 border shadow-xs space-y-4 hover:shadow-md transition-shadow flex flex-col justify-between ${
@@ -1253,6 +1727,7 @@ export function VendorView({
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 

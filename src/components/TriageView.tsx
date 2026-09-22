@@ -11,7 +11,9 @@ import {
   Home, 
   Send, 
   Clock,
-  Vote
+  Vote,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { 
   MorphingPopover, 
@@ -28,6 +30,7 @@ interface TriageViewProps {
 }
 
 export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProps) {
+  const [triageViewMode, setTriageViewMode] = useState<'table' | 'cards'>('table');
   const [filterStream, setFilterStream] = useState<string>('all');
   const [selectedCaseForRejection, setSelectedCaseForRejection] = useState<MaintenanceCase | null>(null);
   const [rejectionReasonText, setRejectionReasonText] = useState('');
@@ -73,17 +76,140 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
         </MorphingPopover>
       </div>
 
-      {/* Stream Selector Filter Pills */}
-      <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-2 sm:gap-3 sm:flex-wrap">
-        <FilterPill label="All Streams" active={filterStream === 'all'} onClick={() => setFilterStream('all')} count={cases.length} />
-        <FilterPill label="1. General Inquiry" active={filterStream === 'general_inquiry'} onClick={() => setFilterStream('general_inquiry')} icon={<HelpCircle size={14} />} />
-        <FilterPill label="2. Emergency Repair" active={filterStream === 'emergency_repair'} onClick={() => setFilterStream('emergency_repair')} icon={<AlertTriangle size={14} className="text-[#FF6B6B]" />} />
-        <FilterPill label="3. Private Lot Repair" active={filterStream === 'private_lot_repair'} onClick={() => setFilterStream('private_lot_repair')} icon={<Home size={14} />} />
-        <FilterPill label="4. Common Area Repair" active={filterStream === 'common_area_repair'} onClick={() => setFilterStream('common_area_repair')} icon={<Building2 size={14} className="text-[#0055FF]" />} />
+      {/* Stream Selector Filter Pills & View Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-2 sm:gap-3 sm:flex-wrap flex-1">
+          <FilterPill label="All Streams" active={filterStream === 'all'} onClick={() => setFilterStream('all')} count={cases.length} />
+          <FilterPill label="1. General Inquiry" active={filterStream === 'general_inquiry'} onClick={() => setFilterStream('general_inquiry')} icon={<HelpCircle size={14} />} />
+          <FilterPill label="2. Emergency Repair" active={filterStream === 'emergency_repair'} onClick={() => setFilterStream('emergency_repair')} icon={<AlertTriangle size={14} className="text-[#FF6B6B]" />} />
+          <FilterPill label="3. Private Lot Repair" active={filterStream === 'private_lot_repair'} onClick={() => setFilterStream('private_lot_repair')} icon={<Home size={14} />} />
+          <FilterPill label="4. Common Area Repair" active={filterStream === 'common_area_repair'} onClick={() => setFilterStream('common_area_repair')} icon={<Building2 size={14} className="text-[#0055FF]" />} />
+        </div>
+
+        {/* Table vs Card View Toggle (Table First) */}
+        <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setTriageViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              triageViewMode === 'table'
+                ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+            title="Enterprise table view"
+          >
+            <List size={13} />
+            <span>Table</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setTriageViewMode('cards')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              triageViewMode === 'cards'
+                ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+            title="Card grid layout"
+          >
+            <LayoutGrid size={13} />
+            <span>Cards</span>
+          </button>
+        </div>
       </div>
 
-      {/* Triage Cases Clean Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+      {/* Triage Cases Display: Table View First, Cards View Second */}
+      {triageViewMode === 'table' ? (
+        <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-gray-50/80 dark:bg-[#151926] text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/5">
+                  <th className="py-3.5 px-5">Case ID & Unit</th>
+                  <th className="py-3.5 px-5">Stream</th>
+                  <th className="py-3.5 px-5 min-w-[260px]">Title & Description</th>
+                  <th className="py-3.5 px-5">Reported By</th>
+                  <th className="py-3.5 px-5">Status</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-white/5 font-medium">
+                {filteredCases.map(item => (
+                  <tr key={item.id} className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors group">
+                    <td className="py-4 px-5 align-middle">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-900 dark:text-white text-xs">{item.id}</span>
+                        <span className="text-[11px] font-semibold text-[#0055FF] dark:text-[#00D4B2]">{item.unit}</span>
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-5 align-middle">
+                      <div className="flex items-center gap-1.5">
+                        <StreamIcon stream={item.stream || 'common_area_repair'} />
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 capitalize">
+                          {(item.stream || 'common_area_repair').replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-5 align-middle">
+                      <div>
+                        <div className="font-bold text-gray-900 dark:text-white text-xs">{item.title}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 max-w-md mt-0.5">{item.description}</div>
+                        {item.rejectionReason && (
+                          <div className="text-[10px] text-red-600 font-medium mt-1">
+                            Reason: {item.rejectionReason}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-5 align-middle whitespace-nowrap">
+                      <div className="text-xs text-gray-700 dark:text-gray-300">{item.reportedBy}</div>
+                      <div className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                        <Clock size={11} /> {item.createdAt}
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-5 align-middle whitespace-nowrap">
+                      <StatusBadge status={item.status} />
+                    </td>
+
+                    <td className="py-4 px-5 text-right align-middle whitespace-nowrap">
+                      {item.status === 'pending_triage' ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onTriageCase(item.id, 'approve')}
+                            className="px-2.5 py-1.5 rounded-lg bg-[#10B981] hover:bg-emerald-600 text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                            title="Approve request"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCaseForRejection(item)}
+                            className="px-2.5 py-1.5 rounded-lg bg-[#FF4757]/10 hover:bg-[#FF4757]/20 text-[#FF6B6B] border border-[#FF4757]/30 text-xs font-bold transition-colors cursor-pointer"
+                            title="Reject request"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : item.status === 'approved_pending_vote' ? (
+                        <span className="text-[10px] font-extrabold uppercase px-2 py-1 rounded bg-[#0055FF] text-white inline-flex items-center gap-1">
+                          <Vote size={11} /> {item.linkedMotionId}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {filteredCases.map((item) => (
           <div 
             key={item.id} 
@@ -152,6 +278,7 @@ export function TriageView({ cases, onSubmitCase, onTriageCase }: TriageViewProp
           </div>
         ))}
       </div>
+      )}
 
       {/* Mandatory Rejection Reason Modal */}
       {selectedCaseForRejection && (

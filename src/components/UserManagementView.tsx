@@ -1447,7 +1447,7 @@ function MemberRosterGrid({
     'Strata Admin':     'bg-white/10 text-gray-300 border-gray-600',
   };
 
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopyId = (id: string, e: React.MouseEvent) => {
@@ -1472,20 +1472,7 @@ function MemberRosterGrid({
           )}
         </div>
 
-        <div className="hidden md:flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl">
-          <button
-            type="button"
-            onClick={() => setViewMode('cards')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              viewMode === 'cards'
-                ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-            title="Mobile card layout"
-          >
-            <LayoutGrid size={13} />
-            <span>Cards</span>
-          </button>
+        <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl">
           <button
             type="button"
             onClick={() => setViewMode('table')}
@@ -1499,11 +1486,24 @@ function MemberRosterGrid({
             <List size={13} />
             <span>Table</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('cards')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              viewMode === 'cards'
+                ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+            title="Mobile card layout"
+          >
+            <LayoutGrid size={13} />
+            <span>Cards</span>
+          </button>
         </div>
       </div>
 
-      {/* Cards View (Always displayed on mobile, and on desktop when viewMode === 'cards') */}
-      <div className={viewMode === 'table' ? 'md:hidden' : 'block'}>
+      {/* Cards View (Displayed when viewMode === 'cards') */}
+      {viewMode === 'cards' && (
         <div className="p-3.5 sm:p-5">
           {members.length === 0 ? (
             <div className="py-16 text-center">
@@ -1685,11 +1685,11 @@ function MemberRosterGrid({
             </div>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Table View (Strictly Desktop Only) */}
+      {/* Table View */}
       {viewMode === 'table' && (
-        <div className="hidden md:block">
+        <div className="block">
           <div className="overflow-x-auto w-full min-h-[440px]">
             <table className="w-full min-w-[720px] text-left text-xs border-collapse font-sans table-auto">
               <thead>

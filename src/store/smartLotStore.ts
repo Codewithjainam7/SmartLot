@@ -2687,7 +2687,7 @@ export function useSmartLotStore() {
             internalNotes,
             auditLog: initialAuditLog,
             linkedWorkOrderId: customTender?.linkedWorkOrderId || existingReq?.linkedWorkOrderId,
-            tenderStatus: customTender?.tenderStatus || existingReq?.tenderStatus,
+            tenderStatus: (customTender?.tenderStatus || existingReq?.tenderStatus) as any,
             tenderScope: customTender?.tenderScope || existingReq?.tenderScope,
             tenderQuotes: (customTender?.tenderQuotes && customTender.tenderQuotes.length > 0)
               ? customTender.tenderQuotes 

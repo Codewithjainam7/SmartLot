@@ -363,7 +363,7 @@ export function ResidentRequestsView({
   };
 
   const [viewScope, setViewScope] = useState<'my' | 'all'>('all');
-  const [viewMode, setViewMode] = useState<'cards' | 'table' | 'calendar'>('cards');
+  const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table');
 
   // Table View column-specific search, filter and sort states
   const [tableSearchText, setTableSearchText] = useState('');
@@ -1827,8 +1827,21 @@ export function ResidentRequestsView({
 
           {/* View Controls: Mode Toggle & Scope Toggle */}
           <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar touch-pan-x pb-1 shrink-0 w-full md:w-auto">
-            {/* View Mode Switcher: Cards vs Table vs Calendar */}
+            {/* View Mode Switcher: Table vs Cards vs Calendar */}
             <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`flex px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer items-center gap-1.5 select-none active:scale-95 ${
+                  viewMode === 'table' 
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+                title="Enterprise Table View"
+              >
+                <Table size={13} />
+                <span>Table</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setViewMode('cards')}
@@ -1841,19 +1854,6 @@ export function ResidentRequestsView({
               >
                 <LayoutGrid size={13} />
                 <span>Cards</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={`hidden md:flex px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer items-center gap-1.5 select-none active:scale-95 ${
-                  viewMode === 'table' 
-                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-                }`}
-                title="Enterprise Table View"
-              >
-                <Table size={13} />
-                <span>Table</span>
               </button>
               <button
                 type="button"
@@ -1900,8 +1900,8 @@ export function ResidentRequestsView({
       </div>
 
       {/* Content Area: Cards Grid, Enterprise Table View, or Maintenance Calendar */}
-      {(viewMode === 'cards' || viewMode === 'table') && (
-        <div className={viewMode === 'table' ? 'block md:hidden' : 'block'}>
+      {viewMode === 'cards' && (
+        <div className="block">
           {filteredRequests.length === 0 ? (
           filterStatus === 'needs_triage' ? (
             <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-amber-500/20 text-center space-y-4 shadow-sm">
@@ -2069,7 +2069,7 @@ export function ResidentRequestsView({
 
       {/* Enterprise Table View */}
       {viewMode === 'table' && (
-        <div className="hidden md:block space-y-3">
+        <div className="block space-y-3">
           {/* Table Header Meta Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs">
             <div className="flex items-center gap-2">
