@@ -97,7 +97,7 @@ export function CustomSelect({
   }, []);
 
   return (
-    <div className={`relative w-full ${className}`} ref={dropdownRef}>
+    <div className={`relative w-full ${isOpen ? 'z-50' : ''} ${className}`} ref={dropdownRef}>
       {label && (
         <label className="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5 ml-1">
           {label}
