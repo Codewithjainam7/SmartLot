@@ -454,23 +454,30 @@ export function VotingHubView({
         </div>
       )}
 
-      {/* ── Page Header Banner (Non-overlapping, Consistent Theme) ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-sm relative overflow-hidden">
-        <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
+      {/* ── Page Header Banner (Matches ResidentRequestsView & VendorView) ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
+        {/* Subtle glow in dark mode */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-2xl sm:rounded-3xl" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2">
+            Statutory Committee Governance
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
             <Vote size={22} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
-            <span>Committee Voting</span>
+            <span>Committee Motions & Voting</span>
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+              {activeSchemeId || activeMotion?.strataPlan || 'SP 52042'}
+            </span>
           </h1>
-          <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
-            {activeSchemeId || activeMotion?.strataPlan || 'SP 52042'}
-          </span>
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-            Target: {quorumTarget} of {totalCommitteeSize} Votes to Pass
-          </span>
-          <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block" />
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Official strata resolutions, statutory quorum tracking ({quorumTarget} of {totalCommitteeSize} to pass), and secret ballots.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex items-center gap-2.5 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-white/10">
             <span className="font-semibold text-gray-800 dark:text-gray-200">{activePersonaName}</span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
               isSCM 
                 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
                 : isStrataManager 
@@ -479,19 +486,17 @@ export function VotingHubView({
                 ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
                 : 'bg-gray-500/15 text-gray-500 dark:text-gray-400 border border-gray-500/30'
             }`}>
-              {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager (Non-voting)' : isTenant ? 'Tenant (Non-voting)' : isLotOwnerOrResident ? 'Lot Owner' : 'Observer'}
+              {isSCM ? 'Eligible SCM Voter' : isStrataManager ? 'Strata Manager' : isTenant ? 'Tenant' : isLotOwnerOrResident ? 'Lot Owner' : 'Observer'}
             </span>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
           {viewMode === 'list' && canManageMotion && (
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[40px]"
             >
-              <Plus size={14} strokeWidth={2.5} />
+              <Plus size={15} strokeWidth={2.5} />
               <span>Start New Vote</span>
             </button>
           )}
@@ -500,9 +505,9 @@ export function VotingHubView({
               type="button"
               id="view-report-modal-btn"
               onClick={() => setShowReportModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-white/10 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer min-h-[40px]"
             >
-              <Printer size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
+              <Printer size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
               <span>Certified Report</span>
             </button>
           )}
@@ -530,219 +535,230 @@ export function VotingHubView({
       {viewMode === 'list' && (
         <div className="space-y-6">
           
-          {/* ── Executive KPI Summary Grid ── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-lg shrink-0">
-                <Clock size={20} />
+          {/* ── KPI Operational Metrics ── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            
+            {/* 1. Active in Voting */}
+            <div 
+              onClick={() => setActiveFilter('active')}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+                activeFilter === 'active'
+                  ? 'bg-white dark:bg-[#0d1117] border-[#0055FF] dark:border-[#00D4B2] shadow-sm ring-1 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                  : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active in Voting</span>
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                  <Clock size={15} />
+                </div>
               </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{statsActive}</div>
-                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">Active in Voting</div>
+              <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">
+                {statsActive}
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span>Open for ballots</span>
               </div>
             </div>
 
-            <div className={`bg-white dark:bg-[#0D121C] border rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 ${
-              canCastVote && statsAwaitingUser > 0 
-                ? 'border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/5' 
-                : 'border-gray-200/80 dark:border-white/10'
-            }`}>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-lg shrink-0">
-                <Vote size={20} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <span>{canCastVote ? statsAwaitingUser : statsAwaitingQuorum}</span>
-                  {canCastVote && statsAwaitingUser > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                  )}
-                </div>
-                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">
+            {/* 2. Awaiting Your Vote */}
+            <div 
+              onClick={() => setActiveFilter('pending_me')}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+                activeFilter === 'pending_me'
+                  ? 'bg-amber-500/10 dark:bg-amber-500/10 border-amber-500/50 shadow-sm ring-1 ring-amber-500/30'
+                  : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-amber-500/40 shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                   {canCastVote ? 'Awaiting Your Vote' : 'Votes Needed'}
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                  <Vote size={15} />
                 </div>
               </div>
-            </div>
-
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-lg shrink-0">
-                <CheckCircle2 size={20} />
+              <div className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">
+                {canCastVote ? statsAwaitingUser : statsAwaitingQuorum}
               </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{statsPassed}</div>
-                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">Passed & Binding</div>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span>{canCastVote ? 'Action required' : 'Quorum pending'}</span>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center font-black text-lg shrink-0">
-                <FileText size={20} />
+            {/* 3. Passed & Binding */}
+            <div 
+              onClick={() => setActiveFilter('passed')}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+                activeFilter === 'passed'
+                  ? 'bg-white dark:bg-[#0d1117] border-[#0055FF] dark:border-[#00D4B2] shadow-sm ring-1 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                  : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Passed & Binding</span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                  <CheckCircle2 size={15} />
+                </div>
               </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">{statsUnresolved}</div>
-                <div className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 truncate">Closed / Rejected</div>
+              <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                {statsPassed}
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <span>Threshold reached</span>
               </div>
             </div>
+
+            {/* 4. Closed / Rejected */}
+            <div 
+              onClick={() => setActiveFilter('unresolved')}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+                activeFilter === 'unresolved'
+                  ? 'bg-white dark:bg-[#0d1117] border-[#0055FF] dark:border-[#00D4B2] shadow-sm ring-1 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                  : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Closed / Rejected</span>
+                <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                  <FileText size={15} />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">
+                {statsUnresolved}
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                <span>Concluded motions</span>
+              </div>
+            </div>
+
           </div>
 
-          {/* ── Search & Filter Controls ── */}
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-white dark:bg-[#0D121C] p-4 rounded-3xl border border-gray-200/80 dark:border-white/10 shadow-xs">
-            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-              <div className="relative w-full sm:w-72">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          {/* ── Search & Filter Controls Bar (Site Design) ── */}
+          <div className="bg-white dark:bg-[#0d1117] p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm space-y-3.5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Scope Switcher: All Properties vs Current Building */}
+              <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 overflow-x-auto no-scrollbar">
+                <button
+                  type="button"
+                  onClick={() => setSchemeScope('all')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shrink-0 ${
+                    schemeScope === 'all'
+                      ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                  }`}
+                >
+                  <span>All Properties</span>
+                  <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                    schemeScope === 'all' ? 'bg-blue-500/10 text-blue-600 dark:bg-[#00D4B2]/20 dark:text-[#00D4B2]' : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+                  }`}>
+                    {motions.length}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSchemeScope('scheme')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shrink-0 ${
+                    schemeScope === 'scheme'
+                      ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                  }`}
+                >
+                  <span>Current Building</span>
+                  <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                    schemeScope === 'scheme' ? 'bg-blue-500/10 text-blue-600 dark:bg-[#00D4B2]/20 dark:text-[#00D4B2]' : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+                  }`}>
+                    {motions.filter(m => !m.schemeId || !activeSchemeId || m.schemeId === activeSchemeId).length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full md:w-72">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search motion title, ID, or lot..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-2xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#0055FF] dark:focus:ring-[#00D4B2]"
+                  className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-gray-50 dark:bg-[#121622] border border-gray-200/80 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors"
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
                     <X size={12} />
                   </button>
                 )}
               </div>
+            </div>
 
-              {/* Building Scope Toggle */}
-              <div className="flex items-center p-1 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[11px] font-bold">
+            {/* Bottom Controls: Filter Pills & View Mode Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+              {/* Status Filter Dropdown / Quick Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
+                {motionFilterOptions.map(option => {
+                  const isSelected = activeFilter === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setActiveFilter(option.value)}
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isSelected
+                          ? option.value === 'pending_me'
+                            ? 'bg-amber-500 text-black font-extrabold shadow-xs'
+                            : 'bg-gray-900 text-white dark:bg-white dark:text-black shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${option.dot}`} />
+                      <span>{option.label}</span>
+                      <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
+                        isSelected ? 'bg-white/20 text-current' : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+                      }`}>
+                        {option.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* View Mode Switcher */}
+              <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0 self-start sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => setSchemeScope('all')}
-                  className={`px-3 py-1 rounded-xl transition-all cursor-pointer ${
-                    schemeScope === 'all'
-                      ? 'bg-white dark:bg-black text-gray-900 dark:text-white shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                  onClick={() => setMotionDisplayMode('table')}
+                  className={`flex px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer items-center gap-1.5 select-none ${
+                    motionDisplayMode === 'table'
+                      ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
                   }`}
+                  title="Enterprise Table View"
                 >
-                  All Properties ({motions.length})
+                  <List size={13} />
+                  <span>Table</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSchemeScope('scheme')}
-                  className={`px-3 py-1 rounded-xl transition-all cursor-pointer ${
-                    schemeScope === 'scheme'
-                      ? 'bg-white dark:bg-black text-gray-900 dark:text-white shadow-xs'
-                      : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                  onClick={() => setMotionDisplayMode('cards')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+                    motionDisplayMode === 'cards'
+                      ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
                   }`}
+                  title="Card Grid View"
                 >
-                  Current Building ({motions.filter(m => !m.schemeId || !activeSchemeId || m.schemeId === activeSchemeId).length})
+                  <LayoutGrid size={13} />
+                  <span>Cards</span>
                 </button>
               </div>
-            </div>
-
-            {/* Filter Dropdown Menu (Site Design) */}
-            <div className="relative w-full sm:w-auto" ref={motionFilterDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsMotionFilterDropdownOpen(prev => !prev)}
-                className="w-full sm:w-auto flex items-center justify-between gap-3 px-3.5 py-2 rounded-2xl bg-white dark:bg-[#121622] hover:bg-gray-50/80 dark:hover:bg-[#161c2c] border border-gray-200/90 dark:border-white/10 shadow-xs transition-all cursor-pointer text-xs font-semibold text-gray-800 dark:text-gray-200 min-w-[190px]"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#0055FF] to-[#00D4B2] flex items-center justify-center text-white shrink-0 shadow-xs">
-                    <Filter className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="text-left">
-                    <span className="block text-[10px] uppercase font-bold tracking-wider text-gray-400 dark:text-gray-500 leading-none">
-                      Filter Motions
-                    </span>
-                    <span className="text-xs font-bold text-gray-900 dark:text-white leading-tight flex items-center gap-1.5 mt-0.5">
-                      <span className={`w-2 h-2 rounded-full ${activeMotionFilterOption.dot}`} />
-                      {activeMotionFilterOption.label}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#0055FF]/10 dark:bg-[#00D4B2]/15 text-[#0055FF] dark:text-[#00D4B2]">
-                    {activeMotionFilterOption.count}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isMotionFilterDropdownOpen ? 'rotate-180 text-blue-500' : ''}`} />
-                </div>
-              </button>
-
-              <AnimatePresence>
-                {isMotionFilterDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-50 w-full sm:w-64 rounded-2xl bg-white/95 dark:bg-[#0d1117]/95 backdrop-blur-2xl border border-gray-200 dark:border-white/15 shadow-2xl p-1.5 space-y-1"
-                  >
-                    <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-white/5">
-                      Filter by Status
-                    </div>
-                    {motionFilterOptions.map(option => {
-                      const isSelected = activeFilter === option.value;
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => {
-                            setActiveFilter(option.value);
-                            setIsMotionFilterDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-blue-50/90 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold'
-                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 font-medium'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${option.dot}`} />
-                            <span>{option.label}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
-                              isSelected
-                                ? 'bg-blue-600 text-white dark:bg-blue-500'
-                                : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400'
-                            }`}>
-                              {option.count}
-                            </span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* View Mode Switcher: Table first, Cards second */}
-            <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0">
-              <button
-                type="button"
-                onClick={() => setMotionDisplayMode('table')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  motionDisplayMode === 'table'
-                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                title="Enterprise table view"
-              >
-                <List size={13} />
-                <span>Table</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMotionDisplayMode('cards')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  motionDisplayMode === 'cards'
-                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                title="Card grid layout"
-              >
-                <LayoutGrid size={13} />
-                <span>Cards</span>
-              </button>
             </div>
           </div>
 
           {/* ── Responsive Motions Table or Cards Grid ── */}
           {filteredMotions.length === 0 ? (
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-16 text-center space-y-4">
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 rounded-2xl sm:rounded-3xl p-16 text-center space-y-4 shadow-sm">
               <Vote size={48} className="mx-auto text-gray-300 dark:text-gray-600" />
               <div className="text-base font-bold text-gray-800 dark:text-gray-200">No motions match your filters</div>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
@@ -751,17 +767,17 @@ export function VotingHubView({
               <button
                 type="button"
                 onClick={() => { setActiveFilter('all'); setSearchQuery(''); }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-blue-500"
+                className="px-4 py-2 bg-[#0055FF] hover:bg-blue-600 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-sm"
               >
                 Reset Filters
               </button>
             </div>
           ) : motionDisplayMode === 'table' ? (
-            <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl shadow-xs overflow-hidden">
+            <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden">
               <div className="overflow-x-auto w-full">
                 <table className="w-full min-w-[850px] text-left text-xs border-collapse font-sans table-auto">
                   <thead>
-                    <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                    <tr className="bg-gray-50/80 dark:bg-[#121622] text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px] tracking-wider border-b border-gray-100 dark:border-white/5 select-none">
                       <th className="py-3.5 px-4 w-[16%]">Motion ID & Category</th>
                       <th className="py-3.5 px-4 w-[28%]">Title & Purpose</th>
                       <th className="py-3.5 px-4 w-[14%]">Status</th>
@@ -812,16 +828,16 @@ export function VotingHubView({
                           </td>
                           <td className="py-4 px-4 align-top">
                             {mPassed ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase">
-                                <CheckCircle2 size={10} /> Passed & Locked
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase">
+                                <CheckCircle2 size={11} /> Passed & Locked
                               </span>
                             ) : motion.status === 'rejected' || motion.status === 'unresolved' ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-[10px] font-black uppercase">
-                                <XCircle size={10} /> {motion.status === 'rejected' ? 'Rejected' : 'Unresolved'}
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30 text-[10px] font-black uppercase">
+                                <XCircle size={11} /> {motion.status === 'rejected' ? 'Rejected' : 'Unresolved'}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase">
-                                <Clock size={10} /> In Voting
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase">
+                                <Clock size={11} /> In Voting
                               </span>
                             )}
                           </td>
@@ -899,7 +915,7 @@ export function VotingHubView({
                   <div
                     key={motion.id}
                     onClick={() => openMotionDetail(motion.id)}
-                    className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-[#0055FF]/40 dark:hover:border-[#00D4B2]/40 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden"
+                    className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-gray-200 dark:hover:border-white/10 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                   >
                     <div className="space-y-4">
                       {/* Card Header: Meta Badges */}
@@ -940,7 +956,7 @@ export function VotingHubView({
                       </div>
 
                       {/* Quorum Progress Tracker with 4-Vote Threshold */}
-                      <div className="bg-gray-50 dark:bg-black/30 p-3.5 rounded-2xl border border-gray-100 dark:border-white/5 space-y-2">
+                      <div className="bg-gray-50 dark:bg-white/[0.02] p-3.5 rounded-xl border border-gray-100 dark:border-white/5 space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                             <Vote size={13} className="text-[#0055FF] dark:text-[#00D4B2]" />
@@ -979,7 +995,7 @@ export function VotingHubView({
 
                       {/* Recommended Contractor Tender */}
                       {recommendedQuote && (
-                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/70 dark:bg-white/3 border border-gray-100 dark:border-white/5 text-xs">
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 text-xs">
                           <div className="truncate pr-2">
                             <span className="text-[10px] uppercase font-bold text-gray-400 block">Tender Quote</span>
                             <span className="font-bold text-gray-800 dark:text-gray-200 truncate block">
@@ -1085,7 +1101,7 @@ export function VotingHubView({
             <div className="lg:col-span-8 space-y-6">
               
               {/* Executive Motion Header Block */}
-              <div className="bg-white dark:bg-[#0D121C] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-gray-200/80 dark:border-white/10 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono font-black px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
@@ -1186,36 +1202,36 @@ export function VotingHubView({
 
               {/* ── Statutory Status & Quorum Visual ── */}
               {isPassed ? (
-                <div className="bg-gradient-to-r from-emerald-950/60 via-emerald-900/40 to-teal-950/60 border-2 border-emerald-500/40 rounded-3xl p-6 text-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-emerald-950/20">
+                <div className="bg-emerald-500/10 dark:bg-emerald-950/20 border border-emerald-500/30 dark:border-emerald-500/20 rounded-2xl sm:rounded-3xl p-5 sm:p-6 text-emerald-900 dark:text-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
                   <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                      <Lock size={22} className="stroke-[2.5]" />
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                      <Lock size={20} className="stroke-[2.5]" />
                     </div>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-black text-white">
-                          🎉 MOTION OFFICIALLY PASSED & BINDING RESOLUTION
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                          Motion Resolution Passed & Legally Binding
                         </h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 text-[10px] font-black uppercase">
-                          Threshold Achieved
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase">
+                          Statutory Quorum Met
                         </span>
                       </div>
-                      <p className="text-xs text-emerald-200/80 leading-relaxed">
-                        Statutory threshold of {quorumTarget} YES votes reached under NSW Strata Schemes Management Act 2015. Ballots are locked against further modification.
+                      <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                        Statutory threshold of {quorumTarget} affirmative votes achieved under NSW Strata Schemes Management Act 2015. Ballots are locked and recorded into the scheme minutes.
                       </p>
                     </div>
                   </div>
 
                   {activeMotion.createdWorkOrderId ? (
-                    <div className="shrink-0 bg-black/40 border border-emerald-500/30 rounded-2xl px-4 py-2.5 text-right">
-                      <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Work Order Dispatched</div>
-                      <div className="text-sm font-mono font-black text-white">{activeMotion.createdWorkOrderId}</div>
+                    <div className="shrink-0 bg-white/60 dark:bg-black/40 border border-emerald-500/30 rounded-2xl px-4 py-2.5 text-right">
+                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">Work Order Dispatched</div>
+                      <div className="text-sm font-mono font-black text-gray-900 dark:text-white">{activeMotion.createdWorkOrderId}</div>
                     </div>
                   ) : canManageMotion && (
                     <button
                       type="button"
                       onClick={() => onResolveMotion(activeMotion.id, 'passed')}
-                      className="shrink-0 px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-all cursor-pointer flex items-center gap-2 shadow-sm"
+                      className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-sm"
                     >
                       <Wrench size={14} />
                       <span>Issue Work Order</span>
@@ -1251,7 +1267,7 @@ export function VotingHubView({
                     </div>
                   )}
 
-                  <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 shadow-sm space-y-4">
+                  <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -1274,7 +1290,7 @@ export function VotingHubView({
 
                     {/* Progress Bar with 4-Vote Threshold Line */}
                     <div className="relative pt-2 pb-1">
-                      <div className="h-3.5 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex">
+                      <div className="h-3 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden flex">
                         <div 
                           style={{ width: `${Math.min(100, (yesVotes / totalCommitteeSize) * 100)}%` }}
                           className="bg-emerald-500 transition-all duration-500"
@@ -1295,7 +1311,7 @@ export function VotingHubView({
                         style={{ left: `${(quorumTarget / totalCommitteeSize) * 100}%` }}
                       />
                       <div 
-                        className="absolute top-6 text-[10px] font-mono font-bold text-gray-600 dark:text-gray-300 -translate-x-1/2 whitespace-nowrap"
+                        className="absolute top-5 text-[10px] font-mono font-bold text-gray-600 dark:text-gray-300 -translate-x-1/2 whitespace-nowrap"
                         style={{ left: `${(quorumTarget / totalCommitteeSize) * 100}%` }}
                       >
                         ▲ Pass Threshold ({quorumTarget} Votes)
@@ -1325,20 +1341,20 @@ export function VotingHubView({
                 </div>
               )}
 
-              {/* ── Committee Member Voting Action: Vote - Approve or Reject ── */}
+              {/* ── Committee Member Voting Action: Cast Official Ballot ── */}
               {canCastVote && !isLocked && (
-                <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                       <Vote size={20} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-gray-900 dark:text-white">
-                          Vote — Approve or Reject
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                          {isTenant ? 'Record Indicative Ballot' : 'Cast Statutory Committee Ballot'}
                         </span>
                         {isTenant && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
                             Tenant Ballot
                           </span>
                         )}
@@ -1346,49 +1362,62 @@ export function VotingHubView({
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {userBallot ? (
                           <span>
-                            You voted <strong className={userBallot.vote === 'YES' ? 'text-emerald-500' : 'text-red-500'}>{userBallot.vote === 'YES' ? 'Approve' : 'Reject'}</strong>. You can change your vote anytime before voting closes.
+                            You voted <strong className={userBallot.vote === 'YES' ? 'text-emerald-500' : userBallot.vote === 'NO' ? 'text-red-500' : 'text-gray-400'}>{userBallot.vote === 'YES' ? 'YES (Approve)' : userBallot.vote === 'NO' ? 'NO (Reject)' : 'ABSTAIN'}</strong>. You can change your ballot anytime before voting closes.
                           </span>
                         ) : isTenant ? (
-                          <span>Cast your ballot to record your preference on this active motion.</span>
+                          <span>Cast your indicative ballot to record your household preference alongside the Strata Committee.</span>
                         ) : (
-                          <span>Cast your committee vote on this motion.</span>
+                          <span>Cast your formal vote on this motion. Minimum {quorumTarget} affirmative votes required for passage.</span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => handleVoteSubmit('YES')}
-                      className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
+                      className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-95 ${
                         userBallot?.vote === 'YES'
-                          ? 'bg-emerald-500 text-white ring-2 ring-emerald-400/50 shadow-emerald-500/20 shadow-md'
-                          : 'bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white border border-emerald-500/20'
+                          ? 'bg-emerald-600 text-white ring-2 ring-emerald-400/40 shadow-sm'
+                          : 'bg-emerald-500/10 hover:bg-emerald-600 text-emerald-700 dark:text-emerald-400 hover:text-white border border-emerald-500/20'
                       }`}
                     >
-                      <Check size={14} strokeWidth={3} />
+                      <Check size={14} strokeWidth={2.5} />
                       <span>Approve</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleVoteSubmit('NO')}
-                      className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
+                      className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-95 ${
                         userBallot?.vote === 'NO'
-                          ? 'bg-red-500 text-white ring-2 ring-red-400/50 shadow-red-500/20 shadow-md'
-                          : 'bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20'
+                          ? 'bg-red-600 text-white ring-2 ring-red-400/40 shadow-sm'
+                          : 'bg-red-500/10 hover:bg-red-600 text-red-700 dark:text-red-400 hover:text-white border border-red-500/20'
                       }`}
                     >
-                      <X size={14} strokeWidth={3} />
+                      <X size={14} strokeWidth={2.5} />
                       <span>Reject</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleVoteSubmit('ABSTAIN')}
+                      className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-95 ${
+                        userBallot?.vote === 'ABSTAIN'
+                          ? 'bg-gray-700 text-white ring-2 ring-gray-400/40 shadow-sm'
+                          : 'bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10'
+                      }`}
+                    >
+                      <MinusCircle size={14} />
+                      <span>Abstain</span>
                     </button>
                   </div>
                 </div>
               )}
 
               {/* ── Official Committee Discussion & Comments ── */}
-              <div className="bg-white dark:bg-[#0D121C] border border-gray-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-[#0d1117] border border-gray-100 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-4">
                   <div className="flex items-center gap-2.5">
                     <MessageSquare size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
@@ -1447,12 +1476,12 @@ export function VotingHubView({
               
               {/* Governance Actions Panel - Strictly Strata Managers & System Admins */}
               {canManageMotion && (
-                <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-4">
+                <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 p-4 sm:p-6 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                       Governance Actions
                     </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
                       NSW SSMA 2015
                     </span>
                   </div>
@@ -1464,9 +1493,9 @@ export function VotingHubView({
                         type="button"
                         id="gov-gen-report-btn"
                         onClick={() => setShowReportModal(true)}
-                        className="w-full py-2.5 px-4 rounded-2xl bg-[#0055FF]/10 dark:bg-[#0055FF]/20 hover:bg-[#0055FF] text-[#0055FF] dark:text-[#60A5FA] hover:text-white border border-[#0055FF]/30 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
+                        className="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs active:scale-95"
                       >
-                        <Printer size={14} />
+                        <Printer size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
                         <span>Generate Certified Vote Report</span>
                       </button>
                     )}
@@ -1481,7 +1510,7 @@ export function VotingHubView({
                             setCloseModalTab(isPassed ? 'after' : 'before');
                             setShowCloseModal(true);
                           }}
-                          className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                          className="w-full py-2.5 px-4 rounded-xl bg-red-600/10 hover:bg-red-600 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs active:scale-95"
                         >
                           <Scale size={14} />
                           <span>Close Vote</span>
@@ -1490,7 +1519,7 @@ export function VotingHubView({
                         <button
                           type="button"
                           onClick={() => setShowExtendModal(true)}
-                          className="w-full py-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-blue-500/10 text-gray-700 dark:text-gray-300 hover:text-blue-500 border border-gray-200 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                          className="w-full py-2.5 px-4 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-blue-500/10 text-gray-700 dark:text-gray-300 hover:text-[#0055FF] dark:hover:text-[#00D4B2] border border-gray-200/80 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                         >
                           <Calendar size={14} />
                           <span>Extend Voting Deadline</span>
@@ -1499,7 +1528,7 @@ export function VotingHubView({
                         <button
                           type="button"
                           onClick={() => setShowRestartModal(true)}
-                          className="w-full py-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-amber-500/10 text-gray-700 dark:text-gray-300 hover:text-amber-500 border border-gray-200 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                          className="w-full py-2.5 px-4 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-amber-500/10 text-gray-700 dark:text-gray-300 hover:text-amber-500 border border-gray-200/80 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                         >
                           <RotateCcw size={14} />
                           <span>Restart Committee Vote</span>
@@ -1509,7 +1538,7 @@ export function VotingHubView({
                           <button
                             type="button"
                             onClick={() => onResolveMotion(activeMotion.id, 'passed')}
-                            className="w-full py-2.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                            className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm active:scale-95"
                           >
                             <Wrench size={14} />
                             <span>Issue Official Work Order</span>
@@ -1522,12 +1551,12 @@ export function VotingHubView({
               )}
 
               {/* ── Strata Committee Members (SCM) Live Voting Roster Card ── */}
-              <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-6 shadow-sm space-y-4">
+              <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 p-4 sm:p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3">
                   <div className="flex items-center gap-2">
                     <Users size={16} className="text-[#0055FF] dark:text-[#00D4B2]" />
                     <div>
-                      <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                      <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                         Committee Roster
                       </h3>
                       <p className="text-[10px] text-gray-400">
@@ -1628,7 +1657,7 @@ export function VotingHubView({
               </div>
 
               {/* Statutory Compliance Card */}
-              <div className="bg-white dark:bg-[#0D121C] rounded-3xl border border-gray-200/80 dark:border-white/10 p-5 shadow-xs space-y-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 p-5 shadow-xs space-y-2 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-bold text-xs">
                   <Shield size={14} className="text-[#0055FF] dark:text-[#00D4B2]" />
                   <span>NSW SSMA 2015 Compliance</span>
@@ -1648,7 +1677,7 @@ export function VotingHubView({
       {/* ── Formal Legal Vote Report Modal (Printable) ────────── */}
       {showReportModal && activeMotion && canGenerateReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0C1018] rounded-2xl sm:rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-4 sm:p-6 lg:p-8 shadow-2xl text-gray-900 dark:text-white space-y-6">
+          <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-white/10 p-4 sm:p-6 lg:p-8 shadow-2xl text-gray-900 dark:text-white space-y-6">
             
             {/* Report Header */}
             <div className="flex items-start justify-between border-b border-gray-200 dark:border-white/10 pb-4">
@@ -1776,7 +1805,7 @@ export function VotingHubView({
       {/* ── Restart Voting Modal ───────────────────────────────── */}
       {showRestartModal && activeMotion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-lg w-full border border-gray-200 dark:border-white/15 p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl max-w-lg w-full border border-gray-100 dark:border-white/10 p-6 shadow-2xl space-y-4">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1800,7 +1829,7 @@ export function VotingHubView({
                   placeholder="e.g. Requester Sarah submitted revised mockup design following committee RFI. Fresh vote required..."
                   value={restartReason}
                   onChange={e => setRestartReason(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
             </div>
@@ -1828,7 +1857,7 @@ export function VotingHubView({
       {/* ── Extend Deadline Modal ──────────────────────────────── */}
       {showExtendModal && activeMotion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-lg w-full border border-gray-200 dark:border-white/15 p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl max-w-lg w-full border border-gray-100 dark:border-white/10 p-6 shadow-2xl space-y-4">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1870,7 +1899,7 @@ export function VotingHubView({
                   placeholder="e.g. Committee quorum pending during school holidays..."
                   value={extendReasonInput}
                   onChange={e => setExtendReasonInput(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 focus:outline-none"
+                  className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none"
                 />
               </div>
             </div>
@@ -1886,7 +1915,7 @@ export function VotingHubView({
               <button
                 type="button"
                 onClick={handleConfirmExtend}
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black cursor-pointer shadow-sm"
+                className="px-4 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer shadow-sm"
               >
                 Save Extended Deadline
               </button>
@@ -1898,7 +1927,7 @@ export function VotingHubView({
       {/* ── Submit Revised Proposal Modal ──────────────────────── */}
       {showResubmitModal && activeMotion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#0C1018] rounded-3xl max-w-lg w-full border border-gray-200 dark:border-white/15 p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#0d1117] rounded-3xl max-w-lg w-full border border-gray-100 dark:border-white/10 p-6 shadow-2xl space-y-4">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1956,20 +1985,20 @@ export function VotingHubView({
       {/* ── MODAL: Close Vote ── */}
       {showCloseModal && activeMotion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#0C1018] rounded-2xl sm:rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-4 sm:p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white animate-in fade-in zoom-in duration-150">
+          <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-white/10 p-5 sm:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white animate-in fade-in zoom-in-95 duration-150">
             
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">
               <div>
-                <div className="text-[10px] font-mono font-bold text-red-500 uppercase tracking-widest mb-0.5">
-                  Strata Manager Decision • SP 52042
+                <div className="text-[10px] font-mono font-bold text-blue-600 dark:text-[#00D4B2] uppercase tracking-widest mb-0.5">
+                  Statutory Determination • {activeMotion?.strataPlan || activeSchemeId || 'SP 52042'}
                 </div>
-                <h3 className="text-base font-black flex items-center gap-2">
-                  <Scale size={18} className="text-red-500" />
-                  <span>Close Vote</span>
+                <h3 className="text-base font-bold flex items-center gap-2">
+                  <Scale size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                  <span>Conclude Voting & Finalize Resolution</span>
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Motion: <strong>{activeMotion.id}</strong> — {activeMotion.title}
+                  Motion: <strong className="text-gray-800 dark:text-gray-200">{activeMotion.id}</strong> — {activeMotion.title}
                 </p>
               </div>
               <button 
@@ -1982,60 +2011,60 @@ export function VotingHubView({
             </div>
 
             {/* 2 Pathways Selector Tabs */}
-            <div className="grid grid-cols-2 gap-2 p-1.5 bg-gray-100 dark:bg-[#070A10] rounded-2xl border border-gray-200 dark:border-white/10 text-xs font-bold">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100 dark:bg-[#1a1d27] rounded-xl text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setCloseModalTab('before')}
-                className={`py-2 rounded-xl transition-all cursor-pointer font-bold ${
+                className={`py-2 px-3 rounded-lg transition-all cursor-pointer font-bold text-center ${
                   closeModalTab === 'before'
-                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 shadow-2xs'
+                    ? 'bg-white dark:bg-[#0d1117] text-amber-700 dark:text-amber-400 border border-amber-500/30 shadow-xs'
                     : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Before completion
+                Request Details & Revert
               </button>
               <button
                 type="button"
                 onClick={() => setCloseModalTab('after')}
-                className={`py-2 rounded-xl transition-all cursor-pointer font-bold ${
+                className={`py-2 px-3 rounded-lg transition-all cursor-pointer font-bold text-center ${
                   closeModalTab === 'after'
-                    ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 shadow-2xs'
+                    ? 'bg-white dark:bg-[#0d1117] text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 shadow-xs'
                     : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                After Completion = Output achieved
+                Determine Outcome & Execute
               </button>
             </div>
 
-            {/* PATHWAY 1: BEFORE COMPLETION (Needs extra info -> Add a reason -> Send notification to requestor -> Request goes back to pending) */}
+            {/* PATHWAY 1: REQUEST DETAILS & REVERT (Needs extra info -> Add a reason -> Send notification to requestor -> Request goes back to pending) */}
             {closeModalTab === 'before' && (
               <div className="space-y-4">
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs space-y-1">
-                  <div className="font-black text-amber-600 dark:text-amber-400">
-                    Incase of additional details needed to cast vote
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-xs space-y-1">
+                  <div className="font-bold text-amber-700 dark:text-amber-400">
+                    Suspend Vote & Request Additional Details
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Close voting early when the committee or strata manager requires missing specifications, additional contractor quotes, or revised details. The case status will automatically revert back to <strong>Pending Triage</strong> and an email notification will be sent to the requestor.
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-[11px]">
+                    Pause voting when the committee or strata manager requires missing specifications, additional contractor quotes, or structural certifications. The case status will automatically revert to <strong>Pending Triage</strong> and a notification email will be dispatched to the applicant.
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block">
-                    Add a reason *
+                    Reason for Information Request *
                   </label>
                   <textarea
                     rows={3}
-                    placeholder="e.g. Committee requested 2 additional contractor quotes and structural engineer report before voting..."
+                    placeholder="e.g. Committee requested 2 additional contractor quotes and structural engineer report before formal voting..."
                     value={closeReasonInput}
                     onChange={e => setCloseReasonInput(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 text-gray-900 dark:text-white"
                   />
                 </div>
 
-                <div className="p-3 bg-gray-50 dark:bg-black/30 rounded-xl border border-gray-200 dark:border-white/5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                <div className="p-3 bg-gray-50 dark:bg-[#1a1d27] rounded-xl border border-gray-200 dark:border-white/5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
                   <span>Automated Workflow:</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                    ✓ Send notification to requestor ➔ Request goes back to pending
+                    ✓ Notify requestor • Revert case to Pending Triage
                   </span>
                 </div>
 
@@ -2051,66 +2080,66 @@ export function VotingHubView({
                     type="button"
                     onClick={handleConfirmCloseEarly}
                     disabled={!closeReasonInput.trim()}
-                    className="px-5 py-2.5 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer shadow-md transition-all"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer shadow-md transition-all active:scale-95"
                   >
-                    Send Notification & Revert to Pending
+                    Submit Request & Revert to Pending
                   </button>
                 </div>
               </div>
             )}
 
-            {/* PATHWAY 2: AFTER COMPLETION = OUTPUT ACHIEVED */}
+            {/* PATHWAY 2: DETERMINE OUTCOME & EXECUTE */}
             {closeModalTab === 'after' && (
               <div className="space-y-4">
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-xs space-y-1">
-                  <div className="font-black text-emerald-600 dark:text-emerald-400">
-                    Request status changes as per votes
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3.5 text-xs space-y-1">
+                  <div className="font-bold text-emerald-700 dark:text-emerald-400">
+                    Finalize Motion Determination
                   </div>
-                  <div className="text-gray-600 dark:text-gray-300 font-mono text-[11px] pt-1 flex items-center gap-2">
+                  <div className="text-gray-600 dark:text-gray-300 font-mono text-[11px] flex items-center gap-2">
                     <span>Live Quorum: <strong>{yesVotes} YES</strong> • <strong>{noVotes} NO</strong> • <strong>{abstainVotes} ABSTAIN</strong></span>
-                    <span>(Target: {quorumTarget} Votes)</span>
+                    <span>(Target: {quorumTarget} Affirmative Votes)</span>
                   </div>
                 </div>
 
-                {/* Option A: Motion Passed [If Approved] */}
+                {/* Option A: Motion Passed */}
                 <div className="space-y-2">
-                  <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider">
-                    Motion Passed [If Approved] • Send notification to all participants
+                  <div className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">
+                    Option 1: Resolution Approved & Passed
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="bg-blue-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-blue-500/30 space-y-2 flex flex-col justify-between">
+                    <div className="bg-blue-500/5 dark:bg-[#1a1d27] p-3.5 rounded-xl border border-blue-500/20 space-y-2 flex flex-col justify-between">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                          If strata / building-level
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#0055FF] dark:text-[#00D4B2]">
+                          Common Property / Building Works
                         </span>
                         <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
-                          Motion passed ➔ Dispatches notification to all participants ➔ <strong>Initiate Work order Flow</strong>.
+                          Resolution approved. Dispatches formal notification to committee and issues official contractor work order.
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleConfirmResolveMotion('passed', '🚀 Motion Approved! Work order flow initiated.')}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
+                        className="w-full py-2 bg-[#0055FF] hover:bg-blue-600 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs text-xs"
                       >
-                        Initiate Work order Flow
+                        Approve & Issue Work Order
                       </button>
                     </div>
 
-                    <div className="bg-purple-500/5 dark:bg-[#070A10] p-3.5 rounded-xl border border-purple-500/30 space-y-2 flex flex-col justify-between">
+                    <div className="bg-purple-500/5 dark:bg-[#1a1d27] p-3.5 rounded-xl border border-purple-500/20 space-y-2 flex flex-col justify-between">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
-                          If resident-level
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-300">
+                          Individual Lot Owner Request
                         </span>
                         <p className="text-gray-600 dark:text-gray-300 text-[11px] mt-1 leading-relaxed">
-                          Motion passed ➔ Dispatches approval letter to resident ➔ <strong>[Request] Voting Closed</strong>.
+                          Resolution approved. Dispatches formal approval notice to resident and records resolution in scheme roll.
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleConfirmResolveMotion('passed', '✅ Resident request approved and voting closed.')}
-                        className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
+                        className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs text-xs"
                       >
-                        [Request] Voting Closed
+                        Approve & Notify Resident
                       </button>
                     </div>
                   </div>
@@ -2118,46 +2147,46 @@ export function VotingHubView({
 
                 {/* Option B: If Rejected */}
                 <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="font-bold text-red-600 dark:text-red-400">If Rejected:</div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Send notification to requestor ➔ [Request] Voting Closed</div>
+                      <div className="font-bold text-red-600 dark:text-red-400">Option 2: Resolution Rejected</div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Votes did not achieve required statutory threshold. Dispatches rejection notice to requestor.</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleConfirmResolveMotion('rejected', '❌ Motion Rejected. Notification sent to requestor.')}
-                      className="px-3.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20 font-bold text-xs transition-colors cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20 font-bold text-xs transition-colors cursor-pointer shrink-0"
                     >
-                      Mark as Rejected & Close
+                      Record Rejection & Close
                     </button>
                   </div>
                 </div>
 
-                {/* Option C: In case of tie or no votes, send for Manager review */}
+                {/* Option C: Strata Manager Administrative Determination */}
                 <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2 text-xs">
                   <div>
                     <div className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                       <Scale size={13} />
-                      <span>In case of tie or no votes, send for Manager review:</span>
+                      <span>Option 3: Strata Manager Administrative Determination</span>
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Committee votes are tied or inconclusive. Strata Manager exercises administrative casting determination.
+                      Committee votes are deadlocked or quorum unreached. Strata Manager exercises administrative casting authority.
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => handleConfirmResolveMotion('passed', '⚖️ Strata Manager casting vote: PASSED. Work order flow initiated.')}
-                      className="flex-1 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-emerald-500/20 text-gray-700 dark:text-gray-300 hover:text-emerald-400 border border-transparent hover:border-emerald-500/30 rounded-lg font-bold text-xs cursor-pointer transition-colors"
+                      className="flex-1 py-2 bg-gray-100 dark:bg-white/5 hover:bg-emerald-500/20 text-gray-700 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-xs cursor-pointer transition-colors"
                     >
-                      Casting Vote: Pass Motion
+                      Casting Vote: Approve
                     </button>
                     <button
                       type="button"
                       onClick={() => handleConfirmResolveMotion('rejected', '⚖️ Strata Manager casting vote: REJECTED. Request closed.')}
-                      className="flex-1 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-red-500/20 text-gray-700 dark:text-gray-300 hover:text-red-400 border border-transparent hover:border-red-500/30 rounded-lg font-bold text-xs cursor-pointer transition-colors"
+                      className="flex-1 py-2 bg-gray-100 dark:bg-white/5 hover:bg-red-500/20 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-xs cursor-pointer transition-colors"
                     >
-                      Casting Vote: Reject Motion
+                      Casting Vote: Reject
                     </button>
                   </div>
                 </div>
@@ -2172,16 +2201,16 @@ export function VotingHubView({
       {/* ── MODAL: Start New Committee Vote ── */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#0C1018] rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-white/15 p-4 sm:p-6 lg:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-white/10 p-5 sm:p-7 shadow-2xl space-y-5 text-gray-900 dark:text-white">
             
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-3 border-b border-gray-100 dark:border-white/10">
               <div>
-                <div className="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-0.5">
-                  Strata Committee Motion • {activeMotion?.strataPlan || 'SP 52042'}
+                <div className="text-[10px] font-mono font-bold text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-widest mb-0.5">
+                  Strata Committee Motion • {activeMotion?.strataPlan || activeSchemeId || 'SP 52042'}
                 </div>
-                <h3 className="text-base font-black flex items-center gap-2">
-                  <Vote size={18} className="text-blue-600 dark:text-[#00D4B2]" />
+                <h3 className="text-base font-bold flex items-center gap-2">
+                  <Vote size={18} className="text-[#0055FF] dark:text-[#00D4B2]" />
                   <span>Start New Committee Vote</span>
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -2209,7 +2238,7 @@ export function VotingHubView({
                   placeholder="e.g. Approve Commercial Solar Inverter Replacement"
                   value={createTitle}
                   onChange={e => setCreateTitle(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0055FF]"
                 />
               </div>
 
@@ -2259,7 +2288,7 @@ export function VotingHubView({
                   placeholder="Explain what the committee is voting on, why it is needed, and the proposed scope of work..."
                   value={createSummary}
                   onChange={e => setCreateSummary(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#0055FF]"
                 />
               </div>
 
@@ -2296,7 +2325,7 @@ export function VotingHubView({
                     placeholder="e.g. Apex Solar Solutions"
                     value={createVendorName}
                     onChange={e => setCreateVendorName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#0055FF]"
                   />
                 </div>
                 <div>
@@ -2308,7 +2337,7 @@ export function VotingHubView({
                     placeholder="e.g. $4,200 AUD"
                     value={createEstimatedCost}
                     onChange={e => setCreateEstimatedCost(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d27] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#0055FF]"
                   />
                 </div>
               </div>
@@ -2324,7 +2353,7 @@ export function VotingHubView({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs cursor-pointer shadow-md transition-all flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs cursor-pointer shadow-md transition-all flex items-center gap-1.5 active:scale-95"
                 >
                   <Vote size={14} />
                   <span>Start Vote</span>

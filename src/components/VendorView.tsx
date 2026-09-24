@@ -316,88 +316,166 @@ export function VendorView({
   };
 
   return (
-    <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0B1121] text-gray-900 dark:text-gray-100">
+    <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-6 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f] text-gray-900 dark:text-gray-100">
       
-      {/* Top Header Card */}
-      <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-200 dark:border-white/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
-        <div className="space-y-1 sm:space-y-1.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-            <Wrench size={13} /> Trades & Work Orders Lifecycle
+      {/* ── Top Header Banner (Matches ResidentRequestsView & VotingHubView) ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
+        {/* Subtle glow in dark mode */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00D4B2]/0 via-transparent to-[#0055FF]/0 dark:from-[#00D4B2]/5 dark:via-transparent dark:to-[#0055FF]/5 pointer-events-none rounded-2xl sm:rounded-3xl" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2">
+            Trades & Work Orders Lifecycle
           </div>
-          <h1 className="font-sans text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-            {isCommitteeMember ? 'Trades & Quote Poll' : 'Trades & Work Orders'}
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
+            <Wrench size={22} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+            <span>{isCommitteeMember ? 'Trades & Quote Poll' : 'Trades & Work Orders'}</span>
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+              {activeSchemeName || 'Active Scheme'}
+            </span>
           </h1>
-          <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 max-w-2xl">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
             {isCommitteeMember
-              ? 'Review pending vendor quote polls and cast your official vote on preferred trades.'
-              : 'Compare quotes from local trades, issue digital work orders with key PINs, verify repair completion photos, and sign off invoices.'}
+              ? 'Review pending contractor quote tenders and cast your official committee vote on preferred trades.'
+              : 'Contractor dispatch, digital work order sign-off with photo proof, and commercial quote tenders.'}
           </p>
         </div>
 
         {/* Action Buttons (Restricted for Committee Members) */}
         {!isCommitteeMember && (
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+          <div className="relative z-10 flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <button
               onClick={() => setShowCreateTenderModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[44px]"
+              className="px-4 py-2.5 rounded-xl bg-[#0055FF] hover:bg-blue-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[40px]"
             >
-              <Vote size={15} /> Get Quotes (Tender Job)
+              <Vote size={15} />
+              <span>Get Quotes (Tender Job)</span>
             </button>
             <button
               onClick={() => setShowAddVendorModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer min-h-[44px]"
+              className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-white/10 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer min-h-[40px]"
             >
-              <Plus size={15} /> Add Verified Trade
+              <Plus size={15} />
+              <span>Add Verified Trade</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Senior-Friendly KPI Summary Cards */}
+      {/* ── KPI Operational Metrics ────────────────────────────────────── */}
       {!isCommitteeMember ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Active Work Orders</span>
-            <div className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          
+          {/* 1. Active Work Orders */}
+          <div 
+            onClick={() => {
+              setActiveTab('work_orders');
+              setWorkOrderFilter('all');
+            }}
+            className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+              activeTab === 'work_orders' && workOrderFilter === 'all'
+                ? 'bg-white dark:bg-[#0d1117] border-[#0055FF] dark:border-[#00D4B2] shadow-sm ring-1 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Work Orders</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <Wrench size={15} />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">
               {workOrders.filter(wo => wo.status !== 'completed').length}
             </div>
-            <span className="text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium">Ongoing repair jobs</span>
+            <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              <span>Ongoing repair jobs</span>
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Quotes Under Review</span>
-            <div className="text-xl sm:text-2xl font-black text-[#0055FF] dark:text-[#00D4B2] mt-1">
+          {/* 2. Quotes Under Review */}
+          <div 
+            onClick={() => setActiveTab('tenders')}
+            className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+              activeTab === 'tenders'
+                ? 'bg-white dark:bg-[#0d1117] border-[#0055FF] dark:border-[#00D4B2] shadow-sm ring-1 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quotes Under Review</span>
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <Vote size={15} />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-[#0055FF] dark:text-[#00D4B2]">
               {tenderRequests.length}
             </div>
-            <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">Repair tenders</span>
+            <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+              <span>Repair tenders active</span>
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-amber-200 dark:border-amber-500/30 bg-amber-50/40 dark:bg-amber-950/10 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">Needs Sign-Off</span>
-            <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+          {/* 3. Needs Sign-Off (Interactive + Refined Amber Accent) */}
+          <div 
+            onClick={() => {
+              setActiveTab('work_orders');
+              setWorkOrderFilter('needs_signoff');
+            }}
+            className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+              workOrderFilter === 'needs_signoff' && activeTab === 'work_orders'
+                ? 'bg-amber-500/10 dark:bg-amber-500/10 border-amber-500/50 shadow-sm ring-1 ring-amber-500/30'
+                : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-amber-500/40 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Needs Sign-Off</span>
+              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <Clock size={15} />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">
               {workOrders.filter(wo => wo.status === 'completion_submitted').length}
             </div>
-            <span className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-500 font-medium">Photos submitted</span>
+            <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span>Photos submitted</span>
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Verified Directory</span>
-            <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+          {/* 4. Verified Directory */}
+          <div 
+            onClick={() => setActiveTab('directory')}
+            className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group ${
+              activeTab === 'directory'
+                ? 'bg-white dark:bg-[#0d1117] border-[#0055FF] dark:border-[#00D4B2] shadow-sm ring-1 ring-[#0055FF]/20 dark:ring-[#00D4B2]/30'
+                : 'bg-white dark:bg-[#0d1117] border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Verified Directory</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <ShieldCheck size={15} />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
               {vendors.filter(v => v.insuranceStatus === 'Active').length}
             </div>
-            <span className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">Insured trades</span>
+            <div className="flex items-center gap-1.5 mt-2 text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+              <span>Insured trades</span>
+            </div>
           </div>
+
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+          <div className="bg-white dark:bg-[#0d1117] rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-white/5 shadow-sm">
             <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Quote Polls Requiring Your Vote</span>
             <div className="text-2xl font-black text-[#0055FF] dark:text-[#00D4B2] mt-1">
               {tenderRequests.length}
             </div>
             <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Active committee polls</span>
           </div>
-          <div className="bg-white dark:bg-[#0d1117] rounded-xl sm:rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-white/10 shadow-2xs">
+          <div className="bg-white dark:bg-[#0d1117] rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-white/5 shadow-sm">
             <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Your Voting Status</span>
             <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
               {tenderRequests.filter(r => r.tenderQuotes?.some(q => q.committeeVotes?.includes(activePersonaName))).length} / {tenderRequests.length}
@@ -407,157 +485,259 @@ export function VendorView({
         </div>
       )}
 
-      {/* Tabs Navigation (Restricted to Quote Poll for Committee Members) */}
-      {!isCommitteeMember ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-gray-200 dark:border-white/10 pb-3 sm:pb-4">
-          <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl border border-gray-200/80 dark:border-white/10 max-w-full">
+      {/* ── Main Navigation & Unified Controls Bar ───────────────────── */}
+      <div className="bg-white dark:bg-[#0d1117] p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm space-y-3.5">
+        {/* Top Controls Row: Segmented Tabs & Search */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Segmented Primary Tabs */}
+          <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 overflow-x-auto no-scrollbar">
             <button
+              type="button"
               onClick={() => setActiveTab('work_orders')}
-              className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 min-h-[38px] ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none shrink-0 ${
                 activeTab === 'work_orders'
-                  ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
               }`}
             >
-              Work Orders ({workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId).length})
+              <Wrench size={13} />
+              <span>Work Orders</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                activeTab === 'work_orders'
+                  ? 'bg-blue-500/10 text-blue-600 dark:bg-[#00D4B2]/20 dark:text-[#00D4B2]'
+                  : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+              }`}>
+                {workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId).length}
+              </span>
             </button>
+
             <button
+              type="button"
               onClick={() => setActiveTab('tenders')}
-              className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none active:scale-95 min-h-[38px] ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none shrink-0 ${
                 activeTab === 'tenders'
-                  ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
               }`}
             >
-              Quotes & Tenders ({tenderRequests.length})
-              {tenderRequests.length > 0 && (
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              )}
+              <Vote size={13} />
+              <span>Quotes & Tenders</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                activeTab === 'tenders'
+                  ? 'bg-blue-500/10 text-blue-600 dark:bg-[#00D4B2]/20 dark:text-[#00D4B2]'
+                  : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+              }`}>
+                {tenderRequests.length}
+              </span>
             </button>
-            <button
-              onClick={() => setActiveTab('directory')}
-              className={`shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-95 min-h-[38px] ${
-                activeTab === 'directory'
-                  ? 'bg-white dark:bg-[#0B1121] text-gray-900 dark:text-white shadow-xs'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Verified Trades ({vendors.length})
-            </button>
+
+            {!isCommitteeMember && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('directory')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none shrink-0 ${
+                  activeTab === 'directory'
+                    ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+              >
+                <ShieldCheck size={13} />
+                <span>Verified Trades</span>
+                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                  activeTab === 'directory'
+                    ? 'bg-blue-500/10 text-blue-600 dark:bg-[#00D4B2]/20 dark:text-[#00D4B2]'
+                    : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+                }`}>
+                  {vendors.length}
+                </span>
+              </button>
+            )}
           </div>
 
-          {/* Search Bar */}
-          <div className="relative w-full sm:w-72">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
+          {/* Search Input */}
+          <div className="relative w-full md:w-64">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search trades, orders..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] min-h-[40px]"
+              placeholder={
+                activeTab === 'work_orders'
+                  ? 'Search work orders, trades...'
+                  : activeTab === 'tenders'
+                  ? 'Search quote tenders, scopes...'
+                  : 'Search accredited trades, ABN...'
+              }
+              className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-gray-50 dark:bg-[#121622] border border-gray-200/80 dark:border-white/10 text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:border-[#0055FF] dark:focus:border-[#00D4B2] transition-colors"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
-                <X size={13} />
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <X size={12} />
               </button>
             )}
           </div>
         </div>
-      ) : (
-        <div className="border-b border-gray-200 dark:border-white/10 pb-3 flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-white/5 border border-blue-200 dark:border-white/10 text-blue-700 dark:text-[#00D4B2] text-xs font-bold">
-            <Vote size={14} /> Active Quote Polls ({tenderRequests.length})
-          </div>
-        </div>
-      )}
 
-      {/* TAB 1: ACTIVE WORK ORDERS */}
-      {activeTab === 'work_orders' && (
-        <div className="space-y-4">
-          {/* Sub-filter chips and View Switcher */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
-            <div className="flex overflow-x-auto no-scrollbar touch-pan-x items-center gap-1.5 sm:gap-2">
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mr-1 shrink-0">Filter:</span>
+        {/* Bottom Controls Row: Tab-Specific Filter Chips + Unified View Mode Switcher */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
+          {activeTab === 'work_orders' && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
               {(() => {
                 const schemeOrders = workOrders.filter(w => !w.schemeId || w.schemeId === activeSchemeId);
+                const needsSignoffCount = schemeOrders.filter(w => w.status === 'completion_submitted').length;
+                const inProgressCount = schemeOrders.filter(w => w.status === 'issued' || w.status === 'in_progress').length;
+                const completedCount = schemeOrders.filter(w => w.status === 'completed').length;
+
                 return (
                   <>
                     <button
+                      type="button"
                       onClick={() => setWorkOrderFilter('all')}
-                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         workOrderFilter === 'all'
-                          ? 'bg-[#0055FF] text-white'
-                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                          ? 'bg-gray-900 text-white dark:bg-white dark:text-black shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       All ({schemeOrders.length})
                     </button>
+
                     <button
+                      type="button"
                       onClick={() => setWorkOrderFilter('needs_signoff')}
-                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1 select-none active:scale-95 min-h-[34px] ${
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         workOrderFilter === 'needs_signoff'
-                          ? 'bg-amber-500 text-white'
-                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                          ? 'bg-amber-500 text-black font-extrabold shadow-xs'
+                          : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30'
                       }`}
                     >
-                      <Clock size={12} /> Needs Sign-Off ({schemeOrders.filter(w => w.status === 'completion_submitted').length})
+                      <span className={`w-2 h-2 rounded-full ${workOrderFilter === 'needs_signoff' ? 'bg-black' : 'bg-amber-500 animate-pulse'}`} />
+                      <span>Needs Sign-Off ({needsSignoffCount})</span>
                     </button>
+
                     <button
+                      type="button"
                       onClick={() => setWorkOrderFilter('in_progress')}
-                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         workOrderFilter === 'in_progress'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                          ? 'bg-[#0055FF] text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
-                      In Progress ({schemeOrders.filter(w => w.status === 'issued' || w.status === 'in_progress').length})
+                      <span className={`w-2 h-2 rounded-full ${workOrderFilter === 'in_progress' ? 'bg-white' : 'bg-blue-500'}`} />
+                      <span>In Progress ({inProgressCount})</span>
                     </button>
+
                     <button
+                      type="button"
                       onClick={() => setWorkOrderFilter('completed')}
-                      className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none active:scale-95 min-h-[34px] ${
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         workOrderFilter === 'completed'
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
-                      Completed ({schemeOrders.filter(w => w.status === 'completed').length})
+                      <span className={`w-2 h-2 rounded-full ${workOrderFilter === 'completed' ? 'bg-white' : 'bg-emerald-500'}`} />
+                      <span>Completed ({completedCount})</span>
                     </button>
                   </>
                 );
               })()}
             </div>
+          )}
 
-            {/* View Mode Toggle: Table first, Cards second */}
-            <div className="flex items-center gap-1 bg-gray-200/70 dark:bg-[#1a1f2e] p-1 rounded-xl shrink-0 self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setWorkOrderViewMode('table')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  workOrderViewMode === 'table'
-                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                title="Enterprise table view"
-              >
-                <List size={13} />
-                <span>Table</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setWorkOrderViewMode('cards')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  workOrderViewMode === 'cards'
-                    ? 'bg-white dark:bg-[#0d1117] text-[#0055FF] dark:text-[#00D4B2] shadow-xs'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                title="Card layout"
-              >
-                <LayoutGrid size={13} />
-                <span>Cards</span>
-              </button>
+          {activeTab === 'tenders' && (
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <span>Showing</span>
+              <span className="font-mono font-bold text-gray-900 dark:text-white">{displayTenderRequests.length}</span>
+              <span>Active Commercial Quote Tenders</span>
             </div>
-          </div>
+          )}
 
+          {activeTab === 'directory' && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 mr-1">Trade:</span>
+              {['All', 'Lift & Vertical Transport', 'Plumbing & Drainage', 'Electrical & Lighting', 'Fire & Safety Services'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setDirectoryCategoryFilter(cat)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    directoryCategoryFilter === cat
+                      ? 'bg-[#0055FF] text-white shadow-xs'
+                      : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+                  }`}
+                >
+                  {cat === 'All' ? 'All Trades' : cat.split('&')[0].trim()}
+                </button>
+              ))}
+
+              <div className="h-3.5 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" />
+
+              <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 mr-1">Insurance:</span>
+              {(['All', 'Active', 'Pending Review', 'Expired'] as const).map(status => (
+                <button
+                  key={status}
+                  onClick={() => setDirectoryInsuranceFilter(status)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    directoryInsuranceFilter === status
+                      ? status === 'Pending Review'
+                        ? 'bg-amber-500 text-black font-extrabold shadow-xs'
+                        : 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+                  }`}
+                >
+                  <span>{status}</span>
+                  {status === 'Pending Review' && vendors.some(v => v.insuranceStatus === 'Pending Verification') && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Unified View Mode Switcher (Table vs Cards) */}
+          <div className="flex items-center bg-gray-100 dark:bg-[#1a1d27] p-1 rounded-xl border border-transparent dark:border-white/5 shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                if (activeTab === 'work_orders') setWorkOrderViewMode('table');
+                else if (activeTab === 'tenders') setTendersViewMode('table');
+                else setDirectoryViewMode('table');
+              }}
+              className={`flex px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer items-center gap-1.5 select-none ${
+                (activeTab === 'work_orders' ? workOrderViewMode : activeTab === 'tenders' ? tendersViewMode : directoryViewMode) === 'table'
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              }`}
+              title="Enterprise Table View"
+            >
+              <List size={13} />
+              <span>Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (activeTab === 'work_orders') setWorkOrderViewMode('cards');
+                else if (activeTab === 'tenders') setTendersViewMode('cards');
+                else setDirectoryViewMode('cards');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+                (activeTab === 'work_orders' ? workOrderViewMode : activeTab === 'tenders' ? tendersViewMode : directoryViewMode) === 'cards'
+                  ? 'bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#00D4B2] border dark:border-[#00D4B2]/20 shadow-xs'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+              }`}
+              title="Card Grid View"
+            >
+              <LayoutGrid size={13} />
+              <span>Cards</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* TAB 1: ACTIVE WORK ORDERS */}
+      {activeTab === 'work_orders' && (
+        <div className="space-y-4">
           {filteredWorkOrders.length === 0 ? (
             <div className="bg-white dark:bg-[#0d1117] rounded-3xl p-12 border border-dashed border-gray-200 dark:border-white/10 text-center space-y-3">
               <Wrench size={36} className="mx-auto text-gray-400 opacity-60" />
@@ -567,14 +747,14 @@ export function VendorView({
               </p>
             </div>
           ) : workOrderViewMode === 'table' ? (
-            <div className="bg-white dark:bg-[#0d1117] rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl border border-gray-200/90 dark:border-white/10 shadow-xs overflow-hidden">
               <div className="overflow-x-auto w-full">
                 <table className="w-full min-w-[780px] text-left text-xs border-collapse font-sans table-auto">
                   <thead>
-                    <tr className="bg-gray-100/90 dark:bg-[#151a28] text-gray-700 dark:text-gray-200 font-black uppercase text-[10px] tracking-wider border-b border-gray-200 dark:border-white/10 select-none">
+                    <tr className="bg-gray-50/90 dark:bg-[#121622] text-gray-500 dark:text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-200/80 dark:border-white/10 select-none">
                       <th className="py-3.5 px-4 w-[16%]">WO ID & Ticket</th>
-                      <th className="py-3.5 px-4 w-[20%]">Contractor / Trade</th>
-                      <th className="py-3.5 px-4 w-[28%]">Scope of Work</th>
+                      <th className="py-3.5 px-4 w-[22%]">Contractor / Trade</th>
+                      <th className="py-3.5 px-4 w-[26%]">Scope of Work</th>
                       <th className="py-3.5 px-4 w-[14%]">Agreed Budget</th>
                       <th className="py-3.5 px-4 w-[12%]">Status</th>
                       <th className="py-3.5 px-4 w-[10%] text-right">Actions</th>
@@ -586,13 +766,15 @@ export function VendorView({
                       return (
                         <tr 
                           key={wo.id}
-                          className={`hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors ${
-                            isNeedsSignoff ? 'bg-amber-500/5 dark:bg-amber-500/5' : ''
+                          className={`transition-colors ${
+                            isNeedsSignoff 
+                              ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08] border-l-4 border-l-amber-500 dark:border-l-amber-400' 
+                              : 'border-l-4 border-l-transparent hover:bg-gray-50/80 dark:hover:bg-white/[0.02]'
                           }`}
                         >
                           <td className="py-3.5 px-4 align-top">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-black text-xs text-[#0055FF] dark:text-[#00D4B2]">
+                              <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-gray-200">
                                 {wo.id}
                               </span>
                               <button
@@ -601,85 +783,108 @@ export function VendorView({
                                   setCopiedWoId(wo.id);
                                   setTimeout(() => setCopiedWoId(null), 2000);
                                 }}
-                                className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+                                className="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors cursor-pointer"
                                 title="Copy Work Order ID"
                               >
                                 {copiedWoId === wo.id ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                               </button>
                             </div>
-                            <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                              Case: {wo.caseId}
+                            <div className="inline-flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mt-1 font-mono">
+                              <span>Case:</span>
+                              <span className="font-semibold text-gray-700 dark:text-gray-300">{wo.caseId}</span>
                             </div>
-                            <div className="text-[10px] text-gray-400 mt-0.5">
+                            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                               {wo.submittedAt ? `Submitted: ${wo.submittedAt}` : 'Dispatched Work Order'}
                             </div>
                           </td>
+
                           <td className="py-3.5 px-4 align-top">
-                            <div className="font-bold text-gray-900 dark:text-white text-xs">
-                              {wo.vendorName}
-                            </div>
-                            <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                              {vendors.find(v => v.id === wo.vendorId)?.category || 'Contractor'}
-                            </div>
-                            {wo.vendorPhone && (
-                              <div className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                                <Phone size={10} /> {wo.vendorPhone}
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/10 to-teal-500/10 dark:from-blue-500/20 dark:to-teal-500/20 text-[#0055FF] dark:text-[#00D4B2] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                                {wo.vendorName.slice(0, 2).toUpperCase()}
                               </div>
-                            )}
+                              <div className="min-w-0">
+                                <div className="font-bold text-gray-900 dark:text-white text-xs truncate">
+                                  {wo.vendorName}
+                                </div>
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                  {vendors.find(v => v.id === wo.vendorId)?.category || 'Contractor'}
+                                </div>
+                                {wo.vendorPhone && (
+                                  <div className="text-[10px] text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
+                                    <Phone size={10} /> {wo.vendorPhone}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </td>
+
                           <td className="py-3.5 px-4 align-top">
-                            <div className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2">
+                            <div className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2 leading-relaxed font-medium">
                               {wo.scopeOfWork}
                             </div>
                             {wo.signOffNotes && (
-                              <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 line-clamp-1 italic">
-                                Note: {wo.signOffNotes}
+                              <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-1.5 flex items-center gap-1 font-medium bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-md w-fit border border-amber-200/60 dark:border-amber-900/40">
+                                <span>Note:</span>
+                                <span className="italic">{wo.signOffNotes}</span>
                               </div>
                             )}
                           </td>
+
                           <td className="py-3.5 px-4 align-top">
                             <div className="font-mono font-bold text-gray-900 dark:text-white text-xs">
                               ${wo.budgetCap?.toLocaleString()} <span className="text-[10px] text-gray-400 font-sans font-normal">ex GST</span>
                             </div>
-                            {wo.status === 'completed' && wo.finalCost && (
-                              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
-                                Paid: ${wo.finalCost.toLocaleString()}
+                            {wo.status === 'completed' && wo.finalCost ? (
+                              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-1 flex items-center gap-1">
+                                <CheckCircle2 size={10} /> Paid: ${wo.finalCost.toLocaleString()}
+                              </div>
+                            ) : (
+                              <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 font-sans">
+                                Cap Approved
                               </div>
                             )}
                           </td>
+
                           <td className="py-3.5 px-4 align-top">
                             {wo.status === 'completion_submitted' ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                                <Clock size={10} /> Needs Sign-Off
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                <span>Needs Sign-Off</span>
                               </span>
                             ) : wo.status === 'completed' ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                <CheckCircle2 size={10} /> Completed
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <span>Completed</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                                <Wrench size={10} /> In Progress
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/30">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                <span>In Progress</span>
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 align-top text-right space-y-1">
+
+                          <td className="py-3.5 px-4 align-top text-right">
                             {isNeedsSignoff ? (
                               <button
                                 onClick={() => {
                                   setSignOffModalWo(wo);
                                   setSignOffNotes('');
                                 }}
-                                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 shadow-xs cursor-pointer active:scale-95"
+                                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95 shrink-0"
                               >
-                                <CheckCircle2 size={12} /> Sign Off
+                                <CheckCircle2 size={13} />
+                                <span>Sign Off</span>
                               </button>
                             ) : (
                               <button
                                 onClick={() => onOpenGuestPortal(wo.id)}
-                                className="px-2.5 py-1.5 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/10 font-bold text-xs inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0"
                                 title="Open contractor dispatch portal"
                               >
-                                <ExternalLink size={12} /> Portal
+                                <ExternalLink size={12} className="text-[#0055FF] dark:text-[#00D4B2]" />
+                                <span>Portal</span>
                               </button>
                             )}
                           </td>
@@ -880,7 +1085,7 @@ export function VendorView({
         </div>
       )}
 
-      {/* TAB 2: QUOTE COMPARISONS & TENDERS (The Broken Lift Journey) */}
+      {/* TAB 2: QUOTE COMPARISONS & TENDERS */}
       {activeTab === 'tenders' && (
         <div className="space-y-6">
           <div className="bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-3xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -890,7 +1095,7 @@ export function VendorView({
               </div>
               <div>
                 <h3 className="text-sm font-black text-gray-900 dark:text-white">
-                  {isCommitteeMember ? 'Committee Quote Voting Poll' : 'Committee Quote Poll & Comparison (The "Broken Lift" Lifecycle)'}
+                  {isCommitteeMember ? 'Committee Quote Voting Poll' : 'Commercial Tender Comparisons & Committee Polls'}
                 </h3>
                 <p className="text-xs text-gray-600 dark:text-gray-300">
                   {isCommitteeMember 
@@ -1098,7 +1303,7 @@ export function VendorView({
                       <span className="text-xs font-black text-[#0055FF] dark:text-[#00D4B2] uppercase tracking-wider">
                         {req.priority} Priority
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0055FF] text-[10px] font-bold uppercase">
+                      <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 text-[10px] font-bold uppercase">
                         Quotes Received
                       </span>
                       {req.schemeId && (
@@ -1158,7 +1363,7 @@ export function VendorView({
                                     {quote.vendorName}
                                   </h4>
                                   {quote.recommended && (
-                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-[#0055FF] text-[9px] font-black uppercase">
+                                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20 text-[9px] font-black uppercase">
                                       Recommended
                                     </span>
                                   )}
@@ -1269,8 +1474,8 @@ export function VendorView({
                                   }}
                                   className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                     hasExpiredInsurance
-                                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                                      : 'bg-[#0B1121] dark:bg-[#00D4B2] hover:bg-black dark:hover:bg-[#00b89a] text-white dark:text-black shadow-xs'
+                                      ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                                      : 'bg-[#0055FF] hover:bg-blue-600 text-white dark:bg-[#00D4B2] dark:hover:bg-[#00b89a] dark:text-black shadow-xs'
                                   }`}
                                 >
                                   <span>Select & Issue Work Order</span>
@@ -1639,13 +1844,13 @@ export function VendorView({
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{v.category}</span>
                     </div>
                     {v.insuranceStatus === 'Active' ? (
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-[#10B981] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-[#10B981] dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
                         <ShieldCheck size={12} /> Active Ins.
                       </span>
                     ) : v.insuranceStatus === 'Pending Verification' ? (
                       <button
                         onClick={() => setSelectedVendorForDetails(v)}
-                        className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 text-[10px] font-black uppercase flex items-center gap-1 shrink-0 cursor-pointer border border-amber-500/30 animate-pulse"
+                        className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500/30 text-[10px] font-black uppercase flex items-center gap-1 shrink-0 cursor-pointer border border-amber-500/30 animate-pulse"
                         title="Click to review contractor submission"
                       >
                         <Clock size={12} /> Pending Review
@@ -1656,13 +1861,13 @@ export function VendorView({
                           setInsuranceVerifyVendor(v);
                           setNewInsuranceExpiry('2027-12-31');
                         }}
-                        className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] hover:bg-red-200 text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 cursor-pointer"
+                        className="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-500/15 text-[#FF6B6B] dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/25 border border-red-200 dark:border-red-500/20 text-[10px] font-bold uppercase flex items-center gap-1 shrink-0 cursor-pointer"
                         title="Click to update insurance"
                       >
                         <AlertTriangle size={12} /> Expired Ins. (Renew)
                       </button>
                     ) : (
-                      <span className="px-2.5 py-1 rounded-full bg-red-100 text-[#FF6B6B] text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
+                      <span className="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-500/15 text-[#FF6B6B] dark:text-red-400 border border-red-200 dark:border-red-500/20 text-[10px] font-bold uppercase flex items-center gap-1 shrink-0">
                         <AlertTriangle size={12} /> Expired Ins.
                       </span>
                     )}
@@ -2657,12 +2862,32 @@ export function VendorView({
 function WorkOrderStatusBadge({ status }: { status: WorkOrder['status'] }) {
   switch (status) {
     case 'issued':
-      return <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold uppercase">Issued</span>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-[10px] font-bold uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span>Issued</span>
+        </span>
+      );
     case 'in_progress':
-      return <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold uppercase">In Progress</span>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span>In Progress</span>
+        </span>
+      );
     case 'completion_submitted':
-      return <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-300 text-[10px] font-bold uppercase animate-pulse">Needs Sign-Off</span>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-[10px] font-bold uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+          <span>Needs Sign-Off</span>
+        </span>
+      );
     case 'completed':
-      return <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">Completed & Signed Off</span>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span>Completed</span>
+        </span>
+      );
   }
 }

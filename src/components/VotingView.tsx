@@ -21,13 +21,19 @@ export function VotingView({ motions, onCastBallot, activePersonaName }: VotingV
     <div className="flex-1 p-3.5 sm:p-6 md:p-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 space-y-4 sm:space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Clean Header Banner */}
-      <div className="bg-gradient-to-r from-[#0B1121] to-[#1E2026] text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-md relative overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/20 text-[#0055FF] text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 sm:mb-3">
-            Day 1 Committee Access Gate
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2">
+            Statutory Committee Governance
           </div>
-          <h1 className="text-xl sm:text-3xl font-bold tracking-tight mb-1.5 sm:mb-2">Strata Committee Voting Engine</h1>
-          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
+            <Vote size={22} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+            <span>Strata Committee Voting Engine</span>
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-xl bg-blue-500/10 text-[#0055FF] dark:text-[#00D4B2] border border-blue-500/20">
+              SP 52042
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
             Review formal motions, compare contractor quotes ex GST, track live scheme quorum, and cast digital ballots.
           </p>
         </div>

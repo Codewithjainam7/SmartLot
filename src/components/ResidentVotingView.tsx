@@ -44,19 +44,24 @@ export function ResidentVotingView({
     <div className="flex-1 p-8 space-y-8 overflow-y-auto h-full bg-[#F4F6F9] dark:bg-[#0a0a0f]">
       
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#0B1121] to-[#1E2026] text-white rounded-3xl p-8 shadow-md">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/20 text-[#0055FF] text-xs font-bold uppercase tracking-wider mb-2">
-          Resident Hub â€¢ Community Voting
-        </div>
-        <h1 className="text-2xl font-bold">Requests Currently in Community Voting</h1>
-        <p className="text-sm text-gray-300 mt-1">Review active community requests, add comments, and track voting status.</p>
-
-        {isTenant && (
-          <div className="mt-4 bg-amber-500/20 border border-amber-500/30 p-3.5 rounded-2xl flex items-center gap-2.5 text-xs text-amber-200 font-medium">
-            <ShieldAlert size={16} className="text-amber-400 shrink-0" />
-            <span>Note: You are logged in as a <span className="font-bold text-white">Tenant</span>. Per scheme bylaws, tenants do not have voting eligibility, but can view & comment on requests.</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0d1117] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0055FF]/10 dark:bg-[#00D4B2]/10 text-[#0055FF] dark:text-[#00D4B2] border border-[#0055FF]/20 dark:border-[#00D4B2]/20 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2">
+            Resident Hub • Community Voting
           </div>
-        )}
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
+            <Vote size={22} className="text-[#0055FF] dark:text-[#00D4B2] shrink-0" />
+            <span>Community Motions & Voting</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Review active community requests, add comments, and track voting status.</p>
+
+          {isTenant && (
+            <div className="mt-3 bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex items-center gap-2.5 text-xs text-amber-700 dark:text-amber-300 font-medium">
+              <ShieldAlert size={16} className="text-amber-500 shrink-0" />
+              <span>Note: You are logged in as a <strong>Tenant</strong>. Per scheme bylaws, tenants do not have statutory voting eligibility, but can cast indicative feedback.</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -70,15 +75,15 @@ export function ResidentVotingView({
               <button
                 key={req.id}
                 onClick={() => setSelectedRequest(req)}
-                className={`w-full text-left p-5 rounded-2xl border transition-all cursor-pointer ${
+                className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                   activeDetail?.id === req.id 
-                    ? 'bg-[#0B1121] text-white border-black shadow-md' 
+                    ? 'bg-blue-50/80 dark:bg-blue-500/10 border-blue-500/40 text-gray-900 dark:text-white shadow-xs ring-1 ring-blue-500/20' 
                     : 'bg-gray-50 dark:bg-[#1a1d27] border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-900 dark:text-white'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold uppercase ${activeDetail?.id === req.id ? 'text-[#0055FF]' : 'text-gray-400 dark:text-gray-500'}`}>{req.unit}</span>
-                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${activeDetail?.id === req.id ? 'bg-[#00D4B2] text-[#0B1121]' : 'bg-purple-100 dark:bg-purple-950/20 text-[#0055FF] dark:text-[#6699ff]'}`}>
+                  <span className={`text-xs font-bold uppercase ${activeDetail?.id === req.id ? 'text-[#0055FF] dark:text-[#00D4B2]' : 'text-gray-400 dark:text-gray-500'}`}>{req.unit}</span>
+                  <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${activeDetail?.id === req.id ? 'bg-[#0055FF] text-white dark:bg-[#00D4B2] dark:text-black' : 'bg-purple-100 dark:bg-purple-950/20 text-[#0055FF] dark:text-[#6699ff]'}`}>
                     IN VOTING
                   </span>
                 </div>
